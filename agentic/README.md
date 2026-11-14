@@ -6,4 +6,4 @@ The Smartivity activity is undecided. An optional Devpost/presentation simulatio
 
 `openarms_agent`, its original Claude prompts and older `scripts` are preserved research/fallback components, not an alternate application entrypoint. Do not start a second dispatcher or registry when integrating new capabilities. Firmware and recorded physical evidence retain their separate supervision and authorization requirements.
 
-Duc is the agentic contact; the integration lane owns shared contracts. Each substantial assignment names the GitHub issue, requirement, owned files, producer/consumer dependency, baseline, evidence and gaps. [Consolidation status](../docs/MAIN_INTEGRATION.md).
+Victor is the [agentic owner](../AGENTS.md#ownership). His [student and agent flow handoff](../research/victor/student-and-agent-flow.md) covers the current gaps, lab setup changes and first tests. Coordinate shared interfaces with the affected owners. Each substantial assignment names its GitHub issue, requirement, owned files, producer/consumer dependency, baseline, evidence and gaps. [Consolidation status](../docs/MAIN_INTEGRATION.md)

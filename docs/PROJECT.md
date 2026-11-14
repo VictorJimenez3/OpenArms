@@ -4,6 +4,8 @@ A student directs a real robot arm one supported action at a time through respon
 
 The new target is the **Smartivity My First Science Kit**, with the activity to be chosen later. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the materials inventory, Victor's bench handoff, D1–D4 priorities and outstanding work. Fixed stations and taught trajectories are acceptable; physical delivery must be independently observed.
 
+Victor’s presentation plan is one live robot activity and several simulation examples. Aim to carry the same student interaction into an additional validated scene. Label standalone runs and asset previews according to what they show. [Project objective](../PROJECT_OBJECTIVE.md) · [Victor’s implementation handoff](../research/victor/student-and-agent-flow.md)
+
 ## Current software
 
 Main contains one authenticated browser/iPhone session service, a configurable Codex/Claude expert, perception tools, exact proposals, deterministic execution, independent observations and evaluated skill reuse. The default expert is Codex gpt-6.1-sol medium. Gemini is withdrawn and voice is disabled pending replacement. Physical actuation is disabled.
