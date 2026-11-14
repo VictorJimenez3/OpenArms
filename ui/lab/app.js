@@ -1,13 +1,17 @@
 import { LabApiClient } from './api.js';
 import { SessionClient } from './live-client.js';
+import { DeveloperView } from './developer.js';
 
 const $ = selector => document.querySelector(selector);
 const api = new LabApiClient();
+const developer = new DeveloperView(api);
 let client;
 let snapshot;
 let busy = false;
 let connection = 'connecting';
+let audio;
 let pendingKey = '';
+let pendingSummary = '';
 let acknowledgedKey = '';
 let proposalGeneration = 0;
 let sceneView;
@@ -22,11 +26,48 @@ const text = (selector, value) => {
 };
 const keyFor = proposal => proposal ? `${proposal.request_id}:${proposal.proposal_version}` : '';
 const currentObservation = () => (snapshot?.observations || []).filter(observation => observation.trial_id === snapshot.trial?.trial_id).at(-1);
+const currentTask = () => snapshot?.tasks?.findLast(task => !task.trial_id || task.trial_id === snapshot.trial?.trial_id);
+const isDeveloper = () => document.body.dataset.view === 'developer';
+const mediaReady = () => connection === 'connected' && client?.ready && snapshot?.generation === client.generation;
+
+function showRoute() {
+  const open = /^\/developer\/?$/.test(location.pathname);
+  document.body.dataset.view = open ? 'developer' : 'lab';
+  document.title = open ? 'OpenArms Developer' : 'OpenArms Lab';
+  $('#developer').hidden = !open;
+  $('#view-link').href = open ? '/' : '/developer';
+  text('#view-link', open ? 'Lab' : 'Developer');
+  if (open) developer.render(mediaReady() ? snapshot : undefined, audio, currentTask());
+  else developer.release();
+}
 
 function notify(message) { text('#notice-text', message); $('#notice').hidden = false; }
 function fail(error) { notify(error.message || 'Something interrupted the request. Check your notebook before trying again.'); }
 function credentialsNeeded() {
+  client?.close();
+  client = undefined;
+  snapshot = undefined;
+  liveTurns.clear();
+  connection = 'offline';
+  pendingKey = acknowledgedKey = '';
+  proposalGeneration++;
   releaseScene();
+  developer.release();
+  if (isDeveloper()) developer.render();
+  $('#proposal').hidden = $('#proposal-nav').hidden = true;
+  $('#connection-dot').classList.remove('online');
+  $('#voice-toggle').disabled = true;
+  $('#voice-options').hidden = true;
+  delete $('#voice-toggle').dataset.active;
+  text('#voice-title', 'Pairing required');
+  text('#voice-label', 'Talk');
+  $('#voice-detail').hidden = true;
+  for (const selector of ['#task-progress', '#evidence', '#active-skills', '#reflection-panel', '#new-trial']) $(selector).hidden = true;
+  $('#prediction').value = '';
+  text('#prediction-saved', '');
+  renderMessages();
+  renderHistory();
+  controls();
   $('#pairing').hidden = false;
   $('#pairing-code').focus();
   text('#connection-label', 'Pairing required');
@@ -39,6 +80,7 @@ async function boot(pairingCode) {
     client?.close();
     if (snapshot?.session_id !== state.session_id) {
       releaseScene();
+      developer.release();
       snapshot = undefined;
       liveTurns.clear();
       attemptedPresentations.clear();
@@ -56,8 +98,15 @@ async function boot(pairingCode) {
   }
 }
 async function resync() {
-  try { client?.acceptState(await api.snapshot()); }
-  catch (error) { fail(error); if ([401,403,404].includes(error.status)) credentialsNeeded(); }
+  const owner = client;
+  try {
+    const state = await api.snapshot();
+    if (owner === client) owner?.acceptState(state);
+  } catch (error) {
+    if (owner !== client) return;
+    fail(error);
+    if ([401,403,404].includes(error.status)) { api.forget(); credentialsNeeded(); }
+  }
 }
 async function act(action, body = {}, onSuccess) {
   if (busy || !api.sessionId) return false;
@@ -108,12 +157,11 @@ function render() {
   for (const element of document.querySelectorAll('[data-condition]')) {
     const chosen = element.dataset.condition === trial.condition_id;
     element.setAttribute('aria-pressed', String(chosen));
-    element.querySelector('.choice-mark').textContent = chosen ? '✓' : '+';
   }
   // Keep a student's in-progress correction intact while state updates arrive.
   if (document.activeElement !== $('#prediction') && !$('#prediction').dataset.dirty) $('#prediction').value = snapshot.prediction || '';
   text('#prediction-saved', snapshot.prediction ? 'Prediction saved in your notebook.' : '');
-  text('#save-prediction', snapshot.prediction ? 'Update prediction ↗' : 'Save prediction ↗');
+  text('#save-prediction', snapshot.prediction ? 'Update prediction' : 'Save prediction');
   renderMessages();
   renderProposal();
   renderTask();
@@ -121,6 +169,7 @@ function render() {
   renderSkills();
   renderEvidence();
   renderHistory();
+  if (isDeveloper()) developer.render(mediaReady() ? snapshot : undefined, audio, currentTask());
   controls();
 }
 
@@ -149,6 +198,9 @@ function renderMessages() {
   // Skip identical log rewrites so state heartbeats do not repeat screen-reader announcements.
   const signature = [...turns].map(([key, turn]) => `${key}:${turn.text}:${turn.final}`).join('|');
   if (log.dataset.signature !== signature) { log.replaceChildren(fragment); log.dataset.signature = signature; if (nearBottom) log.scrollTop = log.scrollHeight; }
+  const latest = [...turns.values()].findLast(turn => turn.role === 'assistant');
+  text('#latest-reply', latest?.text);
+  $('#latest-reply').hidden = !latest || $('#history').open;
 }
 function joinTurn(previous, incoming, final) {
   if (final || incoming.startsWith(previous)) return incoming;
@@ -170,11 +222,13 @@ function transcript(frame) {
 function renderProposal() {
   const proposal = snapshot.pending;
   const key = keyFor(proposal);
+  if (key && pendingKey === key && pendingSummary !== proposal.summary) invalidatedProposals.add(key);
+  pendingSummary = proposal?.summary || '';
   if (pendingKey !== key) {
     pendingKey = key; acknowledgedKey = ''; proposalGeneration++;
   }
   $('#proposal').hidden = !proposal;
-  $('#jump-to-proposal').hidden = !proposal;
+  $('#proposal-nav').hidden = !proposal;
   if (!proposal) return;
   text('#proposal-summary', proposal.summary);
   text('#proposal-status', expired(proposal) ? 'This proposal has expired. Send a new request.' : invalidatedProposals.has(key) ? 'Connection changed. Ask for a fresh proposal before confirming.' : acknowledgedKey === key ? 'Reviewed on screen. Ready for your decision.' : 'Displaying the exact proposal before confirmation…');
@@ -192,9 +246,11 @@ function schedulePresentation(force = false) {
     // Require actual viewport visibility, not mere delivery or an off-screen DOM node.
     const rect = $('#proposal-summary').getBoundingClientRect();
     const viewport = window.visualViewport;
-    const top = viewport?.offsetTop || 0;
-    const bottom = Math.min(top + (viewport?.height || innerHeight), $('.voice-dock').getBoundingClientRect().top);
-    if (rect.top < top || rect.bottom > bottom) return;
+    const viewportTop = viewport?.offsetTop || 0;
+    const top = Math.max(viewportTop, $('.masthead').getBoundingClientRect().bottom);
+    const bottom = viewportTop + (viewport?.height || innerHeight);
+    const left = viewport?.offsetLeft || 0;
+    if (rect.top < top || rect.bottom > bottom || rect.left < left || rect.right > left + (viewport?.width || innerWidth)) return;
     attemptedPresentations.add(key);
     try {
       const state = await api.action('present', { request_id: proposal.request_id, proposal_version: proposal.proposal_version, channel: 'text' });
@@ -216,8 +272,7 @@ const taskLabels = {
 const routeLabels = { active_skill: 'Reused an active skill', expert: 'Background expert' };
 
 function renderTask() {
-  const trialId = snapshot.trial?.trial_id;
-  const task = snapshot.tasks?.findLast(item => !item.trial_id || item.trial_id === trialId);
+  const task = currentTask();
   const label = Object.hasOwn(taskLabels, task?.status) ? taskLabels[task.status] : '';
   const question = task?.status === 'needs_clarification';
   const step = task?.feedback?.findLast(event => event.type === 'execution_progress')?.step;
@@ -235,11 +290,12 @@ function renderTask() {
 }
 
 function releaseScene() {
-  if (!sceneView) return;
-  sceneView.controller.abort();
-  for (const url of sceneView.urls) URL.revokeObjectURL(url);
+  sceneView?.controller.abort();
+  for (const url of sceneView?.urls || []) URL.revokeObjectURL(url);
   sceneView = undefined;
   $('#scene-frames').replaceChildren();
+  $('#camera-empty').hidden = false;
+  $('#scene-detail').hidden = true;
 }
 
 async function loadFrame(frame, view, figure, status) {
@@ -273,20 +329,25 @@ function captureTime(value) {
 }
 
 function renderScene() {
+  if (!mediaReady()) return;
   const scene = snapshot.scene;
   const frames = snapshot.scene_images || [];
   const detail = [scene?.summary, provenanceName(scene?.provenance), scene?.fresh === false ? 'Stale scene' : ''].filter(Boolean).join(' · ');
-  $('#scene').hidden = !detail && !frames.length;
   text('#scene-detail', detail);
   const container = $('#scene-frames');
   const signature = JSON.stringify([snapshot.session_id, snapshot.generation,
     frames.map(frame => [frame.evidence_id, frame.captured_at, frame.provenance, frame.sha256, frame.artifact_url, frame.description])]);
-  if (sceneView?.signature === signature) return;
+  if (sceneView?.signature === signature) {
+    $('#scene-detail').hidden = !detail;
+    return;
+  }
   releaseScene();
+  $('#scene-detail').hidden = !detail;
   if (!frames.length) return;
+  $('#camera-empty').hidden = true;
   const view = { signature, controller: new AbortController(), urls: new Set() };
   sceneView = view;
-  container.replaceChildren(...frames.map(frame => {
+  function frameFigure(frame) {
     const figure = document.createElement('figure');
     const caption = document.createElement('figcaption');
     caption.textContent = [provenanceName(frame.provenance), captureTime(frame.captured_at)].filter(Boolean).join(' · ');
@@ -306,9 +367,28 @@ function renderScene() {
     const status = document.createElement('p');
     status.textContent = 'Loading image…';
     figure.append(status, caption);
-    void loadFrame(frame, view, figure, status);
-    return figure;
-  }));
+    const load = () => { void loadFrame(frame, view, figure, status); };
+    return { figure, load };
+  }
+  const primary = frameFigure(frames[0]);
+  container.append(primary.figure);
+  primary.load();
+  if (frames.length > 1) {
+    const details = document.createElement('details');
+    details.className = 'lab-details';
+    const summary = document.createElement('summary');
+    summary.textContent = 'More camera images';
+    details.append(summary);
+    details.addEventListener('toggle', () => {
+      if (!details.open || details.childElementCount > 1 || sceneView !== view) return;
+      for (const frame of frames.slice(1)) {
+        const secondary = frameFigure(frame);
+        details.append(secondary.figure);
+        secondary.load();
+      }
+    });
+    container.append(details);
+  }
 }
 
 function renderSkills() {
@@ -380,10 +460,17 @@ function renderEvidence() {
   if (reference && color) $('#evidence').style.setProperty('--result-color', color);
 }
 function renderHistory() {
-  const observations = snapshot.observations || [];
+  const observations = snapshot?.observations || [];
   text('#history-count', observations.length ? `${observations.length} ${observations.length === 1 ? 'trial' : 'trials'} recorded` : 'No trials yet');
   const container = $('#history-list');
-  if (!observations.length) return;
+  if (!observations.length) {
+    if (container.querySelector('article')) {
+      const empty = document.createElement('p');
+      empty.textContent = 'Observations and related notes will appear here.';
+      container.replaceChildren(empty);
+    }
+    return;
+  }
   const fragment = document.createDocumentFragment();
   for (const [index, observation] of observations.entries()) {
     const entry = document.createElement('article'); entry.className = 'history-item';
@@ -410,38 +497,72 @@ function audioStatus(status) {
   if (wasConnected && connection !== 'connected') {
     if (pendingKey) invalidatedProposals.add(pendingKey);
     acknowledgedKey = ''; proposalGeneration++;
+    releaseScene();
+    developer.release();
     // Incomplete voice fragments must not be carried into a new connection owner.
     for (const [key, turn] of liveTurns) if (!turn.final) liveTurns.delete(key);
-    renderMessages(); renderProposal();
+    renderMessages();
+    if (snapshot) renderProposal();
   }
-  text('#connection-label', { connected:'Notebook connected',connecting:'Connecting notebook',reconnecting:'Reconnecting notebook',offline:'Notebook paused' }[connection]);
+  text('#connection-label', { connected:'Connected', connecting:'Connecting', reconnecting:'Reconnecting', offline:'Offline' }[connection]);
   $('#connection-dot').classList.toggle('online', connection === 'connected');
   text('#mic-state', status.muted && status.voiceOn ? 'Mic muted' : {off:'Mic off',requesting:'Mic permission',ready:'Mic ready',denied:'Mic blocked',error:'Mic unavailable'}[status.mic] || 'Mic off');
-  text('#provider-state', { off:'Voice off',unavailable:'Voice unavailable',connecting:'Voice connecting',connected:'Voice ready',listening:'Voice listening',speaking:'Voice responding',reconnecting:'Voice reconnecting',muted:'Voice muted' }[status.provider] || 'Voice waiting');
-  text('#playback-state', { idle:'Speaker idle',queued:'Speaker queued',playing:'Speaker playing',error:'Speaker unavailable' }[status.playback]);
-  const title = connection !== 'connected' ? connection === 'reconnecting' ? 'Reconnecting your notebook…' : 'Your notebook is reconnecting.' : status.muted && status.voiceOn ? 'Muted. Take your time.' : status.playback === 'playing' ? 'Your companion is speaking.' : status.voiceOn ? status.provider === 'listening' ? 'Listening. Follow your curiosity.' : 'Connecting your voice…' : status.mic === 'denied' ? 'Your microphone needs permission.' : status.provider === 'unavailable' ? 'Keep exploring with text.' : 'Your companion, a tap away.';
+  const provider = { off:'Voice off', unavailable:'Voice unavailable', connecting:'Voice connecting', connected:'Voice ready', listening:'Voice listening', speaking:'Voice responding', reconnecting:'Voice reconnecting', muted:'Voice muted' }[status.provider] || 'Voice waiting';
+  const playback = { idle:'Speaker idle', queued:'Speaker queued', playing:'Speaker playing', error:'Speaker unavailable' }[status.playback];
+  text('#provider-state', provider);
+  text('#playback-state', playback);
+  const voiceStatus = {
+    off:'Ready to talk', unavailable:'Voice unavailable', connecting:'Connecting voice',
+    connected:'Voice ready', listening:'Listening', speaking:'Responding', reconnecting:'Reconnecting voice', muted:'Microphone muted',
+  };
+  const title = connection !== 'connected' ? $('#connection-label').textContent
+    : status.mic === 'requesting' ? 'Allow microphone access'
+    : status.mic === 'denied' ? 'Microphone blocked'
+    : status.mic === 'error' ? 'Microphone unavailable'
+    : status.voiceOn && status.muted ? 'Microphone muted'
+    : status.playback === 'playing' ? 'Speaking'
+    : voiceStatus[status.provider] || 'Voice waiting';
   text('#voice-title', title);
-  text('#voice-detail', status.detail || (status.voiceOn ? 'Ask, predict, or change your mind.' : 'Voice is optional. Your notebook is always here.'));
+  const showDetail = status.detail && (connection !== 'connected' || ['error','denied'].includes(status.mic) || ['unavailable','reconnecting'].includes(status.provider) || status.playback === 'error' || (!status.voiceOn && status.mic === 'off'));
+  text('#voice-detail', showDetail ? status.detail : '');
+  $('#voice-detail').hidden = !showDetail;
   text('#mute', status.muted ? 'Unmute' : 'Mute');
   $('#mute').hidden = !status.voiceOn;
   $('#mute').setAttribute('aria-pressed', String(status.muted));
-  $('#voice-end').hidden = !status.voiceOn;
   $('#interrupt').hidden = !['queued','playing'].includes(status.playback);
+  $('#voice-options').hidden = !status.voiceOn;
   $('#voice-toggle').disabled = status.mic === 'requesting' || connection !== 'connected';
-  $('#voice-toggle').setAttribute('aria-label', status.voiceOn ? status.muted ? 'Unmute voice' : 'Mute voice' : status.mic === 'denied' ? 'Retry microphone' : 'Start voice');
-  $('#voice-request').disabled = $('#voice-toggle').disabled;
-  text('#voice-request', status.voiceOn ? status.muted ? 'Unmute microphone' : 'Mute microphone' : 'Speak a request');
-  $('.voice-dock').dataset.voiceOn = String(status.voiceOn);
-  $('.voice-dock').dataset.speaking = String(status.playback === 'playing');
+  text('#voice-label', status.voiceOn ? 'End voice' : status.mic === 'denied' ? 'Retry microphone' : 'Talk');
+  $('#voice-toggle').dataset.active = String(status.voiceOn);
+  audio = { status: [provider, playback].join(' · '), model: status.model, provider: status.providerName };
+  if (isDeveloper()) developer.audio(audio, snapshot, currentTask());
   controls();
-  if (connection === 'connected') schedulePresentation();
+  if (connection === 'connected') {
+    renderScene();
+    if (isDeveloper() && mediaReady()) developer.render(snapshot, audio, currentTask());
+    schedulePresentation();
+  }
 }
 
+function focusComposer() {
+  $('#typing').open = true;
+  $('#message').focus();
+}
+
+$('#view-link').onclick = event => {
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.button !== 0) return;
+  event.preventDefault();
+  history.pushState(null, '', $('#view-link').href);
+  showRoute();
+};
+window.addEventListener('popstate', showRoute);
+$('#history').addEventListener('toggle', renderMessages);
 $('#pairing').addEventListener('submit', event => { event.preventDefault(); boot($('#pairing-code').value.trim()); });
 $('#dismiss-notice').onclick = () => { $('#notice').hidden = true; };
 $('#reconnect').onclick = async () => {
   if (!api.sessionId) return boot();
-  await resync(); client?.reconnect();
+  await resync();
+  client?.reconnect();
 };
 $('#conditions').addEventListener('click', event => {
   const button = event.target.closest('[data-condition]');
@@ -457,7 +578,7 @@ $('#message-form').onsubmit = async event => {
   await act('request', { text: value, client_request_id: crypto.randomUUID() }, () => { $('#message').value = ''; });
 };
 $('#message').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); $('#message-form').requestSubmit(); } };
-$('#answer-clarification').onclick = () => $('#message').focus();
+$('#answer-clarification').onclick = focusComposer;
 $('#confirm').onclick = () => {
   if ($('#confirm').disabled) return;
   const proposal = snapshot.pending;
@@ -478,8 +599,7 @@ $('#new-trial').onclick = async () => {
     render();
   });
   if (prepared) {
-    $('#message').focus({ preventScroll: true });
-    $('#workspace').scrollIntoView({ block: 'start' });
+    focusComposer();
   }
 };
 async function stop() {
@@ -495,19 +615,19 @@ $('#stop').onclick = stop;
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !event.isComposing) stop(); });
 function toggleVoice() {
   if (!client) return;
-  if (client.status.voiceOn) client.setMuted(!client.status.muted); else client.startVoice();
+  if (client.status.voiceOn) client.stopVoice(); else client.startVoice();
 }
 $('#voice-toggle').onclick = toggleVoice;
-$('#voice-request').onclick = toggleVoice;
 $('#mute').onclick = () => client?.setMuted(!client.status.muted);
-$('#voice-end').onclick = () => client?.stopVoice();
 $('#interrupt').onclick = () => client?.interrupt();
 // Scrolling or returning to a foreground tab can make a proposal truly visible.
 window.addEventListener('scroll', () => schedulePresentation(), { passive:true });
 window.addEventListener('resize', () => schedulePresentation(), { passive:true });
 window.visualViewport?.addEventListener('resize', () => schedulePresentation(), { passive: true });
+window.visualViewport?.addEventListener('scroll', () => schedulePresentation(), { passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) schedulePresentation(); });
 setInterval(() => { controls(); if (snapshot?.pending && expired(snapshot.pending)) text('#proposal-status','This proposal has expired. Send a new request.'); }, 1000);
-window.addEventListener('pagehide', () => { releaseScene(); client?.close(); });
+window.addEventListener('pagehide', () => { releaseScene(); developer.release(); client?.close(); });
 window.addEventListener('pageshow', event => { if (event.persisted) boot(); });
+showRoute();
 boot();
