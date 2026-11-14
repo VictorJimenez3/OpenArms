@@ -12,8 +12,8 @@
     <key>CFBundleShortVersionString</key><string>1.0</string>
     <key>CFBundleVersion</key><string>1</string>
     <key>LSRequiresIPhoneOS</key><true/>
-    <key>NSMicrophoneUsageDescription</key><string>Speak to the OpenArms relay while a voice session is listening.</string>
-    <key>NSLocalNetworkUsageDescription</key><string>Connect to the OpenArms voice relay on your Mac over local Wi-Fi.</string>
+    <key>NSMicrophoneUsageDescription</key><string>Talk with OpenArms when you enable voice.</string>
+    <key>NSLocalNetworkUsageDescription</key><string>Connect to an OpenArms lab server on your local network.</string>
     <key>NSAppTransportSecurity</key>
     <dict><key>NSAllowsLocalNetworking</key><true/></dict>
     <key>UIApplicationSceneManifest</key>

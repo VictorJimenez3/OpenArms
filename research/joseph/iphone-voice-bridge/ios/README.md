@@ -1,17 +1,28 @@
-# OpenArms Voice iOS prototype (issue #3)
+# OpenArms iPhone client
 
-iOS 17+ SwiftUI client implementing the [voice protocol](../PROTOCOL.md). Open `OpenArmsVoice.xcodeproj` in full Xcode, select the OpenArmsVoice scheme and your iPhone, set your Team under Signing & Capabilities, and choose a unique bundle identifier if needed. Automatic signing is configured; no team or credentials are included. Enable Developer Mode and trust the Mac when prompted, then Run.
+The iOS 17+ SwiftUI app connects to the canonical OpenArms lab gateway. The red-cabbage pH investigation is one demonstration. Use **Lab connection** to enter the gateway's HTTPS origin and the pairing code if the host requires one. A Debug build can opt into local HTTP for trusted development hosts. USB debugging does not provide a route to the lab gateway.
 
-Start session requests microphone access and connects to the configured relay. Allow Local Network access when iOS asks. The settings sheet accepts `ws://MAC-HOST.local:8765/voice` (replace MAC-HOST), or a hostname. Use the relay's LAN binding and the same trusted Wi-Fi. USB is used for installation/debugging; it does not automatically forward this WebSocket service. Start the relay using its [README](../relay/README.md) first.
+The app restores a private session from Keychain and opens the gateway's version 1 session WebSocket. **Talk with OpenArms** requests microphone permission and starts continuous voice. The phone sends 16 kHz mono PCM16 input and plays 24 kHz mono PCM16 replies. It acknowledges a reply only after the server ends it and AVAudioPlayerNode reports playback of all scheduled buffers. The audio frame epoch follows accepted session generations. A generation change clears queued audio and unfinished input before capture resumes. Text and the notebook remain available while voice is off or unavailable.
 
-The single screen exposes Start, Mute/Unmute and End with large controls, Dynamic Type, VoiceOver labels and state announcements. Capture runs only when listening. Audio is converted to mono 16 kHz signed little-endian PCM16. One bounded FIFO orders audio and controls; mute stops capture and invalidates/discards queued audio. Complete PCM WAV replies play once and are acknowledged on completion, including while muted. Disconnect, end, backgrounding and audio interruption stop capture/playback and invalidate the session. Start creates fresh transport and state. An already in-flight WebSocket send cannot be recalled.
+The task card shows server-reported progress, clarification, or failure, with a cancel action for an active task. Reply to a clarification through normal conversation. Exact proposal previews use the server's presentation and confirmation endpoints. Scene evidence displays capture time, provenance and identifiers when supplied. Controller receipts and independent observations have separate displays. Reusable skill versions, lifecycle and evaluation decisions appear when supplied by the gateway. Absent records are omitted. The current scene image contract supplies artifact metadata. Displaying image bytes in the iPhone app requires a gateway delivery contract for those artifacts.
 
-Local Network authorization has no reliable directly queried status here: connection failures show permission/network recovery instructions and an app Settings link. Microphone denial has its own recovery path. The app stores the endpoint preference, but does not write transcript/audio files. Active transcript and raw audio logging are indicated on the call screen and in the developer sheet. Replies are simulated dialogue, not robot execution.
+## Offline verification
 
-Run `bash Checks/check.sh` for portable protocol/capture/FIFO/WAV checks, plist/project validation and Swift syntax parsing. On 2026-11-13 these passed (100 checks). These checks do not typecheck UIKit/AVFoundation against an iOS SDK. Update November 14: a Personal Team device build, installation and launch on the physical iPhone 15 Plus succeeded. Initial live speech and reply playback acknowledgements were observed; final intent-flow, mute/reconnect, acoustic quality and VoiceOver checks remain in the [human checklist](../../mandarin-transfer-handoff.md#human-to-do).
-
-With Xcode installed, build without signing first:
+Run the portable streaming test suite and project validation:
 
 ```sh
-xcodebuild -project OpenArmsVoice.xcodeproj -scheme OpenArmsVoice -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+bash Checks/check.sh
 ```
+
+The XCTest suite replaces the older relay WAV and turn-gating checks with streaming PCM, generation changes, ordered controls, stale callback rejection, playback acknowledgments and optional session record fixtures.
+
+With full Xcode installed, compile for simulator and device without signing:
+
+```sh
+xcodebuild -project OpenArmsVoice.xcodeproj -scheme OpenArmsVoice \
+  -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+xcodebuild -project OpenArmsVoice.xcodeproj -scheme OpenArmsVoice \
+  -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+```
+
+A signed deployment and audible rehearsal on an iPhone are tracked separately. The current assignment covers portable tests and simulator/device compilation. [Architecture delivery #19](https://github.com/VictorJimenez3/OpenArms/issues/19) · [Shared interface #9](https://github.com/VictorJimenez3/OpenArms/issues/9) · [Software loop #10](https://github.com/VictorJimenez3/OpenArms/issues/10) · [iPhone connectivity #4](https://github.com/VictorJimenez3/OpenArms/issues/4)
