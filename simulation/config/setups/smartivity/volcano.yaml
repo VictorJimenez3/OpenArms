@@ -1,0 +1,36 @@
+source:
+  publisher: Smartivity
+  booklet: My First Science Kit
+  experiment: Erupting Volcano
+  pages: [26, 27]
+  reference: https://app.notion.com/p/41871c9c107e811a8392c59985243573
+preparation:
+  beaker:
+    water_ml: 15
+    citric_acid_kit_spoons: 4
+    liquid_soap_drops: 6
+    stir_count: 32
+  flask:
+    water_ml: 30
+    baking_soda_kit_spoons: 4
+    red_colour_drops: 4
+    stir_count: 32
+  sequence: Preload both mixtures, with the flask in its tray. Quickly pour the beaker into the flask.
+model:
+  beaker_xy_m: [0.265, 0.133]
+  flask_xy_m: [0.270, -0.086]
+  table_centre_m: [0.245, 0.0]
+  beaker_grasp_height_m: 0.026
+  beaker_dock_height_m: 0.003
+  lift_m: 0.108
+  flask_base_m: 0.004
+  flask_internal_profile_mm: [[2, 32], [10, 32], [49, 12], [71, 12]]
+  flask_wall_mm: 1.6
+  tip_deg: 119
+  lip_clearance_m: 0.030
+  max_flow_ml_s: 55
+  min_delivered_fraction: 0.83
+  variation:
+    position_m: 0.0015
+    water_fill_fraction: 0.05
+    camera_deg: 2
