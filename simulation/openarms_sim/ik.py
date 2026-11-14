@@ -87,8 +87,9 @@ def make_poses(scene: Scene) -> tuple[dict[str, list[float]], dict[str, float]]:
 
     for s in b.sources + b.points:
         x, y = b.stations[s].pos
-        grasp = add(f"GRASP_{s}", [x, y, b.grasp_height], 0.0)
-        above = add(f"ABOVE_{s}", [x, y, b.grasp_height + b.lift], 0.0, seed=grasp)
+        grip_height = b.grasp_height + b.dock_height
+        grasp = add(f"GRASP_{s}", [x, y, grip_height], 0.0)
+        above = add(f"ABOVE_{s}", [x, y, grip_height + b.lift], 0.0, seed=grasp)
         poses[f"LIFT_{s}"], errors[f"LIFT_{s}"] = list(poses[f"ABOVE_{s}"]), errors[f"ABOVE_{s}"]
         del above
 
@@ -105,7 +106,7 @@ def make_poses(scene: Scene) -> tuple[dict[str, list[float]], dict[str, float]]:
             # Cup axis after rolling about the approach axis.
             axis = math.cos(theta) * UP + direction * math.sin(theta) * np.cross(approach, UP)
             g = np.array([rx, ry, 0.0]) - mouth * np.array([axis[0], axis[1], 0.0])
-            g[2] = b.receiver_height + b.pour_clearance - mouth * axis[2]
+            g[2] = b.dock_height + b.receiver_height + b.pour_clearance - mouth * axis[2]
             q_tip, e_tip = solve(scene, g, roll)
             q_above, e_above = solve(scene, g, 0.0, seed=[*q_tip[:4], 0.0])
             score = e_tip + e_above

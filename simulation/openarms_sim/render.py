@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .player import Player
 
 WIDTH, HEIGHT = 640, 480
+OVERVIEW_WIDTH, OVERVIEW_HEIGHT = 800, 608
 
 
 def _font(size: int):
@@ -23,8 +24,15 @@ def _font(size: int):
     return ImageFont.load_default()
 
 
-def camera() -> mujoco.MjvCamera:
+def camera(bench=None, *, shifted=False) -> mujoco.MjvCamera:
     cam = mujoco.MjvCamera()
+    if bench and bench.camera:
+        config = bench.camera
+        cam.lookat[:] = config.lookat
+        cam.distance = config.distance
+        cam.azimuth = config.azimuth + (config.shift_azimuth_deg if shifted else 0)
+        cam.elevation = config.elevation
+        return cam
     cam.lookat[:] = [0.22, 0.0, 0.08]
     cam.distance = 0.95
     cam.azimuth = 180  # looking back at the arm from the far side of the bench
@@ -40,7 +48,7 @@ class VideoRecorder:
         self.show_blocks = show_blocks  # off for recordings of the real arm, where nothing is being vetted
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._renderer = mujoco.Renderer(scene.model, HEIGHT, WIDTH)
-        self._camera = camera()
+        self._camera = camera(scene.bench)
         # Play faster than real time by keeping only every `speed`-th frame.
         self._keep_every = max(1, round(speed))
         self._seen = 0
@@ -83,3 +91,10 @@ def snapshot(scene, path: Path) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     imageio.imwrite(str(path), renderer.render())
     renderer.close()
+
+
+def overview_image(scene, path: Path, *, shifted=False) -> None:
+    with mujoco.Renderer(scene.model, OVERVIEW_HEIGHT, OVERVIEW_WIDTH) as renderer:
+        renderer.update_scene(scene.data, camera(scene.bench, shifted=shifted))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(renderer.render()).save(path, format="PNG")
