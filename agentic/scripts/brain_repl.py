@@ -11,20 +11,37 @@ from agentic.openarms_agent.mock_arm import MockArm
 from agentic.openarms_agent.validator import validate
 
 ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_STATIONS = ROOT / "agentic/contracts/stations.example.json"
+MOVING_OBJECTIVE = "Move the object between the marked points, one move at a time, as the student asks."
 
 
-def pose_arm(port: str | None, poses: str, fake_robot: bool):
+def objective_for(stations: dict) -> str | None:
+    """A bench made only of points is a moving task; anything else keeps the brain's default objective."""
+    return MOVING_OBJECTIVE if all(s.get("kind") == "point" for s in stations.values()) else None
+
+
+def make_brain(arm, stations: dict) -> Brain:
+    objective = objective_for(stations)
+    extra = {"objective": objective} if objective else {}
+    return Brain(f"repl-{int(time.time())}", stations=stations, arm=arm, **extra)
+
+
+def pose_arm(port: str | None, poses: str, fake_robot: bool, stations_path: str | Path = DEFAULT_STATIONS,
+             seconds: float = 1.5):
     # firmware is imported only here, so the default MockArm path never needs it
     from firmware.openarms_executor.pose_arm import PoseArm
     from firmware.openarms_executor.poses import load_poses
     from firmware.openarms_executor.robot import connect
-    stations = json.loads((ROOT / "agentic/contracts/stations.example.json").read_text())
+    stations = json.loads(Path(stations_path).read_text())
     if not Path(poses).exists():
         raise SystemExit(f"No pose file at {poses}: record poses first (record_pose) or pass --poses.")
     saved = load_poses(poses)  # load before connecting so a bad file never leaves the arm connected
-    if input("Is the arm at HOME, every source cup full and in its holder? y/n> ").strip().lower() != "y":
-        raise SystemExit("Set up the bench first: PoseArm assumes it starts at HOME with full cups.")
-    return PoseArm(connect(fake_robot, port), saved, stations), stations
+    moving = objective_for(stations) is not None
+    ready = ("Is the arm at HOME and every object on its starting point? y/n> " if moving
+             else "Is the arm at HOME, every source cup full and in its holder? y/n> ")
+    if input(ready).strip().lower() != "y":
+        raise SystemExit("Set up the bench first: PoseArm assumes it starts at HOME with the bench as the stations file says.")
+    return PoseArm(connect(fake_robot, port), saved, stations, seconds=seconds), stations
 
 
 def approve(plan, brain: Brain):
@@ -64,6 +81,8 @@ def main(brain: Brain | None = None) -> None:
                 print(f"brain error ({type(e).__name__}: {e}); say that again")
                 continue
             print(f"brain [{reply['status']}]> {reply['text']}")
+            if brain.budget is not None:
+                print(f"  (api: ${brain.budget.last_usd:.3f} last call, {brain.budget.summary()})")
             if reply["status"] != "awaiting_teacher":
                 continue
             print("teacher sees:", json.dumps(expand(reply["plan"])))
@@ -86,11 +105,17 @@ if __name__ == "__main__":
     ap.add_argument("--fake-robot", action="store_true", help="PoseArm on a FakeRobot: the --real path without hardware")
     ap.add_argument("--port", help="follower serial port, from lerobot-find-port")
     ap.add_argument("--poses", default=str(ROOT / "firmware/openarms_executor/poses.json"))
+    ap.add_argument("--stations", default=str(DEFAULT_STATIONS),
+                    help="bench layout; agentic/contracts/stations.block.example.json is one block on points A and B")
+    ap.add_argument("--seconds", type=float, default=1.5, help="time per arm move; raise it for a slow first run")
     a = ap.parse_args()
     if a.port and not a.real:
         raise SystemExit("--port only makes sense with --real; without it nothing moves.")
     if a.real or a.fake_robot:
-        arm, stations = pose_arm(a.port, a.poses, fake_robot=not a.real)
-        main(Brain(f"repl-{int(time.time())}", stations=stations, arm=arm))
+        arm, stations = pose_arm(a.port, a.poses, fake_robot=not a.real, stations_path=a.stations, seconds=a.seconds)
+        main(make_brain(arm, stations))
+    elif Path(a.stations).resolve() != DEFAULT_STATIONS.resolve():
+        stations = json.loads(Path(a.stations).read_text())
+        main(make_brain(MockArm(stations), stations))
     else:
         main()

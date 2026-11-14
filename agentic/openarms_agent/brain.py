@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from .budget import Budget, BudgetExceeded
 from .mock_arm import MockArm
 from .notebook import Notebook
 from .prompting import render_system_prompt
@@ -32,11 +33,13 @@ def _load_key() -> str:
 
 class Brain:
     def __init__(self, session_id: str, stations: Optional[dict[str, Station]] = None, arm: Optional[ArmPort] = None,
-                 objective: str = DEFAULT_OBJECTIVE, client=None):
+                 objective: str = DEFAULT_OBJECTIVE, client=None, budget: Optional[Budget] = None):
         if stations is None:
             stations = json.loads((AGENTIC / "contracts" / "stations.example.json").read_text())
         self.session = Session(session_id, stations, arm if arm is not None else MockArm(), Notebook(session_id))
         self.objective, self._client = objective, client
+        # A real client always gets a spending cap. An injected client (tests) gets one only if asked.
+        self.budget = budget
         self.messages: list[dict] = []
         self._notes: list[str] = []  # lab events waiting to ride along with the next student turn
 
@@ -45,7 +48,19 @@ class Brain:
         if self._client is None:  # lazy, so stop words and notify work without a key
             import anthropic
             self._client = anthropic.Anthropic(api_key=_load_key())
+            if self.budget is None:
+                self.budget = Budget()
         return self._client
+
+    def _create(self, **kw):
+        """One API call, refused if the spending cap is reached and counted against it afterwards."""
+        client = self.client  # creates the real client, and with it the budget, on first use
+        if self.budget is not None:
+            self.budget.check()
+        resp = client.messages.create(**kw)
+        if self.budget is not None:
+            self.budget.record(kw["model"], getattr(resp, "usage", None))
+        return resp
 
     def _reply(self, turn_id: str, text: str, status: str, plan=None) -> TurnReply:
         stage = "experiment" if self.session.predicted else "pre_lab"
@@ -64,9 +79,16 @@ class Brain:
         self._add_user("\n".join(self._notes + [text]))
         self._notes = []
         for _ in range(MAX_TOOL_ROUNDS):
-            resp = self.client.messages.create(
-                model=MODEL, max_tokens=16000, tools=TOOLS, messages=self.messages,
-                system=render_system_prompt(s.stations, s.arm.state(), self.objective))
+            try:
+                resp = self._create(
+                    model=MODEL, max_tokens=16000, tools=TOOLS, messages=self.messages,
+                    system=render_system_prompt(s.stations, s.arm.state(), self.objective))
+            except BudgetExceeded as e:
+                # the history must not end on an unanswered student turn, or the next call would repeat it
+                s.notebook.add("result", status="budget_exceeded", text=str(e))
+                print(f"[budget] {e}")
+                return self._reply(turn_id, "I have to pause here. The lab's thinking budget is used up, "
+                                            "so please tell your teacher.", "reply")
             # append the whole content so thinking blocks go back unchanged
             self.messages.append({"role": "assistant", "content": resp.content})
             cut = resp.stop_reason != "tool_use"  # e.g. max_tokens: the tool input may be incomplete
