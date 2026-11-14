@@ -1,0 +1,20 @@
+{
+  "start": {
+    "shoulder_pan.pos": -3.032967032967033,
+    "shoulder_lift.pos": 6.769230769230769,
+    "elbow_flex.pos": 26.021978021978022,
+    "wrist_flex.pos": 76.3956043956044,
+    "wrist_roll.pos": -93.23076923076923,
+    "gripper.pos": 90.92592592592592
+  },
+  "close_command": 23.5947258848022,
+  "closed_reading": 25.617283950617285,
+  "after_lift": {
+    "shoulder_pan.pos": -1.1868131868131868,
+    "shoulder_lift.pos": 12.835164835164836,
+    "elbow_flex.pos": 16.967032967032967,
+    "wrist_flex.pos": 77.01098901098901,
+    "wrist_roll.pos": -93.49450549450549,
+    "gripper.pos": 25.37037037037037
+  }
+}

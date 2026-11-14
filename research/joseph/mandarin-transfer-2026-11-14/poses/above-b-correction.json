@@ -1,0 +1,36 @@
+{
+  "t": 2749831.867769541,
+  "event": "sample",
+  "leader": {
+    "shoulder_pan.pos": -18.32967032967033,
+    "shoulder_lift.pos": -8.175824175824175,
+    "elbow_flex.pos": 14.461538461538462,
+    "wrist_flex.pos": 75.56043956043956,
+    "wrist_roll.pos": -93.93406593406593,
+    "gripper.pos": 17.002081887578072
+  },
+  "command": {
+    "shoulder_pan.pos": -29.75824175824175,
+    "shoulder_lift.pos": 1.0549450549450583,
+    "elbow_flex.pos": 13.890109890109878,
+    "wrist_flex.pos": 77.01098901098901,
+    "wrist_roll.pos": -93.3186813186813,
+    "gripper.pos": 23.5947258848022
+  },
+  "sent": {
+    "shoulder_pan.pos": -29.75824175824175,
+    "shoulder_lift.pos": 1.0549450549450583,
+    "elbow_flex.pos": 13.890109890109878,
+    "wrist_flex.pos": 77.01098901098901,
+    "wrist_roll.pos": -93.3186813186813,
+    "gripper.pos": 23.5947258848022
+  },
+  "state": {
+    "shoulder_pan.pos": -29.846153846153847,
+    "shoulder_lift.pos": 3.6923076923076925,
+    "elbow_flex.pos": 16.0,
+    "wrist_flex.pos": 76.92307692307692,
+    "wrist_roll.pos": -93.23076923076923,
+    "gripper.pos": 25.37037037037037
+  }
+}

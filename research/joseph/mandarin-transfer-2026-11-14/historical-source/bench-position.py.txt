@@ -1,0 +1,100 @@
+import argparse, json, math, os, subprocess
+from pathlib import Path
+
+from firmware.openarms_executor.motion import move_to
+from firmware.openarms_executor.poses import GRIPPER, load_poses
+from firmware.openarms_executor.robot import connect
+
+parser = argparse.ArgumentParser()
+parser.add_argument("stage", choices=("hover", "probe", "grasp", "lift", "raise", "lower", "carry", "drop", "place", "home"))
+parser.add_argument("--pan", type=float, default=0)
+parser.add_argument("--reach", type=float, default=0)
+a = parser.parse_args()
+if not math.isfinite(a.pan) or abs(a.pan) > 8 or not math.isfinite(a.reach) or abs(a.reach) > 5:
+    raise SystemExit("offset outside trial bounds")
+port = "/dev/cu.usbmodem5B7B0148501"
+if subprocess.run(["lsof", port, port.replace("/cu.","/tty.")], capture_output=True).returncode == 0:
+    raise SystemExit("Follower port in use.")
+data = load_poses("outputs/mandarin-bench/bench-a.json")
+p, g = data["poses"], data["gripper"]
+pan, lift, elbow = "shoulder_pan.pos", "shoulder_lift.pos", "elbow_flex.pos"
+hover = {**p["ABOVE_A"], pan:p["ABOVE_A"][pan]+a.pan, lift:p["ABOVE_A"][lift]+a.reach, elbow:p["ABOVE_A"][elbow]-a.reach}
+grasp = {**p["GRASP_A"], pan:p["GRASP_A"][pan]+a.pan, lift:p["GRASP_A"][lift]+a.reach, elbow:p["GRASP_A"][elbow]-a.reach}
+raised = {**hover, lift:hover[lift]-6.4, elbow:hover[elbow]-.8, "wrist_flex.pos":hover["wrist_flex.pos"]+5.3}
+arm = connect(False, port)
+try:
+    obs=arm.get_observation()
+    def near(target, tol=5):
+        return max(abs(obs[k]-v) for k,v in target.items())<=tol
+    def checked_move(target,seconds=3):
+        for key, value in target.items():
+            if key == GRIPPER:
+                if not 0 <= value <= 100:
+                    raise ValueError("gripper target out of bounds")
+                continue
+            cal=arm.calibration[key.removesuffix(".pos")]
+            limit=(cal.range_max-cal.range_min)*180/4095
+            if abs(value)>limit:
+                raise ValueError(f"out of range: {key}")
+        move_to(arm,target,seconds=seconds,nudges=0,tol=4 if a.stage == "carry" else 3)
+    if a.stage == "hover":
+        if not near(p["HOME"]):
+            raise SystemExit("Start from HOME")
+        moves = [] if abs(obs[GRIPPER]-g["open"]) < 1 else [({GRIPPER:g["open"]},2)]
+        moves += [(p["ABOVE_A"],3),(hover,2)] if a.pan or a.reach else [(hover,3)]
+    elif a.stage == "probe":
+        if not near(p["ABOVE_A"],13):
+            raise SystemExit("Start near ABOVE_A")
+        moves=[(hover,2)]
+    elif a.stage == "grasp":
+        if not near(hover):
+            raise SystemExit("Start at shifted hover")
+        moves=[(grasp,3)]
+    elif a.stage == "lift":
+        if not near(grasp):
+            raise SystemExit("Start at shifted grasp")
+        moves=[({GRIPPER:g["cup"]},2),(hover,3)]
+    elif a.stage == "raise":
+        if not near(hover, 4):
+            raise SystemExit("Start at shifted hover")
+        moves=[(raised,3)]
+    elif a.stage == "lower":
+        if not near(raised,4):
+            raise SystemExit("Start at raised pose")
+        moves=[(hover,3)]
+    elif a.stage == "carry":
+        if not near(raised, 5):
+            raise SystemExit("Start at raised pose")
+        above_b = p["ABOVE_B"]
+        high_b = {**above_b, lift:above_b[lift]-6.4, elbow:above_b[elbow]-.8, "wrist_flex.pos":above_b["wrist_flex.pos"]+5.3}
+        moves=[(high_b,5)]
+    elif a.stage == "drop":
+        above_b = p["ABOVE_B"]
+        high_b = {**above_b, lift:above_b[lift]-6.4, elbow:above_b[elbow]-.8, "wrist_flex.pos":above_b["wrist_flex.pos"]+5.3}
+        if not near(high_b, 5):
+            raise SystemExit("Start at raised B")
+        moves=[(above_b,3),(p["GRASP_B"],3),({GRIPPER:g["open"]},2),(above_b,3),(p["HOME"],4)]
+    elif a.stage == "place":
+        if not near(hover):
+            raise SystemExit("Start at shifted hover")
+        moves=[(p["ABOVE_B"],4),(p["GRASP_B"],3),({GRIPPER:g["open"]},2),(p["ABOVE_B"],3),(p["HOME"],4)]
+    else:
+        if near(grasp):
+            moves=[(hover,3)]
+        elif near(p["ABOVE_A"],13):
+            moves=[]
+        else:
+            raise SystemExit("No recognized return start")
+        moves += [({GRIPPER:g["open"]},2),(p["ABOVE_A"],2),(p["HOME"],4)]
+    try:
+        for target,seconds in moves:
+            checked_move(target,seconds)
+    except BaseException:
+        latest=arm.get_observation()
+        arm.send_action({k:latest[k] for k in p["HOME"]})
+        raise
+    final=arm.get_observation()
+    receipt={"stage":a.stage,"pan_offset":a.pan,"reach_offset":a.reach,"start":obs,"targets":[t for t,_ in moves],"final":final}
+    print(json.dumps(receipt),flush=True)
+finally:
+    arm.disconnect()

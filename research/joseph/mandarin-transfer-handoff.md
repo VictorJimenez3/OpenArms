@@ -2,6 +2,8 @@
 
 Updated November 14, 2026. Current scope: phone, intent-based planning, confirmation, logging, and a replaceable execution runner. Simulation is deferred.
 
+**Separate physical bench result:** The SO-101 successfully picked up the mandarin from C and placed it at B on November 14. The [committed poses, logs and images](mandarin-transfer-2026-11-14/README.md) record that camera-assisted staged run. The phone/software checks below have narrower scope; they do not mean the robot has never moved.
+
 ## Run the demo
 
 From the repository root:
@@ -33,16 +35,16 @@ Each `s-<uuid>/` contains `events.jsonl` and `<turn_id>-student.wav` / `<turn_id
 
 ## Next steps
 
-1. Teammate pushes the robotics implementation. Connect its zero-argument runner factory with `--runner module:create_runner`; follow [the runner contract](../../docs/INTERFACES.md#robotics-runner-handoff). Default execution remains mocked until this explicit selection.
+1. The physical transfer runner and later high-carry option are in `firmware/openarms_executor/transfer_runner.py`. Connect its zero-argument runner factory with `--runner module:create_runner`; follow [the runner contract](../../docs/INTERFACES.md#robotics-runner-handoff). Default execution remains mocked until this explicit selection.
 2. Have the runner obtain operator approval for the exact plan ID, validate the local station/motion configuration, execute once, stop on cancellation, and report status plus observed placement. Do not infer placement from command completion.
 3. Run the runner contract tests against that adapter, then one complete phone-to-physical trial. Check cancel, rejected operator approval, and stop behavior before the demo.
-4. Record actual placement, failures, latency, and whether the operator had to intervene. Only then describe physical execution as verified.
+4. Record actual placement, failures, latency, and whether the operator had to intervene. Only then describe the complete voice-to-physical route as verified; the separate staged bench transfer is already observed.
 5. Revisit the simulator and broader [research to-do](TODO.md) after the command-to-robot test works.
 
 ## Human to-do
 
 - [ ] On the phone, run one fresh natural-language request, confirm, hear the result, then test cancel in a new session. Toggle mute and End/Start once. Keep the Mac and phone on a reachable trusted network.
 - [ ] Check the new session folder for the student WAV, reply WAVs, and matching plan/result IDs. Listen to the retained student clip to assess microphone quality.
-- [ ] With the robotics teammate, connect the SO-101 and verify its calibration, taught grasp/lift/place/retreat, local limits, and physical stop. No arm was connected in this software session.
+- [ ] With the robotics teammate, connect the SO-101 and verify its calibration, taught grasp/lift/place/retreat, local limits, and physical stop. No arm was connected in the earlier phone/software session; the later physical bench session is documented in the evidence bundle above.
 - [ ] Mark A/B with the actual mandarin; record the fixed origin, coordinate frame, units, and measured positions for the physical routine. No invented coordinates or 3D scan is needed for the current test.
 - [ ] Authorize and observe the first complete voice-to-physical transfer; record where the mandarin actually lands.
