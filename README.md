@@ -8,17 +8,18 @@ Mandarin transfer is historical hardware evidence, not a student experiment. A s
 
 ## Where to start
 
-Pull `main`, create a branch for your work, and start in your area. Ownership is provisional.
+Start in your own Git worktree and task branch. The table lists provisional contacts. Agree on the specific paths when a task spans areas.
 
-| Code | Owner | Research |
+| Code | First contact | Research |
 | --- | --- | --- |
 | [`firmware/`](firmware/) | Joseph | [`research/joseph/`](research/joseph/) |
 | [`simulation/`](simulation/) | Stefanie | [`research/stefanie/`](research/stefanie/) |
 | [`agentic/`](agentic/) | Duc | [`research/duc/`](research/duc/) |
 | [`ui/`](ui/) | Victor | [`research/victor/`](research/victor/) |
 
-Put research notes and source links in your folder. Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
+Save findings and evidence using the [research guide](research/README.md). Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
 
+- [Agent instructions](AGENTS.md) cover edit scope, working in parallel, and handoffs.
 - [Project](docs/PROJECT.md) has the demo goal and open decisions.
 - [Architecture and team to-do](docs/ARCHITECTURE.md) covers component ownership, the command flow, and issues you can claim.
 - [Interfaces](docs/INTERFACES.md) is where we record examples shared between areas.

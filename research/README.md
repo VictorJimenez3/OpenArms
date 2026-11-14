@@ -42,3 +42,7 @@ Use the research question as the note title. Write the finding and what it chang
 The [workflow snapshot](duc/workflow/) is from Duc's `duc` branch at `85a7914`. The [foundation](duc/workflow/tickets/master.md), [core](duc/workflow/tickets/core.md), [brain](duc/workflow/tickets/brain.md), and [API](duc/workflow/tickets/api.md) tickets describe the planned sequence and checks.
 
 The original [Ralph scripts](duc/workflow/ralph/) expect Duc's local `tmp/` layout, a `duc` branch, and Claude Code. Use the snapshot as reference. Follow the root [worktree rule](../AGENTS.md) before creating a lane worktree.
+
+## Recording research
+
+Keep findings in the owner’s folder. State the question, finding, source/setup and result, provenance (mock, simulated, recorded or physical), and remaining uncertainty. Link the note from this index and the relevant issue. Agreed interfaces belong in [INTERFACES](../docs/INTERFACES.md), with a concrete input/output example, units, confirmation/error behavior, and a check both producers and consumers can run.
