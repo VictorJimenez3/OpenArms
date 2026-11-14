@@ -1,0 +1,75 @@
+{
+  "fixture_design_id": "openarms-cup-v0.3-diamond-2oz-PROVISIONAL",
+  "physical_fixture_id": null,
+  "calibration_id": null,
+  "cup_id": null,
+  "camera_mount_id": null,
+  "robot_id": null,
+  "mode": "taught_fixture_only",
+  "units": "mm",
+  "coordinate_frame": "each tile independently; origin front-left underside; X right, Y rear, Z up",
+  "base_mm": [
+    100.0,
+    132.0,
+    3.0
+  ],
+  "cup_seat_center_mm": [
+    50.0,
+    88.0,
+    3.0
+  ],
+  "guide_height_mm": 6.0,
+  "radial_clearance_mm": 0.8,
+  "source_cup_mm": [
+    38.0,
+    48.0,
+    51.0
+  ],
+  "receiver_cup_mm": [
+    59.0,
+    73.7,
+    63.5
+  ],
+  "source_dimension_provenance": {
+    "top_width_and_height": "Target TCIN94991464 overall48W51H; rim interpretation unmeasured",
+    "bottom_d": "38mm engineering placeholder, NOT published"
+  },
+  "receiver_dimension_provenance": "all dimensions provisional user brief, base59/top73.7/height63.5",
+  "marker_dictionary": "DICT_4X4_50",
+  "marker_black_size_mm": 36.0,
+  "marker_paper_size_mm": 44.0,
+  "marker_center_xy_mm": [
+    50.0,
+    26.0
+  ],
+  "marker_surface_z_mm": "base thickness + measured paper/adhesive; NOT yet measured",
+  "marker_corners_xy_top_left_clockwise": [
+    [
+      32.0,
+      44.0
+    ],
+    [
+      68.0,
+      44.0
+    ],
+    [
+      68.0,
+      8.0
+    ],
+    [
+      32.0,
+      8.0
+    ]
+  ],
+  "marker_ids": {
+    "A": 10,
+    "C": 12
+  },
+  "robot_from_tile_transform": null,
+  "preview_only_A_to_C_offset_mm": [
+    125.0,
+    0,
+    0
+  ],
+  "warning": "Not a bench_vision calibration or runnable robot pose file. Front marker alone cannot support planar localization at cup center. Moving tiles invalidates taught station assumptions."
+}
