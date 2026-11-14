@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "input": "generated student audio",
+  "mac_output_played": false,
+  "physical_iphone_verified": false,
+  "confirmed_outcome": true,
+  "water_only": true,
+  "voice_model": "gemini-3.8-live",
+  "execution_backend": "mujoco",
+  "experiment": "two_vessel_water",
+  "session_id": "b133beef-f4be-4f91-be62-6d8dcad30466",
+  "source_commits": [
+    "06adc39",
+    "9b7d1a3"
+  ],
+  "acceptance": "Generated student audio and headless exact-playback acknowledgement; not human listening or device qualification.",
+  "admission_failure": "First real candidate omitted expected_state.at=HOME and was rejected. Fixed by355a224; separate real cold/warm rerun admitted the corrected candidate."
+}
