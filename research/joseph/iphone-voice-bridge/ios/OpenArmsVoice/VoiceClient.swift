@@ -213,10 +213,10 @@ final class VoiceClient: ObservableObject {
         guard text.utf8.count <= 64 * 1024 else { throw VoiceError.message("The relay sent an oversized event.") }
         let event = try JSONDecoder().decode(ServerEvent.self, from: Data(text.utf8))
         if event.type == "error" {
-            guard let message = event.message, let fatal = event.fatal else {
+            guard let relayMessage = event.message, let fatal = event.fatal else {
                 throw VoiceError.message("The relay sent an incomplete error event.")
             }
-            let message = String(message.prefix(2000))
+            let message = String(relayMessage.prefix(2000))
             stopCapture()
             try gate.receiveState("processing")
             if fatal { fail(message) }
