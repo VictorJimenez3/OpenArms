@@ -27,6 +27,18 @@ UNSUPPORTED_FIXTURE_REQUEST = re.compile(
     r'(?:measure|read|check) (?:the )?temperature|temperature measurement)\b', re.I)
 CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_frame', 'units', 'clock')
 VESSEL_LABELS = ('source', 'receiver')
+WATER_ROUTE = re.compile(
+    r'\b(?P<direction>from|into|to)\s+'
+    r'(?:(?:the\s+)?(?:station|dock|cup|donor|receiver|vessel)\s+(?P<label>[a-z])\b|'
+    r'(?P<short>[a-z])(?=\s+(?:into|to|then|and)\b|\s*[,.;!?]|\s*$))', re.I)
+WATER_DONOR_RETURN = re.compile(
+    r'\breturn\s+(?:the\s+)?(?:donor(?:\s+(?:cup|vessel))?|source\s+(?:cup|vessel))'
+    r'\s+(?:back\s+)?to\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
+WATER_PORTION = re.compile(
+    r'\b(\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|multiple)'
+    r'\s+(?:pre[- ]?measured\s+)?portions?\b', re.I)
+WATER_VOLUME = re.compile(r'\b\d+(?:\.\d+)?\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b', re.I)
+OTHER_LIQUID = re.compile(r'\b(?:vinegar|baking[- ]soda|citric[- ]acid|magic[- ]tea|indicator)\b', re.I)
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -570,8 +582,12 @@ class TaskLoop:
             backend = self.backends.get(task['session_id'])
             if backend is None:
                 raise ValueError('Prepare a fresh simulation before proposing an action.')
-            if action['operation'] not in backend.capabilities().get('supported_operations', MOCK_OPERATIONS):
+            capabilities = backend.capabilities()
+            if action['operation'] not in capabilities.get('supported_operations', MOCK_OPERATIONS):
                 raise ValueError('The current setup does not support this operation.')
+            if capabilities.get('experiment_id') == 'two_vessel_water':
+                for text in dict.fromkeys((intent, task['request'])):
+                    self._check_water_request(text)
             backend.check_step(action['operation'], action['arguments'])
             self._fixture_state(task, scene['frame_id'], action)
         if any(step['operation'] == 'localize_objects' and step['arguments']['evidence_id'] not in task['evidence']
@@ -587,6 +603,23 @@ class TaskLoop:
                 self._check_image(task['session_id'], image)
         except OSError as exc:
             raise ValueError(self._perception_error(exc)) from exc
+
+    @staticmethod
+    def _check_water_request(text):
+        if OTHER_LIQUID.search(text):
+            raise ValueError('This two-vessel setup supports water only. No pour was approved.')
+        if WATER_VOLUME.search(text) or any(match[1].lower() not in ('one', '1', '1.0')
+                                            for match in WATER_PORTION.finditer(text)):
+            raise ValueError('This setup supports one premeasured portion with no specified volume.')
+        if any(match['label'].upper() != 'A' for match in WATER_DONOR_RETURN.finditer(text)):
+            raise ValueError('This setup can only return the donor to A. No pour was approved.')
+        for match in WATER_ROUTE.finditer(WATER_DONOR_RETURN.sub('', text)):
+            label = (match['label'] or match['short']).upper()
+            source = match['direction'].lower() == 'from'
+            if source and label != 'A':
+                raise ValueError('This setup can only pour from A. No pour was approved.')
+            if not source and label != 'C':
+                raise ValueError('This setup can only pour into C. No pour was approved.')
 
     def _check_improvement(self, task, draft, plan):
         pinned = task['improvement']['baseline_plan'] or {}

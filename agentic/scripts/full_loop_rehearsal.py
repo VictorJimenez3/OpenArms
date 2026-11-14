@@ -40,6 +40,28 @@ async def settle(lab, sid, *, approve=False):
             await asyncio.sleep(.1)
 
 
+def timing(state, started_at, acknowledged_at):
+    task = state['tasks'][-1]
+    approved = next(r for r in reversed(state['requests']) if r['task_id'] == task['task_id'])
+    events = [e for e in state['notebook'] if e['request_id'] == approved['request_id']]
+    proposed = next(e['time'] for e in events if e['kind'] == 'request_proposed')
+    first_progress = next(e['time'] for e in events
+                          if e['kind'] == 'execution_progress' and e['data'].get('phase'))
+    finished = next(e['time'] for e in events if e['kind'] == 'execution_result')
+    observed = next(e['time'] for e in events if e['kind'] == 'observation')
+    confirmed = approved['confirmed_at']
+    return {
+        'request_acknowledgment_ms': (acknowledged_at-started_at)*1000,
+        'request_to_proposal_ms': (proposed-started_at)*1000,
+        'proposal_to_confirmation_ms': (confirmed-proposed)*1000,
+        'confirmation_to_controller_progress_ms': (first_progress-confirmed)*1000,
+        'controller_elapsed_ms': approved['result']['elapsed_ms'],
+        'controller_receipt_to_observation_ms': (observed-finished)*1000,
+        'request_to_observation_ms': (observed-started_at)*1000,
+        'planning_metrics': approved['metrics'],
+    }
+
+
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
@@ -66,7 +88,8 @@ async def main():
         evaluator = TwoVesselSkillEvaluator(args.out/'evaluations')
         factory = lambda: TwoVesselBackend(scene)
         options = {'experiment': EXPERIMENT, 'conditions': CONDITIONS, 'execution_scope': execution_scope()}
-        request_text = 'Please pour one premeasured portion of water from A into C, return the donor and check the result.'
+        request_text = ('Please pour one premeasured portion of water from A into C, '
+                        'return the donor to A and go HOME, then check the result.')
     elif args.execution == 'mujoco':
         from openarms_lab.mujoco_scene import MujocoSceneService
         from openarms_lab.mujoco_backend import MujocoBackend
@@ -81,12 +104,22 @@ async def main():
     sid = (await lab.create())['session_id']
     try:
         began = time.perf_counter()
-        await lab.converse(sid, request_text, 'cold-request')
+        cold_started = time.time()
+        queued = await lab.converse(sid, request_text, 'cold-request')
+        cold_ack = time.time()
+        progress = await lab.converse(sid, 'What are you doing?', 'cold-follow-up')
+        assert [t['task_id'] for t in progress['tasks']] == [queued['tasks'][-1]['task_id']]
         cold = await settle(lab, sid, approve=True)
         (args.out/'cold.json').write_text(json.dumps(cold, indent=2))
         task = cold['tasks'][-1]
         assert task['status'] == 'completed', task.get('summary')
         assert task['observations'] and task['observations'][-1]['status'] == 'observed'
+        answered = await lab.converse(sid, 'What happened?', 'cold-result-question')
+        assert answered['messages'][-1]['text'] == task['observations'][-1]['text']
+        assert len(answered['tasks']) == len(cold['tasks'])
+        (args.out/'student-follow-ups.json').write_text(json.dumps({
+            'in_progress': progress['messages'][-2:], 'result': answered['messages'][-2:],
+        }, indent=2))
         plan = task['plan']
         assert plan['skill_id'], 'Expert did not author a reusable candidate'
         decision = await lab.evaluate_candidate(sid, plan['skill_id'], plan['skill_version'])
@@ -96,8 +129,11 @@ async def main():
         request = skill['retrieval_examples'][-1]
         for key, value in plan['bindings'].items():
             request = request.replace('{'+key+'}', str(value).replace('_', ' '))
-        await lab.prepare(sid)
+        prepared = await lab.converse(sid, 'Prepare a new trial', 'prepare-repeat')
+        assert prepared['trial']['trial_id'] != cold['trial']['trial_id']
+        warm_started = time.time()
         await lab.converse(sid, request, 'warm-request')
+        warm_ack = time.time()
         warm = await settle(lab, sid, approve=True)
         (args.out/'warm.json').write_text(json.dumps(warm, indent=2))
         task2 = warm['tasks'][-1]
@@ -122,6 +158,8 @@ async def main():
                    'actual_expert': True, 'audible_voice_verified': False,
                    'cold_model_calls': sum(run['calls'] for run in task['expert_runs']),
                    'warm_model_calls': 0, 'warm_request': request, 'promotion': decision,
+                   'cold_timing': timing(cold, cold_started, cold_ack),
+                   'warm_timing': timing(warm, warm_started, warm_ack),
                    'elapsed_seconds': time.perf_counter()-began}
         (args.out/'summary.json').write_text(json.dumps(summary, indent=2))
         print(json.dumps(summary, indent=2), flush=True)
