@@ -245,6 +245,7 @@ async def test_codex_receives_replan_limit_and_can_clarify(make_lab):
 
 
 @pytest.mark.parametrize('tamper, error', [
+    ('camera', 'detections do not match'),
     ('new_id', 'original task frame'),
     ('changing_bytes', 'bytes changed'),
     ('different_hash', 'original task frame'),
@@ -255,7 +256,9 @@ async def test_localize_cannot_rebind_evidence(make_lab, tamper, error):
     class BadLocalization(SceneService):
         async def localize_objects(self, sid, evidence_id, labels):
             found = await super().localize_objects(sid, evidence_id, labels)
-            if tamper == 'new_id':
+            if tamper == 'camera':
+                found['detections'][0]['camera_id'] = 'unbound-camera'
+            elif tamper == 'new_id':
                 found['evidence_id'] = uuid.uuid4().hex
             elif tamper == 'changing_bytes':
                 Path(self.frames[sid, evidence_id]['path']).write_bytes(b'corrupted')
@@ -322,6 +325,8 @@ async def test_tampered_outcome_is_unknown_even_after_successful_execution(make_
                 now = time.time()
                 frame['scene']['captured_at'] = frame['images'][0]['captured_at'] = now + (
                     -300 if tamper == 'stale' else 20)
+                # Model an incorrect timestamp in the producer's own index.
+                self.frames[sid, frame['evidence_id']]['captured_at'] = frame['scene']['captured_at']
             elif tamper == 'frame_id':
                 frame['scene']['frame_id'] = uuid.uuid4().hex
             elif tamper == 'bytes':
@@ -389,4 +394,148 @@ async def test_recorded_still_can_be_localized_without_inventing_live_freshness(
     assert snapshot['pending']['plan']['steps'][0]['operation'] == 'localize_objects'
     assert task['evidence'][fid]['images'][0]['captured_at'] == 12.5
     assert task['scene']['clock'] == 'video_offset_seconds'
+    assert lab.backends[sid].executions == 0
+
+
+async def test_movement_after_expert_checkpoint_cannot_dispatch(make_lab):
+    async def transport(prompt, *_):
+        if '"phase": "execution_feedback"' in prompt:
+            scene.world(sid).source_offset = 35
+            return reply('complete', {'continue': True})
+        return reply(payload=draft())
+
+    lab, sid, scene = await make_lab(transport)
+    handle = await lab.start_task(sid, 'Try a prepared sample.')
+    snapshot, _ = await settle(lab, sid, handle)
+    await confirm(lab, sid, snapshot['pending'])
+    _, task = await settle(lab, sid, handle)
+    assert lab.backends[sid].executions == 0
+    assert not task['dispatched_action']
+
+
+@pytest.mark.parametrize('fault, reason', [
+    ({'source_missing': True}, 'source vessel is missing'),
+    ({'receiver_missing': True}, 'receiver vessel is missing'),
+    ({'vessels_swapped': True}, 'receiver vessel is out of dock C'),
+    ({'receiver_offset': 20}, 'Vessel position or camera registration changed'),
+    ({'camera_offset': 12}, 'fixture registration could not be verified'),
+    ({'base_offset': -12}, 'fixture registration could not be verified'),
+])
+async def test_warm_dispatch_checks_changes_since_the_presented_scene(make_lab, fault, reason):
+    async def transport(*_):
+        pytest.fail('Warm skill called the expert with no expert configured.')
+
+    lab, sid, scene = await make_lab(transport)
+    lab.expert = None
+    # The robot validates required fixture identities even if the skill
+    # definition does not declare camera preconditions.
+    seed_version(lab, DEFINITION | {'preconditions': {}}, active=True)
+    handle = await lab.start_task(sid, 'Test prepared vinegar')
+    snapshot, task = await settle(lab, sid, handle)
+    assert task['route'] == 'active_skill'
+    proposal = snapshot['pending']
+    binding = sid, proposal['request_id'], proposal['proposal_version']
+    await lab.present(*binding)
+    for name, value in fault.items():
+        setattr(scene.world(sid), name, value)
+    await lab.confirm(*binding)
+    snapshot, task = await settle(lab, sid, handle)
+    assert snapshot['pending'] is None
+    assert task['status'] == 'failed' and reason in task['summary']
+    assert not task['dispatched_action'] and task['expert_runs'] == []
+    assert lab.backends[sid].executions == 0
+
+
+async def test_replayed_frame_after_expert_checkpoint_cannot_dispatch(make_lab):
+    async def transport(prompt, *_):
+        if '"phase": "execution_feedback"' in prompt:
+            async def replay(_sid, _view):
+                return captured
+            scene.inspect_scene = replay
+            return reply('complete', {'continue': True})
+        return reply(payload=draft())
+
+    lab, sid, scene = await make_lab(transport)
+    # This prior frame has a valid hash and was never seen by the task.
+    captured = await scene.inspect_scene(sid)
+    handle = await lab.start_task(sid, 'Try a prepared sample.')
+    snapshot, _ = await settle(lab, sid, handle)
+    await confirm(lab, sid, snapshot['pending'])
+    _, task = await settle(lab, sid, handle)
+    assert task['status'] == 'failed'
+    assert 'timestamp is stale' in task['summary']
+    assert not task['dispatched_action'] and lab.backends[sid].executions == 0
+
+
+async def test_unchanged_warm_dispatch_binds_one_motion_and_later_observation(make_lab):
+    async def transport(*_):
+        pytest.fail('A clear fixture should take the warm path.')
+
+    lab, sid, _ = await make_lab(transport)
+    version = seed_version(lab, DEFINITION, active=True)
+    handle = await lab.start_task(sid, 'Test prepared vinegar')
+    snapshot, task = await settle(lab, sid, handle)
+    proposal = snapshot['pending']
+    assert proposal['skill_version'] == version
+    assert proposal['metrics']['model_calls'] == 0
+    presented_id = proposal['plan']['scene_frame_id']
+    binding = sid, proposal['request_id'], proposal['proposal_version']
+    await confirm(lab, sid, proposal)
+    with pytest.raises(ValueError, match='Stale'):
+        await lab.confirm(*binding)
+    snapshot, task = await settle(lab, sid, handle)
+    assert task['status'] == 'completed' and task['expert_runs'] == []
+    assert task['dispatched_action'] and lab.backends[sid].executions == 1
+    execution, = task['execution']
+    observation, = task['observations']
+    checkpoint_id = next(item['receipt']['evidence_id'] for item in task['feedback'] if item['type'] == 'perception')
+    dispatch_id = execution['dispatch_evidence_id']
+    observed_id, = observation['evidence']
+    assert len({presented_id, checkpoint_id, dispatch_id, observed_id}) == 4
+    assert task['evidence'][dispatch_id]['verified_labels'] == ['receiver', 'source']
+    assert (snapshot['requests'][0]['confirmed_at'] < task['evidence'][dispatch_id]['scene']['captured_at']
+            < execution['execution_finished_at'] < task['evidence'][observed_id]['scene']['captured_at'])
+    assert observation['features']['color'] == 'pink'
+
+
+async def test_stop_during_dispatch_capture_discards_result_without_motion(make_lab):
+    class PausedDispatchCapture(SceneService):
+        def __init__(self, folder):
+            super().__init__(folder)
+            self.count = 0
+            self.capturing = asyncio.Event()
+            self.release = asyncio.Event()
+            self.returned = asyncio.Event()
+
+        async def inspect_scene(self, sid, view='primary'):
+            self.count += 1
+            if self.count != 3:
+                return await super().inspect_scene(sid, view)
+            self.capturing.set()
+            try:
+                await self.release.wait()
+            except asyncio.CancelledError:
+                # A capture adapter may deliver late after cancelled I/O.
+                await self.release.wait()
+            result = await super().inspect_scene(sid, view)
+            self.returned.set()
+            return result
+
+    async def transport(*_):
+        pytest.fail('Warm skill called the expert.')
+
+    lab, sid, scene = await make_lab(transport, scene_class=PausedDispatchCapture)
+    seed_version(lab, DEFINITION, active=True)
+    handle = await lab.start_task(sid, 'Test prepared vinegar')
+    snapshot, _ = await settle(lab, sid, handle)
+    proposal = snapshot['pending']
+    await confirm(lab, sid, proposal)
+    await asyncio.wait_for(scene.capturing.wait(), 2)
+    stopped = await lab.stop(sid)
+    scene.release.set()
+    await asyncio.wait_for(scene.returned.wait(), 2)
+    snapshot, task = await settle(lab, sid, handle)
+    assert snapshot['generation'] == stopped['generation'] > proposal['generation']
+    assert task['status'] == 'cancelled' and not task['dispatched_action']
+    assert len(task['evidence']) == 2
     assert lab.backends[sid].executions == 0
