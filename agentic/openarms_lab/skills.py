@@ -10,11 +10,14 @@ import tempfile
 from pathlib import Path
 
 from .contracts import (EvaluationReceipt, InspectArguments, LocalizeArguments,
+                        MOCK_OPERATIONS, MockCupArguments, MockPourArguments,
                         MockSampleArguments, PlanDraft, SkillDefinition, Step)
 
 PRIMITIVE_SCHEMAS = {
     'inspect_scene': InspectArguments, 'localize_objects': LocalizeArguments,
-    'mock_prepared_sample': MockSampleArguments, 'observe': InspectArguments,
+    'mock_prepared_sample': MockSampleArguments, 'mock_pick_up': MockCupArguments,
+    'mock_put_down': MockCupArguments, 'mock_pour': MockPourArguments,
+    'observe': InspectArguments,
 }
 TYPES = {'string': (str,), 'integer': (int,), 'number': (int, float), 'boolean': (bool,)}
 TOKEN = re.compile(r'\$([a-z][a-z0-9_]{0,63})\Z')
@@ -192,14 +195,14 @@ class SkillRegistry:
                 raise ValueError('Bindings require a skill definition.')
             steps = [self._primitive(step) for step in draft.steps]
             preconditions, checks, expected_state = [draft.preconditions], draft.outcome_checks, draft.expected_state
-        if not 1 <= len(steps) <= 8 or sum(s.operation == 'mock_prepared_sample' for s in steps) > 1:
-            raise ValueError('A plan requires 1–8 steps and at most one mock sample operation.')
-        if any(step.operation == 'mock_prepared_sample' for step in steps):
-            sample_index = next(i for i, step in enumerate(steps) if step.operation == 'mock_prepared_sample')
-            if not any(step.operation in ('observe', 'inspect_scene') for step in steps[:sample_index]):
-                raise ValueError('A mock sample plan requires an image checkpoint before execution.')
+        actions = [i for i, step in enumerate(steps) if step.operation in MOCK_OPERATIONS]
+        if not 1 <= len(steps) <= 8 or len(actions) > 1:
+            raise ValueError('A plan requires 1–8 steps and at most one mock action.')
+        if actions:
+            if not any(step.operation in ('observe', 'inspect_scene') for step in steps[:actions[0]]):
+                raise ValueError('A mock action plan requires an image checkpoint before execution.')
             if steps[-1].operation != 'observe' or not checks:
-                raise ValueError('A mock sample plan must end with an independent observation and outcome checks.')
+                raise ValueError('A mock action plan must end with an independent observation and outcome checks.')
         return {
             'skill_id': definition.skill_id if definition else None,
             'skill_version': compute_skill_hash(definition) if definition else None,

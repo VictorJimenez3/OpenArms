@@ -79,6 +79,9 @@ class Lab(TaskLoop):
             backend = self.backend_factory() if self.backend_factory else MockBackend()
             if not isinstance(backend, MockBackend) or backend.mode != 'mock':
                 raise LabError('Only the hardware-free mock backend is supported.')
+            bind_session = getattr(backend, 'bind_session', None)
+            if bind_session is not None:
+                bind_session(sid)
             self.backends[sid] = backend
         return self.backends[sid]
 
@@ -264,7 +267,7 @@ class Lab(TaskLoop):
              'proposal_sequence': 0, 'history_only': False}
         self.sessions[sid] = s
         self._event(s, 'session_created', backend='mock', experiment_id=EXPERIMENT['id'])
-        self._message(s, 'assistant', 'This is a MOCK red-cabbage pH investigation. Choose vinegar, mild baking-soda solution, or the water control. What color or acid/base result do you predict?')
+        self._message(s, 'assistant', 'The mock lab is ready.')
         return await self.publish(s)
 
     def _editable(self, s):
@@ -279,11 +282,6 @@ class Lab(TaskLoop):
                 any(t['status'] in TASK_BUSY for t in s['tasks'])):
             raise LabError('A mock trial is active. Use STOP or wait for it to finish.')
 
-    def _planning(self, s):
-        self._idle(s)
-        if s['trial']['state'] in ('reflecting', 'complete', 'stopped'):
-            raise LabError('Prepare a new trial before choosing a condition or prediction.')
-
     def _invalidate(self, s, reason):
         r = s.get('pending')
         if r:
@@ -295,17 +293,21 @@ class Lab(TaskLoop):
             s['trial']['state'] = 'predicting' if s['trial']['condition_id'] else 'choosing_condition'
 
     def _choose(self, s, condition_id):
-        self._planning(s)
+        self._idle(s)
         try:
             c = condition(condition_id)
         except ValueError as exc:
             raise LabError(str(exc)) from None
         if s['trial']['condition_id'] == condition_id:
             return
-        self._invalidate(s, 'Condition corrected.')
-        s['trial'].update(condition_id=c['id'], state='predicting')
+        pending = s['pending']
+        if pending and self._prepared_sample(pending['plan']):
+            self._invalidate(s, 'Condition corrected.')
+        s['trial']['condition_id'] = c['id']
+        if s['trial']['state'] == 'choosing_condition':
+            s['trial']['state'] = 'predicting'
         self._event(s, 'condition_selected', condition_id=c['id'])
-        self._message(s, 'assistant', f"Selected {c['title']} for this MOCK trial. What color or classification do you predict, and why?")
+        self._message(s, 'assistant', f"Selected {c['title']} for this mock trial.")
 
     async def choose_condition(self, sid, condition_id):
         async with self._lock(sid):
@@ -314,14 +316,13 @@ class Lab(TaskLoop):
             return await self.publish(s)
 
     def _predict(self, s, text):
-        self._planning(s)
+        self._editable(s)
         text = _text(text, 'prediction')
         if s['prediction'] == text:
             return
-        self._invalidate(s, 'Prediction corrected.')
         s['prediction'] = text
         self._event(s, 'prediction', text=text)
-        self._message(s, 'assistant', 'Prediction saved. Request a task when you are ready.')
+        self._message(s, 'assistant', 'Prediction saved.')
 
     async def prediction(self, sid, text):
         async with self._lock(sid):
@@ -347,8 +348,9 @@ class Lab(TaskLoop):
             self.store.save(s)
             raise LabError('Proposal expired; request a fresh proposal.')
         task = self._task_for_request(s, r)
+        sample = self._prepared_sample(r['plan'])
         if (r['generation'] != s['generation'] or r['trial_id'] != s['trial']['trial_id'] or
-                r['condition_id'] != s['trial']['condition_id'] or r['prediction'] != s['prediction'] or
+                (sample and r['condition_id'] != s['trial']['condition_id']) or
                 r['plan']['scene_hash'] != self._scene_hash(s) or
                 r['plan_hash'] != compute_skill_hash(r['plan']) or r['plan'] != task['plan'] or task['status'] != 'awaiting_confirmation'):
             self._invalidate(s, 'Proposal binding changed.')
@@ -375,11 +377,11 @@ class Lab(TaskLoop):
 
     def _confirm(self, s, request_id, proposal_version):
         r = self._pending(s, request_id, proposal_version)
-        if not r['presented'] or r['presentation']['generation'] != s['generation']:
+        if (not r['presented'] or r['presentation']['generation'] != s['generation'] or
+                r['presentation']['proposal_version'] != proposal_version):
             raise LabError('The exact proposal must be presented before a new completed confirmation.')
         task = self._task_for_request(s, r)
         try:
-            self._check_context(task, r['plan'])
             if r['skill_id']:
                 self.registry.authorize(task['task_id'], r['skill_id'], r['skill_version'], consume=True)
         except (KeyError, ValueError) as exc:
@@ -468,7 +470,7 @@ class Lab(TaskLoop):
         self._backend(s['session_id']).prepare()
         s.update(trial=self._trial(), prediction='')
         self._event(s, 'trial_prepared', previous_trial=previous)
-        self._message(s, 'assistant', 'A fresh MOCK trial is ready at HOME. Choose a condition and make a new prediction; your notebook is preserved.')
+        self._message(s, 'assistant', 'A fresh mock trial is ready.')
 
     async def prepare(self, sid):
         async with self._lock(sid):
@@ -549,7 +551,7 @@ class Lab(TaskLoop):
                         self._prepare(s)
                     elif normalized.startswith('reflection '):
                         self._reflect(s, text.partition(' ')[2])
-                    elif (re.match(r'^(?:i (?:predict|think|expect|guess)\b)', normalized) or
+                    elif (normalized.startswith('i predict ') or
                           re.fullmatch(r'(?:it (?:will|might|should) (?:be|turn) )?(?:pink|purple|blue|green|blue green|acidic|basic|neutral|near neutral)', normalized)):
                         self._predict(s, text)
                     elif re.match(r'^(?:what|why|how|explain|tell me)\b', normalized) and re.search(

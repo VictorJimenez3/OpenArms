@@ -62,7 +62,9 @@ class ExecutionBackend(Protocol):
 
 # These operations are bounded mock actions and read-only observations.
 PreparedCondition = Literal['vinegar', 'baking_soda', 'water']
-PLAN_PRIMITIVES = ('inspect_scene', 'localize_objects', 'mock_prepared_sample', 'observe')
+MockOperation = Literal['mock_prepared_sample', 'mock_pick_up', 'mock_put_down', 'mock_pour']
+MOCK_OPERATIONS = ('mock_prepared_sample', 'mock_pick_up', 'mock_put_down', 'mock_pour')
+PLAN_PRIMITIVES = ('inspect_scene', 'localize_objects', *MOCK_OPERATIONS, 'observe')
 SceneView = Literal['primary', 'secondary']
 
 
@@ -74,7 +76,7 @@ class SkillParameter(FrozenModel):
 
 
 class Step(FrozenModel):
-    operation: Literal['inspect_scene', 'localize_objects', 'mock_prepared_sample', 'observe', 'call_skill']
+    operation: Literal['inspect_scene', 'localize_objects', 'observe', 'call_skill'] | MockOperation
     arguments: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -127,6 +129,17 @@ class MockSampleArguments(FrozenModel):
     condition_id: PreparedCondition
     source: Literal['A'] = 'A'
     destination: Literal['C'] = 'C'
+
+
+class MockCupArguments(FrozenModel):
+    fixture: Literal['sample_cup']
+    station: Literal['A', 'B']
+
+
+class MockPourArguments(FrozenModel):
+    fixture: Literal['sample_cup']
+    station: Literal['C']
+    portions: int = Field(default=1, ge=1, le=1)
 
 
 class ImageReference(FrozenModel):

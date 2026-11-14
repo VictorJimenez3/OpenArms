@@ -5,8 +5,10 @@ import uuid
 import pytest
 
 from agentic.openarms_lab.backends import MockBackend
+from agentic.openarms_lab.contracts import SkillDefinition
 from agentic.openarms_lab.runtime import Lab, LabError
-from agentic.tests.test_task_loop import TestExpert as FakeExpert, TestPerception as FakePerception
+from agentic.tests.test_task_loop import (TestEvaluator as FakeEvaluator, TestExpert as FakeExpert,
+                                         TestPerception as FakePerception)
 
 
 @pytest.fixture
@@ -155,3 +157,78 @@ async def test_invalid_ids_inputs_and_tools_fail(lab):
         await lab.tool(sid, 'request_action', {'text': 'run it', 'parameters': {'source': 'B'}})
     with pytest.raises(LabError):
         await lab.tool(sid, 'choose_condition', {})
+
+
+@pytest.mark.asyncio
+async def test_backend_binding_precedes_prepare_and_is_isolated(tmp_path):
+    class BoundBackend(MockBackend):
+        def bind_session(self, sid):
+            assert not hasattr(self, 'sid')
+            self.sid = sid
+            self.prepares = 0
+
+        def prepare(self):
+            assert self.sid
+            self.prepares += 1
+            super().prepare()
+
+    lab = Lab(tmp_path, backend_factory=BoundBackend)
+    try:
+        first = (await lab.create())['session_id']
+        second = (await lab.create())['session_id']
+        assert first != second
+        await lab.prepare(first)
+        assert (lab.backends[first].sid, lab.backends[first].prepares) == (first, 2)
+        assert (lab.backends[second].sid, lab.backends[second].prepares) == (second, 1)
+    finally:
+        await lab.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_individual_warm_mock_commands_keep_fixture_state(lab):
+    lab.expert = None
+    sid = (await lab.create())['session_id']
+    other = (await lab.create())['session_id']
+    commands = [
+        ('pick up the cup at a', 'mock_pick_up', 'A', 'sample_cup', None, 0),
+        ('pour into c', 'mock_pour', 'C', 'sample_cup', None, 1),
+        ('put the cup down at b', 'mock_put_down', 'B', None, 'B', 1),
+    ]
+    for text, op, station, holding, cup_station, receiver_portions in commands:
+        definition = SkillDefinition.model_validate({
+            'skill_id': op, 'name': op, 'intent': text, 'retrieval_examples': [text],
+            'steps': [{'operation': 'inspect_scene'},
+                      {'operation': op, 'arguments': {'fixture': 'sample_cup', 'station': station}},
+                      {'operation': 'observe'}],
+            'outcome_checks': [{'feature': 'readable', 'expected': True}],
+            'limitations': ['Synthetic fixture and test observer.'],
+        })
+        version = lab.registry.validate_for_task('fixture-setup', definition)
+        candidate = lab.registry.get(op, version)
+        evaluation = await FakeEvaluator().evaluate_candidate(sid, candidate, None)
+        evaluation['evaluation_id'] += '-' + op
+        lab.registry.record_evaluation(op, version, evaluation)
+        queued = await lab.converse(sid, text)
+        await lab.workers[queued['tasks'][-1]['task_id']]
+        snap = lab.snapshot(sid)
+        p = snap['pending']
+        if op == 'mock_pick_up':
+            # Optional settings remain usable without changing this proposal's consent.
+            await lab.choose_condition(sid, 'water')
+            await lab.prediction(sid, 'purple')
+            assert lab.snapshot(sid)['pending']['request_id'] == p['request_id']
+        await lab.present(sid, p['request_id'], p['proposal_version'])
+        await lab.converse(sid, 'confirm')
+        await lab.workers[p['task_id']]
+        snap = lab.snapshot(sid)
+        assert snap['tasks'][-1]['status'] == 'completed'
+        assert snap['tasks'][-1]['expert_runs'] == []
+        assert snap['requests'][-1]['result']['operation'] == op
+        assert (snap['state']['holding'], snap['state']['cup_station'],
+                snap['state']['receiver_portions']) == (holding, cup_station, receiver_portions)
+    assert lab.backends[sid].executions == 3 and lab.backends[other].executions == 0
+    assert lab.snapshot(other)['state'] == MockBackend.home_state()
+    await lab.converse(sid, 'pour into c')
+    await lab.workers[lab.snapshot(sid)['tasks'][-1]['task_id']]
+    assert lab.snapshot(sid)['tasks'][-1]['status'] == 'failed'
+    assert lab.backends[sid].executions == 3
