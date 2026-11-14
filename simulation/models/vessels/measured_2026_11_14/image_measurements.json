@@ -160,6 +160,120 @@
       ],
       "scale_px_per_mm": 9.803627446568495,
       "apparent_feature_mm": 35.497064927922
+    },
+    {
+      "photo": "IMG_9269",
+      "ruler": [
+        [
+          1170,
+          929
+        ],
+        [
+          1150,
+          493
+        ]
+      ],
+      "ruler_mm": 50.8,
+      "feature": [
+        [
+          1145,
+          486
+        ],
+        [
+          1180,
+          1148
+        ]
+      ],
+      "description": "Receiver rim: near-central chord",
+      "limits": "About77.2mm chord; contour estimate78mm, working range75\u201382mm.",
+      "crop": [
+        800,
+        360,
+        1580,
+        1190
+      ],
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 8.591702254774386,
+      "apparent_feature_mm": 77.1587004846097
+    },
+    {
+      "photo": "IMG_9270",
+      "ruler": [
+        [
+          975,
+          887
+        ],
+        [
+          1198,
+          880
+        ]
+      ],
+      "ruler_mm": 30,
+      "feature": [
+        [
+          1016,
+          593
+        ],
+        [
+          1248,
+          590
+        ]
+      ],
+      "description": "Receiver height: inverted side view",
+      "limits": "Axial plane centres, not ellipse extremes. Perspective remains.",
+      "crop": [
+        800,
+        250,
+        1400,
+        970
+      ],
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 7.436994614015052,
+      "apparent_feature_mm": 31.198005079056788
+    },
+    {
+      "photo": "IMG_9271",
+      "ruler": [
+        [
+          960,
+          850
+        ],
+        [
+          1174,
+          840
+        ]
+      ],
+      "ruler_mm": 30,
+      "feature": [
+        [
+          956,
+          550
+        ],
+        [
+          1193,
+          550
+        ]
+      ],
+      "description": "Receiver height: upright side view",
+      "limits": "Axial plane centres, not ellipse extremes. Perspective remains.",
+      "crop": [
+        800,
+        210,
+        1360,
+        930
+      ],
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 7.141117248411173,
+      "apparent_feature_mm": 33.18808412685426
     }
   ]
 }
