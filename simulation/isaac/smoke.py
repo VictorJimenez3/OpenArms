@@ -19,7 +19,8 @@ parser.add_argument('--seconds', type=float, default=8)
 parser.add_argument('--task', choices=['articulation','vial','cube'], default='articulation')
 parser.add_argument('--request-id', default=None)
 parser.add_argument('--startup-stage', choices=['new', 'existing'], default='new')
-parser.add_argument('--cleanup', choices=['full', 'immediate'], default='full')
+parser.add_argument('--cleanup', choices=['full', 'immediate', 'sensors'], default='full',
+                    help='sensors: experimental Isaac 5.1 sensor/viewport teardown before normal close')
 args = parser.parse_args()
 if not math.isfinite(args.seconds) or args.seconds <= 0:
     parser.error('--seconds must be positive and finite')
@@ -50,6 +51,11 @@ def save():
 app = None
 writer = None
 trial = None
+world = None
+camera = None
+World = None
+version = None
+observation_error = None
 frame_count = 0
 try:
     save()
@@ -192,6 +198,7 @@ try:
     receipt['sha256'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
 except BaseException as exc:
+    observation_error = exc
     receipt.update(status='failed', error_type=type(exc).__name__, error=str(exc))
     if trial is not None and hasattr(trial, 'last_observation'):
         (args.output/'failure-state.json').write_text(json.dumps(trial.last_observation, indent=2))
@@ -199,10 +206,12 @@ except BaseException as exc:
     traceback.print_exc()
     raise
 finally:
+    video_close_error = None
     if writer is not None:
         try:
             writer.close()
         except Exception as close_error:
+            video_close_error = close_error
             receipt.update(status='failed', video_close_error=str(close_error))
             traceback.print_exc()
     receipt['observation_status'] = receipt['status']
@@ -214,8 +223,42 @@ finally:
     receipt['sha256'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
     save()
+    cleanup_errors = []
     if app is not None:
-        app.close(skip_cleanup=args.cleanup == 'immediate')
-    receipt['shutdown_status'] = 'completed'
-    receipt['status'] = receipt['observation_status']
+        if args.cleanup == 'sensors':
+            from cleanup import cleanup_sensors
+
+            receipt['cleanup_diagnostic'] = {
+                'mode': 'sensors', 'steps': [],
+                'initialized': {'world': world is not None, 'camera': camera is not None,
+                                'world_type': World is not None},
+            }
+
+            def checkpoint(operation, phase, **details):
+                marker = {'operation': operation, 'phase': phase, **details}
+                receipt['cleanup_diagnostic']['steps'].append(marker)
+                if details.get('status') == 'failed':
+                    receipt['shutdown_status'] = 'failed'
+                    receipt['status'] = 'failed'
+                save()
+                print('ISAAC_CLEANUP ' + json.dumps(marker), flush=True)
+
+            cleanup_errors = cleanup_sensors(app, world, camera, World, version, checkpoint)
+        else:
+            app.close(skip_cleanup=args.cleanup == 'immediate')
+    receipt['shutdown_status'] = 'failed' if cleanup_errors else 'completed'
+    receipt['status'] = 'failed' if cleanup_errors else receipt['observation_status']
+    if cleanup_errors:
+        receipt['cleanup_errors'] = [
+            {'error_type': type(exc).__name__, 'error': str(exc)}
+            for exc in cleanup_errors
+        ]
     save()
+    # Preserve an observation exception already in flight. Otherwise a Python
+    # cleanup failure must produce nonzero exit, even when normal close returned.
+    if args.cleanup == 'sensors' and observation_error is None:
+        if video_close_error is not None:
+            raise video_close_error
+        if cleanup_errors:
+            # Even an unexpected SystemExit(0) during teardown is a failure.
+            raise RuntimeError('Sensor cleanup failed; see receipt cleanup_errors') from cleanup_errors[0]
