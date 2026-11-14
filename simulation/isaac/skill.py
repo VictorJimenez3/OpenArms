@@ -79,6 +79,17 @@ def main():
         passed = code == 0 and receipt.get('status') == 'passed'
         if task == 'cube':
             passed = passed and receipt.get('manipulation_success') is True
+        science = None
+        science_error = None
+        if passed and request['skill_id'].startswith('isaac.mass_weight.'):
+            from experiment_report import summarize, EvidenceError
+            try:
+                science = summarize(args.output/'recording')
+                (args.output/'experiment.json').write_text(json.dumps(science, indent=2, allow_nan=False))
+            except (EvidenceError, OSError) as exc:
+                science_error = str(exc)
+                passed = False
+                (args.output/'experiment-error.json').write_text(json.dumps({'error': science_error}))
         result = {'request_id': request['request_id'], 'backend': 'simulated',
                   'status': 'stopped' if stopped else ('completed' if passed else 'failed'),
                   'operator_authorized': False, 'controller_completed': passed and not stopped,
@@ -88,7 +99,13 @@ def main():
                                   'value': receipt.get('manipulation_success', False),
                                   'evidence': [str(receipt_file)]},
                   'reason': ('STOP requested' if stopped else
-                             (None if passed else receipt.get('error', 'Isaac execution did not pass')))}
+                             (None if passed else science_error or receipt.get('error', 'Isaac execution did not pass')))}
+        if science is not None:
+            result['observation'].update(
+                text=f"The {science['mass_kg']*1000:g} g block produced {science['mean_support_force_N']:.4f} N of measured support force in simulation.",
+                value={key: science[key] for key in ('condition', 'mass_kg', 'mean_support_force_N',
+                                                    'expected_weight_N', 'expected_weight_provenance')},
+                evidence=[str(receipt_file), str(args.output/'experiment.json')])
         (args.output/'result.json').write_text(json.dumps(result, indent=2))
         print(json.dumps(result))
         return 0 if passed and not stopped else 1
