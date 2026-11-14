@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import itertools
 import json
 import math
 from numbers import Real
@@ -67,6 +68,8 @@ def fit_calibration(spec):
     Input evidence provenance is retained, not certified by this computation.
     Synthetic geometry can exercise software but cannot qualify physical mapping.
     """
+    if not isinstance(spec, dict):
+        raise GeometryError("calibration specification must be an object")
     required = ("calibration_id", "camera_id", "camera_mount_id", "plane_id", "clock_id", "measurement_ref")
     for key in required:
         if not isinstance(spec.get(key), str) or not spec[key].strip():
@@ -89,8 +92,8 @@ def fit_calibration(spec):
     try:
         fit_px = points([p["pixel"] for p in fit], "fit pixels", 4)
         fit_xy = points([p["xy_mm"] for p in fit], "fit metric points", 4)
-        check_px = points([p["pixel"] for p in checks], "check pixels", 3)
-        check_xy = points([p["xy_mm"] for p in checks], "check metric points", 3)
+        check_px = points([p["pixel"] for p in checks], "check pixels", 4)
+        check_xy = points([p["xy_mm"] for p in checks], "check metric points", 4)
         ids = [p["id"] for p in fit + checks]
     except (KeyError, TypeError) as exc:
         raise GeometryError("each measured point needs id, pixel, xy_mm") from exc
@@ -102,6 +105,9 @@ def fit_calibration(spec):
     for left, right in ((fit_px, check_px), (fit_xy, check_xy)):
         if any(np.linalg.norm(a-b) < 1e-6 for a in left for b in right):
             raise GeometryError("held-out checks cannot reuse fitted coordinates")
+    for triple in itertools.combinations(check_px, 3):
+        if abs(np.linalg.det(np.column_stack((np.array(triple), np.ones(3))))) < 1e-6:
+            raise GeometryError("no three held-out check points may be collinear")
     matrix, _ = cv2.findHomography(fit_px, fit_xy, method=0)
     if matrix is None or not np.isfinite(matrix).all() or abs(np.linalg.det(matrix)) < 1e-12:
         raise GeometryError("degenerate homography")
@@ -126,6 +132,8 @@ def fit_calibration(spec):
 
 def localize(calibration, observation, *, now_s, max_age_s=0.25):
     """Return explicit unknown for stale, moved-camera, elevated or unsupported points."""
+    if not isinstance(calibration, dict) or not isinstance(observation, dict):
+        return {"status": "unknown", "xy_mm": None, "reason": "calibration and observation must be objects"}
     result = {"status": "unknown", "object_id": observation.get("object_id"),
               "camera_id": observation.get("camera_id"), "timestamp_s": observation.get("timestamp_s"),
               "calibration_id": calibration.get("calibration_id"), "xy_mm": None,
@@ -149,16 +157,17 @@ def localize(calibration, observation, *, now_s, max_age_s=0.25):
         height = number(observation.get("feature_height_mm"), "feature_height_mm")
         if abs(height-calibration["plane_height_mm"]) > 1e-6:
             raise GeometryError("feature is not on the calibrated plane")
-        # Every localization includes >=3 visible independently measured anchors.
+        # Four noncollinear anchors constrain projective camera drift; three do not.
         anchors = observation.get("anchors", [])
         known = {p["id"]: p["xy_mm"] for p in calibration["check_points"]}
-        if len(anchors) < 3 or len({a["id"] for a in anchors}) != len(anchors):
-            raise GeometryError("need three distinct current check anchors to detect camera movement")
+        if len(anchors) < 4 or len({a["id"] for a in anchors}) != len(anchors):
+            raise GeometryError("need four distinct current check anchors to detect camera movement")
         if any(a["id"] not in known for a in anchors):
             raise GeometryError("unknown check anchor")
-        anchor_px = points([a["pixel"] for a in anchors], "current anchor pixels", 3)
-        if np.linalg.matrix_rank(anchor_px-anchor_px.mean(axis=0)) < 2:
-            raise GeometryError("current anchors are collinear")
+        anchor_px = points([a["pixel"] for a in anchors], "current anchor pixels", 4)
+        for triple in itertools.combinations(anchor_px, 3):
+            if abs(np.linalg.det(np.column_stack((np.array(triple), np.ones(3))))) < 1e-6:
+                raise GeometryError("no three current anchors may be collinear")
         drift = np.linalg.norm(project(calibration["homography"], anchor_px)-np.array([known[a["id"]] for a in anchors]), axis=1)
         if drift.max() > calibration["max_error_mm"]:
             raise GeometryError("camera/anchor movement exceeds validated residual")
@@ -167,8 +176,17 @@ def localize(calibration, observation, *, now_s, max_age_s=0.25):
         uncertainty_px = number(observation.get("uncertainty_px"), "uncertainty_px")
         if uncertainty_px < 0:
             raise GeometryError("negative pixel uncertainty")
-        probes = [pixel+[dx,dy] for dx,dy in ((uncertainty_px,0),(-uncertainty_px,0),(0,uncertainty_px),(0,-uncertainty_px))]
+        # uncertainty_px bounds each pixel axis. Map the enclosing square rather
+        # than cardinal probes, which miss shear's largest error direction.
+        probes = [pixel+[dx,dy] for dx in (-uncertainty_px,uncertainty_px)
+                  for dy in (-uncertainty_px,uncertainty_px)]
+        denominators = np.column_stack((probes, np.ones(4))) @ np.array(calibration["homography"])[2]
+        if not (np.all(denominators > 1e-9) or np.all(denominators < -1e-9)):
+            raise GeometryError("uncertainty region crosses the projective horizon")
         uncertainty = float(np.linalg.norm(project(calibration["homography"], probes)-xy, axis=1).max()+calibration["validation"]["check_max_mm"]+drift.max())
+        checked_support = cv2.convexHull(np.array([known[a["id"]] for a in anchors], dtype=np.float32))
+        if cv2.pointPolygonTest(checked_support, tuple(map(float,xy)), True) < uncertainty:
+            raise GeometryError("target uncertainty exceeds independently checked support")
         polygon = _convex_polygon(calibration["workspace_mm"])
         clearance = cv2.pointPolygonTest(polygon.astype(np.float32), tuple(map(float, xy)), True)
         if clearance < uncertainty:

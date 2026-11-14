@@ -13,7 +13,7 @@ def spec():
             "provenance": "synthetic", "pixel_space": "undistorted", "intrinsics_id": "synthetic-pinhole",
             "valid_from_s": 0, "valid_until_s": 100, "max_error_mm": 2, "plane_height_mm": 0,
             "fit_points": [point("f1",0,0), point("f2",100,0), point("f3",100,100), point("f4",0,100)],
-            "check_points": [point("c1",20,20), point("c2",80,20), point("c3",50,80)],
+            "check_points": [point("c1",20,20), point("c2",80,20), point("c3",80,80), point("c4",20,80)],
             "workspace_mm": [[5,5],[95,5],[95,95],[5,95]]}
 
 
@@ -32,7 +32,7 @@ def test_fit_independent_checks_and_localize():
     assert result["status"] == "ok"
     assert result["xy_mm"] == pytest.approx([50,50])
     assert result["grasp_pose"] is None
-    assert result["uncertainty_mm"] == pytest.approx(.5)
+    assert result["uncertainty_mm"] == pytest.approx(2**.5/2)
     assert result["provenance"] == "synthetic"
 
 
@@ -80,3 +80,35 @@ def test_reject_invalid_calibration(change):
     if change == "nan": s["valid_until_s"] = float("nan")
     if change == "zero_tolerance": s["max_error_mm"] = 0
     with pytest.raises(GeometryError): fit_calibration(s)
+
+
+def test_reject_three_anchors_even_when_they_fit_exactly():
+    obs = observation()
+    obs["anchors"] = obs["anchors"][:3]
+    result = localize(fit_calibration(spec()),obs,now_s=50)
+    assert result["status"] == "unknown" and "four" in result["reason"]
+
+
+def test_uncertainty_covers_shear_not_only_cardinal_directions():
+    s = spec()
+    for p in s["fit_points"] + s["check_points"]:
+        x,y = p["pixel"]
+        p["xy_mm"] = [x+y,y]
+    s["workspace_mm"] = [[30,20],[230,20],[430,220],[230,220]]
+    s["max_error_mm"] = 1.5
+    cal = fit_calibration(s)
+    result = localize(cal,observation(),now_s=50)
+    assert result["status"] == "unknown"
+    assert "uncertainty" in result["reason"]
+
+
+def test_malformed_top_level_inputs_are_explicit():
+    assert localize(None,observation(),now_s=50)["status"] == "unknown"
+    assert localize(fit_calibration(spec()),[],now_s=50)["status"] == "unknown"
+    with pytest.raises(GeometryError): fit_calibration([])
+
+
+def test_outside_independent_check_support_rejected():
+    obs = observation()
+    obs["pixel"] = [30,40]  # table 10,10: inside fit hull but outside check hull
+    assert "checked support" in localize(fit_calibration(spec()),obs,now_s=50)["reason"]
