@@ -6,6 +6,10 @@ const STATUS = {
   stopped: 'Stopped',
 };
 const COMMAND_STATUS = { start: 'Starting simulation', reset: 'Resetting scene', stop: 'Stopping simulation' };
+const EXPERIMENTS = {
+  volcano: { start: 'Run volcano', pages: 'pp. 26–27' },
+  potions: { start: 'Run potions', pages: 'pp. 30–33' },
+};
 const clock = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
 
 function put(node, value) {
@@ -24,6 +28,8 @@ export class SmartivityView {
     this.observations = byId('observations');
     this.rows = ['action', 'outcome', 'recovery'].map(name => [name, byId(name), byId(name + '-row')]);
     this.controls = byId('controls');
+    this.scenario = byId('scenario');
+    this.pages = byId('pages');
     this.seed = byId('seed');
     this.start = byId('start');
     this.reset = byId('reset');
@@ -40,6 +46,7 @@ export class SmartivityView {
       event.preventDefault();
       void this.command('start');
     });
+    this.scenario.addEventListener('change', () => this.render(this.episode));
     this.reset.addEventListener('click', () => this.command('reset'));
     this.stop.addEventListener('click', () => this.command('stop'));
   }
@@ -71,7 +78,10 @@ export class SmartivityView {
       if (document.hidden || episode.pending.size) return;
       const state = await this.api.request(`/api/sessions/${encodeURIComponent(id)}/smartivity`);
       if (!current()) return;
-      if (!episode.state && Number.isSafeInteger(state.seed)) this.seed.value = state.seed;
+      if (!episode.state) {
+        if (Number.isSafeInteger(state.seed)) this.seed.value = state.seed;
+        this.scenario.value = Object.hasOwn(EXPERIMENTS, state.scenario) ? state.scenario : 'volcano';
+      }
       if (state.generation !== episode.state?.generation) this.clearCameras();
       episode.state = state;
       episode.connectionError = '';
@@ -98,7 +108,7 @@ export class SmartivityView {
     const episode = this.episode;
     if (!episode?.state || episode.pending.has(action)) return;
     if (action !== 'stop' && (episode.pending.size || !this.controls.reportValidity())) return;
-    const body = action === 'stop' ? {} : { seed: this.seed.valueAsNumber };
+    const body = action === 'stop' ? {} : { seed: this.seed.valueAsNumber, scenario: this.scenario.value };
     episode.pending.add(action);
     episode.commandError = '';
     episode.version++;
@@ -121,6 +131,8 @@ export class SmartivityView {
     const status = (STATUS[state?.status] || 'Connecting to simulation') + progress;
     put(this.status, COMMAND_STATUS[action] || episode.commandError || episode.connectionError || status);
     put(this.objective, state?.objective || 'Pour from the prepared beaker into the flask and observe the result.');
+    put(this.pages, (EXPERIMENTS[state?.scenario] || EXPERIMENTS.volcano).pages);
+    put(this.start, EXPERIMENTS[this.scenario.value].start);
     for (const [name, field, row] of this.rows) {
       put(field, state?.[name]);
       row.hidden = field.textContent === '';
@@ -137,6 +149,7 @@ export class SmartivityView {
     }
     this.observations.hidden = entries.length === 0;
     this.seed.disabled = pending.size > 0;
+    this.scenario.disabled = pending.size > 0;
     this.start.disabled = !state || state.status === 'running' || pending.size > 0;
     this.reset.disabled = !state || pending.size > 0;
     this.stop.disabled = pending.has('stop') || (state?.status !== 'running' && !pending.has('start'));

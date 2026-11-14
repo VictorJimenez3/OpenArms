@@ -73,8 +73,8 @@
 
         <section id="smartivity" class="smartivity" aria-labelledby="smartivity-title" hidden>
           <header class="section-head">
-            <h2 id="smartivity-title">Erupting Volcano</h2>
-            <span>Smartivity simulation</span>
+            <h2 id="smartivity-title">Smartivity</h2>
+            <span>Simulated lab</span>
           </header>
           <div class="smartivity-cameras" role="group" aria-label="Simulated camera views">
             <figure data-camera="overview">
@@ -99,14 +99,21 @@
               <ul id="smartivity-evidence"></ul>
             </section>
             <form id="smartivity-controls">
-              <div class="smartivity-seed"><label for="smartivity-seed">Scene seed</label><input id="smartivity-seed" type="number" value="0" min="0" max="2147483647" step="1" required></div>
+              <div class="smartivity-field">
+                <label for="smartivity-scenario">Experiment</label>
+                <select id="smartivity-scenario">
+                  <option value="volcano">Erupting Volcano</option>
+                  <option value="potions">Magic Potions 1 &amp; 2</option>
+                </select>
+              </div>
+              <div class="smartivity-field"><label for="smartivity-seed">Scene seed</label><input id="smartivity-seed" type="number" value="0" min="0" max="2147483647" step="1" required></div>
               <div class="actions">
                 <button id="smartivity-start" class="primary" type="submit" disabled>Run volcano</button>
                 <button id="smartivity-reset" class="secondary" type="button" disabled>Reset scene</button>
                 <button id="smartivity-stop" class="stop" type="button" disabled>Stop simulation</button>
               </div>
             </form>
-            <p class="field-hint">Adapted from Smartivity’s <cite>My First Science Kit</cite>, pp. 26–27.</p>
+            <p class="field-hint">Adapted from Smartivity’s <cite>My First Science Kit</cite>, <span id="smartivity-pages">pp. 26–27</span>.</p>
           </div>
         </section>
 

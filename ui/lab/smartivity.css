@@ -55,11 +55,20 @@
 .smartivity-details dd { margin: 0; }
 #smartivity-evidence { margin: 4px 0 0; font-size: .9rem; }
 #smartivity-controls {
-  display: flex;
-  flex-wrap: wrap;
+  grid-template-columns: minmax(0, 1fr) 112px;
   align-items: end;
   gap: 8px 12px;
 }
-.smartivity-seed { width: 112px; }
-.smartivity-seed label { font-size: .84rem; }
-.smartivity-seed input { min-height: 44px; }
+#smartivity-controls .actions { grid-column: 1 / -1; }
+.smartivity-field { width: 100%; min-width: 0; }
+.smartivity-field label { font-size: .84rem; }
+.smartivity-field :is(input, select) { min-height: 44px; }
+.smartivity-field select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #a5afaa;
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}

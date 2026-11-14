@@ -33,7 +33,7 @@ async function propose(page, request, condition='vinegar') {
 
 test('Smartivity reuses session access and displays only current simulation captures', async ({page}) => {
   const pixels = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNdcAAAAASUVORK5CYII=', 'base64');
-  const state = { status: 'idle', generation: 1, seed: 0, frames: {}, objective: 'Transfer the prepared mixture.' };
+  const state = { status: 'idle', generation: 1, seed: 0, scenario: 'volcano', frames: {}, objective: 'Transfer the prepared mixture.' };
   const commands = [];
   const mediaAuth = [];
   await page.route('**/api/health', route => route.fulfill({json: {smartivity_available: true}}));
@@ -61,13 +61,16 @@ test('Smartivity reuses session access and displays only current simulation capt
       } else if (command === 'stop') {
         Object.assign(state, { status: 'stopped', outcome: 'Run stopped.', recovery: 'Reset the scene before retrying.' });
       } else if (command === 'reset') {
-        Object.assign(state, { status: 'idle', generation: 2, frames: {}, evidence: [], action: null, outcome: null, recovery: null });
+        Object.assign(state, {
+          status: 'idle', generation: 2, scenario: request.postDataJSON().scenario, frames: {}, evidence: [],
+          action: null, outcome: null, recovery: null, objective: 'Combine the green and pink portions.',
+        });
       }
     }
     return route.fulfill({ json: state });
   });
   await ready(page);
-  const studio = page.getByRole('region', { name: 'Erupting Volcano' });
+  const studio = page.getByRole('region', { name: 'Smartivity' });
   await expect(studio).toBeVisible();
   await expect(page.getByRole('button', { name: 'Talk' })).toBeEnabled();
   await studio.getByLabel('Scene seed', { exact: true }).fill('17');
@@ -79,11 +82,15 @@ test('Smartivity reuses session access and displays only current simulation capt
   await studio.getByRole('button', { name: 'Stop simulation' }).click();
   await expect(studio.getByRole('status')).toHaveText('Stopped');
   await expect(studio.getByText('Reset the scene before retrying.')).toBeVisible();
+  await studio.getByLabel('Experiment', { exact: true }).selectOption('potions');
+  await expect(studio.getByRole('button', { name: 'Run potions' })).toBeEnabled();
   await studio.getByRole('button', { name: 'Reset scene' }).click();
   await expect(studio.getByRole('status')).toHaveText('Ready');
+  await expect(studio.getByText('Combine the green and pink portions.')).toBeVisible();
+  await expect(studio.getByText('pp. 30–33')).toBeVisible();
   await expect(studio.getByRole('img')).toHaveCount(0);
   await expect(studio.getByText('Waiting for camera')).toHaveCount(2);
-  expect(commands).toEqual([['start', { seed: 17 }], ['stop', {}], ['reset', { seed: 17 }]]);
+  expect(commands).toEqual([['start', { seed: 17, scenario: 'volcano' }], ['stop', {}], ['reset', { seed: 17, scenario: 'potions' }]]);
   expect(mediaAuth).toEqual(expect.arrayContaining([
     { view: 'overview', cleanUrl: true }, { view: 'side', cleanUrl: true },
   ]));
