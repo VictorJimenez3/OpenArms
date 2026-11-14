@@ -17,6 +17,7 @@ import uuid
 
 from google import genai
 from google.genai import types
+from .conversation import controller_state
 from .voice_controls import MUTATING_TOOLS, VoiceControls
 
 
@@ -33,10 +34,10 @@ TOOLS = [{'function_declarations': [
     declaration('watch_lab_events', 'Subscribe once to actual expert progress, proposals, execution and observed outcomes. '
                 'The gateway restores this subscription when the provider session resumes. '
                 'Call at voice start or on your first turn in a fresh provider session.', nonblocking=True),
-    declaration('get_lab_state', 'Read authoritative current pH trial, proposal and evidence. Always read before stating progress.'),
+    declaration('get_lab_state', 'Read current task, clarification, proposal, capabilities and independent evidence when answering follow-up questions.'),
     declaration('choose_condition', 'Record the student choice. Only vinegar, baking_soda or water. Never choose for them.', {'condition_id': S}, ['condition_id']),
     declaration('record_prediction', 'Optionally record a student prediction in their words. This is not an execution prerequisite or consent.', {'text': S}, ['text']),
-    declaration('request_action', 'Quote the entire student request verbatim for the separate image-aware Codex expert or validated reusable skill. '
+    declaration('request_action', 'Use for a requested lab action, a correction, or an answer to the active lab clarification. Quote the entire student transcript verbatim. '
                 'One mutation per completed student turn. Watch for progress. Never invent motion parameters.', {'text': S}, ['text'], nonblocking=True),
     declaration('improve_skill', 'When the student asks to improve a failed or limited skill, quote their entire request verbatim. '
                 'The server supplies the recorded failure and unchanged baseline. This only proposes a revision.',
@@ -67,6 +68,7 @@ EVENT_DATA = {
     'task_queued': ('status',),
     'task_status': ('status', 'summary', 'code', 'failure_code', 'error_code'),
     'task_cancelled': ('status', 'reason'),
+    'stop_requested': ('disconnect', 'effect'),
     'scene_unavailable': ('code',),
     'expert_result': ('phase',),
     'request_proposed': (),
@@ -118,13 +120,28 @@ def compact_snapshot(snap):
     result['observations'] = [brief(item, OBSERVATION_FIELDS) for item in snap.get('observations', [])[-3:]]
     result['requests'] = [brief(item, (*PROPOSAL_FIELDS, 'status', 'reason'))
                           for item in snap.get('requests', [])[-2:]]
+    capabilities = snap.get('capabilities') or {}
+    result['capabilities'] = brief(capabilities, ('supported_operations', 'limitations', 'physical_execution',
+                                                 'expert_available', 'perception_available', 'history_only',
+                                                 'action_description', 'routes'))
     result['tasks'] = []
     for task in snap.get('tasks', [])[-2:]:
         summary = brief(task, ('task_id', 'trial_id', 'turn_id', 'request_id', 'request', 'status',
-                               'route', 'summary', 'reason', 'replans', 'code'))
+                               'route', 'summary', 'reason', 'replans', 'code', 'clarification', 'clarification_answered'))
+        if task.get('expert_configuration'):
+            summary['expert_configuration'] = brief(task['expert_configuration'], (
+                'profile', 'provider', 'requested_model', 'reasoning_effort', 'error_code'))
+        if task.get('expert_runs'):
+            summary['latest_expert_run'] = brief(task['expert_runs'][-1], (
+                'provider', 'requested_model', 'actual_model', 'model_verified', 'reasoning_effort'))
+        summary['controller_state'] = controller_state(snap, task)
         if task.get('execution'):
             summary['execution'] = [brief(r, RECEIPT_FIELDS) for r in task['execution'][-3:]]
         result['tasks'].append(summary)
+    last_stop = next((e for e in reversed(snap.get('notebook', []))
+                      if e.get('kind') == 'stop_requested' and not (e.get('data') or {}).get('disconnect')), None)
+    if last_stop:
+        result['last_stop'] = brief(last_stop.get('data', {}), ('effect', 'trial_id', 'sequence'))
     result['skills'] = [brief(item, ('skill_id', 'name', 'version', 'status', 'retrieval_examples'))
                         for item in snap.get('skills', [])[-6:]]
     result['skill_decisions'] = snap.get('skill_decisions', [])[-3:]
@@ -132,47 +149,79 @@ def compact_snapshot(snap):
         result['pending'] = brief(result['pending'], PROPOSAL_FIELDS)
     if result.get('scene'):
         result['scene'] = brief(result['scene'], ('frame_id', 'captured_at', 'fresh', 'view', 'provenance', 'limitations'))
-    result['messages'] = snap.get('messages', [])[-8:]
+    result['messages'] = [brief(m, ('role', 'text', 'turn_id'))
+                          for m in snap.get('messages', []) if m.get('final')][-8:]
     return result
 
 
 def system_prompt(context):
+    state = compact(context)
+    water_only = (state.get('experiment') or {}).get('id') == 'two_vessel_water'
+    if water_only:
+        activity = (
+            'The current lab is the water-only, two-vessel MuJoCo simulation. Donor A holds one premeasured water portion. '
+            'Receiver C stays fixed; the donor returns to A before the arm returns HOME. '
+            'Use this specific supported action from capabilities.action_description. '
+            'Ask the student to resolve ambiguity about the donor, receiver or requested step. '
+            'Do not offer indicator tests, color changes, pH, chemical mixing, arbitrary amounts or arbitrary destinations. '
+        )
+        science = (
+            'Report water delivery only when the independent evidence supports it. '
+            'Use observed settled transfer and spills when present. Omit numeric amounts without evidence. '
+        )
+    else:
+        activity = (
+            'The current lab is a simulated indicator activity. A is the source and C is the receiver. '
+            'For a standalone sample choice or correction such as "the water one, please" or "use water instead", '
+            'call choose_condition with that sample only. '
+        )
+        science = (
+            'Never infer color from the sample name or estimate numeric pH. The qualitative reference for acid may be pink/red, '
+            'water near purple, and mild baking-soda solution blue/green. '
+        )
     return (
-        'You are OpenArms, the continuous conversational voice agent. A SEPARATE OpenAI Codex expert '
-        '(gpt-6.1-sol, medium reasoning) inspects camera evidence, makes tool-level decisions, runs supported skills '
-        'and proposes revisions during execution. You remain responsive while that background task runs. '
-        'The current software baseline is simulated indicator pH; the new kit activity is undecided. Hardware is disabled in this software run. '
-        'Results may be simulated image observations, recorded evidence, reference expectations or UNKNOWN; '
-        'preserve the provenance reported by tools. Never claim simulated or recorded evidence is live physical success. '
-        'The student chooses individual supported actions. Predictions and reflection are optional, never gates '
-        'before an action. Speak naturally in one or two short sentences. '
-        'Call watch_lab_events once at voice start or on your first turn in a fresh provider session; '
-        'a resumed session restores the previous subscription. '
-        'For a natural task request, call request_action with the entire student transcript verbatim. If a task is already running, '
-        'answer follow-ups and communicate its progress without starting duplicate work. '
-        'Explain uncertainty, clarification, failure, cancellation and a revised proposal when the server reports them. '
-        'Use tools for every state change. A student prediction is not a movement request or consent. '
-        'Use choose_condition for a standalone sample choice. For an action that includes a sample choice, '
-        'send the whole request through request_action. If they volunteer a prediction, '
-        'call record_prediction with their words. Do not require them to complete a lesson sequence. '
-        'Only ask for confirmation for the current pending proposal. Read its summary VERBATIM, then say "Say confirm or cancel." '
-        'Read a given proposal once; repeat only if the student asks or playback was interrupted. '
-        'On a fresh student confirm, call student_confirm using the exact pending request_id and proposal_version. '
-        'The server independently consumes valid consent and may already have executed it; use the returned evidence. '
-        'Never say an action started merely because you heard confirm. Only authoritative executing or completed '
-        'task status proves it started. A voice_control rejection means nothing was approved; explain its reason '
-        'and ask for fresh confirmation after the current proposal is fully heard. '
-        'Do not repeat a prediction request already satisfied. Do not claim the robot moved. '
-        'When the student asks a science question, answer it without changing the trial. For open conversation, be helpful and brief. '
-        'Never infer observed color from selected condition or controller completion. Explain what the observer reports '
-        'and distinguish MODEL-PREDICTED references from image observations. '
-        'When speaking any SIMULATED or SYNTHETIC outcome, explicitly say "In the simulation". '
-        'For recorded evidence, say "In the recording"; for MODEL-PREDICTED say "The reference predicts". '
-        'No numeric pH estimates. Acid reference may be pink/red, water purple, mild baking-soda reference blue/green; actual preparation matters. '
-        'Follow-up and reflection are conversation, not new action requests. Cancellation and STOP are handled by the server. '
-        'You do not authorize hardware or choose fixtures. Never fabricate tool results. '
-        'At voice start, greet briefly and ask what the student would like to do, or acknowledge their active task.\n'
-        + json.dumps(compact(context), ensure_ascii=False)
+        'You are the OpenArms voice guide. Speak to the student directly in one or two short sentences. '
+        'A separate image-aware background expert or an admitted skill plans requested lab actions. '
+        'The expert can change between tasks; use the current task’s pinned expert_configuration and verified latest_expert_run '
+        'if asked who is working. Report an unavailable or unverified identity as such. '
+        + activity +
+        'Use the backend capabilities and available evidence for specific claims. Physical motion and the new kit are unavailable.\n'
+        'At voice start, call watch_lab_events once and greet briefly. A resumed session restores that subscription. '
+        'For a requested action or an answer to a pending task clarification, call request_action with the entire transcript verbatim. '
+        'The server already queues explicit action requests and applies exact sample choices at completed transcription; '
+        'check current state and do not create a second task. Never answer an action request with an expected result. '
+        'Acknowledge briefly; the background task can keep working while you talk. '
+        'If the student asks a question while planning, awaiting a clarification/confirmation, or executing, '
+        'read get_lab_state unless a current tool result already establishes the answer. Answer the question first. '
+        'For queued or running status, say you are preparing the plan or checking the scene and that the action has not started. '
+        'An executing or observing status can be a pre-action scene check. If controller_state is empty, say the action has not started. '
+        'Use controller_state or actual controller phase or receipt to say the action started or completed. '
+        'Do not start another task, change the sample, '
+        'or repeat the whole proposal in response to a progress or science question. Keep any unanswered clarification open. '
+        'For a new action that changes an unapproved proposal, acknowledge the correction and wait for the new proposal. '
+        'Unsupported requests deserve a short explanation of the limitation and one supported option when evident. '
+        'Do not infer that asking about an action, an outcome, or a sample instructs you to act. '
+        'Predictions and reflections are optional. Record them verbatim when volunteered.\n'
+        'Use asynchronous events for changes that matter to the student. Group closely related steps into one progress update. '
+        'A clarification is a question to the student; ask it clearly and wait. A cancelled or stopped task does not resume on another turn. '
+        'Only read the current pending preview. Read its summary verbatim, then say "Say confirm or cancel." '
+        'Include every word, including "In the simulation" when present. A paraphrase is not presentation. '
+        'If a watch result requests an exact reread, do it even if you already described the plan; '
+        'do not say you are waiting for confirmation while pending.presented is false. '
+        'Read it once unless asked to repeat or playback was interrupted. If asked to repeat an earlier answer, '
+        'restate it with current state if relevant. A later changed preview needs fresh consent. '
+        'Exact confirm, cancel and STOP are handled by the server. Never infer consent. A rejected confirmation approves nothing. '
+        'If confirmation is rejected or there is no proposal, explain that nothing was approved and ask for the desired action. '
+        'After hearing confirm, read the current state before speaking. If no current controller phase exists, '
+        'acknowledge receipt of the confirmation only, for example "I’ll check the setup before starting." '
+        'Before reporting the effect of STOP, read current state. Only a new stop_requested event establishes accepted STOP. '
+        'If there is no new event, do not claim STOP was applied. If last_stop.effect is idle, '
+        'say nothing was running and preserve any already recorded outcome. If task_cancelled, say the pending work was cancelled. '
+        'Only execution_stopped means active execution was interrupted.\n'
+        'A controller result only reports the controller. A readable independent observation can establish a simulated outcome. '
+        'Say "In the simulation" for SIMULATED or SYNTHETIC evidence, "In the recording" for recorded evidence, '
+        'and "The reference predicts" for MODEL-PREDICTED expectations. For UNKNOWN say what could not be checked. '
+        + science + '\n' + json.dumps(state, ensure_ascii=False)
     )
 
 
@@ -209,10 +258,13 @@ class GeminiBridge:
         self.watch_cursor = None
         self.watch_failure = None
         self.last_state_signature = None
+        self.preview_repair = None
+        self.preview_attempts = (None, 0)
         self.speech_active = False
         self.silence_seconds = 0.
         self.input_boundary = None
         self.last_transcription = 0.
+        self.generation = self.controls.generation
 
     async def audio(self, encoded):
         if self.closed or self.muted or not self.ready:
@@ -275,6 +327,9 @@ class GeminiBridge:
                 # The PCM utterance has ended independently of the model. Allow
                 # delayed transcription fragments to settle before closing it.
                 if self.controls.text.strip() and time.monotonic()-self.last_transcription >= .5:
+                    # The timer becomes a committed turn. New PCM may cancel
+                    # silence detection, but cannot cancel its accepted STOP.
+                    self.input_boundary = None
                     await self._finish_transcript()
                     return
         finally:
@@ -352,9 +407,18 @@ class GeminiBridge:
         if self.recorded_turn_id == turn_id or self.recording_turn_id == turn_id:
             return
         self.controls.input('', finished=True)
+        generation = self.controls.generation
         self.recording_turn_id = turn_id
         try:
-            await self._record('user', text, turn_id, True)
+            # STOP/cancel must not wait behind a slow client transcript send.
+            control = self.controls.completed_control()
+            if control in ('stop_lab', 'cancel_request'):
+                await self.controls.complete_control()
+                generation = None
+            await self._record('user', text, turn_id, True, voice_generation=generation)
+        except (ValueError, TimeoutError) as exc:
+            await self._rejected_control(exc)
+            return
         finally:
             if self.recording_turn_id == turn_id:
                 self.recording_turn_id = None
@@ -362,21 +426,42 @@ class GeminiBridge:
             return
         self.recorded_turn_id = turn_id
         self.recorded_turn.set()
+        control = self.controls.completed_control()
         try:
             await self.controls.complete_control()
+            if control in ('stop_lab', 'cancel_request'):
+                await self._discard_superseded_playback(self.context().get('generation', 0))
         except (ValueError, TimeoutError) as exc:
             await self._rejected_control(exc)
 
-    async def _record(self, role, text, turn_id, final):
+    async def _record(self, role, text, turn_id, final, *, voice_generation=None):
         if not text:
             return
         if final:
-            await self.tool_call('_record_transcript', {'role': role, 'text': text, 'turn_id': turn_id, 'final': True})
+            extra = {} if voice_generation is None else {'_voice_generation': voice_generation}
+            await self.tool_call('_record_transcript', {'role': role, 'text': text, 'turn_id': turn_id, 'final': True, **extra})
         await self.emit({'type': 'transcript', 'role': role, 'text': text, 'turn_id': turn_id, 'final': final})
+
+    async def _discard_superseded_playback(self, generation):
+        stale = bool(self.reply_id or self.replies)
+        self.generation = generation
+        if stale:
+            await self.interrupt(None)
 
     async def state_changed(self):
         """Coalesce wakeups, never the underlying sequenced notebook events."""
         snap = self.context()
+        generation = snap.get('generation', 0)
+        if generation != self.generation:
+            await self._discard_superseded_playback(generation)
+        else:
+            pending = snap.get('pending') or {}
+            stale = lambda p: p and any(pending.get(k) != v for k, v in p.items())
+            if stale(self.reply_proposal):
+                await self.interrupt(self.reply_id)
+            for rid, reply in tuple(self.replies.items()):
+                if stale(reply.get('proposal')):
+                    await self.interrupt(rid)
         state = compact_snapshot(snap)
         meaningful = {name: state.get(name) for name in (
             'pending', 'generation', 'trial', 'prediction', 'tasks', 'observations', 'requests',
@@ -415,7 +500,8 @@ class GeminiBridge:
 
     async def _watch(self, session, cid, *, resumed=False):
         first = True
-        previous_control = None
+        previous_control = previous_observation = None
+        spoken_controller_starts = set()
         try:
             await self.state_changed()
             while not self.closed and cid not in self.cancelled_tools:
@@ -435,10 +521,42 @@ class GeminiBridge:
                           if (event := feedback_event(raw)) is not None]
                 cursor = notebook[-1]['sequence'] if notebook else self.watch_cursor
                 pending = state.get('pending') or {}
+                repair = (self.preview_repair == (pending.get('request_id'), pending.get('proposal_version'))
+                          and not pending.get('presented'))
                 control = state.get('voice_control')
-                # Once presented, keep passive updates from talking over the
-                # student's next confirmation. A new rejection still needs a reply.
-                quiet = pending.get('presented') and (first or control == previous_control)
+                # Send every event, but keep telemetry and already-presented
+                # previews silent. User follow-ups can still read current state.
+                controller_starts = {event['request_id'] for event in events
+                                     if event.get('request_id') and event['kind'] == 'execution_progress'
+                                     and event.get('phase')}
+                new_starts = controller_starts - spoken_controller_starts
+                spoken_controller_starts.update(controller_starts)
+                significant = bool(new_starts) or any(event['kind'] in {
+                    'task_cancelled', 'request_cancelled', 'request_expired', 'stop_requested',
+                    'request_proposed', 'observation',
+                } or (event['kind'] == 'task_status' and event.get('status') in {
+                    'needs_clarification', 'completed', 'failed',
+                }) for event in events)
+                observation = state['observations'][-1] if state['observations'] else None
+                significant |= bool(observation and observation != previous_observation)
+                rejected = control and control != previous_control
+                welcome = first and not resumed
+                quiet = not welcome and not rejected and not repair and (pending.get('presented') or not significant)
+                instruction = ('Use current state and new events. Ignore already reported sequences and superseded proposals. '
+                               'Answer a student question first. Give one short update for related progress events. '
+                               'Report actual failure codes only when relevant. '
+                               'A student confirmation or camera checkpoint does not establish controller motion. '
+                               'Only announce motion from a controller phase or receipt for the current request. '
+                               'Controller completion does not establish an observed outcome. '
+                               'Say "In the simulation" for simulated or synthetic results and '
+                               '"In the recording" for recorded evidence. Reflection is optional.')
+                if welcome:
+                    instruction = ('If this is the Start Voice gesture, greet the student briefly, '
+                                   'or acknowledge their active task. ' + instruction)
+                if repair:
+                    instruction = ('The previous invitation to confirm did not include the exact plan and cannot authorize execution. '
+                                   'Read this summary verbatim now, then say "Say confirm or cancel": ' + pending['summary'])
+                self.preview_repair = None
                 for offset in range(0, max(1, len(events)), EVENT_BATCH):
                     batch = events[offset:offset + EVENT_BATCH]
                     more = offset + EVENT_BATCH < len(events)
@@ -448,15 +566,12 @@ class GeminiBridge:
                             'subscription': 'resumed' if first and resumed else 'current',
                             'state': state, 'events': batch, 'after_sequence': self.watch_cursor,
                             'through_sequence': through,
-                            'instruction': 'Use the current state and new events. Ignore already reported sequences and superseded proposals. '
-                                           'Report significant changes only, including actual failure codes when present. '
-                                           'Controller completion does not establish an observed outcome. '
-                                           'Say "In the simulation" for simulated or synthetic results and '
-                                           '"In the recording" for recorded evidence. Reflection is optional.'},
+                            'instruction': instruction},
                         will_continue=True, scheduling='SILENT' if quiet or more else 'WHEN_IDLE')])
                     self.watch_cursor = through
                     first = False
                 previous_control = control
+                previous_observation = observation
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -506,7 +621,11 @@ class GeminiBridge:
                     result = {'error': str(exc)[:240], 'state': compact(self.context)}
                 self.seen_tools[cid] = result
             if cid not in self.cancelled_tools:
-                await session.send_tool_response(function_responses=[types.FunctionResponse(id=cid, name=call.name, response={'result': result})])
+                reply = types.FunctionResponse(id=cid, name=call.name, response={'result': result})
+                if call.name in ('request_action', 'improve_skill'):
+                    # Acknowledgments belong on the conversational side; the expert runs independently.
+                    reply.scheduling = 'WHEN_IDLE'
+                await session.send_tool_response(function_responses=[reply])
         finally:
             self.pending_tools.pop(cid, None)
 
@@ -541,7 +660,6 @@ class GeminiBridge:
                         task = self.pending_tools.get(cid)
                         if task:
                             task.cancel()
-                        await self.tool_call('_cancel_tool_request', {'tool_call_id': cid})
                     await self.interrupt(None)
                 content = response.server_content
                 if content:
@@ -572,7 +690,8 @@ class GeminiBridge:
                             self.reply_id = str(uuid.uuid4())
                             self.reply_text = ''
                             pending = self.context().get('pending')
-                            self.reply_proposal = ({k: pending[k] for k in ('request_id', 'proposal_version')} if pending else None)
+                            self.reply_proposal = (brief(pending, ('request_id', 'proposal_version'))
+                                                   if pending and not pending.get('presented') else None)
                             await self.emit({'type': 'reply_start', 'reply_id': self.reply_id, 'proposal': self.reply_proposal})
                             await self.emit({'type': 'status', 'status': 'speaking'})
                         rid = self.reply_id
@@ -601,11 +720,27 @@ class GeminiBridge:
                                 any(pending.get(k) != v for k, v in proposal.items()) or
                                 words(pending['summary']) not in words(text)):
                             proposal = None
+                        if (proposal is None and self.reply_proposal and not pending.get('presented')
+                                and all(pending.get(k) == v for k,v in self.reply_proposal.items())
+                                and ('say confirm' in words(text) or
+                                     self.preview_attempts[0] == (pending.get('request_id'), pending.get('proposal_version')))):
+                            repair_key = (pending['request_id'], pending['proposal_version'])
+                            previous, count = self.preview_attempts
+                            count = count if previous == repair_key else 0
+                            self.preview_attempts = (repair_key, count + 1)
+                            if count < 2 and self.watcher_id:
+                                self.preview_repair = repair_key
+                                if self.state_updates.full():
+                                    self.state_updates.get_nowait()
+                                self.state_updates.put_nowait(compact(self.context))
+                            else:
+                                await self.emit({'type':'error', 'recoverable':True,
+                                    'message':'The spoken plan could not be verified. Review the on-screen plan or ask me to repeat it.'})
                         if self.reply_id == rid and self.reply_seconds:
                             # Reply UUIDs are one-use playback tokens. A delayed ACK
                             # for a dropped/expired reply cannot present a new one.
                             self.replies[rid] = {'complete': True, 'proposal': proposal,
-                                                 'expires': time.monotonic() + PLAYBACK_ACK_TIMEOUT}
+                                                 'expires': time.monotonic() + self.reply_seconds + PLAYBACK_ACK_TIMEOUT}
                         if self.reply_id == rid:
                             self._clear_reply()
                         self.playback_changed.set()

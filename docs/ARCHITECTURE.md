@@ -2,7 +2,7 @@
 
 Vision revision: **demo-speed-v2**, with Joseph's Smartivity kit selection on November 14, 2026. Activity selection is explicitly deferred.
 This is the required direction, not a claim that the implementation is complete.
-Provider correction, November 14: Joseph has withdrawn Gemini. Continuous voice remains required, but the default voice connection is disabled pending a reviewed replacement and new live/device evidence. The Codex expert remains unchanged. Earlier Gemini recordings are historical evidence, not acceptance of the replacement.
+Provider correction, November 14: Joseph retained Gemini Live for speech and withdrew only Gemini thinking. Keep speech separate from expert inference: Sol, Astra, Opus or an explicitly configured Fable binding use the shared expert boundary. Live quota and actual-device evidence remain separate checks.
 [Notion product vision](https://app.notion.com/p/41871c9c107e8133aa70cf1588e620e4) owns product intent; this document translates it into the lean build contract. If they diverge, surface the conflict before changing scope.
 
 ## The demo we are building
@@ -27,7 +27,7 @@ Victor's November 14 physical-lab handoff is incorporated as the following remai
 - [ ] **Bench owner, D1:** verify empty-cup routes before supervised water trials; record grip, clearance, delivery, spills, return and HOME. Controller completion alone is not successful delivery.
 - [ ] **Joseph + lab owner, D1:** choose the kit activity and inspect its instructions/materials; define measurable outcome checks before implementing it. Do not reuse fruit-transfer evidence as liquid qualification.
 - [ ] **Runtime/perception owner, R3–R6 / D3–D4:** connect that selected activity through the existing task loop and registry. Retain an unchanged baseline, failures, independent observations and a substantive evaluated improvement.
-- [ ] **Voice/client owners, R1/R4 / D2:** replace the withdrawn voice provider and rehearse actual Mac and unplugged-iPhone conversation. Software merge is authorized without these rehearsals; acceptance remains open.
+- [ ] **Voice/client owners, R1/R4 / D2:** retain Gemini Live and rehearse actual Mac and unplugged-iPhone conversation. Software merge is authorized without these rehearsals; acceptance remains open.
 
 Successful routine HOME can be automatic. Replenishing materials and recovery after a fault require separate readiness checks; a STOP does not authorize a blind reset. Existing software covers exact proposal/confirmation, separate execution and observations, skill versions and evaluation. It has not qualified the physical kit or bench.
 
@@ -81,7 +81,7 @@ For the same request record: completed student input, first acknowledgment, disp
 
 The product's physical target above remains open. Joseph authorized software development with physical actuation disabled. The main architecture is the shared conversation, expert, perception, skills and supervised executor; no specific simulator is required. [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) maps R1–R6; [MAIN_INTEGRATION](MAIN_INTEGRATION.md) tracks branches, evidence and release gates. Software and simulation evidence do not establish D1 physical completion.
 
-- `agentic/openarms_lab` is the sole application task/session/registry runtime. The replacement voice agent must own responsive conversation; the configured expert performs image-aware planning and tool decisions, with Codex gpt-6.1-sol medium as the default. See [model profiles](EXPERT_MODELS.md) for Claude qualification gaps and task-pinned switching. Known skills reuse their validated versions.
+- `agentic/openarms_lab` is the sole application task/session/registry runtime. Gemini Live owns responsive conversation; the configured expert performs image-aware planning and tool decisions, with Codex gpt-6.1-sol medium as the default. See [model profiles](EXPERT_MODELS.md) for Claude qualification gaps and task-pinned switching. Known skills reuse their validated versions.
 - `ui/lab` and the native SwiftUI client share authenticated sessions, exact proposals, playback acknowledgments, STOP and provenance. Prediction/reflection are optional. `/developer` shows authenticated evidence and diagnostics.
 - Recorded software receipts establish bounded expert, tool, observation and skill behavior. Voice, real-device and selected-kit acceptance remain open; see the evidence ledger rather than inferring completion from test counts.
 - `bench_vision` supplies reusable evidence/localization tooling. `firmware/openarms_executor` preserves supervised taught actions and the successful historical mandarin trace; neither is activated implicitly by the software demo.

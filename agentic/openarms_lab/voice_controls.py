@@ -5,14 +5,17 @@ import re
 import time
 import uuid
 
+from .conversation import STOP_PHRASES, condition_input, prediction_input, read_only_turn, reset_input
+
 TASK_TEXT = {'request_action': 'text', 'start_task': 'text', 'improve_skill': 'limitation'}
 MUTATING_TOOLS = {*TASK_TEXT, 'choose_condition', 'record_prediction', 'record_reflection',
-                  'prepare_next_trial', 'student_confirm', 'cancel_request'}
+                  'prepare_next_trial', 'student_confirm', 'cancel_request', 'stop_lab'}
 CONFIRMATIONS = {'yes', 'yes please', 'confirm', 'yes confirm', 'yes i confirm', 'i confirm',
                  'confirm it', 'confirm the request', 'confirm this request', 'confirm that request',
                  'go ahead', 'yes go ahead'}
-CANCELLATIONS = {'cancel', 'cancel it', 'cancel the trial', 'cancel the request', 'never mind', 'nevermind'}
-STOPS = {'stop', 'stop now', 'emergency stop'}
+CANCELLATIONS = {'cancel', 'cancel it', 'cancel the trial', 'cancel the request', 'cancel the proposal',
+                 'never mind', 'nevermind'}
+STOPS = STOP_PHRASES
 
 
 def normalized(text):
@@ -71,19 +74,31 @@ class VoiceControls:
         self.text = ''
         self.last_confirmation = None
 
+    def completed_control(self):
+        if not self.finished.is_set() or not re.fullmatch(r'[a-zA-Z ,.!]+', self.text.strip()):
+            return None
+        norm = normalized(self.text)
+        if norm in STOPS:
+            return 'stop_lab'
+        if norm in CANCELLATIONS:
+            return 'cancel_request'
+        if norm in CONFIRMATIONS:
+            return 'student_confirm'
+        return None
+
     async def complete_control(self):
         """Act on exact controls without waiting for a model to choose a tool."""
-        if not self.finished.is_set() or self.consumed:
+        if self.consumed:
             return None
-        text = normalized(self.text)
-        if text in STOPS:
+        control = self.completed_control()
+        if control == 'stop_lab':
             self.consumed = True
-            return await self.callback('stop_lab', {})
-        if text in CANCELLATIONS:
+            return await self.callback(control, {})
+        if control == 'cancel_request':
             self.consumed = True
-            return await self.callback('cancel_request', {'request_id': self.request_id})
-        if text in CONFIRMATIONS:
-            return await self.dispatch('student_confirm', {'request_id': self.request_id, 'proposal_version': self.proposal_version})
+            return await self.callback(control, {'request_id': self.request_id})
+        if control == 'student_confirm':
+            return await self.dispatch(control, {'request_id': self.request_id, 'proposal_version': self.proposal_version})
         return None
 
     async def dispatch(self, name, arguments, *, turn_id=None):
@@ -103,8 +118,10 @@ class VoiceControls:
         if name in MUTATING_TOOLS:
             if not self.text.strip():
                 raise ValueError('Wait for a completed student turn.')
-            if name == 'cancel_request' and normalized(self.text) in CANCELLATIONS:
-                # The deterministic completed-input handler owns cancellation.
+            if name in ('cancel_request', 'stop_lab'):
+                if self.completed_control() != name:
+                    raise ValueError('A completed student stop or cancel instruction is required.')
+                # The deterministic handler owns these controls.
                 return self.context()
             if self.generation != self.context().get('generation', 0) or time.monotonic() - self.started > 30:
                 raise ValueError('This input was revoked. Please give a new instruction.')
@@ -113,16 +130,28 @@ class VoiceControls:
                 raise ValueError('That control cannot create or change a trial.')
             if self.consumed:
                 raise ValueError('This student turn already used its mutation. Wait for a new instruction.')
-            if name in TASK_TEXT:
-                field = TASK_TEXT[name]
+            if read_only_turn(self.text):
+                raise ValueError('Answer this conversational turn without changing the trial.')
+            if name == 'choose_condition' and condition_input(self.text) != args.get('condition_id'):
+                raise ValueError('Use the student’s stated sample choice.')
+            if name == 'prepare_next_trial' and not reset_input(self.text):
+                raise ValueError('Wait for the student to request a fresh trial.')
+            if name == 'record_prediction' and not prediction_input(self.text):
+                raise ValueError('Wait for a student prediction.')
+            field = TASK_TEXT.get(name)
+            if name in ('record_prediction', 'record_reflection'):
+                field = 'text'
+            if field:
                 supplied = args.get(field)
                 if not isinstance(supplied, str) or quoted_words(supplied) != quoted_words(self.text):
                     raise ValueError('Use the completed student request verbatim.')
-                if (normalized(self.text) in {'thanks', 'thank you', 'okay', 'ok', 'hello', 'hi'} or
-                        re.match(r'^(?:why\b|what (?:is|are|does|did|happened)\b|'
-                                 r'how (?:does|did|is|are)\b|explain\b)', normalized(self.text))):
-                    raise ValueError('Answer this conversational turn without starting a task.')
                 args[field] = self.text.strip()
+            applied = (self.context().get('dedupe') or {}).get('voice:' + self.turn_id, {})
+            if applied.get('mutation'):
+                if name != applied['mutation'] and not (name == 'request_action' and applied['mutation'] == 'choose_condition'):
+                    raise ValueError('This student turn already used its mutation. Wait for a new instruction.')
+                self.consumed = True
+                return self.context()
             # Claim before awaiting the callback, including if it fails after dispatch.
             self.consumed = True
             args['_voice_generation'] = self.generation

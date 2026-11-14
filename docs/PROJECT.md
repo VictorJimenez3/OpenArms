@@ -8,7 +8,7 @@ Victor’s presentation plan is one live robot activity and several simulation e
 
 ## Current software
 
-Main contains one authenticated browser/iPhone session service, a configurable Codex/Claude expert, perception tools, exact proposals, deterministic execution, independent observations and evaluated skill reuse. The default expert is Codex gpt-6.1-sol medium. Gemini is withdrawn and voice is disabled pending replacement. Physical actuation is disabled.
+Main contains one authenticated browser/iPhone session service, a configurable Codex/Claude expert, perception tools, exact proposals, deterministic execution, independent observations and evaluated skill reuse. The default expert is Codex gpt-6.1-sol medium. Gemini Live remains the speech provider; expert inference is independently selectable. Physical actuation is disabled.
 
 The main architecture is conversation → expert/perception → supported skills → supervised execution → independent observations. Simulation is an optional Devpost/presentation extra, outside core acceptance. The retained simulator and synthetic fixture do not implement the new kit. `/developer` shows evidence and diagnostics; STOP never authorizes a blind physical reset.
 

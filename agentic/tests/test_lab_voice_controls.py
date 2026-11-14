@@ -7,6 +7,7 @@ import pytest
 from agentic.openarms_lab.backends import MockBackend
 from agentic.openarms_lab.runtime import Lab, LabError
 from agentic.openarms_lab.voice_controls import VoiceControls
+from agentic.openarms_lab.live import GeminiBridge
 from agentic.tests.test_task_loop import TestExpert, TestPerception
 
 
@@ -49,6 +50,160 @@ async def propose(voice_lab, *, presented=False):
 async def say(controls, text):
     controls.input(text, finished=True)
     return await controls.complete_control()
+
+
+@pytest.mark.parametrize('phrase', ['Please stop now.', 'Stop now, please.', 'Please stop.'])
+@pytest.mark.parametrize('channel', ['voice', 'text'])
+async def test_polite_stop_revokes_pending_work_on_both_channels(voice_lab, phrase, channel):
+    lab, sid, controls, backend = voice_lab
+    await propose(voice_lab, presented=True)
+    generation = lab.snapshot(sid)['generation']
+    if channel == 'voice':
+        await say(controls, phrase)
+    else:
+        await lab.converse(sid, phrase)
+    state = lab.snapshot(sid)
+    assert state['generation'] > generation
+    assert state['pending'] is None and backend.executions == 0
+    assert state['tasks'][0]['status'] == 'cancelled'
+
+
+@pytest.mark.parametrize('phrase', ['Do not stop.', 'What if I ask you to stop?',
+                                  'Say please stop now.', '"Please stop now."', 'Stap.'])
+async def test_stop_discussion_and_misrecognition_are_not_controls(voice_lab, phrase):
+    lab, sid, controls, _ = voice_lab
+    generation = lab.snapshot(sid)['generation']
+    await say(controls, phrase)
+    assert lab.snapshot(sid)['generation'] == generation
+
+
+@pytest.mark.parametrize('correction', ['Actually, use water instead.', 'Actually, test the prepared water sample.'])
+async def test_completed_correction_precedes_fast_confirmation_without_model_tool(voice_lab, correction):
+    lab, sid, _, backend = voice_lab
+    await lab.choose_condition(sid, 'vinegar')
+    _, old = await propose(voice_lab, presented=True)
+    async def emit(_):
+        pass
+    bridge = GeminiBridge(lambda: lab.snapshot(sid), lambda n, a: lab.tool(sid, n, a), emit)
+    bridge.controls.input(correction)
+    await bridge._finish_transcript()
+    bridge.controls.input('Confirm.')
+    await bridge._finish_transcript()
+    state = lab.snapshot(sid)
+    original = next(r for r in state['requests'] if r['request_id'] == old['request_id'])
+    assert original['status'] == 'cancelled' and not original['student_confirmed']
+    assert backend.executions == 0
+    assert len(state['tasks']) == 2
+    assert state['trial']['condition_id'] == 'water'
+    await wait_for_task(lab, state['tasks'][-1]['task_id'])
+    pending = lab.snapshot(sid)['pending']
+    assert pending and pending['condition_id'] == 'water'
+    assert pending['plan']['bindings']['condition'] == 'water'
+    assert not pending['student_confirmed']
+
+
+async def test_completed_stop_applies_before_slow_transcript_delivery(voice_lab):
+    lab, sid, _, _ = voice_lab
+    entered, release = asyncio.Event(), asyncio.Event()
+    async def emit(frame):
+        if frame.get('type') == 'transcript' and frame.get('final'):
+            entered.set()
+            await release.wait()
+    bridge = GeminiBridge(lambda: lab.snapshot(sid), lambda n, a: lab.tool(sid, n, a), emit)
+    generation = lab.snapshot(sid)['generation']
+    bridge.controls.input('Please stop now.')
+    finish = asyncio.create_task(bridge._finish_transcript())
+    try:
+        await asyncio.wait_for(entered.wait(), 2)
+        bridge.controls.begin_input()
+        assert lab.snapshot(sid)['generation'] > generation
+    finally:
+        release.set()
+        await finish
+
+
+@pytest.mark.parametrize('name,arguments', [('record_prediction', {'text':'I predict pink.'}),
+                                           ('prepare_next_trial', {})])
+async def test_waiting_voice_mutation_cannot_cross_stop(voice_lab, name, arguments):
+    lab, sid, _, _ = voice_lab
+    lock = lab._lock(sid)
+    await lock.acquire()
+    generation = lab.snapshot(sid)['generation']
+    stop = asyncio.create_task(lab.stop(sid))
+    await asyncio.sleep(0)
+    mutation = asyncio.create_task(lab.tool(sid, name, {**arguments, '_voice_generation':generation}))
+    await asyncio.sleep(0)
+    lock.release()
+    await stop
+    with pytest.raises(LabError, match='Stale voice generation'):
+        await mutation
+
+
+async def test_completed_explicit_voice_action_starts_task_without_model_tool(voice_lab):
+    lab, sid, _, backend = voice_lab
+    async def emit(_):
+        pass
+    bridge = GeminiBridge(lambda: lab.snapshot(sid), lambda n, a: lab.tool(sid, n, a), emit)
+    bridge.controls.input('Please test the prepared vinegar sample and check the indicator color.')
+    await bridge._finish_transcript()
+    state = lab.snapshot(sid)
+    assert len(state['tasks']) == 1 and backend.executions == 0
+
+
+async def test_completed_reset_recovers_session_requiring_prepare(voice_lab):
+    lab, sid, _, _ = voice_lab
+    lab.get(sid)['requires_prepare'] = True
+    async def emit(_):
+        pass
+    bridge = GeminiBridge(lambda:lab.snapshot(sid),lambda n,a:lab.tool(sid,n,a),emit)
+    bridge.controls.input('Please prepare a new trial.')
+    await bridge._finish_transcript()
+    assert lab.snapshot(sid)['requires_prepare'] is False
+    assert not lab.snapshot(sid)['tasks']
+
+
+@pytest.mark.parametrize('text', ['Can you test another sample after this one?', 'Please prepare a new trial.'])
+async def test_completed_question_and_reset_do_not_queue_another_expert(voice_lab, text):
+    lab, sid, _, _ = voice_lab
+    _, old = await propose(voice_lab, presented=True)
+    async def emit(_):
+        pass
+    bridge = GeminiBridge(lambda: lab.snapshot(sid), lambda n, a: lab.tool(sid,n,a),emit)
+    bridge.controls.input(text)
+    await bridge._finish_transcript()
+    state = lab.snapshot(sid)
+    assert len(state['tasks']) == 1
+    if text.startswith('Can'):
+        assert state['pending']['request_id'] == old['request_id']
+    else:
+        assert state['pending'] is None
+
+
+async def test_new_pcm_cannot_cancel_completed_stop_waiting_for_lock(voice_lab):
+    import base64
+    lab, sid, _, _ = voice_lab
+    entered = asyncio.Event()
+    async def callback(name, args):
+        if name == 'stop_lab':
+            entered.set()
+        return await lab.tool(sid,name,args)
+    async def emit(_):
+        pass
+    bridge = GeminiBridge(lambda:lab.snapshot(sid),callback,emit)
+    bridge.ready = True
+    bridge.controls.input('Please stop now.')
+    bridge.last_transcription = time.monotonic()-1
+    lock=lab._lock(sid)
+    await lock.acquire()
+    bridge._end_speech()
+    timer=bridge.input_boundary
+    try:
+        await asyncio.wait_for(entered.wait(),2)
+        await bridge.audio(base64.b64encode(b'\xff\x1f'*1600).decode())
+    finally:
+        lock.release()
+    await asyncio.gather(timer,return_exceptions=True)
+    assert any(e['kind']=='stop_requested' for e in lab.snapshot(sid)['notebook'])
 
 
 async def test_voice_cancel_then_completed_confirmation_executes_new_task_once(voice_lab):
@@ -230,6 +385,8 @@ async def test_correction_keeps_its_own_turn_without_granting_task_consent(voice
     _, proposal = await propose(voice_lab, presented=True)
     text = 'Actually, use water instead.'
     controls.input(text, finished=True)
+    await lab.tool(sid, '_record_transcript',
+                   {'role': 'user', 'text': text, 'turn_id': controls.turn_id, 'final': True})
     await controls.dispatch('choose_condition', {'condition_id': 'water'})
     assert lab.snapshot(sid)['trial']['condition_id'] == 'water'
     with pytest.raises(ValueError):
@@ -251,3 +408,25 @@ async def test_waiting_mutation_cannot_inherit_a_later_turn(voice_lab):
     with pytest.raises(ValueError, match='revoked'):
         await task
     assert not lab.snapshot(sid)['tasks']
+
+
+@pytest.mark.parametrize(('text', 'name', 'arguments'), [
+    ('Can you tell me what you are doing?', 'request_action', {'text': 'Can you tell me what you are doing?'}),
+    ('Can you repeat that?', 'request_action', {'text': 'Can you repeat that?'}),
+    ('Could you say that again?', 'request_action', {'text': 'Could you say that again?'}),
+    ('Tell me more.', 'request_action', {'text': 'Tell me more.'}),
+    ('What would happen with water?', 'choose_condition', {'condition_id': 'water'}),
+    ('I prefer vinegar.', 'choose_condition', {'condition_id': 'water'}),
+    ('How long will this take?', 'prepare_next_trial', {}),
+    ('What if I ask you to stop?', 'stop_lab', {}),
+])
+async def test_voice_question_and_mismatched_choice_cannot_mutate(voice_lab, text, name, arguments):
+    lab, sid, controls, backend = voice_lab
+    controls.input(text, finished=True)
+    await lab.tool(sid, '_record_transcript',
+                   {'role': 'user', 'text': text, 'turn_id': controls.turn_id, 'final': True})
+    before = lab.snapshot(sid)
+    with pytest.raises(ValueError):
+        await controls.dispatch(name, arguments)
+    assert lab.snapshot(sid)['revision'] == before['revision']
+    assert not backend.executions

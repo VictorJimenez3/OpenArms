@@ -117,23 +117,48 @@ def test_websocket_host_origin_and_hello_guards(client):
     assert client.get(url, headers=headers).json()['generation'] == session['generation']
 
 
-def test_default_voice_stays_disabled_even_with_legacy_keys(client, monkeypatch):
-    monkeypatch.setenv('GEMINI_API_KEY', 'not-a-real-key')
-    monkeypatch.setenv('GOOGLE_API_KEY', 'not-a-real-key')
+def test_default_voice_reports_missing_key_and_keeps_text_ready(client):
     health = client.get('/api/health').json()
     assert health['live_configured'] is False
-    assert health['live_model'] is None
-    assert health['voice_status'] == 'disabled_pending_replacement'
+    assert health['voice_status'] == 'missing_key'
     session, url, headers = new_session(client)
     with client.websocket_connect(url + '/live') as ws:
-        hello(ws, session, 'voice-disabled')
+        hello(ws, session, 'voice-missing-key')
         ws.send_json({'type': 'start_voice'})
         error = ws.receive_json()
         assert error['type'] == 'status' and error['status'] == 'unavailable'
-        assert 'Voice is disabled' in error['message']
+        assert 'not configured' in error['message']
         ws.send_json({'type': 'ping', 'seq': 1})
         assert ws.receive_json() == {'type': 'pong', 'seq': 1}
         assert client.post(url + '/stop', headers=headers).status_code == 200
+
+
+def test_default_voice_uses_gemini_live_independently_of_expert(client, monkeypatch):
+    from agentic.openarms_lab import live
+    made = []
+    class Bridge:
+        def __init__(self, context, tool, emit):
+            self.emit = emit
+            made.append(context()['session_id'])
+        async def run(self):
+            await self.emit({'type': 'status', 'status': 'listening'})
+            await asyncio.Event().wait()
+        async def close(self):
+            pass
+    monkeypatch.setenv('GEMINI_API_KEY', 'not-a-real-key')
+    monkeypatch.setenv('GEMINI_LIVE_MODEL', 'configured-live-model')
+    monkeypatch.setattr(live, 'GeminiBridge', Bridge)
+    health = client.get('/api/health').json()
+    assert health['live_configured'] is True
+    assert health['live_model'] == 'configured-live-model'
+    assert health['voice_status'] == 'configured'
+    assert health['hardware_enabled'] is False
+    session, url, _ = new_session(client)
+    with client.websocket_connect(url + '/live') as ws:
+        hello(ws, session, 'voice-enabled')
+        ws.send_json({'type': 'start_voice'})
+        assert ws.receive_json()['status'] == 'listening'
+        assert made == [session['session_id']]
 
 
 def test_new_owner_revokes_approval_and_old_socket_cannot_stop_new_owner(client):
@@ -296,3 +321,25 @@ async def test_stop_during_mock_action_revokes_execution_and_prevents_observatio
             await lab.confirm(sid, **exact)
     finally:
         await lab.shutdown()
+
+
+def test_failed_voice_close_does_not_skip_session_revocation(tmp_path):
+    class ClosingBridge:
+        def __init__(self, context, tool, emit):
+            self.emit = emit
+        async def run(self):
+            await self.emit({'type': 'status', 'status': 'listening'})
+            await asyncio.Event().wait()
+        async def close(self):
+            raise WebSocketDisconnect(code=1006)
+    lab = Lab(tmp_path, expert=TestExpert(), perception=TestPerception(),
+              backend_factory=lambda: MockBackend(delay=0))
+    with TestClient(create_app(lab, access_path=tmp_path/'access.db', voice_factory=ClosingBridge)) as client:
+        session, url, headers = new_session(client)
+        with client.websocket_connect(url+'/live') as ws:
+            hello(ws, session, 'close-failure')
+            ws.send_json({'type':'start_voice'})
+            assert ws.receive_json()['status'] == 'listening'
+        state = wait_state(client, url, headers, lambda s: not s['connected'])
+        assert state['generation'] == session['generation'] + 1
+        assert state['pending'] is None

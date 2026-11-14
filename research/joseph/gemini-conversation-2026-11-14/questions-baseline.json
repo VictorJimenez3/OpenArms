@@ -1,0 +1,83 @@
+{
+  "rows": [
+    {
+      "question": "How is it going?",
+      "elapsed_ms": 41891.4047498256,
+      "proposal_preserved": false,
+      "new_tasks": 1,
+      "expert_calls": 3,
+      "executions": 0,
+      "messages": [
+        {
+          "id": "cb0485cf-dda7-47a3-9eea-d68547ba90ef",
+          "role": "user",
+          "text": "Observe the indicator after testing prepared vinegar.",
+          "turn_id": "prepare-0",
+          "final": true
+        },
+        {
+          "id": "c7eb4ff6-fa31-4882-a168-8b9a50af7405",
+          "role": "user",
+          "text": "How is it going?",
+          "turn_id": "question-0",
+          "final": true
+        }
+      ],
+      "last_task_status": "awaiting_confirmation"
+    },
+    {
+      "question": "What can you see?",
+      "elapsed_ms": 13219.007292296737,
+      "proposal_preserved": false,
+      "new_tasks": 1,
+      "expert_calls": 1,
+      "executions": 0,
+      "messages": [
+        {
+          "id": "9d96117a-1e7a-4fd5-9af7-f5ae7cc48224",
+          "role": "user",
+          "text": "What can you see?",
+          "turn_id": "question-1",
+          "final": true
+        },
+        {
+          "id": "3891d062-c717-4edc-96fd-5813cbd0997b",
+          "role": "assistant",
+          "text": "The simulated indicator at C appears purple. A sample cup is visible at A. This frame does not establish that a vinegar test occurred or provide a measured pH.",
+          "turn_id": "7f3e6d1f-7ff1-44b0-8c34-86360dfcec25",
+          "final": true
+        }
+      ],
+      "last_task_status": "completed"
+    },
+    {
+      "question": "Which cup is that?",
+      "elapsed_ms": 23402.359374798834,
+      "proposal_preserved": false,
+      "new_tasks": 1,
+      "expert_calls": 2,
+      "executions": 0,
+      "messages": [
+        {
+          "id": "8cb5574d-6496-4fb2-82d3-3bed706cc49d",
+          "role": "user",
+          "text": "Which cup is that?",
+          "turn_id": "question-2",
+          "final": true
+        },
+        {
+          "id": "7d120203-cfc9-41a1-8f6c-015091278774",
+          "role": "assistant",
+          "text": "The indicator receiver is on the right at C; the sample cup is on the left at A. Which one do you mean?",
+          "turn_id": "257623ec-7757-4fb6-8f7c-a95a57a9dfd2",
+          "final": true
+        }
+      ],
+      "last_task_status": "needs_clarification"
+    }
+  ],
+  "skill_version": "faf8a17abcca99ae2aaf2a78aea498e001409571c054e306c3c22c1243c36202",
+  "provenance": "SYNTHETIC",
+  "actual_expert": true,
+  "physical_execution": false
+}
