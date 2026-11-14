@@ -246,3 +246,37 @@ def render_movie(world, frames, path, *, title: str, mode: str, episode_id: str,
         'unique_native_frame_hashes': len({item['native_rgb_sha256'] for item in timeline}),
         'omitted_policy_waits': cuts, 'timeline': timeline,
     }
+
+
+def main():
+    import argparse
+    from contextlib import closing
+    import gzip
+    import json
+
+    from .smartivity_world import VisualState, World
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('episode', type=Path, help='Episode directory from Smartivity --capture-only')
+    parser.add_argument('--out', type=Path, required=True, help='Destination MP4')
+    args = parser.parse_args()
+    episode = args.episode
+    receipt = json.loads((episode / 'receipt.json').read_text(encoding='utf-8'))
+    with gzip.open(episode / 'motion.json.gz', 'rt', encoding='utf-8') as source:
+        frames = [(timestamp, action, VisualState(**state)) for timestamp, action, state in json.load(source)]
+    preparation = []
+    if (episode / 'preparation.json.gz').is_file():
+        with gzip.open(episode / 'preparation.json.gz', 'rt', encoding='utf-8') as source:
+            preparation = [(stage, VisualState(**state)) for stage, state in json.load(source)]
+    scenario = receipt['scenario']
+    titles = {'volcano': 'Erupting Volcano', 'potions': 'Magic Potions 1 & 2'}
+    with closing(World(seed=receipt['seed'], scenario=scenario)) as world:
+        video = render_movie(world, frames, args.out, title=titles[scenario], mode=receipt['mode'],
+                             episode_id=receipt['episode_id'], preparation=preparation)
+    report_path = args.out.with_suffix('.video.json')
+    report_path.write_text(json.dumps(video, indent=2) + '\n', encoding='utf-8')
+    print(report_path)
+
+
+if __name__ == '__main__':
+    main()

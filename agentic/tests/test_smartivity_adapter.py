@@ -33,6 +33,9 @@ class WorldFixture:
         shade = 40 if camera == 'overview' else 100
         return np.full((32, 32, 3), shade + len(self.started_actions) * 25, dtype=np.uint8)
 
+    def visual_state(self):
+        return self.sim_time
+
     def proprioception(self):
         return {'joints': []}
 
@@ -74,7 +77,7 @@ class PausedExpert:
 async def test_current_images_drive_action_and_cancelled_policy_cannot_dispatch(tmp_path):
     expert = PausedExpert()
     runner = SmartivityRun(tmp_path, expert, world_factory=WorldFixture)
-    await runner.start(seed=7)
+    await runner.start(seed=7, record=True)
     try:
         await asyncio.wait_for(expert.entered.wait(), 1)
         old_world = runner.world
@@ -83,6 +86,14 @@ async def test_current_images_drive_action_and_cancelled_policy_cannot_dispatch(
         assert 'evaluation' not in expert.before and 'pose' not in expert.before
         await asyncio.sleep(0.1)
         assert old_world.sim_time > 0.05  # Physics advances while the expert is waiting.
+        # A 30 Hz replay samples physics even while the same camera image is held.
+        recorded = runner.recorded_frames
+        assert len(recorded) >= 2
+        assert len(recorded) > runner._capture_count
+        for i, (timestamp, action, state) in enumerate(recorded):
+            assert action is None
+            assert timestamp == state
+            assert i / 30 <= timestamp <= i / 30 + old_world.timestep
         expert.dispatch.set()
         await asyncio.wait_for(expert.checked.wait(), 1)
         assert 'invalidated' in expert.invalid['error']

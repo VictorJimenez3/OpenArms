@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from functools import partial
+import gzip
 import hashlib
 import io
 import json
@@ -12,7 +13,7 @@ from pathlib import Path
 import time
 import uuid
 
-from PIL import Image, ImageDraw
+from PIL import Image
 import numpy as np
 
 from .codex_expert import ExpertUnavailable
@@ -22,7 +23,7 @@ from .skills import SkillRegistry
 
 CAMERAS = ('overview', 'side')
 CAPTURE_HZ = 4
-RECORD_HZ = 8
+RECORD_HZ = 30
 MAX_FRAME_AGE = 1
 OBJECTIVE = 'Erupting Volcano · pour the prepared beaker into the flask and return the beaker to its dock.'
 MANIFEST = {
@@ -111,7 +112,7 @@ class SmartivityRun:
         self._lock = asyncio.Lock()
         self._task = None
         self._stop_event = None
-        self._writer = None
+        self.recorded_frames = None
 
     @property
     def running(self):
@@ -125,7 +126,7 @@ class SmartivityRun:
                     phase=self.world.phase if self.world else 'ready',
                     frames={key: frame.metadata for key, frame in self.frames.items()})
 
-    async def _reset(self, seed):
+    async def _reset(self, seed, *, record=False):
         if isinstance(seed, bool) or not isinstance(seed, int) or not 0 <= seed <= 2_147_483_647:
             raise ValueError('Enter a seed from 0 to 2147483647.')
         if self.world is not None:
@@ -140,7 +141,8 @@ class SmartivityRun:
         self.frames.clear()
         self._capture_count = 0
         self._steps = 0
-        self._records = 0
+        self.recorded_frames = None
+        self.recorded_preparation = []
         self._phase_index = 0
         self._actions = []
         self._events = []
@@ -171,6 +173,8 @@ class SmartivityRun:
                     if preparation:
                         self.world.prepare(preparation)
                         self._capture()
+                    if record:
+                        self.recorded_preparation.append((self.world.preparation_stage, self.world.visual_state()))
                     pictures = self._save_frames()
                     self._preparation.append({'phase': self.world.preparation_stage, 'summary': note,
                                               'evidence_ids': [frame['frame_id'] for frame in pictures]})
@@ -196,7 +200,7 @@ class SmartivityRun:
         async with self._lock:
             if self.running:
                 raise ValueError('Stop or finish the current simulation before starting another.')
-            await self._reset(seed)
+            await self._reset(seed, record=record)
             self.status = 'running'
             self._limit = 1 if checkpoint else len(SEQUENCE)
             self._mode = 'scripted_diagnostic' if diagnostic else 'openarms_policy'
@@ -252,24 +256,13 @@ class SmartivityRun:
         self.frames = new
         self._capture_count = capture_group
 
-    def _sample_recording(self):
-        frame = self.frames['overview']
-        picture = Image.fromarray(frame.rgb.copy())
-        draw = ImageDraw.Draw(picture)
-        mode = 'SCRIPTED DIAGNOSTIC' if self._mode == 'scripted_diagnostic' else 'OPENARMS POLICY'
-        title = f'OpenArms Smartivity | SIMULATED | {mode}'
-        state = self.action if self.world.busy else 'Waiting for the expert' if (
-            self._mode == 'openarms_policy') else self.world.phase
-        draw.rectangle([0, 0, picture.width, 40], fill='#172435')
-        draw.text((10, 5), title, fill='white')
-        draw.text((10, 22), f'{state[:53]}   sim {self.world.sim_time:6.2f}s', fill='#c5e0ef')
-        self._writer.append_data(np.asarray(picture))
-        self._records += 1
-
     async def _drive(self, stop_driving):
         clock = self._clock
         wall_zero, model_zero = clock(), self.world.sim_time
-        next_camera = next_record = wall_zero
+        next_camera = wall_zero
+        frames = self.recorded_frames
+        if frames is not None:
+            frames.append((model_zero, None, self.world.visual_state()))
         while not stop_driving.is_set():
             now = clock()
             model_target = now - wall_zero + model_zero
@@ -277,16 +270,16 @@ class SmartivityRun:
             for _ in range(64):
                 if self.world.sim_time + self.world.timestep > model_target:
                     break
+                action = (SEQUENCE[self._phase_index] if frames is not None and self.world.busy else None)
                 self.world.tick()
                 self._steps += 1
+                if frames is not None and self.world.sim_time >= model_zero + len(frames) / RECORD_HZ:
+                    frames.append((self.world.sim_time, action, self.world.visual_state()))
             if now >= next_camera:
                 self._capture()
                 if self._phase_index == 1 and self.world.busy:
                     self._measure_effect()
                 next_camera = clock() + 1 / CAPTURE_HZ
-            if self._writer is not None and now >= next_record:
-                self._sample_recording()
-                next_record += 1 / RECORD_HZ
             self.timing = self._rates(clock() - wall_zero)
             await asyncio.sleep(0.005)
 
@@ -297,7 +290,7 @@ class SmartivityRun:
                 'sim_seconds_per_wall_second': round(simulated / elapsed, 3),
                 'control_hz': round(self._steps / elapsed, 2),
                 'captures_per_camera_hz': round(self._capture_count / elapsed, 2),
-                'spectator_samples_hz': round(self._records / elapsed, 2)}
+                'recorded_states_hz': round(len(self.recorded_frames or ()) / elapsed, 2)}
 
     def _save_frames(self):
         images = []
@@ -430,10 +423,7 @@ class SmartivityRun:
         final_evaluation = None
         try:
             if record:
-                import imageio.v2 as imageio
-                self._writer = imageio.get_writer(self.episode / 'overview.mp4', fps=RECORD_HZ,
-                                                  codec='libx264', pixelformat='yuv420p', macro_block_size=2,
-                                                  ffmpeg_log_level='error')
+                self.recorded_frames = []
             driver = asyncio.create_task(self._drive(stop_driving))
             policy = asyncio.create_task(self._policy(diagnostic, checkpoint))
             try:
@@ -480,9 +470,6 @@ class SmartivityRun:
                 self.world.halt()
             if driver:
                 await asyncio.gather(driver, return_exceptions=True)
-            if self._writer is not None:
-                self._writer.close()
-                self._writer = None
             final_evaluation = final_evaluation or self.world.evaluate()
             self._actual_result = {
                 'episode_id': self.episode_id, 'seed': self.seed, 'generation': self.generation,
@@ -559,6 +546,23 @@ async def _cli(args):
     try:
         await run.start(args.seed, diagnostic=args.diagnostic, checkpoint=args.checkpoint, record=True)
         result = await run.wait()
+        frames = run.recorded_frames or []
+        if frames:
+            if args.capture_only:
+                with gzip.open(run.episode / 'motion.json.gz', 'wt', encoding='utf-8') as target:
+                    json.dump([(t, action, asdict(state)) for t, action, state in frames], target,
+                              separators=(',', ':'), allow_nan=False)
+                if run.recorded_preparation:
+                    with gzip.open(run.episode / 'preparation.json.gz', 'wt', encoding='utf-8') as target:
+                        json.dump([(phase, asdict(state)) for phase, state in run.recorded_preparation], target,
+                                  separators=(',', ':'), allow_nan=False)
+            else:
+                from openarms_sim.smartivity_video import render_movie
+                title = 'Erupting Volcano' if args.scenario == 'volcano' else 'Magic Potions 1 & 2'
+                result['video'] = render_movie(run.world, frames, run.episode / 'overview.mp4',
+                                               title=title, mode=result['mode'], episode_id=run.episode_id,
+                                               preparation=run.recorded_preparation)
+                (run.episode / 'receipt.json').write_text(json.dumps(result, indent=2) + '\n')
         print(json.dumps({'receipt': str(run.episode / 'receipt.json'), 'status': result['status'],
                           'mode': result['mode'], 'evaluation': result['evaluation'],
                           'timing': result['timing']}, indent=2))
@@ -574,6 +578,8 @@ def main():
     parser.add_argument('--scenario', choices=EXPERIMENTS, default='volcano')
     parser.add_argument('--diagnostic', action='store_true', help='Scripted simulator-only control.')
     parser.add_argument('--checkpoint', action='store_true', help='Test the first camera-to-policy action only.')
+    parser.add_argument('--capture-only', action='store_true',
+                        help='Save 30 Hz render states for separate rendering on another host.')
     add_expert_arguments(parser)
     raise SystemExit(0 if asyncio.run(_cli(parser.parse_args())) else 1)
 

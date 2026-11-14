@@ -272,10 +272,6 @@ class World:
         spec.geom("table").rgba = [.096, .143, .178, 1.]
         spec.geom("tray_c").rgba = [.19, .24, .25, 1.]
         spec.geom("dock_a").rgba = [.075, .29, .38, 1.]
-        for material in spec.materials:
-            if material.rgba[0] > .9 and material.rgba[1] > .7:
-                material.rgba = [.86, .61, .19, 1.]
-                material.shininess = .28
         for name in (BEAKER, FLASK):
             body = spec.body(name)
             # Draw understated glass graduations at regular heights; labels are
@@ -627,6 +623,16 @@ class World:
         age = (time * (.71 + (pattern % 9) * .036) + pattern * .117) % 1.
         angle = pattern * GOLDEN_ANGLE + time * .75
         strength = np.sqrt(activity)
+        if self.scenario == "potions":
+            # The tea fizzes in the flask. Reserve the tall plume and
+            # exterior runoff for the soap-based volcano.
+            radius = (.003 + .008 * age) * strength
+            height = -.042 + .049 * age
+            model.geom_pos[indices] = lip + np.column_stack((radius * np.cos(angle), radius * np.sin(angle), height))
+            model.geom_size[indices, 0] = (.0006 + (pattern % 7) * .00026) * max(.15, strength)
+            model.geom_rgba[indices, 3] = min(.83, 2.6 * activity)
+            model.geom("foam_residue").rgba[3] = 0.
+            return
         radius = (.002 + .014 * age) * strength
         height = (-.005 + .070 * age - .023 * age**3) * strength
         model.geom_pos[indices] = lip + np.column_stack((radius * np.cos(angle), radius * np.sin(angle), height))
