@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/freespace/local/jdr317/openarms-isaac-5.1.0/venv/bin/python",
+    "/common/users/jdr317/openarms-isaac/code/simulation/isaac/smoke.py",
+    "--output",
+    "/common/users/jdr317/openarms-isaac/evidence/job-1273070/smoke",
+    "--workshop",
+    "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop"
+  ],
+  "returncode": -6,
+  "wall_seconds": 47.43229293823242,
+  "observation_status": "passed",
+  "status": "failed"
+}

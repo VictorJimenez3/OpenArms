@@ -1,5 +1,6 @@
 """Mocked sensor regression checks, never Isaac or manipulation evidence."""
 import sys
+import json
 import types
 import unittest
 from pathlib import Path
@@ -64,6 +65,16 @@ class CubeObservationTests(unittest.TestCase):
         self.assertTrue(result['released'])
         self.assertTrue(result['success'])
         self.assertGreaterEqual(result['settled_s'], 1.)
+
+    def test_numpy_measurements_serialize_during_carry_and_settle(self):
+        trial = self.trial([1., 0., 0., 0.])
+        trial.phase = 'carry'
+        trial.contact = types.SimpleNamespace(get_contact_force_matrix=lambda **_: np.array(
+            [[[0., 2., 0.], [0., -2., 0.], [0., 0., 0.]]], dtype=np.float32))
+        trial.cube.position = np.array([.2104272, .0831413, .0802642], dtype=np.float32)
+        json.dumps(trial.observe(13.191667), allow_nan=False)
+        trial = self.trial([1., 0., 0., 0.])
+        json.dumps(trial.observe(24.), allow_nan=False)
 
 
 if __name__ == '__main__': unittest.main()

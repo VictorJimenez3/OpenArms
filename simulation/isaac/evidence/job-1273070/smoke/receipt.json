@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "provenance": "SIMULATED",
+  "request_id": "ca30269d-527d-450f-a81c-5a00085bc9e3",
+  "backend": "simulated",
+  "kind": "articulation_smoke",
+  "status": "failed",
+  "manipulation_success": false,
+  "command": [
+    "/common/users/jdr317/openarms-isaac/code/simulation/isaac/smoke.py",
+    "--output",
+    "/common/users/jdr317/openarms-isaac/evidence/job-1273070/smoke",
+    "--workshop",
+    "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop"
+  ],
+  "utc_started": "2026-11-14T14:22:25Z",
+  "slurm_job_id": "1273070",
+  "slurm_step_id": "-5",
+  "cuda_visible_devices": "0",
+  "hostname": "rlab7.cs.rutgers.edu",
+  "scene": {
+    "units": "meters",
+    "up_axis": "Z",
+    "physics_dt": 0.008333333333333333,
+    "video_fps": 30,
+    "appearance": {
+      "robot_asset": "SO-ARM101-USD-NO-CAMERA.usd",
+      "onboard_camera": false,
+      "plastic_color_rgb": [
+        0.95,
+        0.95,
+        0.95
+      ],
+      "material_shader": "/World/Robot/Looks/material_a_3d_printed/Shader",
+      "external_evidence_camera": true
+    }
+  },
+  "git_commit": "2cb3088fd9c424862ba181942c479de818515907",
+  "git_dirty": false,
+  "workshop_commit": "ce807d99724cb65671abec01f908a2fcb4a6eab7",
+  "isaac_version": "5.1.0.0",
+  "robot_asset": {
+    "path": "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop/source/sim_to_real_so101/assets/usd/SO-ARM101-USD-NO-CAMERA.usd",
+    "sha256": "71a03dd530e8dff75fd6de0cb4aacbb31653395fb01d9af835853f84841d4c77"
+  },
+  "gpu": "uuid, name, driver_version, memory.total [MiB]\nGPU-4babf9c9-e407-94af-2692-64cb190c9826, NVIDIA RTX A6000, 580.178.04, 46068 MiB\n",
+  "isaac_app_created": true,
+  "joint_names": [
+    "Rotation",
+    "Pitch",
+    "Elbow",
+    "Wrist_Pitch",
+    "Wrist_Roll",
+    "Jaw"
+  ],
+  "initial_joint_positions_rad": [
+    -0.2736,
+    -0.6109,
+    -0.0745,
+    1.5148,
+    -1.6034,
+    -0.1465
+  ],
+  "frames": 240,
+  "measured_rotation_span_rad": 0.36133285611867905,
+  "video": "camera.mp4",
+  "visual_review": "required",
+  "result": "Robot rendered and articulation moved; grasp/place not attempted",
+  "sha256": {
+    "state.jsonl": "0d1f57b2ecc8e0d3ab9128ab06cd94c8daefc7ca04b33a388db702552b4b7782",
+    "scene.usda": "c3472208db0fcf9da823bace2d0d7d44ba2a8d5041e1339d1270f97ae8dfd8d2",
+    "first-frame.png": "fb3f12814237874493675ce9b640acae7dc8630050e0bec9575b9bf1c5537929",
+    "camera.mp4": "77cc36b1f5fdbbefd748664109a600f049d052d07126964fc9aa1ed725d4ee87",
+    "events.jsonl": "319515bf260e2432fa706f42e342cc2950e62385a3d03da1ece0404ff8a62606"
+  },
+  "observation_status": "passed",
+  "shutdown_status": "process_failed",
+  "utc_finished": "2026-11-14T14:23:03Z",
+  "process_returncode": -6
+}
