@@ -92,7 +92,7 @@ Each layer can only reach the one below it through a check:
 
 | Action | What happens | Validator checks |
 |---|---|---|
-| `add_sample(source, into, portions=1)` | Expands to `pick(source)`, `pour(into)` × portions, `return_cup()`, `home()`. The teacher sees every expanded step. | source is a source with enough portions left; `into` is a receiver with room |
+| `add_sample(source, into, portions=1)` | Expands to (`pick(source)`, `pour(into)`, `return_cup(source)`) × portions, then `home()`: one mini-cup per portion, so `portions=2` is 7 steps. The teacher sees every expanded step. | source is a source with enough portions left; `into` is a receiver with room |
 | `wait(seconds)` | The arm holds still, e.g. to let a color develop. In the plan so the teacher approves the timing and the UI can show a countdown. | `1 ≤ seconds ≤ 30` |
 | `look(station)` | Camera still, no motion | station exists |
 
