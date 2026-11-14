@@ -169,9 +169,14 @@ def fit_source_map(spec):
     fit_errors = np.abs(design @ coefficients-train_q)
     baseline_q = np.array([baseline["poses"][pose][joint] for pose in SOURCE_POSES for joint in ARM_JOINTS])
     baseline_errors = np.abs(test_q-baseline_q)
-    accepted = max(float(errors.max()), float(fit_errors.max())) <= spec["max_heldout_error_deg"]
+    baseline_prediction = np.r_[1, (np.array(source)-center)/scale] @ coefficients
+    baseline_consistency = np.abs(baseline_prediction-baseline_q)
+    residuals_passed = max(float(errors.max()), float(fit_errors.max())) <= spec["max_heldout_error_deg"]
+    baseline_passed = float(baseline_consistency.max()) <= spec["max_heldout_error_deg"]
+    status = ("rejected_residual" if not residuals_passed else
+              "rejected_baseline_mismatch" if not baseline_passed else "fit_passed")
     artifact = {"schema_version": 1, "kind": "empirical_affine_source_map", "execution": "offline_only",
-                "status": "fit_passed" if accepted else "rejected_residual", "spec": copy.deepcopy(spec),
+                "status": status, "spec": copy.deepcopy(spec),
                 "baseline_hash": _hash(baseline), "support_hull_mm": hull,
                 "center_mm": center.tolist(), "scale_mm": scale.tolist(),
                 "coefficients": coefficients.tolist(),
@@ -181,6 +186,8 @@ def fit_source_map(spec):
                     "held_out_rmse_deg": float(np.sqrt(np.mean(errors**2))),
                     "constant_baseline_max_abs_deg": float(baseline_errors.max()),
                     "constant_baseline_rmse_deg": float(np.sqrt(np.mean(baseline_errors**2))),
+                    "baseline_consistency_max_abs_deg": float(baseline_consistency.max()),
+                    "baseline_consistency_rmse_deg": float(np.sqrt(np.mean(baseline_consistency**2))),
                     "held_out_per_placement_max_abs_deg": errors.max(axis=1).tolist(),
                     "metric_scope": "joint target prediction, not grasp success, clearance or physical path accuracy"},
                 "physical_qualification": "not_physical" if spec["provenance"] == "synthetic" else "supplied_measurements_require_independent_review"}
@@ -198,7 +205,7 @@ def propose_source_poses(model, observation, current_setup, *, now_s):
         if _hash({k: v for k, v in model.items() if k != "content_hash"}) != model.get("content_hash"):
             raise ValueError("source-map content changed")
         if model.get("status") != "fit_passed" or model.get("execution") != "offline_only":
-            raise ValueError("source map has not passed held-out residual checks")
+            raise ValueError("source map has not passed held-out and baseline consistency checks")
         spec = model["spec"]
         if any(current_setup.get(key) != spec["setup"][key] for key in SETUP_KEYS):
             raise ValueError("setup, robot-base registration or joint convention changed")
@@ -237,7 +244,8 @@ def propose_source_poses(model, observation, current_setup, *, now_s):
         # For a Euclidean position-error disk, each affine output has this exact bound.
         sensitivity = np.linalg.norm(coefficients[1:] / scale[:, None], axis=0)
         empirical_residual = max(model["evaluation"]["held_out_max_abs_deg"],
-                                 model["evaluation"]["fit_max_abs_deg"])
+                                 model["evaluation"]["fit_max_abs_deg"],
+                                 model["evaluation"]["baseline_consistency_max_abs_deg"])
         error_bound = uncertainty*sensitivity + empirical_residual
         if float(error_bound.max()) > spec["max_target_error_deg"]:
             raise ValueError("propagated position error plus held-out residual exceeds target tolerance")
