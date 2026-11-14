@@ -22,6 +22,16 @@ REPLAY_CAMERAS = ("wide", "reaction")
 REPLAY_WIDTH, REPLAY_HEIGHT = 1280, 720
 PLUME_LOBES, RUNOFF_LOBES, TRAY_LOBES = 104, 72, 62
 GOLDEN_ANGLE = 2.39996323
+MAX_LAYOUT_VARIATION_M = .018
+REGISTRATION_WIDTH, REGISTRATION_HEIGHT = 640, 480
+REGISTRATION_CENTER = (.26, 0.)
+REGISTRATION_HEIGHT_M = .398
+FIDUCIALS = {
+    "dock": {"offset_xy_m": [.041, 0.], "rgb_min": [180, 0, 150], "rgb_max": [255, 120, 255],
+             "radius_m": .006},
+    "receiver": {"offset_xy_m": [.092, 0.], "rgb_min": [0, 175, 0], "rgb_max": [125, 255, 135],
+                 "radius_m": .006},
+}
 UP = np.array([0., 0., 1.])
 BEAKER = "beaker"
 FLASK = "flask"
@@ -119,11 +129,17 @@ class VisualState:
 class World:
     """Bounded joint goals and a separate carrier-volume model."""
 
-    def __init__(self, seed: int = 0, *, aim: str = "spout", scenario: str = "volcano"):
+    def __init__(self, seed: int = 0, *, aim: str = "spout", scenario: str = "volcano",
+                 position_variation_m: float | None = None):
         if aim not in ("spout", "mouth_center"):
             raise ValueError("Unknown pour aim.")
         if scenario not in ("volcano", "potions"):
             raise ValueError("Unknown Smartivity experiment.")
+        if position_variation_m is not None and (
+                isinstance(position_variation_m, bool) or not 0 <= position_variation_m <= MAX_LAYOUT_VARIATION_M):
+            raise ValueError("Position variation must be between 0 and 0.018 m.")
+        self.position_variation_m = position_variation_m
+        self._registered_layout = None
         self.aim = aim
         self.scenario = scenario
         base = yaml.safe_load((SETUPS / "volcano.yaml").read_text())
@@ -147,7 +163,10 @@ class World:
         self.nominal_flask = np.r_[config["flask_xy_m"], config["flask_base_m"]]
         rng = np.random.default_rng(seed)
         variation = config["variation"]
-        delta = rng.uniform(-1, 1, (2, 2)) * variation["position_m"] if seed else np.zeros((2, 2))
+        if position_variation_m is None:
+            delta = rng.uniform(-1, 1, (2, 2)) * variation["position_m"] if seed else np.zeros((2, 2))
+        else:
+            delta = rng.uniform(-1, 1, (2, 2)) * position_variation_m
         self.dock = self.nominal_beaker + np.r_[delta[0], 0]
         self.receiver = self.nominal_flask + np.r_[delta[1], 0]
         self.contents = {key: {k: float(v) for k, v in source["preparation"][key].items() if k != "stir_count"}
@@ -249,9 +268,23 @@ class World:
               [*self.foam_color[:3], 0], contype=0, conaffinity=0)
         _geom(w, "stream", "CYLINDER", [.0018, .01, 0], [0, 0, -.1], [*RGBA_WATER[:3], 0],
               contype=0, conaffinity=0)
+        if self.position_variation_m is not None:
+            self._add_registration(spec)
         if presentation:
             self._dress_presentation(spec)
         return spec.compile()
+
+    def _add_registration(self, spec):
+        world = spec.worldbody
+        world.add_camera(name="registration", pos=[*REGISTRATION_CENTER, .65], xyaxes=[0, -1, 0, 1, 0, 0],
+                         fovy=REGISTRATION_HEIGHT_M, proj=mujoco.mjtProjection.mjPROJ_ORTHOGRAPHIC)
+        for label, world_pos, rgb in (("dock", self.dock, [1, 0, 1]),
+                                       ("receiver", self.receiver, [0, 1, 0])):
+            marker = FIDUCIALS[label]
+            material = spec.add_material(name=f"registration_{label}", rgba=[*rgb, 1], emission=1.)
+            xy = world_pos[:2] + marker["offset_xy_m"]
+            _geom(world, f"fiducial_{label}", "CYLINDER", [marker["radius_m"], .0004, 0.],
+                  [*xy, .003], [*rgb, 1], material=material.name, contype=0, conaffinity=0)
 
     def _dress_presentation(self, spec):
         """Add geometry to the spectator copy only. No new bodies or collision geoms."""
@@ -299,30 +332,30 @@ class World:
     def _site_pose(self):
         return self.data.site_xpos[self._site].copy(), self.data.site_xmat[self._site].reshape(3, 3).copy()
 
-    def _frame_for(self, q):
-        self.data.qpos[self._qaddr[:5]] = q
-        mujoco.mj_kinematics(self.model, self.data)
-        return self._site_pose()[1]
-
-    def _build_motion(self):
+    def _build_motion(self, *, dock=None, receiver=None, fixed_spout=None):
         config = self.config
         grasp_height = config["beaker_grasp_height_m"]
-        grasp = self.nominal_beaker + UP * grasp_height
-        lite = SimpleNamespace(model=self.model, data=self.data, arm_qadr=self._qaddr[:5], grasp_site=self._site)
-        q_grasp, _ = self._solve(lite, grasp, 0.)
+        station_a = self.nominal_beaker if dock is None else dock
+        station_c = self.nominal_flask if receiver is None else receiver
+        grasp = station_a + UP * grasp_height
+        planning_data = mujoco.MjData(self.model)
+        lite = SimpleNamespace(model=self.model, data=planning_data, arm_qadr=self._qaddr[:5], grasp_site=self._site)
+        q_grasp, Rg = self._solve(lite, grasp, 0.)
         q_lift, _ = self._solve(lite, grasp + UP * config["lift_m"], 0., q_grasp)
-        Rg = self._frame_for(q_grasp)
         tip = math.radians(config["tip_deg"])
-        target_lip = self.nominal_flask + UP * (self.flask_height + config["lip_clearance_m"])
+        target_lip = station_c + UP * (self.flask_height + config["lip_clearance_m"])
         target_grasp = target_lip.copy()
         radius = (self.beaker_profile["outer_profile"][-1][1] + self.beaker_profile["spout"]["extension_mm"]) / 1000
         q_tip = q_lift
         for _ in range(5):
             q_tip, Rt = self._solve(lite, target_grasp, tip, q_tip)
             T = Rt @ Rg.T
-            spout = -T.T @ UP
-            spout[2] = 0
-            spout /= np.linalg.norm(spout)
+            if fixed_spout is None:
+                spout = -T.T @ UP
+                spout[2] = 0
+                spout /= np.linalg.norm(spout)
+            else:
+                spout = fixed_spout
             offset = T @ (UP * (self.beaker_height - grasp_height) + spout * radius)
             target_grasp = target_lip - offset
         if self.aim == "mouth_center":
@@ -335,8 +368,8 @@ class World:
         values = {"HOME": HOME_MODEL, "GRASP_A": q_grasp, "ABOVE_A": q_lift, "LIFT_A": q_lift,
                   "ABOVE_C": q_above, "TIP_C": q_tip}
         poses = {key: self.joint_map.pose_from_model(value) for key, value in values.items()}
-        stations = {"A": Station("A", "source", tuple(self.nominal_beaker[:2])),
-                    "C": Station("C", "receiver", tuple(self.nominal_flask[:2]))}
+        stations = {"A": Station("A", "source", tuple(station_a[:2])),
+                    "C": Station("C", "receiver", tuple(station_c[:2]))}
         steps = [{"action": "pick", "args": {"station": "A"}}, {"action": "pour", "args": {"into": "C"}},
                  {"action": "return_cup"}, {"action": "home"}]
         segments = build_segments(steps, poses, self.joint_map, stations)
@@ -347,7 +380,46 @@ class World:
         q, error = solve(scene, target, roll, seed)
         if error > .004:
             raise RuntimeError(f"Smartivity fixture grasp/tilt unreachable ({error:.3f} m IK error)")
-        return q, self._frame_for(q)
+        scene.data.qpos[self._qaddr[:5]] = q
+        mujoco.mj_kinematics(self.model, scene.data)
+        return q, scene.data.site_xmat[self._site].reshape(3, 3).copy()
+
+    def registration_calibration(self):
+        if self.position_variation_m is None:
+            raise ValueError("Layout registration is disabled.")
+        scale = REGISTRATION_HEIGHT_M / REGISTRATION_HEIGHT
+        x, y = REGISTRATION_CENTER
+        return {
+            "width_px": REGISTRATION_WIDTH, "height_px": REGISTRATION_HEIGHT,
+            "pixel_to_world_xy": [[0., -scale, x + (REGISTRATION_HEIGHT - 1) / 2 * scale],
+                                  [-scale, 0., y + (REGISTRATION_WIDTH - 1) / 2 * scale]],
+            "markers": deepcopy(FIDUCIALS),
+            "workspace_xy_m": [[.20, -.20], [.41, .20]],
+        }
+
+    def registration_image(self):
+        if self.position_variation_m is None or self.phase != "ready" or self.busy:
+            raise ValueError("Layout registration requires an idle, pre-pick scene.")
+        if self._renderer is None:
+            self._renderer = mujoco.Renderer(self.model, REGISTRATION_HEIGHT, REGISTRATION_WIDTH)
+        self._render_liquid(self.model, self.sim_time, self._visual_effects())
+        self._renderer.update_scene(self.data, "registration", scene_option=self._camera_options)
+        return self._renderer.render()
+
+    def register_layout(self, dock_xy, receiver_xy):
+        """Resolve local skill targets from bounded pixel-derived estimates."""
+        if self.position_variation_m is None or self.phase != "ready" or self.busy:
+            raise ValueError("Layout registration requires an idle, pre-pick scene.")
+        coordinates = []
+        for xy, nominal in ((dock_xy, self.nominal_beaker), (receiver_xy, self.nominal_flask)):
+            xy = np.asarray(xy, dtype=float)
+            limit = MAX_LAYOUT_VARIATION_M + .0015  # projection/centroid pixel error margin
+            if xy.shape != (2,) or not np.isfinite(xy).all() or np.any(np.abs(xy - nominal[:2]) > limit):
+                raise ValueError("Estimated station lies outside its bounded fixture region.")
+            coordinates.append(np.r_[xy, nominal[2]])
+        # IK uses detached MjData, the estimates, and the dock's fixed nominal yaw.
+        self._build_motion(dock=coordinates[0], receiver=coordinates[1], fixed_spout=self._rest_rotation[:, 1])
+        self._registered_layout = [xy[:2].tolist() for xy in coordinates]
 
     @property
     def timestep(self):
@@ -707,7 +779,12 @@ class World:
         source = self.initial[BEAKER]["water_ml"]
         success = (self.delivered_ml >= source * self.config["min_delivered_fraction"] and
                    self._max_foam >= .22 and self._placed and not self.drops and not self._fault)
-        return {"success": bool(success), "delivered_ml": self.delivered_ml, "spilled_ml": self.spill["water_ml"],
+        layout = {} if self.position_variation_m is None else {
+            "position_variation_m": self.position_variation_m,
+            "fixture_ground_truth_xy_m": [self.dock[:2].tolist(), self.receiver[:2].tolist()],
+            "registration_estimate_xy_m": deepcopy(self._registered_layout),
+        }
+        return {**layout, "success": bool(success), "delivered_ml": self.delivered_ml, "spilled_ml": self.spill["water_ml"],
                 "overflow_ml": self.overflow_ml, "collisions": self.collisions, "drops": self.drops,
                 "placed": bool(self._placed), "foam_peak": self._max_foam, "elapsed_sim_s": self.sim_time,
                 "aim": self.aim, "scenario": self.scenario, "seed": self.seed,
