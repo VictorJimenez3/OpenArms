@@ -82,6 +82,46 @@
         5712,
         4284
       ]
+    },
+    "IMG_9267": {
+      "original_filename": "IMG_9267.HEIC",
+      "sha256": "1e75e301fd72bb22999320a98ead9e271d498a510b25b9bed8ca0960a5e07182",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9268": {
+      "original_filename": "IMG_9268.HEIC",
+      "sha256": "aefab66dc937cdf4c44e91dde84d758895c31d628a5b10671699348ba01254c2",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9269": {
+      "original_filename": "IMG_9269.HEIC",
+      "sha256": "c91af6c5b7142cda999f65cbfc051e418647ff43a4dfba4ee4c4c4e3e1ebf191",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9270": {
+      "original_filename": "IMG_9270.HEIC",
+      "sha256": "7009887ba1e9b4ce3b91f29173e669e6fc0402e16c0d384cdc2b5ba61927121d",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9271": {
+      "original_filename": "IMG_9271.HEIC",
+      "sha256": "91ed653cc461f94d565bab10fb1817416216f91005188f0402d66f4b9d4c5d1c",
+      "pixels": [
+        5712,
+        4284
+      ]
     }
   },
   "vessels": {
@@ -304,30 +344,31 @@
       "role": "Wider receiver at C; 100 mL embossed on underside, no located fill graduation",
       "dimensions": {
         "height": {
-          "value_mm": 36,
+          "value_mm": 32,
           "plausible_range_mm": [
-            31,
-            41
+            30,
+            35
           ],
           "evidence": [
-            "IMG_9264"
+            "IMG_9270",
+            "IMG_9271"
           ],
           "method": "image-derived",
-          "note": "Oblique side view; direct outside height requested."
+          "note": "Replaces earlier oblique36mm estimate. Upright/inverted axial plane-centre readings about33 and31mm; same-camera systematic error retained."
         },
         "rim_diameter": {
-          "value_mm": 80,
+          "value_mm": 78,
           "plausible_range_mm": [
             75,
-            85
+            82
           ],
           "evidence": [
+            "IMG_9269",
             "IMG_9261",
-            "IMG_9262",
             "IMG_9263"
           ],
           "method": "image-derived",
-          "note": "Apparent 75.7 versus82.9 mm; incompatible scales retained as uncertainty rather than averaged as independent readings."
+          "note": "9269 near-central ruler chord77.2mm supports about78mm circularOD. Earlier apparent76/83mm views have parallax; not independently averaged."
         },
         "opening_diameter": {
           "value_mm": 75,
@@ -399,16 +440,16 @@
           30.5
         ],
         [
-          33,
+          29,
           38
         ],
         [
-          34.5,
-          40
+          30.5,
+          39
         ],
         [
-          36,
-          40
+          32,
+          39
         ]
       ],
       "inner_profile": [
@@ -421,18 +462,18 @@
           29.8
         ],
         [
-          33,
+          29,
           37.3
         ],
         [
-          36,
+          32,
           37.5
         ]
       ],
       "spout": {
         "extension_mm": 0,
         "half_angle_deg": 20,
-        "start_height_mm": 33,
+        "start_height_mm": 29,
         "status": "no spout visible"
       },
       "graduation": null,
@@ -447,5 +488,6 @@
         "wet contact properties"
       ]
     }
-  }
+  },
+  "revision": 2
 }
