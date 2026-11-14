@@ -1,4 +1,4 @@
-"""Real Codex task rehearsal against synthetic images; no physical actuation.
+"""Selected expert task rehearsal against synthetic images; no physical actuation.
 
 The harness acts as a test student and explicitly presents/confirms mock plans.
 It retains actual model/tool/image/task receipts. It is not an audible rehearsal.
@@ -9,7 +9,7 @@ import json
 import time
 from pathlib import Path
 
-from openarms_lab.codex_expert import CodexExpert
+from openarms_lab.expert_profiles import add_expert_arguments, expert_from_arguments
 from openarms_lab.evaluation import SyntheticSkillEvaluator
 from openarms_lab.runtime import Lab
 from openarms_lab.scene import SceneService
@@ -44,10 +44,11 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--execution', choices=['mock', 'mujoco'], default='mock')
+    add_expert_arguments(parser)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     scene = SceneService(args.out/'scene')
-    expert = CodexExpert(args.out/'expert', artifact_roots=[scene.artifact_dir])
+    expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
     factory = lambda: SceneBackend(scene, delay=.02)
     if args.execution == 'mujoco':
@@ -55,7 +56,7 @@ async def main():
         from openarms_lab.mujoco_backend import MujocoBackend
         from openarms_lab.simulation_evaluation import SimulationSkillEvaluator
         scene = MujocoSceneService(args.out/'scene')
-        expert = CodexExpert(args.out/'expert', artifact_roots=[scene.artifact_dir])
+        expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
         evaluator = SimulationSkillEvaluator(args.out/'evaluations')
         factory = lambda: MujocoBackend(scene)
     lab = Lab(args.out/'sessions', expert=expert, perception=scene, evaluator=evaluator,
@@ -85,8 +86,9 @@ async def main():
         task2 = warm['tasks'][-1]
         assert task2['status'] == 'completed' and task2['route'] == 'active_skill'
         assert not task2['expert_runs'], 'Warm successful skill invoked the expert'
-        summary = {'provider': expert.provider, 'model': expert.model,
-                   'reasoning_effort': expert.reasoning_effort,
+        summary = {'expert_configuration': expert.describe(), 'expert_runs': task['expert_runs'],
+                   'provider': task['expert_runs'][0]['provider'], 'model': task['expert_runs'][0]['model'],
+                   'reasoning_effort': task['expert_runs'][0]['reasoning_effort'],
                    'provenance': 'SIMULATED' if args.execution == 'mujoco' else 'SYNTHETIC',
                    'execution_backend': args.execution,
                    'actual_expert': True, 'audible_voice_verified': False,

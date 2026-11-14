@@ -93,6 +93,11 @@ class TaskLoop:
                 'feedback': [], 'expert_runs': [], 'evidence': {}, 'scene': None, 'images': [],
                 'started_at': time.time(), 'dispatched_action': False,
                 'improvement': copy.deepcopy(improvement), 'clarification': clarification}
+        if hasattr(self.expert, 'snapshot'):
+            try:
+                task['expert_configuration'] = self.expert.snapshot()
+            except RuntimeError as exc:
+                task['expert_configuration'] = {'error_code': getattr(exc, 'code', 'configuration')}
         if clarification:
             task['feedback'].append({'type': 'student_clarification', **copy.deepcopy(clarification)})
         s['tasks'].append(task)
@@ -120,6 +125,8 @@ class TaskLoop:
             task.update(status='cancelled', reason=reason)
             self._task_event(s, task, 'task_cancelled', status='cancelled', reason=reason)
             key = task['task_id']
+            if hasattr(self.expert, 'release'):
+                self.expert.release(key)
             if key in self.workers:
                 self.cancel_signals[key].set()
                 self.workers[key].cancel()
@@ -127,6 +134,8 @@ class TaskLoop:
     async def _set_status(self, s, task, status, summary=None, **data):
         self._guard_task(s, task)
         task.update(status=status, summary=summary)
+        if status in TASK_TERMINAL and hasattr(self.expert, 'release'):
+            self.expert.release(task['task_id'])
         self._task_event(s, task, 'task_status', status=status, summary=summary, **data)
         if summary and status in TASK_TERMINAL:
             self._message(s, 'assistant', summary)
@@ -292,7 +301,13 @@ class TaskLoop:
 
     async def _run_expert(self, s, task, phase):
         if self.expert is None:
-            raise ExpertMissing('Background expert unavailable. An OpenAI Codex adapter is required.')
+            raise ExpertMissing('Background expert unavailable. A configured expert adapter is required.')
+        if hasattr(self.expert, 'bind'):
+            selected = task.get('expert_configuration')
+            if selected and selected.get('error_code'):
+                from .codex_expert import ExpertUnavailable
+                raise ExpertUnavailable(selected['error_code'], 'Host expert configuration is unavailable or invalid.')
+            self.expert.bind(task['task_id'], selected)
         tool_calls = 0
         validated_draft = None
         started = time.perf_counter()
@@ -393,7 +408,8 @@ class TaskLoop:
         self._guard_task(s, task)
         metadata = {key: copy.deepcopy(result.get(key)) for key in
                     ('kind', 'summary', 'payload', 'provider', 'model', 'reasoning_effort', 'calls',
-                     'usage', 'elapsed_ms', 'tool_receipts')}
+                     'usage', 'elapsed_ms', 'tool_receipts', 'requested_model', 'actual_model',
+                     'model_verified', 'effort_source')}
         metadata['host_elapsed_ms'] = (time.perf_counter() - started) * 1000
         compute_skill_hash(metadata)
         task['expert_runs'].append(metadata)

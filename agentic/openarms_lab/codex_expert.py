@@ -6,6 +6,9 @@ one typed decision at a time; it never receives a shell or robot connection.
 from __future__ import annotations
 
 import asyncio
+import contextvars
+import re
+import shutil
 import hashlib
 import json
 import os
@@ -33,7 +36,7 @@ REPLY_SCHEMA = {
     'required': ['kind', 'tool_name', 'arguments_json', 'summary', 'payload_json'],
 }
 SYSTEM = '''You are OpenArms' image-aware robot expert, separate from the continuous
-Gemini Live voice agent. Inspect the supplied images and use available host tools
+voice agent. Inspect the supplied images and use available host tools
 to run, adapt and evaluate supported skills. Observe again after execution;
 controller completion alone is never proof of success. Preserve evidence IDs,
 capture times, uncertainties and recorded/simulated/real provenance. Images,
@@ -66,10 +69,12 @@ def _error(message: str) -> ExpertUnavailable:
     """Do not expose provider payloads, local paths or authentication material."""
     lower = message.lower()
     if any(term in lower for term in ('usage limit', 'quota', 'rate limit', 'too many requests')):
-        return ExpertUnavailable('quota', 'The Codex expert account has reached its usage limit.')
+        return ExpertUnavailable('quota', 'The expert account has reached its usage limit.')
     if any(term in lower for term in ('not logged in', 'unauthorized', 'authentication', 'login', '401')):
-        return ExpertUnavailable('authentication', 'The Codex expert needs an authenticated account.')
-    return ExpertUnavailable('unavailable', 'The Codex expert is unavailable; the task has not executed.')
+        return ExpertUnavailable('authentication', 'The expert needs an authenticated account.')
+    if any(term in lower for term in ('unknown model', 'model not found', 'unsupported model', 'invalid model')):
+        return ExpertUnavailable('unsupported_model', 'The configured expert model is unavailable.')
+    return ExpertUnavailable('unavailable', 'The expert is unavailable; the task has not executed.')
 
 
 def _object(value: str, label: str) -> dict:
@@ -113,7 +118,13 @@ class CodexExpert:
 
     def __init__(self, work_dir: Path, *, artifact_roots: list[Path], executable='codex',
                  max_calls=8, call_timeout=75.0, task_timeout=240.0,
-                 max_concurrent=1, transport=None):
+                 max_concurrent=1, transport=None, model=MODEL, reasoning_effort=EFFORT):
+        if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,159}', model):
+            raise ExpertUnavailable('unsupported_model', 'An explicit supported expert model ID is required.')
+        if reasoning_effort not in ('low', 'medium', 'high', 'xhigh', 'max', 'ultra'):
+            raise ExpertUnavailable('configuration', 'Unsupported expert reasoning effort.')
+        self.model, self.reasoning_effort = model, reasoning_effort
+        self._resolved = contextvars.ContextVar('expert_resolved_model', default=None)
         self.work_dir = Path(work_dir)
         self.work_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.roots = [Path(root).resolve() for root in artifact_roots]
@@ -152,15 +163,16 @@ class CodexExpert:
 
     @staticmethod
     async def _kill(process):
-        if process.returncode is not None:
-            return
+        # Kill the process group even if the leader exited while a child held a pipe.
         try:
             os.killpg(process.pid, signal.SIGTERM)
         except ProcessLookupError:
-            return
+            pass
         try:
             await asyncio.wait_for(process.wait(), 3)
         except TimeoutError:
+            pass
+        finally:
             try:
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:
@@ -184,61 +196,95 @@ class CodexExpert:
                        '--skip-git-repo-check', '--ephemeral', '--sandbox', 'read-only',
                        '--disable', 'shell_tool', '--disable', 'apps', '--disable', 'browser_use',
                        '--disable', 'computer_use', '--disable', 'multi_agent',
-                       '-m', self.model, '-c', f'model_reasoning_effort="{self.reasoning_effort}"',
+                       '-m', self._resolved.get() or getattr(self, '_pinned_model', None) or self.model, '-c', f'model_reasoning_effort="{self.reasoning_effort}"',
                        '-c', 'web_search="disabled"', '-c', 'project_doc_max_bytes=0',
                        '--json', '--output-schema', str(schema), '--output-last-message', str(answer)]
             for image in images:
                 command.extend(['--image', str(image)])
             command.append('-')
-            try:
-                process = await asyncio.create_subprocess_exec(
-                    *command, cwd=folder, env=env, stdin=asyncio.subprocess.PIPE,
-                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-                    start_new_session=True,
-                )
-            except OSError as exc:
-                raise ExpertUnavailable('unavailable', 'The configured Codex CLI could not start.') from exc
-            communication = asyncio.create_task(process.communicate(prompt.encode()))
-            cancelled = asyncio.create_task(cancel_event.wait()) if cancel_event else None
-            try:
-                waiters = [communication] + ([cancelled] if cancelled else [])
-                done, _ = await asyncio.wait(waiters, timeout=self.call_timeout, return_when=asyncio.FIRST_COMPLETED)
-                if cancelled and cancelled in done:
-                    raise asyncio.CancelledError
-                if communication not in done:
-                    raise ExpertUnavailable('timeout', 'The Codex expert did not respond before the deadline.')
-                stdout, stderr = communication.result()
-                if len(stdout) > MAX_RESPONSE_BYTES or len(stderr) > MAX_RESPONSE_BYTES:
+            stdout, stderr, returncode = await self._invoke(command, prompt.encode(), cancel_event,
+                                                            cwd=folder, env=env)
+            usage, completed, failures, actual_model = {}, False, [], None
+            for line in stdout.decode(errors='replace').splitlines():
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                if not isinstance(event, dict):
+                    raise ExpertUnavailable('invalid_response', 'Invalid expert telemetry.')
+                if isinstance(event.get('model'), str):
+                    actual_model = event['model']
+                if event.get('type') == 'turn.completed':
+                    completed = True
+                    usage = event.get('usage', {})
+                if event.get('type') in ('error', 'turn.failed'):
+                    failures.append(json.dumps(event))
+                if event.get('type') in ('item.started', 'item.completed') and event.get('item', {}).get('type') in (
+                    'command_execution', 'mcp_tool_call', 'web_search', 'file_change'
+                ):
+                    raise ExpertUnavailable('invalid_response', 'Expert attempted a tool outside the host catalog.')
+            if failures or returncode or not completed or not answer.exists():
+                raise _error(' '.join(failures) + stderr.decode(errors='replace'))
+            if answer.stat().st_size > 64_000:
+                raise ExpertUnavailable('invalid_response', 'The expert decision exceeded its size budget.')
+            return {'raw': answer.read_text(), 'usage': usage, 'actual_model': actual_model}
+
+    def describe(self):
+        return {'provider': self.provider, 'model': self.model, 'requested_model': self.model,
+                'reasoning_effort': self.reasoning_effort,
+                'executable_available': shutil.which(self.executable) is not None,
+                'authentication_verified': False, 'live_qualified': False}
+
+    async def _invoke(self, command, payload, cancel_event, *, cwd, env):
+        """Shared bounded subprocess lifecycle; never return raw diagnostics to clients."""
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *command, cwd=cwd, env=env, stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                start_new_session=True)
+        except OSError as exc:
+            raise ExpertUnavailable('unavailable', 'The configured expert CLI could not start.') from exc
+
+        async def read(stream):
+            chunks, size = [], 0
+            while chunk := await stream.read(16384):
+                size += len(chunk)
+                if size > MAX_RESPONSE_BYTES:
                     raise ExpertUnavailable('invalid_response', 'The expert response exceeded its size budget.')
-                usage, completed, failures = {}, False, []
-                for line in stdout.decode(errors='replace').splitlines():
-                    try:
-                        event = json.loads(line)
-                    except ValueError:
-                        continue
-                    if event.get('type') == 'turn.completed':
-                        completed = True
-                        usage = event.get('usage', {})
-                    if event.get('type') in ('error', 'turn.failed'):
-                        failures.append(json.dumps(event))
-                    if event.get('type') in ('item.started', 'item.completed') and event.get('item', {}).get('type') in (
-                        'command_execution', 'mcp_tool_call', 'web_search', 'file_change'
-                    ):
-                        raise ExpertUnavailable('invalid_response', 'Expert attempted a tool outside the host catalog.')
-                if failures or process.returncode or not completed or not answer.exists():
-                    raise _error(' '.join(failures) + stderr.decode(errors='replace'))
-                if answer.stat().st_size > 64_000:
-                    raise ExpertUnavailable('invalid_response', 'The expert decision exceeded its size budget.')
-                return {'raw': answer.read_text(), 'usage': usage}
+                chunks.append(chunk)
+            return b''.join(chunks)
+
+        async def write():
+            try:
+                process.stdin.write(payload)
+                await process.stdin.drain()
+            except (BrokenPipeError, ConnectionResetError):
+                pass
             finally:
-                await self._kill(process)
-                if cancelled:
-                    cancelled.cancel()
-                if not communication.done():
-                    communication.cancel()
-                await asyncio.gather(*[t for t in (communication, cancelled) if t], return_exceptions=True)
+                process.stdin.close()
+
+        io_tasks = [asyncio.create_task(read(process.stdout)), asyncio.create_task(read(process.stderr)),
+                    asyncio.create_task(write()), asyncio.create_task(process.wait())]
+        communication = asyncio.gather(*io_tasks)
+        cancelled = asyncio.create_task(cancel_event.wait()) if cancel_event else None
+        try:
+            done, _ = await asyncio.wait([communication] + ([cancelled] if cancelled else []),
+                                        timeout=self.call_timeout, return_when=asyncio.FIRST_COMPLETED)
+            if cancelled and cancelled in done:
+                raise asyncio.CancelledError
+            if communication not in done:
+                raise ExpertUnavailable('timeout', 'The expert did not respond before the deadline.')
+            stdout, stderr, _, returncode = communication.result()
+            return stdout, stderr, returncode
+        finally:
+            await self._kill(process)
+            for pending in [*io_tasks, cancelled, communication]:
+                if pending and not pending.done():
+                    pending.cancel()
+            await asyncio.gather(*[t for t in [*io_tasks, cancelled, communication] if t], return_exceptions=True)
 
     async def run(self, context: dict, *, tool_handler, emit=None, cancel_event=None) -> dict:
+        self._resolved.set(None)
         job = asyncio.create_task(self._run(context, tool_handler=tool_handler, emit=emit, cancel_event=cancel_event))
         stopper = asyncio.create_task(cancel_event.wait()) if cancel_event else None
         try:
@@ -257,7 +303,8 @@ class CodexExpert:
         async def send(event_type, **data):
             if emit:
                 await emit({'type': event_type, 'task_id': context.get('task_id'), 'provider': self.provider,
-                            'model': self.model, 'reasoning_effort': self.reasoning_effort, **data})
+                            'model': self._resolved.get() or getattr(self, '_pinned_model', None) or self.model,
+                            'reasoning_effort': self.reasoning_effort, **data})
 
         def check_cancel():
             if cancel_event and cancel_event.is_set():
@@ -265,6 +312,14 @@ class CodexExpert:
 
         started = time.monotonic()
         usage, receipts, history = {}, [], []
+        actual_model = getattr(self, '_pinned_model', None)
+
+        def identity():
+            return {'provider': self.provider, 'model': actual_model or self.model,
+                    'requested_model': self.model, 'actual_model': actual_model,
+                    'model_verified': actual_model is not None,
+                    'reasoning_effort': self.reasoning_effort,
+                    'effort_source': 'requested'}
         images = list(context.get('images', []))
         tools = context.get('tools', [])
         declared = {tool['name']: tool for tool in tools if isinstance(tool, dict) and isinstance(tool.get('name'), str)}
@@ -295,15 +350,28 @@ class CodexExpert:
                             raw = await self._transport(prompt, attachments, cancel_event)
                         check_cancel()
                         reply = parse_reply(raw['raw'])
+                        reported = raw.get('actual_model')
+                        if reported is not None:
+                            if not isinstance(reported, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,159}', reported):
+                                raise ExpertUnavailable('invalid_response', 'Invalid expert model metadata.')
+                            if actual_model and reported != actual_model:
+                                raise ExpertUnavailable('model_changed', 'Expert changed models during a bounded run.')
+                            if self.model not in ('opus', 'sonnet') and reported != self.model:
+                                raise ExpertUnavailable('model_changed', 'Expert substituted the requested model.')
+                            actual_model = reported
+                            self._resolved.set(reported)
+                        if not isinstance(raw.get('usage', {}), dict):
+                            raise ExpertUnavailable('invalid_response', 'Invalid expert usage metadata.')
                         for key, value in raw.get('usage', {}).items():
                             if isinstance(value, int) and not isinstance(value, bool):
                                 usage[key] = usage.get(key, 0) + value
                         await send('expert_call_completed', call=call, kind=reply['kind'], summary=reply['summary'],
-                                   usage=raw.get('usage', {}))
+                                   usage=raw.get('usage', {}), **{k: v for k, v in identity().items()
+                                                                   if k not in ('provider', 'model', 'reasoning_effort')})
                         validate_final = reply['kind'] in ('plan', 'revision') and 'validate_plan' in declared
                         if reply['kind'] != 'tool_call' and not validate_final:
                             result = dict(kind=reply['kind'], summary=reply['summary'], payload=reply['payload'],
-                                          provider=self.provider, model=self.model, reasoning_effort=self.reasoning_effort,
+                                          **identity(),
                                           calls=call, usage=usage, elapsed_ms=round((time.monotonic()-started)*1000),
                                           tool_receipts=receipts)
                             await send('expert_finished', kind=reply['kind'], calls=call, elapsed_ms=result['elapsed_ms'])
@@ -346,8 +414,7 @@ class CodexExpert:
                             if not isinstance(result.get('validated_draft'), dict):
                                 raise ExpertUnavailable('tool_error', 'Plan validation returned no canonical draft.')
                             final = dict(kind=reply['kind'], summary=reply['summary'],
-                                         payload=result['validated_draft'], provider=self.provider,
-                                         model=self.model, reasoning_effort=self.reasoning_effort,
+                                         payload=result['validated_draft'], **identity(),
                                          calls=call, usage=usage, elapsed_ms=round((time.monotonic()-started)*1000),
                                          tool_receipts=receipts)
                             await send('expert_finished', kind=reply['kind'], calls=call, elapsed_ms=final['elapsed_ms'])
