@@ -31,12 +31,73 @@ async function propose(page, request, condition='vinegar') {
   await reviewProposal(page);
 }
 
+test('Smartivity reuses session access and displays only current simulation captures', async ({page}) => {
+  const pixels = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNdcAAAAASUVORK5CYII=', 'base64');
+  const state = { status: 'idle', generation: 1, seed: 0, frames: {}, objective: 'Transfer the prepared mixture.' };
+  const commands = [];
+  const mediaAuth = [];
+  await page.route('**/api/health', route => route.fulfill({json: {smartivity_available: true}}));
+  await page.route('**/api/sessions/*/smartivity**', async route => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const [, , , sid, , command, view] = url.pathname.split('/');
+    const { authorization } = request.headers();
+    if (authorization !== `Bearer secret-${sid}`) return route.fulfill({ status: 401 });
+    if (command === 'frame') {
+      mediaAuth.push({ view, cleanUrl: url.search === '' });
+      return route.fulfill({
+        contentType: 'image/png', body: pixels,
+        headers: { 'X-Frame-Id': state.frames[view].frame_id, 'X-Generation': String(state.generation), 'X-Captured-At': '1780000000' },
+      });
+    }
+    if (request.method() === 'POST') {
+      commands.push([command, request.postDataJSON()]);
+      if (command === 'start') {
+        Object.assign(state, {
+          status: 'running', phase: 'observing_result', action: 'Pour into the flask',
+          evidence: ['Red foam is visible above the flask.'],
+          frames: { overview: { frame_id: 'overview-1' }, side: { frame_id: 'side-1' } },
+        });
+      } else if (command === 'stop') {
+        Object.assign(state, { status: 'stopped', outcome: 'Run stopped.', recovery: 'Reset the scene before retrying.' });
+      } else if (command === 'reset') {
+        Object.assign(state, { status: 'idle', generation: 2, frames: {}, evidence: [], action: null, outcome: null, recovery: null });
+      }
+    }
+    return route.fulfill({ json: state });
+  });
+  await ready(page);
+  const studio = page.getByRole('region', { name: 'Erupting Volcano' });
+  await expect(studio).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Talk' })).toBeEnabled();
+  await studio.getByLabel('Scene seed', { exact: true }).fill('17');
+  await studio.getByRole('button', { name: 'Run volcano' }).click();
+  await expect(studio.getByRole('status')).toContainText('observing result');
+  await expect(studio.getByText('Red foam is visible above the flask.')).toBeVisible();
+  await expect(studio.getByRole('img')).toHaveCount(2);
+  await expect(studio.locator('figure[data-camera="overview"] time')).toHaveAttribute('title', 'Frame overview-1');
+  await studio.getByRole('button', { name: 'Stop simulation' }).click();
+  await expect(studio.getByRole('status')).toHaveText('Stopped');
+  await expect(studio.getByText('Reset the scene before retrying.')).toBeVisible();
+  await studio.getByRole('button', { name: 'Reset scene' }).click();
+  await expect(studio.getByRole('status')).toHaveText('Ready');
+  await expect(studio.getByRole('img')).toHaveCount(0);
+  await expect(studio.getByText('Waiting for camera')).toHaveCount(2);
+  expect(commands).toEqual([['start', { seed: 17 }], ['stop', {}], ['reset', { seed: 17 }]]);
+  expect(mediaAuth).toEqual(expect.arrayContaining([
+    { view: 'overview', cleanUrl: true }, { view: 'side', cleanUrl: true },
+  ]));
+  const accessibility = await new AxeBuilder({ page }).include('#smartivity').analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
 test('an expired local grant starts a fresh session without inventing a pairing requirement', async ({page}) => {
   await page.addInitScript(() => sessionStorage.setItem('openarms.ph.session', JSON.stringify({
     session_id: 'expired-test-session', access_token: 'expired-test-grant',
   })));
   await ready(page);
   await expect(page.locator('#pairing')).toBeHidden();
+  await expect(page.locator('#smartivity')).toBeHidden();
   expect(await session(page)).not.toBe('expired-test-session');
 });
 
