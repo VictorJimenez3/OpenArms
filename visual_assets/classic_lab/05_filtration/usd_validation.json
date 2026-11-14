@@ -1,0 +1,5945 @@
+{
+  "file": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/05_filtration/Environment.usdc",
+  "errors": [],
+  "warnings": [
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Much_clearer_filtrate_illustrative",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Glass_rim_edge",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13",
+    "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+    "UsdLux presence does not establish photometric or renderer equivalence"
+  ],
+  "usd_version": [
+    0,
+    26,
+    11
+  ],
+  "metersPerUnit": 1.0,
+  "upAxis": "Z",
+  "defaultPrim": "/ClassicLab",
+  "composition_errors": [],
+  "dependencies": {
+    "layers": [
+      "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/05_filtration/Environment.usdc"
+    ],
+    "assets": [],
+    "unresolved": []
+  },
+  "self_contained_single_layer": true,
+  "authored_asset_paths": [],
+  "absolute_asset_paths": [],
+  "physics_or_articulation": [],
+  "bounds_time": "default",
+  "mesh_count": 250,
+  "meshes": [
+    {
+      "path": "/ClassicLab/Annotations/Paper_graduation_0/Paper_graduation_0",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.22499999403953552,
+          0.10705000115558505,
+          0.044572025537490845
+        ],
+        "max": [
+          0.24500000476837158,
+          0.10795000102370977,
+          0.04542797803878784
+        ],
+        "size": [
+          0.02000001072883606,
+          0.0008999998681247234,
+          0.0008559525012969971
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Paper_condition_plate/Cube_017",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.16749999672174454,
+          0.024499998660758138,
+          0.025499998591840267
+        ],
+        "max": [
+          0.30250000208616257,
+          0.02749999868683517,
+          0.0504999989643693
+        ],
+        "size": [
+          0.13500000536441803,
+          0.003000000026077032,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Paper_condition_text/Paper_condition_text",
+      "points": 916,
+      "faces": 683,
+      "world_bounds": {
+        "min": [
+          0.22041949909180403,
+          0.024174998006856185,
+          0.03400000184441504
+        ],
+        "max": [
+          0.25035049859434366,
+          0.024224999010403845,
+          0.041546002499362786
+        ],
+        "size": [
+          0.029930999502539635,
+          5.00010035476596e-05,
+          0.007546000654947746
+        ]
+      },
+      "material": "/ClassicLab/_materials/Paper_condition_teal"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_condition_plate/Cube_024",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3374999985098839,
+          0.024499998660758138,
+          0.025499998591840267
+        ],
+        "max": [
+          0.4725000038743019,
+          0.02749999868683517,
+          0.0504999989643693
+        ],
+        "size": [
+          0.13500000536441803,
+          0.003000000026077032,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_graduation_0/NoPaper_graduation_0",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.39500001072883606,
+          0.10705000115558505,
+          0.044572025537490845
+        ],
+        "max": [
+          0.41499999165534973,
+          0.10795000102370977,
+          0.04542797803878784
+        ],
+        "size": [
+          0.019999980926513672,
+          0.0008999998681247234,
+          0.0008559525012969971
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Input_label_text/Input_label_text",
+      "points": 1228,
+      "faces": 897,
+      "world_bounds": {
+        "min": [
+          0.08004749566316605,
+          -0.21582500222544967,
+          0.03993399910208589
+        ],
+        "max": [
+          0.15078850835561752,
+          -0.21577500121311358,
+          0.047545999757549126
+        ],
+        "size": [
+          0.07074101269245148,
+          5.000101233609833e-05,
+          0.007612000655463233
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Paper_graduation_1/Paper_graduation_1",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.22499999403953552,
+          0.10803000163286924,
+          0.05457202345132828
+        ],
+        "max": [
+          0.24500000476837158,
+          0.10893000196665525,
+          0.055427975952625275
+        ],
+        "size": [
+          0.02000001072883606,
+          0.0009000003337860107,
+          0.0008559525012969971
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Paper_outcome_plate/Cube_018",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.16899999976158142,
+          0.02550000068731606,
+          0.06049999874085188
+        ],
+        "max": [
+          0.3009999990463257,
+          0.028500000713393092,
+          0.08549999911338091
+        ],
+        "size": [
+          0.13199999928474426,
+          0.003000000026077032,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_graduation_1/NoPaper_graduation_1",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.39500001072883606,
+          0.10803000163286924,
+          0.05457202345132828
+        ],
+        "max": [
+          0.41499999165534973,
+          0.10893000196665525,
+          0.055427975952625275
+        ],
+        "size": [
+          0.019999980926513672,
+          0.0009000003337860107,
+          0.0008559525012969971
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_outcome_plate/Cube_025",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33900000154972076,
+          0.02550000068731606,
+          0.06049999874085188
+        ],
+        "max": [
+          0.471000000834465,
+          0.028500000713393092,
+          0.08549999911338091
+        ],
+        "size": [
+          0.13199999928474426,
+          0.003000000026077032,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Paper_graduation_2/Paper_graduation_2",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.22499999403953552,
+          0.11293000169098377,
+          0.06457202136516571
+        ],
+        "max": [
+          0.24500000476837158,
+          0.11383000202476978,
+          0.06542797386646271
+        ],
+        "size": [
+          0.02000001072883606,
+          0.0009000003337860107,
+          0.0008559525012969971
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_condition_text/NoPaper_condition_text",
+      "points": 1340,
+      "faces": 997,
+      "world_bounds": {
+        "min": [
+          0.38011249899864197,
+          0.024174997993673536,
+          0.03390100184000383
+        ],
+        "max": [
+          0.4307015035301447,
+          0.0242249990177275,
+          0.04160100221966799
+        ],
+        "size": [
+          0.050589004531502724,
+          5.000102405396459e-05,
+          0.00770000037966416
+        ]
+      },
+      "material": "/ClassicLab/_materials/No_paper_condition_ochre"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Paper_outcome_text/Paper_outcome_text",
+      "points": 1308,
+      "faces": 965,
+      "world_bounds": {
+        "min": [
+          0.2131264992058277,
+          0.02517500002023146,
+          0.06890099826372514
+        ],
+        "max": [
+          0.25740150175988674,
+          0.025225001044285423,
+          0.0766009986433893
+        ],
+        "size": [
+          0.04427500255405903,
+          5.000102405396459e-05,
+          0.00770000037966416
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_graduation_2/NoPaper_graduation_2",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.39500001072883606,
+          0.11293000169098377,
+          0.06457202136516571
+        ],
+        "max": [
+          0.41499999165534973,
+          0.11383000202476978,
+          0.06542797386646271
+        ],
+        "size": [
+          0.019999980926513672,
+          0.0009000003337860107,
+          0.0008559525012969971
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/NoPaper_outcome_text/NoPaper_outcome_text",
+      "points": 1860,
+      "faces": 1371,
+      "world_bounds": {
+        "min": [
+          0.3703335002064705,
+          0.02517500002023146,
+          0.06890099826372514
+        ],
+        "max": [
+          0.43928150087594986,
+          0.025225001044285423,
+          0.0766009986433893
+        ],
+        "size": [
+          0.06894800066947937,
+          5.000102405396459e-05,
+          0.00770000037966416
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Input_label_plate/Cube_034",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.05000000447034836,
+          -0.21550000156275928,
+          0.031499999575316906
+        ],
+        "max": [
+          0.17999999970197678,
+          -0.21250000153668225,
+          0.056499999947845936
+        ],
+        "size": [
+          0.12999999523162842,
+          0.003000000026077032,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Annotations/Bench_comparison_caption/Bench_comparison_caption",
+      "points": 2352,
+      "faces": 1700,
+      "world_bounds": {
+        "min": [
+          0.24886498600244522,
+          -0.1300899952329928,
+          0.0009750000481290044
+        ],
+        "max": [
+          0.3874349892139435,
+          -0.12308999476954341,
+          0.0010250000468658982
+        ],
+        "size": [
+          0.13857000321149826,
+          0.007000000463449396,
+          4.999999873689376e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_004/Icosphere_005",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22111963290449238,
+          0.14609670428358182,
+          0.24942342197755352
+        ],
+        "max": [
+          0.2230378184867277,
+          0.14766988368905917,
+          0.25063356006285176
+        ],
+        "size": [
+          0.0019181855822353322,
+          0.001573179405477354,
+          0.0012101380852982402
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_041/Icosphere_042",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2604173621144689,
+          0.16651828933352045,
+          0.2483924045227468
+        ],
+        "max": [
+          0.2639736929926478,
+          0.16943497609502264,
+          0.25063600996509194
+        ],
+        "size": [
+          0.0035563308781788594,
+          0.0029166867615021963,
+          0.0022436054423451424
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_030/Icosphere_031",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.20587788854522318,
+          0.14673179954694382,
+          0.24898709903936833
+        ],
+        "max": [
+          0.2090914365203896,
+          0.1493673565943373,
+          0.25101445068139583
+        ],
+        "size": [
+          0.003213547975166431,
+          0.0026355570473934886,
+          0.0020273516420274973
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_031/Icosphere_138",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11719022404858892,
+          -0.15470946643263023,
+          0.08374138973886147
+        ],
+        "max": [
+          0.11988590944101984,
+          -0.15244194057077248,
+          0.08515859342878684
+        ],
+        "size": [
+          0.0026956853924309243,
+          0.0022675258618577443,
+          0.0014172036899253726
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_028/Icosphere_029",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24293908696225086,
+          0.1740596102144692,
+          0.24884235055651516
+        ],
+        "max": [
+          0.24699377794215283,
+          0.17738502160048747,
+          0.25140035955701023
+        ],
+        "size": [
+          0.004054690979901965,
+          0.0033254113860182732,
+          0.002558009000495076
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_005/Icosphere_006",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22451757168246106,
+          0.1264231199142616,
+          0.24888494791230187
+        ],
+        "max": [
+          0.22680414939450427,
+          0.12829843221929857,
+          0.2503274959162809
+        ],
+        "size": [
+          0.002286577712043214,
+          0.001875312305036958,
+          0.0014425480039790273
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_023/Icosphere_024",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.20804350035404937,
+          0.1674223171544127,
+          0.24845951574388891
+        ],
+        "max": [
+          0.21088926536822541,
+          0.1697562409567781,
+          0.2502548418706283
+        ],
+        "size": [
+          0.0028457650141760493,
+          0.002333923802365412,
+          0.0017953261267393827
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_031/Icosphere_032",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23255106303189352,
+          0.1539722595924649,
+          0.24799282988533378
+        ],
+        "max": [
+          0.2367506077578251,
+          0.1574164714103427,
+          0.2506422237493098
+        ],
+        "size": [
+          0.004199544725931592,
+          0.003444211817877796,
+          0.0026493938639760017
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_021/Icosphere_128",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.08777637809803207,
+          -0.1483852981195019,
+          0.08408529125154018
+        ],
+        "max": [
+          0.09120844274471085,
+          -0.14549835337547795,
+          0.08588963188230991
+        ],
+        "size": [
+          0.0034320646466787785,
+          0.002886944744023956,
+          0.0018043406307697296
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_006/Icosphere_113",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10991116109452029,
+          -0.14609024860407993,
+          0.08357889740727842
+        ],
+        "max": [
+          0.11437822637000303,
+          -0.14233269355748013,
+          0.08592736930586398
+        ],
+        "size": [
+          0.00446706527548274,
+          0.003757555046599803,
+          0.002348471898585558
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_016/Icosphere_123",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10523189287800476,
+          -0.15953258763692024,
+          0.08312799094710499
+        ],
+        "max": [
+          0.10944082159381226,
+          -0.1559921692714965,
+          0.08534075261559337
+        ],
+        "size": [
+          0.004208928715807497,
+          0.0035404183654237364,
+          0.0022127616684883833
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_057/Icosphere_058",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24632488741635183,
+          0.1508858054871478,
+          0.2486271514208056
+        ],
+        "max": [
+          0.24868650183917185,
+          0.15282265842009402,
+          0.2501170383184217
+        ],
+        "size": [
+          0.002361614422820013,
+          0.0019368529329462092,
+          0.0014898868976160884
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_013/Icosphere_014",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24877591325793552,
+          0.14709372384422476,
+          0.24880811234470457
+        ],
+        "max": [
+          0.25218425796475125,
+          0.14988904135352915,
+          0.25095835665706545
+        ],
+        "size": [
+          0.0034083447068157247,
+          0.002795317509304396,
+          0.0021502443123608828
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_001/Icosphere_108",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10953304782584306,
+          -0.1572863472223415,
+          0.08277443516999483
+        ],
+        "max": [
+          0.11485249683186416,
+          -0.15281179420946697,
+          0.08557103108614683
+        ],
+        "size": [
+          0.005319449006021104,
+          0.004474553012874527,
+          0.0027965959161520004
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_011/Icosphere_118",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13251522445044112,
+          -0.13806402021044967,
+          0.08382707310374826
+        ],
+        "max": [
+          0.13661884999909807,
+          -0.13461217946415666,
+          0.08598447369877249
+        ],
+        "size": [
+          0.004103625548656953,
+          0.003451840746293011,
+          0.002157400595024228
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_032/Icosphere_033",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2489327853382722,
+          0.12761915288044057,
+          0.2489315806888044
+        ],
+        "max": [
+          0.25097813552011095,
+          0.12929662504123607,
+          0.2502219439484179
+        ],
+        "size": [
+          0.00204535018183874,
+          0.0016774721607955012,
+          0.001290363259613514
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_036/Icosphere_143",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11639944442806585,
+          -0.18653838067190892,
+          0.08316473825834692
+        ],
+        "max": [
+          0.12165025642814295,
+          -0.18212156267029994,
+          0.08592524961568415
+        ],
+        "size": [
+          0.005250812000077099,
+          0.00441681800160898,
+          0.0027605113573372364
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_11/Icosphere_095",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3950453403843117,
+          0.15103628798015417,
+          0.07409999659284949
+        ],
+        "max": [
+          0.39848518339269634,
+          0.15403628782741724,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0034398430083846243,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_069/Icosphere_070",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22325735995666918,
+          0.15011685186919854,
+          0.24847334495279938
+        ],
+        "max": [
+          0.22665506889922682,
+          0.152903446611789,
+          0.25061687955167145
+        ],
+        "size": [
+          0.0033977089425576423,
+          0.0027865947425904647,
+          0.0021435345988720655
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_057/Icosphere_164",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.08964355044749683,
+          -0.15969067209955715,
+          0.08380175568163395
+        ],
+        "max": [
+          0.0929512853107124,
+          -0.15690830951932408,
+          0.08554073236882687
+        ],
+        "size": [
+          0.003307734863215561,
+          0.0027823625802330665,
+          0.0017389766871929169
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_033/Icosphere_034",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.26222512295959455,
+          0.14376327728988494,
+          0.24839801422785968
+        ],
+        "max": [
+          0.2653289718318178,
+          0.1463088657879654,
+          0.2503561592893675
+        ],
+        "size": [
+          0.0031038488722232582,
+          0.0025455884980804533,
+          0.001958145061507821
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_054/Icosphere_055",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22890429529775536,
+          0.13016618189325105,
+          0.24860788189107552
+        ],
+        "max": [
+          0.23154009547601784,
+          0.13232790532598723,
+          0.25027074612444267
+        ],
+        "size": [
+          0.002635800178262482,
+          0.0021617234327361845,
+          0.001662864233367145
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_052/Icosphere_159",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11817336944735128,
+          -0.17560753727836756,
+          0.08445006480906159
+        ],
+        "max": [
+          0.12010808916890543,
+          -0.1739801118286118,
+          0.08546720573212951
+        ],
+        "size": [
+          0.0019347197215541512,
+          0.0016274254497557483,
+          0.0010171409230679274
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_062/Icosphere_169",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11815072957555842,
+          -0.17558700460838456,
+          0.08333210251294076
+        ],
+        "max": [
+          0.12376407917459417,
+          -0.17086523156715255,
+          0.08628321089781821
+        ],
+        "size": [
+          0.005613349599035755,
+          0.0047217730412320025,
+          0.0029511083848774433
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_008/Icosphere_009",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.25682666631838463,
+          0.14965922556421274,
+          0.24861009663436562
+        ],
+        "max": [
+          0.2600938406358085,
+          0.1523387638519097,
+          0.2506712799658999
+        ],
+        "size": [
+          0.003267174317423849,
+          0.0026795382876969587,
+          0.0020611833315342665
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_049/Icosphere_050",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2559173542989687,
+          0.16090730971579892,
+          0.24894724623300135
+        ],
+        "max": [
+          0.2598867576585813,
+          0.16416277342552799,
+          0.25145144923590124
+        ],
+        "size": [
+          0.0039694033596126,
+          0.0032554637097290673,
+          0.002504203002899885
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_059/Icosphere_060",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23401229725716674,
+          0.18424865867953316,
+          0.24875195638742298
+        ],
+        "max": [
+          0.23744598878981507,
+          0.18706476423878654,
+          0.25091819150839
+        ],
+        "size": [
+          0.003433691532648331,
+          0.002816105559253379,
+          0.0021662351209670305
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_047/Icosphere_154",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.1201224153803144,
+          -0.17204825824507514,
+          0.08343290002085268
+        ],
+        "max": [
+          0.12480005864636559,
+          -0.16811357194176874,
+          0.08589207916520536
+        ],
+        "size": [
+          0.00467764326605119,
+          0.003934686303306401,
+          0.0024591791443526745
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_034/Icosphere_035",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23445935139856955,
+          0.1455585845939369,
+          0.24928911094320938
+        ],
+        "max": [
+          0.23667894711293558,
+          0.1473789623745232,
+          0.2506894015823491
+        ],
+        "size": [
+          0.0022195957143660294,
+          0.001820377780586302,
+          0.0014002906391397119
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_042/Icosphere_149",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.08132611973587998,
+          -0.16571561959124548,
+          0.08355991367716342
+        ],
+        "max": [
+          0.0852197332828807,
+          -0.1624404344286825,
+          0.08560690458398312
+        ],
+        "size": [
+          0.0038936135470007127,
+          0.003275185162562977,
+          0.002046990906819701
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_009/Icosphere_010",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21157139059535035,
+          0.13357468260208877,
+          0.24902521423064172
+        ],
+        "max": [
+          0.21490115407475463,
+          0.13630555259307114,
+          0.2511258835438639
+        ],
+        "size": [
+          0.0033297634794042796,
+          0.0027308699909823764,
+          0.00210066931322217
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_012/Icosphere_013",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21667437887903057,
+          0.17346263636231066,
+          0.2488697477383539
+        ],
+        "max": [
+          0.21909455322508015,
+          0.17544751654982924,
+          0.2503965786891058
+        ],
+        "size": [
+          0.002420174346049575,
+          0.0019848801875185784,
+          0.0015268309507519007
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_037/Icosphere_144",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12356099591855609,
+          -0.1533408403812414,
+          0.08322715561371297
+        ],
+        "max": [
+          0.12747493280764022,
+          -0.15004855986251775,
+          0.08528483111876994
+        ],
+        "size": [
+          0.0039139368890841325,
+          0.003292280518723656,
+          0.0020576755050569773
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_17/Icosphere_101",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.4053396589109437,
+          0.1608122394848615,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4090505235841735,
+          0.16381223933212458,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0037108646732297856,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_035/Icosphere_036",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21165264108348514,
+          0.14643790466388446,
+          0.2482580579817295
+        ],
+        "max": [
+          0.2157120659096179,
+          0.14976719873348493,
+          0.25081905350089073
+        ],
+        "size": [
+          0.0040594248261327515,
+          0.0033292940696004747,
+          0.0025609955191612244
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_032/Icosphere_139",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14013864258505607,
+          -0.16209716458106044,
+          0.08337204734561965
+        ],
+        "max": [
+          0.14338947674058175,
+          -0.15936266522622106,
+          0.08508110960246995
+        ],
+        "size": [
+          0.0032508341555256837,
+          0.0027344993548393814,
+          0.0017090622568503022
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_12/Icosphere_096",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.37488230738992906,
+          0.16702784164436163,
+          0.07409999659284949
+        ],
+        "max": [
+          0.37744936670903945,
+          0.1700278414916247,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0025670593191103874,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_029/Icosphere_030",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2224525995023598,
+          0.14045972563078502,
+          0.24912885314552113
+        ],
+        "max": [
+          0.2247326486341606,
+          0.142329683529829,
+          0.2505672823754139
+        ],
+        "size": [
+          0.0022800491318007987,
+          0.0018699578990439836,
+          0.0014384292298927903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_014/Icosphere_121",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.0946386016597613,
+          -0.1432735899075822,
+          0.08304535539355129
+        ],
+        "max": [
+          0.09897054660416997,
+          -0.1396296939268752,
+          0.08532279042992741
+        ],
+        "size": [
+          0.004331944944408667,
+          0.0036438959807070237,
+          0.0022774350363761187
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_036/Icosphere_037",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23817232159750898,
+          0.17401470928200485,
+          0.24861601740121841
+        ],
+        "max": [
+          0.2418793747029976,
+          0.1770550093173146,
+          0.2509547099471092
+        ],
+        "size": [
+          0.0037070531054886335,
+          0.003040300035309751,
+          0.002338692545890808
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_022/Icosphere_129",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13887904535290715,
+          -0.15402453799447466,
+          0.08309647091664374
+        ],
+        "max": [
+          0.14382214893343928,
+          -0.14986655454435896,
+          0.08569521061144769
+        ],
+        "size": [
+          0.004943103580532127,
+          0.004157983450115699,
+          0.002598739694803953
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_007/Icosphere_114",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13290618903450502,
+          -0.14432456174072483,
+          0.0835221690358594
+        ],
+        "max": [
+          0.13582302086539733,
+          -0.14187101445022365,
+          0.08505563612561673
+        ],
+        "size": [
+          0.002916831830892308,
+          0.002453547290501179,
+          0.0015334670897573233
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_017/Icosphere_124",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13027087783863012,
+          -0.15797942396868808,
+          0.08271123946178705
+        ],
+        "max": [
+          0.13596948051403102,
+          -0.15318593862782376,
+          0.0857071679783985
+        ],
+        "size": [
+          0.005698602675400899,
+          0.004793485340864323,
+          0.002995928516611457
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_062/Icosphere_063",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22488886240158773,
+          0.17879003179139735,
+          0.2483981013065204
+        ],
+        "max": [
+          0.22865015146102213,
+          0.1818748127215421,
+          0.25077100994531065
+        ],
+        "size": [
+          0.003761289059434403,
+          0.003084780930144748,
+          0.00237290863879025
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_026/Icosphere_133",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11296804511988444,
+          -0.12750189134224135,
+          0.08324488915968686
+        ],
+        "max": [
+          0.11767622565781789,
+          -0.12354151776687425,
+          0.0857201226754114
+        ],
+        "size": [
+          0.004708180537933454,
+          0.003960373575367104,
+          0.0024752335157245398
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_014/Icosphere_015",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2318215446656025,
+          0.140505802072161,
+          0.2485510873957537
+        ],
+        "max": [
+          0.23466195891449088,
+          0.1428353374828164,
+          0.2503430378274061
+        ],
+        "size": [
+          0.0028404142488883677,
+          0.0023295354106553923,
+          0.0017919504316523671
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_002/Icosphere_109",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.09460501067778308,
+          -0.17329912243374834,
+          0.08390022220555693
+        ],
+        "max": [
+          0.09666270322659772,
+          -0.17156825603953352,
+          0.08498201367910951
+        ],
+        "size": [
+          0.0020576925488146325,
+          0.001730866394214825,
+          0.0010817914735525846
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_012/Icosphere_119",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.1296404071971343,
+          -0.15511618880811076,
+          0.08400228974642232
+        ],
+        "max": [
+          0.13186018980298778,
+          -0.15324897737917562,
+          0.08516929688630626
+        ],
+        "size": [
+          0.002219782605853482,
+          0.001867211428935145,
+          0.0011670071398839355
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_037/Icosphere_038",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22773376218488958,
+          0.16705498003130265,
+          0.24908871750812978
+        ],
+        "max": [
+          0.23124286421128962,
+          0.16993293262357406,
+          0.2513025273801759
+        ],
+        "size": [
+          0.003509102026400035,
+          0.0028779525922714155,
+          0.002213809872046113
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_075/Icosphere_076",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.20368839444461867,
+          0.14489867173854498,
+          0.24899678328074515
+        ],
+        "max": [
+          0.20703091083225206,
+          0.1476400009470782,
+          0.2511054982896894
+        ],
+        "size": [
+          0.0033425163876333874,
+          0.0027413292085332053,
+          0.002108715008944273
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_16/Icosphere_100",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.40821067206219186,
+          0.13958350880630316,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4104748595540191,
+          0.14258350865356623,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0022641874918272187,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_070/Icosphere_071",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24163628203118523,
+          0.18032181874574302,
+          0.2490648995153606
+        ],
+        "max": [
+          0.2441911639527015,
+          0.18241717799841287,
+          0.2506767143495381
+        ],
+        "size": [
+          0.002554881921516261,
+          0.0020953592526698483,
+          0.001611814834177494
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_038/Icosphere_039",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21239070679769367,
+          0.15162142814556318,
+          0.24863363680196926
+        ],
+        "max": [
+          0.21484844301119,
+          0.15363711415370745,
+          0.25018416467355564
+        ],
+        "size": [
+          0.00245773621349632,
+          0.0020156860081442796,
+          0.0015505278715863824
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_053/Icosphere_160",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13876649234331978,
+          -0.16135662547107912,
+          0.08336319180671126
+        ],
+        "max": [
+          0.14442077782116997,
+          -0.156600418176687,
+          0.08633582142647356
+        ],
+        "size": [
+          0.005654285477850185,
+          0.004756207294392134,
+          0.0029726296197623014
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/NoPaper_illustrative_drop_0/Icosphere_104",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.403002779775546,
+          0.152900001392141,
+          0.14979999721981585
+        ],
+        "max": [
+          0.4069972226086398,
+          0.1571000009920448,
+          0.15619999705813825
+        ],
+        "size": [
+          0.003994442833093803,
+          0.004199999599903803,
+          0.006399999838322401
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brown_suspended_solids"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_063/Icosphere_170",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14251485114986212,
+          -0.17122502122916156,
+          0.0835514006903395
+        ],
+        "max": [
+          0.14775166267460077,
+          -0.1668199798008067,
+          0.08630455157253891
+        ],
+        "size": [
+          0.005236811524738649,
+          0.00440504142835485,
+          0.0027531508821994066
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_064/Icosphere_065",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23491344515864582,
+          0.1618356748814553,
+          0.24821073259226978
+        ],
+        "max": [
+          0.23912327821667462,
+          0.16528832471418678,
+          0.25086661730892956
+        ],
+        "size": [
+          0.0042098330580288,
+          0.003452649832731469,
+          0.0026558847166597843
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_050/Icosphere_051",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.26247227882891294,
+          0.13977256248305825,
+          0.24933411390520632
+        ],
+        "max": [
+          0.2647856404826105,
+          0.1416698413102767,
+          0.25079355924390256
+        ],
+        "size": [
+          0.0023133616536975543,
+          0.0018972788272184626,
+          0.0014594453386962414
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_060/Icosphere_061",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21469200233712155,
+          0.14271193496936813,
+          0.24844143632799387
+        ],
+        "max": [
+          0.21890541334853214,
+          0.14616751916652665,
+          0.25109957810491323
+        ],
+        "size": [
+          0.004213411011410595,
+          0.0034555841971585233,
+          0.002658141776919365
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_048/Icosphere_155",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14483451016018412,
+          -0.1494092657348806,
+          0.08355498779565096
+        ],
+        "max": [
+          0.1490075968973873,
+          -0.14589899637487588,
+          0.08574890624731779
+        ],
+        "size": [
+          0.00417308673720318,
+          0.003510269360004703,
+          0.002193918451666832
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_039/Icosphere_040",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21771457452129386,
+          0.144041205234091,
+          0.24873532983474433
+        ],
+        "max": [
+          0.22016123276401497,
+          0.14604780595823078,
+          0.2502788689453155
+        ],
+        "size": [
+          0.0024466582427211114,
+          0.002006600724139773,
+          0.001543539110571146
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/NoPaper_illustrative_drop_1/Icosphere_105",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.403002779775546,
+          0.152900001392141,
+          0.13280000747181475
+        ],
+        "max": [
+          0.4069972226086398,
+          0.1571000009920448,
+          0.13920000731013715
+        ],
+        "size": [
+          0.003994442833093803,
+          0.004199999599903803,
+          0.006399999838322401
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brown_suspended_solids"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_055/Icosphere_056",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2050143146234673,
+          0.1381960296756221,
+          0.24860455049201846
+        ],
+        "max": [
+          0.2087659871858436,
+          0.14127292393384444,
+          0.250971392262727
+        ],
+        "size": [
+          0.003751672562376296,
+          0.003076894258222329,
+          0.002366841770708561
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_043/Icosphere_150",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14341183886302394,
+          -0.1434605766627716,
+          0.08344512863550335
+        ],
+        "max": [
+          0.14775935425983983,
+          -0.1398035834934784,
+          0.08573074953164905
+        ],
+        "size": [
+          0.004347515396815882,
+          0.003656993169293188,
+          0.0022856208961457014
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_065/Icosphere_066",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2559934118382254,
+          0.1330777953822698,
+          0.24890952464193106
+        ],
+        "max": [
+          0.25828559607345675,
+          0.13495770585941416,
+          0.25035560969263315
+        ],
+        "size": [
+          0.002292184235231365,
+          0.0018799104771443642,
+          0.001446085050702095
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_038/Icosphere_145",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13653514494583435,
+          -0.14301986910301517,
+          0.08302001876290888
+        ],
+        "max": [
+          0.14140512833907776,
+          -0.1389233925203674,
+          0.08558031695429236
+        ],
+        "size": [
+          0.0048699833932434045,
+          0.004096476582647779,
+          0.002560298191383481
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_18/Icosphere_102",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.39915329730586513,
+          0.15529834790714087,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4023835607759525,
+          0.15829834775440393,
+          0.07689999649301171
+        ],
+        "size": [
+          0.003230263470087369,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_040/Icosphere_041",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22704557068168224,
+          0.14694849726155226,
+          0.248199813766405
+        ],
+        "max": [
+          0.23118656389892994,
+          0.15034468892619188,
+          0.2508122690487653
+        ],
+        "size": [
+          0.0041409932172477015,
+          0.003396191664639614,
+          0.0026124552823603153
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_033/Icosphere_140",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13094874762380487,
+          -0.1360094313299594,
+          0.0840137783670798
+        ],
+        "max": [
+          0.13318026519929999,
+          -0.13413234904647492,
+          0.08518695493694395
+        ],
+        "size": [
+          0.002231517575495112,
+          0.001877082283484488,
+          0.0011731765698641539
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_03/Icosphere_087",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3773206548178756,
+          0.1412172870207578,
+          0.07409999659284949
+        ],
+        "max": [
+          0.3792893214737809,
+          0.14421728686802088,
+          0.07689999649301171
+        ],
+        "size": [
+          0.001968666655905338,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_13/Icosphere_097",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3757282680153238,
+          0.1574950323868543,
+          0.07409999659284949
+        ],
+        "max": [
+          0.37928966821438204,
+          0.16049503223411737,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0035614001990582622,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_066/Icosphere_067",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22428803368308609,
+          0.1247987818103167,
+          0.24848046980332583
+        ],
+        "max": [
+          0.22863133029243882,
+          0.12836089021154914,
+          0.2512205532984808
+        ],
+        "size": [
+          0.004343296609352731,
+          0.0035621084012324444,
+          0.002740083495154977
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_028/Icosphere_135",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.09065706743300565,
+          -0.13311959698837944,
+          0.08308644650969654
+        ],
+        "max": [
+          0.09509852813183657,
+          -0.1293835799391871,
+          0.08542145730461925
+        ],
+        "size": [
+          0.004441460698830918,
+          0.0037360170491923528,
+          0.0023350107949227095
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_08/Icosphere_092",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3956396422603325,
+          0.13474936349876226,
+          0.07409999659284949
+        ],
+        "max": [
+          0.39938487193797073,
+          0.13774936334602533,
+          0.07689999649301171
+        ],
+        "size": [
+          0.00374522967763824,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_025/Icosphere_026",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23274803496664567,
+          0.15025191191562193,
+          0.248894706601277
+        ],
+        "max": [
+          0.23597794436150984,
+          0.15290088769070131,
+          0.2509323803242296
+        ],
+        "size": [
+          0.003229909394864172,
+          0.0026489757750793874,
+          0.0020376737229526043
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Paper_Filtrate/Paper_Filtrate",
+      "points": 480,
+      "faces": 384,
+      "world_bounds": {
+        "min": [
+          0.19099999964237213,
+          0.11100000143051147,
+          0.03400000184774399
+        ],
+        "max": [
+          0.27900001406669617,
+          0.19900000095367432,
+          0.07500000298023224
+        ],
+        "size": [
+          0.08800001442432404,
+          0.08799999952316284,
+          0.04100000113248825
+        ]
+      },
+      "material": "/ClassicLab/_materials/Much_clearer_filtrate_illustrative"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_023/Icosphere_130",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11845375841597297,
+          -0.13407005034697514,
+          0.08344822766957805
+        ],
+        "max": [
+          0.12204500788708947,
+          -0.13104920424210567,
+          0.08533625659765676
+        ],
+        "size": [
+          0.0035912494711164977,
+          0.003020846104869468,
+          0.001888028928078711
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_020/Icosphere_021",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23099153739200412,
+          0.17758208057674124,
+          0.24852583138272166
+        ],
+        "max": [
+          0.23511374491466702,
+          0.18096286514011667,
+          0.2511264351196587
+        ],
+        "size": [
+          0.004122207522662902,
+          0.0033807845633754274,
+          0.002600603736937046
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_018/Icosphere_125",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14160919367399555,
+          -0.16510085463482244,
+          0.08391323121031746
+        ],
+        "max": [
+          0.1444120985356297,
+          -0.16274313926738398,
+          0.08538680343190208
+        ],
+        "size": [
+          0.002802904861634148,
+          0.002357715367438451,
+          0.001473572221584618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_067/Icosphere_068",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.25992941276450854,
+          0.15520779562122047,
+          0.24920188973192126
+        ],
+        "max": [
+          0.2625718174753596,
+          0.15737493562572777,
+          0.2508689205860719
+        ],
+        "size": [
+          0.0026424047108510873,
+          0.0021671400045072953,
+          0.0016670308541506529
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_015/Icosphere_016",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21259498526598222,
+          0.1286156802385568,
+          0.24866724922321737
+        ],
+        "max": [
+          0.2161899812028288,
+          0.13156407783334262,
+          0.25093524740077555
+        ],
+        "size": [
+          0.00359499593684659,
+          0.002948397594785823,
+          0.0022679981775581837
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_003/Icosphere_110",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.0846378185172224,
+          -0.1482438949165431,
+          0.08301637705881149
+        ],
+        "max": [
+          0.08929825049446584,
+          -0.14432368602179613,
+          0.08546650770585984
+        ],
+        "size": [
+          0.0046604319772434455,
+          0.003920208894746979,
+          0.002450130647048354
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_013/Icosphere_120",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11708778283423019,
+          -0.1542443530847632,
+          0.08393209124915302
+        ],
+        "max": [
+          0.120879618908705,
+          -0.15105477997759947,
+          0.08592557464726269
+        ],
+        "size": [
+          0.003791836074474808,
+          0.0031895731071637234,
+          0.0019934833981096745
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Paper_illustrative_drop_1/Icosphere_082",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23300277798740665,
+          0.152900001392141,
+          0.13280000747181475
+        ],
+        "max": [
+          0.23699722082050045,
+          0.1571000009920448,
+          0.13920000731013715
+        ],
+        "size": [
+          0.003994442833093803,
+          0.004199999599903803,
+          0.006399999838322401
+        ]
+      },
+      "material": "/ClassicLab/_materials/Much_clearer_filtrate_illustrative"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_000/Icosphere_001",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.259441098646753,
+          0.1580608778767339,
+          0.24877342185936868
+        ],
+        "max": [
+          0.26189515881098013,
+          0.16007354919388378,
+          0.25032163062132895
+        ],
+        "size": [
+          0.002454060164227112,
+          0.0020126713171498833,
+          0.001548208761960268
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_010/Icosphere_011",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2598482753214654,
+          0.1616730497392827,
+          0.2486793800489977
+        ],
+        "max": [
+          0.26246597514774234,
+          0.1638199283567256,
+          0.25033082521986216
+        ],
+        "size": [
+          0.002617699826276909,
+          0.0021468786174428933,
+          0.0016514451708644629
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_008/Icosphere_115",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12044858621305525,
+          -0.17339617659186285,
+          0.08419827336911112
+        ],
+        "max": [
+          0.12310958219819963,
+          -0.1711578304615124,
+          0.08559723978396505
+        ],
+        "size": [
+          0.002660995985144382,
+          0.002238346130350455,
+          0.0013989664148539305
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_017/Icosphere_018",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2308526445405723,
+          0.17140429628650758,
+          0.24815441900864244
+        ],
+        "max": [
+          0.2350863408071755,
+          0.1748765169306555,
+          0.2508253580890596
+        ],
+        "size": [
+          0.004233696266603193,
+          0.0034722206441479275,
+          0.0026709390804171562
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_043/Icosphere_044",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23863558391181738,
+          0.13220934575635646,
+          0.2492782129556872
+        ],
+        "max": [
+          0.2410085358277151,
+          0.13415549689691808,
+          0.25077525241067633
+        ],
+        "size": [
+          0.002372951915897703,
+          0.001946151140561625,
+          0.0014970394549891353
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_054/Icosphere_161",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10697551540677136,
+          -0.14688917254108302,
+          0.08407067036023363
+        ],
+        "max": [
+          0.10975761242564136,
+          -0.14454895998340733,
+          0.08553330326685682
+        ],
+        "size": [
+          0.00278209701887,
+          0.0023402125576756916,
+          0.0014626329066231847
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_020/Icosphere_127",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13973030679456494,
+          -0.14038597353570806,
+          0.08403043443104252
+        ],
+        "max": [
+          0.14295324451692798,
+          -0.13767493955022944,
+          0.08572483068564907
+        ],
+        "size": [
+          0.0032229377223630395,
+          0.002711033985478617,
+          0.001694396254606545
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_018/Icosphere_019",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2215332139344668,
+          0.18176564546357368,
+          0.24898130242945626
+        ],
+        "max": [
+          0.2244136284975553,
+          0.18412798670996453,
+          0.25079848821042106
+        ],
+        "size": [
+          0.002880414563088518,
+          0.002362341246390842,
+          0.0018171857809647918
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_051/Icosphere_052",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23909089726166755,
+          0.17622409829983973,
+          0.24901520338607952
+        ],
+        "max": [
+          0.24113800364775628,
+          0.177903010750911,
+          0.25030667457031086
+        ],
+        "size": [
+          0.0020471063860887373,
+          0.0016789124510712683,
+          0.0012914711842313409
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_061/Icosphere_062",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23046285738052874,
+          0.13946043707021039,
+          0.24860610521864146
+        ],
+        "max": [
+          0.2333436525910899,
+          0.14182309054247577,
+          0.2504235311644152
+        ],
+        "size": [
+          0.002880795210561171,
+          0.002362653472265386,
+          0.0018174259457737207
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_049/Icosphere_156",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.08991161463531219,
+          -0.13996282400725224,
+          0.08370121452026069
+        ],
+        "max": [
+          0.09207608821121491,
+          -0.13814213691117427,
+          0.0848391440231353
+        ],
+        "size": [
+          0.0021644735759027145,
+          0.0018206870960779664,
+          0.0011379295028746128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_044/Icosphere_045",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22428781901770323,
+          0.15799410369268435,
+          0.24871694023022428
+        ],
+        "max": [
+          0.22734477008408815,
+          0.16050122950204831,
+          0.25064549868693575
+        ],
+        "size": [
+          0.0030569510663849275,
+          0.0025071258093639637,
+          0.001928558456711471
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_059/Icosphere_166",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.1357772715392237,
+          -0.16384357872560923,
+          0.08367069769883528
+        ],
+        "max": [
+          0.13776397034500787,
+          -0.16217243012830312,
+          0.0847151656053029
+        ],
+        "size": [
+          0.0019866988057841706,
+          0.0016711485973061047,
+          0.0010444679064676166
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/NoPaper_illustrative_drop_2/Icosphere_106",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.403002779775546,
+          0.152900001392141,
+          0.11480000079609454
+        ],
+        "max": [
+          0.4069972226086398,
+          0.1571000009920448,
+          0.12120000063441694
+        ],
+        "size": [
+          0.003994442833093803,
+          0.004199999599903803,
+          0.006399999838322401
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brown_suspended_solids"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_046/Icosphere_047",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22276807037587684,
+          0.17142788210516496,
+          0.24928156717214733
+        ],
+        "max": [
+          0.22528505119089562,
+          0.17349215707177595,
+          0.2508694709977135
+        ],
+        "size": [
+          0.0025169808150187767,
+          0.0020642749666109905,
+          0.0015879038255661726
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_056/Icosphere_057",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22628590363313333,
+          0.14943444552389729,
+          0.24848744471091777
+        ],
+        "max": [
+          0.23029658299635275,
+          0.1527237611773814,
+          0.25101768772583455
+        ],
+        "size": [
+          0.004010679363219416,
+          0.003289315653484115,
+          0.0025302430149167776
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_044/Icosphere_151",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10966898671336557,
+          -0.17589602025691675,
+          0.08297221071552485
+        ],
+        "max": [
+          0.11431272157482718,
+          -0.17198985663708044,
+          0.08541356318164617
+        ],
+        "size": [
+          0.004643734861461607,
+          0.0039061636198363114,
+          0.002441352466121316
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_019/Icosphere_020",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.20369661563093708,
+          0.16191626323007524,
+          0.2487460223492235
+        ],
+        "max": [
+          0.20620857960526898,
+          0.16397642361379683,
+          0.2503307613078505
+        ],
+        "size": [
+          0.002511963974331899,
+          0.0020601603837215876,
+          0.0015847389586269855
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_039/Icosphere_146",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11497390551042987,
+          -0.15296346848088704,
+          0.08364661957602948
+        ],
+        "max": [
+          0.11861340420770215,
+          -0.14990203673761882,
+          0.08556001458782703
+        ],
+        "size": [
+          0.0036394986972722865,
+          0.003061431743268228,
+          0.0019133950117975473
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_19/Icosphere_103",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3783379963338245,
+          0.1710211293268949,
+          0.07409999659284949
+        ],
+        "max": [
+          0.3809659906923901,
+          0.17402112917415796,
+          0.07689999649301171
+        ],
+        "size": [
+          0.002627994358565644,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_045/Icosphere_046",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22107542579434641,
+          0.12952515354268898,
+          0.24950899195391685
+        ],
+        "max": [
+          0.22322090441920034,
+          0.13128474483377586,
+          0.25086252379696816
+        ],
+        "size": [
+          0.002145478624853925,
+          0.0017595912910868816,
+          0.0013535318430513144
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_034/Icosphere_141",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.13994422336563284,
+          -0.14482547100873347,
+          0.08378205593908206
+        ],
+        "max": [
+          0.14356357077613657,
+          -0.14178098980097417,
+          0.08568485680734739
+        ],
+        "size": [
+          0.003619347410503737,
+          0.0030444812077592975,
+          0.0019028008682653308
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_14/Icosphere_098",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.40989012221072624,
+          0.16244692667014898,
+          0.07409999659284949
+        ],
+        "max": [
+          0.412627809250608,
+          0.16544692651741205,
+          0.07689999649301171
+        ],
+        "size": [
+          0.002737687039881753,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_071/Icosphere_072",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.25274964305691594,
+          0.1413979281144308,
+          0.24938948941417038
+        ],
+        "max": [
+          0.25487998989291316,
+          0.14314510930011998,
+          0.25073347496800125
+        ],
+        "size": [
+          0.002130346835997221,
+          0.0017471811856891728,
+          0.001343985553830862
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_029/Icosphere_136",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11215407918026309,
+          -0.12379070203157926,
+          0.08442722738254815
+        ],
+        "max": [
+          0.11424832274387021,
+          -0.12202909011987186,
+          0.08552823483478278
+        ],
+        "size": [
+          0.002094243563607129,
+          0.0017616119117074003,
+          0.0011010074522346258
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_09/Icosphere_093",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.41875364198371884,
+          0.16522408588416876,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4218935786278534,
+          0.16822408573143183,
+          0.07689999649301171
+        ],
+        "size": [
+          0.003139936644134589,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_026/Icosphere_027",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22288875821077336,
+          0.14077940602147443,
+          0.24846127530327067
+        ],
+        "max": [
+          0.22586593982732783,
+          0.14322110991633075,
+          0.25033950904617086
+        ],
+        "size": [
+          0.0029771816165544696,
+          0.0024417038948563174,
+          0.0018782337429001927
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/NoPaper_Filtrate/NoPaper_Filtrate",
+      "points": 480,
+      "faces": 384,
+      "world_bounds": {
+        "min": [
+          0.3610000014305115,
+          0.11100000143051147,
+          0.03400000184774399
+        ],
+        "max": [
+          0.4490000009536743,
+          0.19900000095367432,
+          0.07500000298023224
+        ],
+        "size": [
+          0.08799999952316284,
+          0.08799999952316284,
+          0.04100000113248825
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brown_suspended_solids"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_024/Icosphere_131",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10668919080269366,
+          -0.16354657831904076,
+          0.08420262031722814
+        ],
+        "max": [
+          0.10898340648639172,
+          -0.16161675628903724,
+          0.08540875918697566
+        ],
+        "size": [
+          0.0022942156836980587,
+          0.0019298220300035251,
+          0.0012061388697475195
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_019/Icosphere_126",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10793301244885666,
+          -0.15146119415738585,
+          0.08345710963476449
+        ],
+        "max": [
+          0.1123996547827031,
+          -0.147703995108819,
+          0.08580535918008536
+        ],
+        "size": [
+          0.004466642333846443,
+          0.0037571990485668616,
+          0.0023482495453208685
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_021/Icosphere_022",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2373537467414835,
+          0.17386231788712203,
+          0.24920036748517305
+        ],
+        "max": [
+          0.24051579371147366,
+          0.1764556371299678,
+          0.2511952285422012
+        ],
+        "size": [
+          0.003162046969990173,
+          0.002593319242845782,
+          0.0019948610570281744
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_016/Icosphere_017",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23886189128721438,
+          0.12474743601819796,
+          0.24888110754545778
+        ],
+        "max": [
+          0.24084338281785764,
+          0.12637253525713163,
+          0.2501311838859692
+        ],
+        "size": [
+          0.0019814915306432535,
+          0.0016250992389336694,
+          0.0012500763405114412
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_004/Icosphere_111",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12617765283460614,
+          -0.14564770927835075,
+          0.08392517908941954
+        ],
+        "max": [
+          0.1300057330143929,
+          -0.14242764839720162,
+          0.08593771711457521
+        ],
+        "size": [
+          0.0038280801797867525,
+          0.0032200608811491227,
+          0.0020125380251556635
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_047/Icosphere_048",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22026275411947083,
+          0.15843489085603177,
+          0.24886243435321376
+        ],
+        "max": [
+          0.2228536425461023,
+          0.16055978025030673,
+          0.25049696472706273
+        ],
+        "size": [
+          0.002590888426631466,
+          0.0021248893942749647,
+          0.0016345303738489747
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Paper_illustrative_drop_2/Icosphere_083",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23300277798740665,
+          0.152900001392141,
+          0.11480000079609454
+        ],
+        "max": [
+          0.23699722082050045,
+          0.1571000009920448,
+          0.12120000063441694
+        ],
+        "size": [
+          0.003994442833093803,
+          0.004199999599903803,
+          0.006399999838322401
+        ]
+      },
+      "material": "/ClassicLab/_materials/Much_clearer_filtrate_illustrative"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_001/Icosphere_002",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22154537026930063,
+          0.12914715770684368,
+          0.24943515472114086
+        ],
+        "max": [
+          0.22366246397447379,
+          0.1308834695438277,
+          0.2507707793265581
+        ],
+        "size": [
+          0.0021170937051731564,
+          0.001736311836984028,
+          0.0013356246054172516
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_011/Icosphere_012",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23469599540604952,
+          0.16306494823001266,
+          0.24857408070238307
+        ],
+        "max": [
+          0.23728547041044828,
+          0.16518867859341263,
+          0.2502077195676975
+        ],
+        "size": [
+          0.002589475004398767,
+          0.002123730363399967,
+          0.001633638865314424
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Dirty_input_water/Cylinder_003",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.07700000330805779,
+          -0.19299999997019768,
+          0.019999999552965164
+        ],
+        "max": [
+          0.15300000086426735,
+          -0.11700000241398811,
+          0.08400000259280205
+        ],
+        "size": [
+          0.07599999755620956,
+          0.07599999755620956,
+          0.06400000303983688
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brown_suspended_solids"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_009/Icosphere_116",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14422393021670726,
+          -0.14532919510734194,
+          0.083663726283703
+        ],
+        "max": [
+          0.14756715121182057,
+          -0.14251698270904906,
+          0.08542135910829529
+        ],
+        "size": [
+          0.003343220995113305,
+          0.0028122123982928793,
+          0.0017576328245922923
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_073/Icosphere_074",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23142005064420068,
+          0.1795287449711206,
+          0.2489368023816496
+        ],
+        "max": [
+          0.2346863343483988,
+          0.18220755263630128,
+          0.25099742389284074
+        ],
+        "size": [
+          0.003266283704198125,
+          0.0026788076651806936,
+          0.0020606215111911297
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_006/Icosphere_007",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21746992861412212,
+          0.18132750235376555,
+          0.24870802566874772
+        ],
+        "max": [
+          0.21961119974471882,
+          0.18308364309491915,
+          0.2500589032424614
+        ],
+        "size": [
+          0.0021412711305967003,
+          0.0017561407411536,
+          0.0013508775737136602
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_072/Icosphere_073",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2295662981742025,
+          0.17429345354900003,
+          0.2481017189566046
+        ],
+        "max": [
+          0.2333751993901133,
+          0.17741728320255637,
+          0.250504664843902
+        ],
+        "size": [
+          0.0038089012159108204,
+          0.0031238296535563426,
+          0.002402945887297392
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_01/Icosphere_085",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.39872749368303667,
+          0.17040529413707556,
+          0.07409999659284949
+        ],
+        "max": [
+          0.40144650419599165,
+          0.17340529398433863,
+          0.07689999649301171
+        ],
+        "size": [
+          0.002719010512954978,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_058/Icosphere_165",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11238398508495256,
+          -0.13963366068971764,
+          0.08325979532673955
+        ],
+        "max": [
+          0.11625603480869368,
+          -0.13637661419736732,
+          0.0852954494766891
+        ],
+        "size": [
+          0.003872049723741111,
+          0.003257046492350313,
+          0.0020356541499495506
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_055/Icosphere_162",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11660410194247783,
+          -0.14088553719918606,
+          0.08359747234499082
+        ],
+        "max": [
+          0.11892698974758564,
+          -0.13893159694273594,
+          0.08481868501985446
+        ],
+        "size": [
+          0.0023228878051078095,
+          0.0019539402564501263,
+          0.0012212126748636365
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_074/Icosphere_075",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.25417215708270746,
+          0.15461507624222903,
+          0.24807889095973223
+        ],
+        "max": [
+          0.2582579743526868,
+          0.1579660158769879,
+          0.2506565368967131
+        ],
+        "size": [
+          0.004085817269979364,
+          0.003350939634758854,
+          0.0025776459369808435
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_050/Icosphere_157",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12534247598687986,
+          -0.1311127566193758,
+          0.08385444100713357
+        ],
+        "max": [
+          0.1274913970466437,
+          -0.1293051518107237,
+          0.08498419407987967
+        ],
+        "size": [
+          0.002148921059763831,
+          0.001807604808652108,
+          0.001129753072746098
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_02/Icosphere_086",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.41090877506516765,
+          0.16943925185687841,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4131984546444576,
+          0.17243925170414148,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0022896795792899383,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_060/Icosphere_167",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14283340543308706,
+          -0.14508088484692705,
+          0.08411524281837046
+        ],
+        "max": [
+          0.1456912818571046,
+          -0.14267692908358443,
+          0.08561771526001394
+        ],
+        "size": [
+          0.0028578764240175247,
+          0.0024039557633426245,
+          0.0015024724416434765
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_045/Icosphere_152",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.08508228707015464,
+          -0.14815843992270708,
+          0.08368286862969398
+        ],
+        "max": [
+          0.08884929669201425,
+          -0.14498974986038923,
+          0.08566330000758171
+        ],
+        "size": [
+          0.003767009621859607,
+          0.003168690062317847,
+          0.001980431377887726
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_024/Icosphere_025",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.20108899779053133,
+          0.14744648964217041,
+          0.2489025479881093
+        ],
+        "max": [
+          0.20511960678367216,
+          0.15075215070435669,
+          0.25144536432344466
+        ],
+        "size": [
+          0.004030608993140838,
+          0.0033056610621862714,
+          0.002542816335335374
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_040/Icosphere_147",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12327061579103522,
+          -0.1372618088726298,
+          0.08396973402705044
+        ],
+        "max": [
+          0.12700660541181513,
+          -0.13411921167332969,
+          0.08593385724816471
+        ],
+        "size": [
+          0.0037359896207799087,
+          0.003142597199300101,
+          0.001964123221114278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_brown_grit_bed/Retained_brown_grit_bed",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.1998099982738495,
+          0.11981000192463398,
+          0.20999999344348907
+        ],
+        "max": [
+          0.2701900005340576,
+          0.19019000232219696,
+          0.24899999797344208
+        ],
+        "size": [
+          0.07038000226020813,
+          0.07038000039756298,
+          0.039000004529953
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brown_suspended_solids"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_035/Icosphere_142",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.08966706733936299,
+          -0.1366993776596646,
+          0.08286499453242868
+        ],
+        "max": [
+          0.0949442084527589,
+          -0.13226041280855133,
+          0.08563934790436178
+        ],
+        "size": [
+          0.005277141113395917,
+          0.004438964851113281,
+          0.0027743533719331026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_05/Icosphere_089",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3920871735475722,
+          0.14972669942863287,
+          0.07409999659284949
+        ],
+        "max": [
+          0.39566628924387065,
+          0.15272669927589594,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0035791156962984294,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_15/Icosphere_099",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3971892601064032,
+          0.13543754382617773,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4007501596399957,
+          0.1384375436734408,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0035608995335925098,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_064/Icosphere_171",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.1419896977161303,
+          -0.13706206592383768,
+          0.0835047890432179
+        ],
+        "max": [
+          0.1451003355766401,
+          -0.13444549528297994,
+          0.08514014584943652
+        ],
+        "size": [
+          0.0031106378605098017,
+          0.0026165706408577405,
+          0.0016353568062186241
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_076/Icosphere_077",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24164428616831513,
+          0.16228702441627188,
+          0.248276227270253
+        ],
+        "max": [
+          0.2457693586223343,
+          0.165670158706363,
+          0.25087863847147673
+        ],
+        "size": [
+          0.004125072454019163,
+          0.0033831342900911276,
+          0.002602411201223731
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_030/Icosphere_137",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12590690909327681,
+          -0.1621747443897804,
+          0.08315973845310509
+        ],
+        "max": [
+          0.1315606290250856,
+          -0.15741901300119554,
+          0.08613207074813545
+        ],
+        "size": [
+          0.005653719931808798,
+          0.004755731388584872,
+          0.0029723322950303555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_00/Icosphere_084",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3784624677656343,
+          0.1636080251503736,
+          0.07409999659284949
+        ],
+        "max": [
+          0.3822136181833098,
+          0.16660802499763666,
+          0.07689999649301171
+        ],
+        "size": [
+          0.003751150417675486,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_10/Icosphere_094",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.4322435393759775,
+          0.1492761032152921,
+          0.07409999659284949
+        ],
+        "max": [
+          0.43422334046868805,
+          0.15227610306255518,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0019798010927105647,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_027/Icosphere_028",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2546997031462605,
+          0.147689102396381,
+          0.24928283103508875
+        ],
+        "max": [
+          0.25725311429377246,
+          0.14978325535355796,
+          0.25089371792273596
+        ],
+        "size": [
+          0.0025534111475119525,
+          0.0020941529571769646,
+          0.0016108868876472116
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_04/Icosphere_088",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.4004468499524815,
+          0.13917466564662756,
+          0.07409999659284949
+        ],
+        "max": [
+          0.40253065239355734,
+          0.14217466549389063,
+          0.07689999649301171
+        ],
+        "size": [
+          0.002083802441075866,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_025/Icosphere_132",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11358274980692994,
+          -0.16256560512455823,
+          0.08324004441965371
+        ],
+        "max": [
+          0.11855697170586456,
+          -0.15838144592372058,
+          0.085855143959634
+        ],
+        "size": [
+          0.004974221898934622,
+          0.004184159200837645,
+          0.0026150995399802923
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_022/Icosphere_023",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2426460430371651,
+          0.15644252890780452,
+          0.24830927059520036
+        ],
+        "max": [
+          0.24609967615724712,
+          0.15927498942181584,
+          0.2504880864871666
+        ],
+        "size": [
+          0.0034536331200820114,
+          0.0028324605140113146,
+          0.0021788158919662237
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_077/Icosphere_078",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2523718949589206,
+          0.13174518529656634,
+          0.24934518698137254
+        ],
+        "max": [
+          0.254793477412753,
+          0.1337312203240086,
+          0.2508729064138606
+        ],
+        "size": [
+          0.002421582453832394,
+          0.001986035027442268,
+          0.0015277194324880838
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_005/Icosphere_112",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11739428676652751,
+          -0.18299708937715062,
+          0.08388781931716949
+        ],
+        "max": [
+          0.12075595222425618,
+          -0.18016936207701198,
+          0.08565514895599335
+        ],
+        "size": [
+          0.003361665457728674,
+          0.0028277273001386383,
+          0.0017673296388238668
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_052/Icosphere_053",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2530016286940272,
+          0.15158075615838454,
+          0.24832711473573
+        ],
+        "max": [
+          0.25684255522778676,
+          0.1547308512024553,
+          0.25075026496779174
+        ],
+        "size": [
+          0.003840926533759559,
+          0.0031500950440707665,
+          0.0024231502320617437
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_015/Icosphere_122",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12535321283436993,
+          -0.1332170064667704,
+          0.08385360636748374
+        ],
+        "max": [
+          0.1295716805448415,
+          -0.12966856405935265,
+          0.08607138297520578
+        ],
+        "size": [
+          0.004218467710471574,
+          0.003548442407417751,
+          0.002217776607722044
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_002/Icosphere_003",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.25416575943783587,
+          0.15763687315184208,
+          0.24850259581580758
+        ],
+        "max": [
+          0.25731749261065656,
+          0.16022173342507748,
+          0.25049094995483756
+        ],
+        "size": [
+          0.003151733172820692,
+          0.002584860273235401,
+          0.0019883541390299797
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_003/Icosphere_004",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23504791924118718,
+          0.15869043321375226,
+          0.24885984905995429
+        ],
+        "max": [
+          0.23829753926635067,
+          0.16135557441945697,
+          0.25090995780192316
+        ],
+        "size": [
+          0.003249620025163491,
+          0.002665141205704713,
+          0.00205010874196887
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_000/Icosphere_107",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.09712479549293535,
+          -0.1390038079671688,
+          0.08424136554822326
+        ],
+        "max": [
+          0.09955394727344496,
+          -0.13696048193647195,
+          0.08551844442263246
+        ],
+        "size": [
+          0.0024291517805096197,
+          0.002043326030696846,
+          0.0012770788744091988
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_010/Icosphere_117",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10755016418982187,
+          -0.15480704871563572,
+          0.08279443357605487
+        ],
+        "max": [
+          0.11290047553490958,
+          -0.15030653508754116,
+          0.08560725476127118
+        ],
+        "size": [
+          0.005350311345087705,
+          0.00450051362809456,
+          0.0028128211852163076
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_078/Icosphere_079",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24592045537424767,
+          0.16309507422363087,
+          0.24871249089483172
+        ],
+        "max": [
+          0.25000881560849464,
+          0.16644809908951,
+          0.25129174103494734
+        ],
+        "size": [
+          0.004088360234246968,
+          0.0033530248658791284,
+          0.0025792501401156187
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_007/Icosphere_008",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.20935978707882671,
+          0.13533210786737193,
+          0.24885721411556005
+        ],
+        "max": [
+          0.21306634726908893,
+          0.1383720037087084,
+          0.25119559559971094
+        ],
+        "size": [
+          0.0037065601902622203,
+          0.0030398958413364596,
+          0.0023383814841508865
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_06/Icosphere_090",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.3749235267686107,
+          0.15919738574512304,
+          0.07409999659284949
+        ],
+        "max": [
+          0.3785514240217946,
+          0.1621973855923861,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0036278972531839093,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_027/Icosphere_134",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.12967983875986097,
+          -0.16020601734774878,
+          0.08353476756019518
+        ],
+        "max": [
+          0.1331070860791588,
+          -0.1573231245551748,
+          0.08533657557563856
+        ],
+        "size": [
+          0.0034272473192978326,
+          0.0028828927925739767,
+          0.0018018080154433846
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_068/Icosphere_069",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2584521214506432,
+          0.14419314794466911,
+          0.24873083201237023
+        ],
+        "max": [
+          0.2606396635034278,
+          0.14598723716809334,
+          0.250110900728032
+        ],
+        "size": [
+          0.002187542052784597,
+          0.0017940892234242223,
+          0.0013800687156617641
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_056/Icosphere_163",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.14686199435569589,
+          -0.16144781155573518,
+          0.08389452629489824
+        ],
+        "max": [
+          0.1501809119286364,
+          -0.15865604238522857,
+          0.08563938207225874
+        ],
+        "size": [
+          0.003318917572940505,
+          0.0027917691705066083,
+          0.001744855777360499
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_079/Icosphere_080",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21785555410928156,
+          0.13903199414281692,
+          0.24811379821039736
+        ],
+        "max": [
+          0.22205703329496954,
+          0.14247779270143662,
+          0.2507644125726074
+        ],
+        "size": [
+          0.004201479185687973,
+          0.003445798558619706,
+          0.0026506143622100353
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_053/Icosphere_054",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.21341113199727474,
+          0.1634070752090951,
+          0.2487851585028693
+        ],
+        "max": [
+          0.21777467976076664,
+          0.16698579211764136,
+          0.25153801788110286
+        ],
+        "size": [
+          0.004363547763491904,
+          0.0035787169085462756,
+          0.002752859378233552
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_063/Icosphere_064",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.22436284637126497,
+          0.15547806524165225,
+          0.2488216474885121
+        ],
+        "max": [
+          0.2287280597719235,
+          0.15905814863316464,
+          0.2515755578642711
+        ],
+        "size": [
+          0.004365213400658541,
+          0.0035800833915123897,
+          0.0027539103757590055
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_051/Icosphere_158",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.09059547392236397,
+          -0.16116092762317555,
+          0.08427204401232302
+        ],
+        "max": [
+          0.09259639176023796,
+          -0.15947781840000255,
+          0.08532398729585111
+        ],
+        "size": [
+          0.0020009178378739834,
+          0.001683109223172996,
+          0.0010519432835280895
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Control_suspended_grain_07/Icosphere_091",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.417446261107081,
+          0.14060227139480413,
+          0.07409999659284949
+        ],
+        "max": [
+          0.4196388667234244,
+          0.1436022712420672,
+          0.07689999649301171
+        ],
+        "size": [
+          0.0021926056163433794,
+          0.0029999998472630685,
+          0.00279999990016222
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_061/Icosphere_168",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.11892186369810717,
+          -0.12912455515963808,
+          0.08378905599238351
+        ],
+        "max": [
+          0.12104694280709608,
+          -0.1273370055665277,
+          0.0849062746274285
+        ],
+        "size": [
+          0.002125079108988903,
+          0.0017875495931103935,
+          0.001117218635044992
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_048/Icosphere_049",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24737602418354687,
+          0.1458148162167688,
+          0.2484269654378295
+        ],
+        "max": [
+          0.25140804106303516,
+          0.14912163211887877,
+          0.2509706700220704
+        ],
+        "size": [
+          0.004032016879488287,
+          0.003306815902109961,
+          0.0025437045842409134
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_058/Icosphere_059",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.2225490121419738,
+          0.13174571096450105,
+          0.24881817738059908
+        ],
+        "max": [
+          0.224747577470987,
+          0.13354884088486418,
+          0.25020520051475614
+        ],
+        "size": [
+          0.0021985653290131912,
+          0.0018031299203631335,
+          0.0013870231341570616
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_046/Icosphere_153",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.10691151554051657,
+          -0.16124950317720899,
+          0.0840177146019414
+        ],
+        "max": [
+          0.11023315256174783,
+          -0.15845544667859546,
+          0.08576400007586926
+        ],
+        "size": [
+          0.003321637021231255,
+          0.0027940564986135286,
+          0.0017462854739278555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Paper_illustrative_drop_0/Icosphere_081",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.23300277798740665,
+          0.152900001392141,
+          0.14979999721981585
+        ],
+        "max": [
+          0.23699722082050045,
+          0.1571000009920448,
+          0.15619999705813825
+        ],
+        "size": [
+          0.003994442833093803,
+          0.004199999599903803,
+          0.006399999838322401
+        ]
+      },
+      "material": "/ClassicLab/_materials/Much_clearer_filtrate_illustrative"
+    },
+    {
+      "path": "/ClassicLab/Samples/Retained_grain_042/Icosphere_043",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.24348010351314933,
+          0.16475514365544394,
+          0.24909653479699045
+        ],
+        "max": [
+          0.24679426620349496,
+          0.16747321890482827,
+          0.25118736212607473
+        ],
+        "size": [
+          0.0033141626903456234,
+          0.002718075249384333,
+          0.002090827329084277
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Samples/Input_insoluble_grain_041/Icosphere_148",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.1378817962258878,
+          -0.16508100328115152,
+          0.08446506597101688
+        ],
+        "max": [
+          0.13989337219299647,
+          -0.16338892879816366,
+          0.08552261255681515
+        ],
+        "size": [
+          0.0020115759671086586,
+          0.0016920744829878598,
+          0.0010575465857982635
+        ]
+      },
+      "material": "/ClassicLab/_materials/Retained_insoluble_grains"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_locating_tab_001/Cube_014",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2795000094920397,
+          0.150500001385808,
+          0.019999999552965164
+        ],
+        "max": [
+          0.2885000091046095,
+          0.1595000009983778,
+          0.04600000008940697
+        ],
+        "size": [
+          0.008999999612569809,
+          0.008999999612569809,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_funnel_rim/Torus_007",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.3484000004827976,
+          0.09840000048279762,
+          0.2704783243825659
+        ],
+        "max": [
+          0.46160000190138817,
+          0.21160000190138817,
+          0.2735217051813379
+        ],
+        "size": [
+          0.11320000141859055,
+          0.11320000141859055,
+          0.0030433807987719774
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Grip_flat_left/Cube_029",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.06400000350549817,
+          -0.16850000154227018,
+          0.0560000017285347
+        ],
+        "max": [
+          0.07200000388547778,
+          -0.1415000008419156,
+          0.07800000160932541
+        ],
+        "size": [
+          0.00800000037997961,
+          0.027000000700354576,
+          0.02199999988079071
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Catch_tray_end_001/Cube_010",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.12250001728534698,
+          0.29250001441687346,
+          0.0030000004917383194
+        ],
+        "max": [
+          0.4775000065565109,
+          0.30250001419335604,
+          0.029000001028180122
+        ],
+        "size": [
+          0.35499998927116394,
+          0.009999999776482582,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_funnel_rim/Torus_002",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.17839999869465828,
+          0.09840000048279762,
+          0.2704783243825659
+        ],
+        "max": [
+          0.2916000001132488,
+          0.21160000190138817,
+          0.2735217051813379
+        ],
+        "size": [
+          0.11320000141859055,
+          0.11320000141859055,
+          0.0030433807987719774
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Glass_stirring_rod/Glass_stirring_rod",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.20100000500679016,
+          -0.17249999940395355,
+          0.01862235739827156
+        ],
+        "max": [
+          0.3089999854564667,
+          -0.16750000417232513,
+          0.023377640172839165
+        ],
+        "size": [
+          0.10799998044967651,
+          0.004999995231628418,
+          0.004755282774567604
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Source_locator_001/Cube_028",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.15800000028684735,
+          -0.1900000013411045,
+          0.0059999991208314896
+        ],
+        "max": [
+          0.16600000066682696,
+          -0.12000000104308128,
+          0.03199999965727329
+        ],
+        "size": [
+          0.00800000037997961,
+          0.07000000029802322,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_locating_tab_002/Cube_015",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.23049999959766865,
+          0.19949999637901783,
+          0.019999999552965164
+        ],
+        "max": [
+          0.23949999921023846,
+          0.20849999599158764,
+          0.04600000008940697
+        ],
+        "size": [
+          0.008999999612569809,
+          0.008999999612569809,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_Flask/NoPaper_Flask",
+      "points": 1440,
+      "faces": 1344,
+      "world_bounds": {
+        "min": [
+          0.3569999933242798,
+          0.10700000170618296,
+          0.027000000700354576
+        ],
+        "max": [
+          0.453000009059906,
+          0.2030000016093254,
+          0.14800000190734863
+        ],
+        "size": [
+          0.09600001573562622,
+          0.09599999990314245,
+          0.12100000120699406
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_Funnel/NoPaper_Funnel",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.3479999899864197,
+          0.09800000139512122,
+          0.15800000727176666
+        ],
+        "max": [
+          0.4620000123977661,
+          0.21200000494718552,
+          0.27300000190734863
+        ],
+        "size": [
+          0.11400002241134644,
+          0.1140000035520643,
+          0.11499999463558197
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Robot_grip_contact_pad_001/Cube_033",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.03100000135600567,
+          -0.14599999587517232,
+          0.05750000197440386
+        ],
+        "max": [
+          0.055000001564621925,
+          -0.14399999578017741,
+          0.07650000136345625
+        ],
+        "size": [
+          0.024000000208616257,
+          0.0020000000949949026,
+          0.01899999938905239
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Stand_foot/Cube_011",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.21199999749660492,
+          0.23750001564621925,
+          0.020999999716877937
+        ],
+        "max": [
+          0.431999996304512,
+          0.29250001534819603,
+          0.038999998942017555
+        ],
+        "size": [
+          0.2199999988079071,
+          0.054999999701976776,
+          0.017999999225139618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_flask_lip/Torus_005",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.3874000012874603,
+          0.13740000128746033,
+          0.14547830948140472
+        ],
+        "max": [
+          0.42260000109672546,
+          0.17260000109672546,
+          0.1485216902801767
+        ],
+        "size": [
+          0.03519999980926514,
+          0.03519999980926514,
+          0.0030433807987719774
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Input_grip_collar/Input_grip_collar",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.07100000232458115,
+          -0.19900000095367432,
+          0.05700000002980232
+        ],
+        "max": [
+          0.1589999943971634,
+          -0.11100000143051147,
+          0.07699999958276749
+        ],
+        "size": [
+          0.08799999207258224,
+          0.08799999952316284,
+          0.019999999552965164
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Grip_flat_right/Cube_030",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.15800000028684735,
+          -0.16850000154227018,
+          0.0560000017285347
+        ],
+        "max": [
+          0.16600000066682696,
+          -0.1415000008419156,
+          0.07800000160932541
+        ],
+        "size": [
+          0.00800000037997961,
+          0.027000000700354576,
+          0.02199999988079071
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_Flask/Paper_Flask",
+      "points": 1440,
+      "faces": 1344,
+      "world_bounds": {
+        "min": [
+          0.18700000643730164,
+          0.10700000170618296,
+          0.027000000700354576
+        ],
+        "max": [
+          0.28299999237060547,
+          0.2030000016093254,
+          0.14800000190734863
+        ],
+        "size": [
+          0.09599998593330383,
+          0.09599999990314245,
+          0.12100000120699406
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Stirrer_rest/Cube_035",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.19499999657273293,
+          -0.18250000197440386,
+          0.0
+        ],
+        "max": [
+          0.3149999938905239,
+          -0.15750000160187483,
+          0.017999999225139618
+        ],
+        "size": [
+          0.11999999731779099,
+          0.02500000037252903,
+          0.017999999225139618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Source_locator/Cube_027",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.06400000350549817,
+          -0.1900000013411045,
+          0.0059999991208314896
+        ],
+        "max": [
+          0.07200000388547778,
+          -0.12000000104308128,
+          0.03199999965727329
+        ],
+        "size": [
+          0.00800000037997961,
+          0.07000000029802322,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_support_ring/Torus_009",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.3736000023782253,
+          0.12360000237822533,
+          0.22671746648848057
+        ],
+        "max": [
+          0.43640000000596046,
+          0.18640000000596046,
+          0.23128253780305386
+        ],
+        "size": [
+          0.06279999762773514,
+          0.06279999762773514,
+          0.004565071314573288
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Stand_post/Cylinder",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3159999968484044,
+          0.2590000154450536,
+          0.03700000047683716
+        ],
+        "max": [
+          0.32799999695271254,
+          0.2710000155493617,
+          0.3569999933242798
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.3199999928474426
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Folded_filter_paper/Folded_filter_paper",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.18169750273227692,
+          0.10169750149361789,
+          0.20499999821186066
+        ],
+        "max": [
+          0.2883025109767914,
+          0.20830249786376953,
+          0.2669999897480011
+        ],
+        "size": [
+          0.10660500824451447,
+          0.10660499637015164,
+          0.06199999153614044
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_folded_cellulose_paper"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_support_ring/Torus_004",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.20360000059008598,
+          0.12360000237822533,
+          0.22671746648848057
+        ],
+        "max": [
+          0.2663999982178211,
+          0.18640000000596046,
+          0.23128253780305386
+        ],
+        "size": [
+          0.06279999762773514,
+          0.06279999762773514,
+          0.004565071314573288
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Robot_grip_contact_pad/Cube_032",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.03100000135600567,
+          -0.16600000660400838,
+          0.05750000197440386
+        ],
+        "max": [
+          0.055000001564621925,
+          -0.16400000650901347,
+          0.07650000136345625
+        ],
+        "size": [
+          0.024000000208616257,
+          0.0020000000949949026,
+          0.01899999938905239
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Catch_tray_base/Cube_006",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.11750000715255737,
+          0.027499988675117493,
+          0.0
+        ],
+        "max": [
+          0.48250001668930054,
+          0.30249999463558197,
+          0.012000000104308128
+        ],
+        "size": [
+          0.36500000953674316,
+          0.2750000059604645,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_funnel_stem_end/Torus_003",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.22879999922588468,
+          0.14880000101402402,
+          0.1580489378538914
+        ],
+        "max": [
+          0.24119999958202243,
+          0.16120000137016177,
+          0.15995105094043538
+        ],
+        "size": [
+          0.012400000356137753,
+          0.012400000356137753,
+          0.0019021130865439773
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_flask_nest/Cube_019",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3525000028312206,
+          0.10250000283122063,
+          0.0139999995008111
+        ],
+        "max": [
+          0.45749999955296516,
+          0.20749999955296516,
+          0.02599999960511923
+        ],
+        "size": [
+          0.10499999672174454,
+          0.10499999672174454,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/No_paper_condition_ochre"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Beaker_spout_left/Beaker_spout_left",
+      "points": 30,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.14611774682998657,
+          -0.18221309781074524,
+          0.11456404626369476
+        ],
+        "max": [
+          0.1704949140548706,
+          -0.15094494819641113,
+          0.11943565309047699
+        ],
+        "size": [
+          0.024377167224884033,
+          0.031268149614334106,
+          0.0048716068267822266
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_support_arm/NoPaper_support_arm",
+      "points": 30,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.32199999690055847,
+          0.18400000035762787,
+          0.22557619214057922
+        ],
+        "max": [
+          0.40860000252723694,
+          0.2686000093817711,
+          0.2324238121509552
+        ],
+        "size": [
+          0.08660000562667847,
+          0.08460000902414322,
+          0.0068476200103759766
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_flask_lip/Torus",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.21739999949932098,
+          0.13740000128746033,
+          0.14547830948140472
+        ],
+        "max": [
+          0.2525999993085861,
+          0.17260000109672546,
+          0.1485216902801767
+        ],
+        "size": [
+          0.03519999980926514,
+          0.03519999980926514,
+          0.0030433807987719774
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Stand_post_cap/Icosphere",
+      "points": 42,
+      "faces": 80,
+      "world_bounds": {
+        "min": [
+          0.31581812073946713,
+          0.2585000157505274,
+          0.3524999972432852
+        ],
+        "max": [
+          0.3281818730616498,
+          0.2715000152438879,
+          0.3654999975115061
+        ],
+        "size": [
+          0.012363752322182675,
+          0.012999999493360503,
+          0.013000000268220901
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_Funnel/Paper_Funnel",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.17800000309944153,
+          0.09800000139512122,
+          0.15800000727176666
+        ],
+        "max": [
+          0.2919999957084656,
+          0.21200000494718552,
+          0.27300000190734863
+        ],
+        "size": [
+          0.11399999260902405,
+          0.1140000035520643,
+          0.11499999463558197
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Source_cradle/Cube_026",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.0625000037252903,
+          -0.20749999955296516,
+          0.0
+        ],
+        "max": [
+          0.16750000044703484,
+          -0.10250000283122063,
+          0.012000000104308128
+        ],
+        "size": [
+          0.10499999672174454,
+          0.10499999672174454,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Paper_condition_teal"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_support_arm/Paper_support_arm",
+      "points": 30,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2313999980688095,
+          0.18400000035762787,
+          0.22557619214057922
+        ],
+        "max": [
+          0.32199999690055847,
+          0.2686000093817711,
+          0.2324238121509552
+        ],
+        "size": [
+          0.09059999883174896,
+          0.08460000902414322,
+          0.0068476200103759766
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Catch_tray_side/Cube_007",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.1175000024959445,
+          0.027499988675117493,
+          0.0030000004917383194
+        ],
+        "max": [
+          0.12750000227242708,
+          0.30249999463558197,
+          0.029000001028180122
+        ],
+        "size": [
+          0.009999999776482582,
+          0.2750000059604645,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_flask_base/Torus_001",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.18779999762773514,
+          0.10779999941587448,
+          0.029858731664717197
+        ],
+        "max": [
+          0.28220000118017197,
+          0.2022000029683113,
+          0.03214126732200384
+        ],
+        "size": [
+          0.09440000355243683,
+          0.09440000355243683,
+          0.002282535657286644
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_clamp_boss/Cube_023",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30949999671429396,
+          0.2530000153928995,
+          0.23350000474601984
+        ],
+        "max": [
+          0.334499997086823,
+          0.27700001560151577,
+          0.2565000047907233
+        ],
+        "size": [
+          0.02500000037252903,
+          0.024000000208616257,
+          0.023000000044703484
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_flask_nest/Cube_012",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.18250000104308128,
+          0.10250000283122063,
+          0.0139999995008111
+        ],
+        "max": [
+          0.2874999977648258,
+          0.20749999955296516,
+          0.02599999960511923
+        ],
+        "size": [
+          0.10499999672174454,
+          0.10499999672174454,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Paper_condition_teal"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Input_beaker_rim/Torus_010",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.07259999960660934,
+          -0.19740000367164612,
+          0.11566851963289082
+        ],
+        "max": [
+          0.1574000045657158,
+          -0.11259999871253967,
+          0.11833147774450481
+        ],
+        "size": [
+          0.08480000495910645,
+          0.08480000495910645,
+          0.002662958111613989
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_clamp_boss/Cube_016",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30949999671429396,
+          0.2530000153928995,
+          0.21750000212341547
+        ],
+        "max": [
+          0.334499997086823,
+          0.27700001560151577,
+          0.24050000216811895
+        ],
+        "size": [
+          0.02500000037252903,
+          0.024000000208616257,
+          0.023000000044703484
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_flask_base/Torus_006",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.3577999994158745,
+          0.10779999941587448,
+          0.029858731664717197
+        ],
+        "max": [
+          0.4522000029683113,
+          0.2022000029683113,
+          0.03214126732200384
+        ],
+        "size": [
+          0.09440000355243683,
+          0.09440000355243683,
+          0.002282535657286644
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Catch_tray_side_001/Cube_008",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.47249999176710844,
+          0.027499988675117493,
+          0.0030000004917383194
+        ],
+        "max": [
+          0.482499991543591,
+          0.30249999463558197,
+          0.029000001028180122
+        ],
+        "size": [
+          0.009999999776482582,
+          0.2750000059604645,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_funnel_stem_end/Torus_008",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.398800001014024,
+          0.14880000101402402,
+          0.1580489378538914
+        ],
+        "max": [
+          0.41120000137016177,
+          0.16120000137016177,
+          0.15995105094043538
+        ],
+        "size": [
+          0.012400000356137753,
+          0.012400000356137753,
+          0.0019021130865439773
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_edge"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_locating_tab_001/Cube_021",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.44949999637901783,
+          0.150500001385808,
+          0.019999999552965164
+        ],
+        "max": [
+          0.45849999599158764,
+          0.1595000009983778,
+          0.04600000008940697
+        ],
+        "size": [
+          0.008999999612569809,
+          0.008999999612569809,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_locating_tab/Cube_020",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.35150000639259815,
+          0.150500001385808,
+          0.019999999552965164
+        ],
+        "max": [
+          0.36050000600516796,
+          0.1595000009983778,
+          0.04600000008940697
+        ],
+        "size": [
+          0.008999999612569809,
+          0.008999999612569809,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_clamp_screw/Cylinder_002",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3119999971240759,
+          0.2794999951219432,
+          0.23500000425951978
+        ],
+        "max": [
+          0.33199999667704105,
+          0.29049999772549945,
+          0.25500000527722333
+        ],
+        "size": [
+          0.019999999552965164,
+          0.01100000260355627,
+          0.02000000101770355
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Robot_grip_lug/Cube_031",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.026499999687075615,
+          -0.1640000008046627,
+          0.0560000017285347
+        ],
+        "max": [
+          0.06950000114738941,
+          -0.1460000015795231,
+          0.07800000160932541
+        ],
+        "size": [
+          0.0430000014603138,
+          0.017999999225139618,
+          0.02199999988079071
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_locating_tab/Cube_013",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.1815000046044588,
+          0.150500001385808,
+          0.019999999552965164
+        ],
+        "max": [
+          0.19050000421702862,
+          0.1595000009983778,
+          0.04600000008940697
+        ],
+        "size": [
+          0.008999999612569809,
+          0.008999999612569809,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Paper_clamp_screw/Cylinder_001",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3119999971240759,
+          0.2794999951219432,
+          0.2190000016369154
+        ],
+        "max": [
+          0.33199999667704105,
+          0.29049999772549945,
+          0.23900000265461901
+        ],
+        "size": [
+          0.019999999552965164,
+          0.01100000260355627,
+          0.020000001017703606
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Catch_tray_end/Cube_009",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.12250001728534698,
+          0.027499998919665813,
+          0.0030000004917383194
+        ],
+        "max": [
+          0.4775000065565109,
+          0.037499998696148396,
+          0.029000001028180122
+        ],
+        "size": [
+          0.35499998927116394,
+          0.009999999776482582,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Dirty_input_beaker/Dirty_input_beaker",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.07199999690055847,
+          -0.1979999989271164,
+          0.013000000268220901
+        ],
+        "max": [
+          0.15800000727176666,
+          -0.1120000034570694,
+          0.11800000071525574
+        ],
+        "size": [
+          0.08600001037120819,
+          0.085999995470047,
+          0.10500000044703484
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/NoPaper_locating_tab_002/Cube_022",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.400500001385808,
+          0.19949999637901783,
+          0.019999999552965164
+        ],
+        "max": [
+          0.4095000009983778,
+          0.20849999599158764,
+          0.04600000008940697
+        ],
+        "size": [
+          0.008999999612569809,
+          0.008999999612569809,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Soft_grip_collar"
+    },
+    {
+      "path": "/ClassicLab/Apparatus/Beaker_handle/Beaker_handle",
+      "points": 40,
+      "faces": 30,
+      "world_bounds": {
+        "min": [
+          0.11100000143051147,
+          -0.11299999803304672,
+          0.03419577330350876
+        ],
+        "max": [
+          0.11900000274181366,
+          -0.08431000262498856,
+          0.0978042259812355
+        ],
+        "size": [
+          0.008000001311302185,
+          0.028689995408058167,
+          0.06360845267772675
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg_002/Cube_004",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          -0.31750001199543476,
+          -0.7600000202655792
+        ],
+        "max": [
+          0.5675000119954348,
+          -0.28250001184642315,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg_003/Cube_005",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          0.28250001184642315,
+          -0.7600000202655792
+        ],
+        "max": [
+          0.5675000119954348,
+          0.31750001199543476,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Environment/Ground/Cube_001",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          -99.88000000268221,
+          -100.0,
+          -0.8100000265985727
+        ],
+        "max": [
+          100.11999999731779,
+          100.0,
+          -0.7600000258535147
+        ],
+        "size": [
+          200.0,
+          200.0,
+          0.05000000074505806
+        ]
+      },
+      "material": "/ClassicLab/_materials/Neutral_floor"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg/Cube_002",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          -0.31750001199543476,
+          -0.7600000202655792
+        ],
+        "max": [
+          -0.29250000230968,
+          -0.28250001184642315,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    },
+    {
+      "path": "/ClassicLab/Environment/Work_surface/Cube",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.380000002682209,
+          -0.375,
+          -0.04399999976158142
+        ],
+        "max": [
+          0.619999997317791,
+          0.375,
+          0.0
+        ],
+        "size": [
+          1.0,
+          0.75,
+          0.04399999976158142
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg_001/Cube_003",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          0.28250001184642315,
+          -0.7600000202655792
+        ],
+        "max": [
+          -0.29250000230968,
+          0.31750001199543476,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_graphite"
+    }
+  ],
+  "materials": [
+    {
+      "path": "/ClassicLab/_materials/Matte_charcoal_print",
+      "universal_surface_shader": "/ClassicLab/_materials/Matte_charcoal_print/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Warm_white_bench",
+      "universal_surface_shader": "/ClassicLab/_materials/Warm_white_bench/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Paper_condition_teal",
+      "universal_surface_shader": "/ClassicLab/_materials/Paper_condition_teal/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/No_paper_condition_ochre",
+      "universal_surface_shader": "/ClassicLab/_materials/No_paper_condition_ochre/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Retained_insoluble_grains",
+      "universal_surface_shader": "/ClassicLab/_materials/Retained_insoluble_grains/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Brown_suspended_solids",
+      "universal_surface_shader": "/ClassicLab/_materials/Brown_suspended_solids/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Much_clearer_filtrate_illustrative",
+      "universal_surface_shader": "/ClassicLab/_materials/Much_clearer_filtrate_illustrative/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.05000000074505806,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Soft_grip_collar",
+      "universal_surface_shader": "/ClassicLab/_materials/Soft_grip_collar/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Glass_rim_edge",
+      "universal_surface_shader": "/ClassicLab/_materials/Glass_rim_edge/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.3499999940395355,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Fixture_graphite",
+      "universal_surface_shader": "/ClassicLab/_materials/Fixture_graphite/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.12999999523162842,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Brushed_steel",
+      "universal_surface_shader": "/ClassicLab/_materials/Brushed_steel/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/White_folded_cellulose_paper",
+      "universal_surface_shader": "/ClassicLab/_materials/White_folded_cellulose_paper/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Neutral_floor",
+      "universal_surface_shader": "/ClassicLab/_materials/Neutral_floor/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    }
+  ],
+  "cameras": [
+    "/ClassicLab/Cameras/Camera_Overhead/Camera_Overhead",
+    "/ClassicLab/Cameras/Camera_Front/Camera_Front",
+    "/ClassicLab/Cameras/Camera_Result/Camera_Result"
+  ],
+  "lights": [
+    {
+      "path": "/ClassicLab/Lighting/Key/Key",
+      "type": "DiskLight",
+      "intensity": 35.01408767700195,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/Fill/Fill",
+      "type": "DiskLight",
+      "intensity": 20.690141677856445,
+      "exposure": 0.0,
+      "normalize": true
+    }
+  ],
+  "proxies": [],
+  "world_mesh_bounds": {
+    "min": [
+      -99.88000000268221,
+      -100.0,
+      -0.8100000265985727
+    ],
+    "max": [
+      100.11999999731779,
+      100.0,
+      0.3654999975115061
+    ],
+    "size": [
+      200.0,
+      200.0,
+      1.1755000241100788
+    ]
+  },
+  "limitations": [
+    "Static geometry/material/bounds inspection at the selected time only; default is the default time",
+    "Proxy naming is heuristic unless --expect-proxy is supplied; proxy geometry is not a collider",
+    "Does not render, evaluate texture pixels, prove complete shader-network support, or validate physical/robot capability",
+    "Composed traversal uses selected variants; authored physics/dependencies are also inspected across layer specs"
+  ],
+  "ok": true
+}

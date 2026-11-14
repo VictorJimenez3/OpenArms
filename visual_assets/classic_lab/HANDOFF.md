@@ -1,0 +1,13 @@
+# Classic laboratory asset handoff
+
+Six independent practical experiment scenes replace the earlier simple manipulation/mechanics candidates. Each has an editable Blender project, source generator, robot-free USD, and three actual 1600×1000 Blender views: front, overhead, and result close-up. Each experiment has two proposed conditions and a scientific observation, not just a prop-transfer goal.
+
+Import `NN_name/Environment.usdc` beneath your scene as one environment reference. Default prim `/ClassicLab`; meters; Z-up; tabletop z=0; bench 1.00×0.75 m centered at (0.12,0), 44 mm thick below the plane. Exact exported camera prim paths/matrices are in `MANIFEST.json`; per-scene manifests contain object transforms, dimensions, static/movable intentions, source/target positions and proposed grasp interfaces. Reuse the authoritative white SO-101 without a mounted camera. No environment USD includes robot geometry or physics APIs.
+
+The optional table proxy is a separate invisible guide mesh. All other collision surfaces, hollow receiver colliders, masses, fixture joints and controller behavior remain runtime work. The final filtration rig is offset +0.10 m in Y to remove an observed overlap with the static preview robot; its source cup remains at the original handling location. The manifest and cameras match this layout.
+
+Glass and liquid appearance use explicit PreviewSurface opacity approximations. Run `tools/finalize_usd_materials.py` after regenerating USDs; exact values are in `usd_opacity_fallbacks.json`. Cycles refraction, mixed shaders, lighting/exposure, transparent sorting and material appearance can differ in Isaac. No texture files or external composition layers are required. The static preview robot is embedded in the Blender projects and is provided separately for regeneration with upstream licenses.
+
+All displayed color changes, grains, suspended solids, droplets, timers and instrument readings are staged illustration. A future runtime must reset or replace these visual states. The six scenes do not implement fluid transport, reaction/indicator kinetics, dissolution, filtration, calibrated optics, successful robot interaction or learning improvement. Fixed camera views can be used for observations after target-renderer and occlusion checks; robot parking poses may be needed to expose instruments. Result captions, expected outcomes and model state must not leak into policy observations.
+
+The previously verified two-mass Isaac transfer/science run is separate evidence. It did not use these Blender scenes. App backend registration, fixture qualification, controller integration, science models and actual execution must be demonstrated independently for any selected new experiment.

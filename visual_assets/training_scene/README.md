@@ -1,5 +1,7 @@
 # OpenArms single-experiment training candidates
 
+**Superseded visual candidates:** the current requested classic experiments are in [classic_lab](../classic_lab/README.md). This earlier simple-task collection is retained for provenance.
+
 Six separate, plain workbench scenes with the original SO-101 mesh, white printed parts, dark motors, no wrist-camera assembly, and fixed front/overhead cameras. These replace the discarded branded laboratory. Each candidate has an editable Blender scene, portable environment USD, opt-in table proxy, two actual Blender renders and a geometry/camera manifest.
 
 **Status:** visual assets and import checks are complete. These are not six verified runnable experiments. Robot articulation, controllers, contact physics, scientific models, reset, actual application integration and measured success belong to `simulation/isaac`. All images are static **ART PREVIEW**. The independently recorded Isaac articulation smoke video is separate evidence; it is not evidence of any candidate succeeding.

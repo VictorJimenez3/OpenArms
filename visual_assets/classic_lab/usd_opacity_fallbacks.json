@@ -1,0 +1,37 @@
+[
+  {
+    "scene": "01_serial_dilution",
+    "opacity_overrides": {
+      "Clear_borosilicate": 0.18,
+      "Clear_water": 0.08
+    },
+    "scope": "Illustrative opacity fallback; not physical transmission or verified Isaac appearance"
+  },
+  {
+    "scene": "02_titration",
+    "opacity_overrides": {
+      "Borosilicate_clear_glass": 0.16,
+      "Reagent_bottle_amber_glass": 0.65,
+      "Clear_liquid": 0.06,
+      "Illustrative_faint_pink_endpoint": 0.55
+    },
+    "scope": "Illustrative opacity fallback; not physical transmission or verified Isaac appearance"
+  },
+  {
+    "scene": "03_colorimetry",
+    "opacity_overrides": {
+      "Clear_cuvette_walls": 0.16,
+      "Magenta_reference_0_relative_units": 0.04
+    },
+    "scope": "Illustrative opacity fallback; not physical transmission or verified Isaac appearance"
+  },
+  {
+    "scene": "05_filtration",
+    "opacity_overrides": {
+      "Much_clearer_filtrate_illustrative": 0.05,
+      "Glass_rim_edge": 0.35,
+      "Illustrative_clear_glass_opacity_0_13": 0.13
+    },
+    "scope": "Illustrative opacity fallback; not physical transmission or verified Isaac appearance"
+  }
+]

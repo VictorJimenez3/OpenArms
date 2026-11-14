@@ -1,0 +1,768 @@
+{
+  "schema_version": 1,
+  "production": {
+    "orchestrator": "Codex primary agent",
+    "experiment_artists": 6,
+    "artist_model": "gpt-6-astra",
+    "reasoning_effort": "high",
+    "execution": "Two waves of three; final rendering and visual review coordinated centrally"
+  },
+  "status": "BLENDER_ART_ASSETS; staged/model-predicted scientific states; no six-experiment Isaac execution",
+  "units": "meters",
+  "up_axis": "Z",
+  "tabletop_z_m": 0,
+  "table_center_m": [
+    0.12,
+    0,
+    -0.022
+  ],
+  "table_dimensions_m": [
+    1,
+    0.75,
+    0.044
+  ],
+  "floor_top_z_m": -0.76,
+  "runtime_robot_base_reference_m": [
+    -0.05,
+    0,
+    0
+  ],
+  "robot_in_environment_usd": false,
+  "authored_physics": false,
+  "collision_proxy": "TableColliderProxy.usda (invisible guide only)",
+  "runtime_robot": "Use authoritative original white SO-101 no-camera articulation; no new mechanical model",
+  "candidates": [
+    {
+      "id": "01_serial_dilution",
+      "name": "Serial dilution",
+      "student_variable": "Dilution factor",
+      "two_conditions": [
+        "1:2",
+        "1:3"
+      ],
+      "observable": "Concentration / color across ordered vessels",
+      "blender": "01_serial_dilution/Scene.blend",
+      "usd": "01_serial_dilution/Environment.usdc",
+      "geometry_and_interaction_manifest": "01_serial_dilution/manifest.json",
+      "procedure_and_requirements": "01_serial_dilution/EXPERIMENT.md",
+      "views": {
+        "Front": "01_serial_dilution/Front.png",
+        "Overhead": "01_serial_dilution/Overhead.png",
+        "Result": "01_serial_dilution/Result.png"
+      },
+      "usd_camera_prims": [
+        {
+          "prim_path": "/ClassicLab/Cameras/Front/Front",
+          "world_matrix_row_major": [
+            [
+              0.8935943649892054,
+              0.4488753845551547,
+              -2.5964865271017788e-08,
+              0.0
+            ],
+            [
+              -0.14952277442736153,
+              0.2976610831094184,
+              0.9428896115291929,
+              0.0
+            ],
+            [
+              0.4232399194698903,
+              -0.8425607895664696,
+              0.33310533955936883,
+              0.0
+            ],
+            [
+              0.7200000286102295,
+              -1.100000023841858,
+              0.5299999713897705,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.49000000953674316,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Result/Result",
+          "world_matrix_row_major": [
+            [
+              0.9473952396358624,
+              0.32006602430639974,
+              4.526776256813846e-08,
+              0.0
+            ],
+            [
+              -0.11641876276546995,
+              0.34459933609091253,
+              0.931503069904689,
+              0.0
+            ],
+            [
+              0.2981424686143592,
+              -0.8825015794039112,
+              0.363733461147223,
+              0.0
+            ],
+            [
+              0.5400000214576721,
+              -0.8299999833106995,
+              0.4000000059604645,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.6600000262260437,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Overhead/Overhead",
+          "world_matrix_row_major": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.14000000059604645,
+              0.03500000014901161,
+              1.25,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.4399999976158142,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        }
+      ],
+      "runtime_ready": false,
+      "missing": [
+        "Contact-qualified fixtures and controller",
+        "Task resets and observations",
+        "Explicit science model where required",
+        "Application backend registration",
+        "Actual execution and held-out evaluation"
+      ]
+    },
+    {
+      "id": "02_titration",
+      "name": "Titration",
+      "student_variable": "Normalized initial acid amount",
+      "two_conditions": [
+        "1x",
+        "2x"
+      ],
+      "observable": "Cumulative dose to the same persistent faint-pink endpoint",
+      "blender": "02_titration/Scene.blend",
+      "usd": "02_titration/Environment.usdc",
+      "geometry_and_interaction_manifest": "02_titration/manifest.json",
+      "procedure_and_requirements": "02_titration/EXPERIMENT.md",
+      "views": {
+        "Front": "02_titration/Front.png",
+        "Overhead": "02_titration/Overhead.png",
+        "Result": "02_titration/Result.png"
+      },
+      "usd_camera_prims": [
+        {
+          "prim_path": "/ClassicLab/Cameras/Overhead/Overhead",
+          "world_matrix_row_major": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.14000000059604645,
+              0.03500000014901161,
+              1.399999976158142,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.4399999976158142,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Result/Result",
+          "world_matrix_row_major": [
+            [
+              0.8997951021383084,
+              0.4363127022766023,
+              1.7552566452307404e-08,
+              0.0
+            ],
+            [
+              -0.1292120232446741,
+              0.2664701904874274,
+              0.9551428639897867,
+              0.0
+            ],
+            [
+              0.41674095937036126,
+              -0.859432873128369,
+              0.29614541929496013,
+              0.0
+            ],
+            [
+              0.5199999809265137,
+              -0.6200000047683716,
+              0.3199999928474426,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.6000000238418579,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Front/Front",
+          "world_matrix_row_major": [
+            [
+              0.8534789184357442,
+              0.5211273700217113,
+              8.284509368782727e-08,
+              0.0
+            ],
+            [
+              -0.13888832308683707,
+              0.22746488237207452,
+              0.9638307740457267,
+              0.0
+            ],
+            [
+              0.5022785775800903,
+              -0.8226092580938491,
+              0.266514988326001,
+              0.0
+            ],
+            [
+              1.1299999952316284,
+              -1.5800000429153442,
+              0.8199999928474426,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.46000000834465027,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        }
+      ],
+      "runtime_ready": false,
+      "missing": [
+        "Contact-qualified fixtures and controller",
+        "Task resets and observations",
+        "Explicit science model where required",
+        "Application backend registration",
+        "Actual execution and held-out evaluation"
+      ]
+    },
+    {
+      "id": "03_colorimetry",
+      "name": "Find the unknown",
+      "student_variable": "Unknown relative concentration",
+      "two_conditions": [
+        "1 unit",
+        "3 units"
+      ],
+      "observable": "Calibrated absorbance and visual reference match",
+      "blender": "03_colorimetry/Scene.blend",
+      "usd": "03_colorimetry/Environment.usdc",
+      "geometry_and_interaction_manifest": "03_colorimetry/manifest.json",
+      "procedure_and_requirements": "03_colorimetry/EXPERIMENT.md",
+      "views": {
+        "Front": "03_colorimetry/Front.png",
+        "Overhead": "03_colorimetry/Overhead.png",
+        "Result": "03_colorimetry/Result.png"
+      },
+      "usd_camera_prims": [
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Front/Camera_Front",
+          "world_matrix_row_major": [
+            [
+              0.8804710942254267,
+              0.47409983361468394,
+              9.406308477170762e-08,
+              0.0
+            ],
+            [
+              -0.12557333374769913,
+              0.23320742178662004,
+              0.9642850389149085,
+              0.0
+            ],
+            [
+              0.4571673545704777,
+              -0.8490251151704328,
+              0.2648666904781813,
+              0.0
+            ],
+            [
+              0.800000011920929,
+              -1.149999976158142,
+              0.47999998927116394,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.5199999809265137,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Result/Camera_Result",
+          "world_matrix_row_major": [
+            [
+              0.911782729111045,
+              0.4106729293425783,
+              2.273863167908969e-08,
+              0.0
+            ],
+            [
+              -0.2110199497282311,
+              0.4685098831835052,
+              0.8578863970107423,
+              0.0
+            ],
+            [
+              0.352310709050278,
+              -0.782206005132001,
+              0.5138394008091696,
+              0.0
+            ],
+            [
+              0.5600000023841858,
+              -0.6399999856948853,
+              0.4699999988079071,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.6200000047683716,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Overhead/Camera_Overhead",
+          "world_matrix_row_major": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.14000000059604645,
+              0.03500000014901161,
+              1.25,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.4399999976158142,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        }
+      ],
+      "runtime_ready": false,
+      "missing": [
+        "Contact-qualified fixtures and controller",
+        "Task resets and observations",
+        "Explicit science model where required",
+        "Application backend registration",
+        "Actual execution and held-out evaluation"
+      ]
+    },
+    {
+      "id": "04_dissolution",
+      "name": "Dissolving: stir versus still",
+      "student_variable": "Mixing",
+      "two_conditions": [
+        "Stirred",
+        "Still"
+      ],
+      "observable": "Remaining visible solid at matched time; time to dissolve",
+      "blender": "04_dissolution/Scene.blend",
+      "usd": "04_dissolution/Environment.usdc",
+      "geometry_and_interaction_manifest": "04_dissolution/manifest.json",
+      "procedure_and_requirements": "04_dissolution/EXPERIMENT.md",
+      "views": {
+        "Front": "04_dissolution/Front.png",
+        "Overhead": "04_dissolution/Overhead.png",
+        "Result": "04_dissolution/Result.png"
+      },
+      "usd_camera_prims": [
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Overhead/Camera_Overhead",
+          "world_matrix_row_major": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.14000000059604645,
+              0.03500000014901161,
+              1.25,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.4399999976158142,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Front/Camera_Front",
+          "world_matrix_row_major": [
+            [
+              0.8953075296916406,
+              0.44544856861084653,
+              6.681961862278361e-09,
+              0.0
+            ],
+            [
+              -0.15636445476675978,
+              0.31427706212779943,
+              0.9363653589843087,
+              0.0
+            ],
+            [
+              0.4171026067563544,
+              -0.838334957485889,
+              0.351026942689855,
+              0.0
+            ],
+            [
+              0.6600000262260437,
+              -0.9800000190734863,
+              0.5299999713897705,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.5199999809265137,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Result/Camera_Result",
+          "world_matrix_row_major": [
+            [
+              0.9774140920427565,
+              0.2113328499475358,
+              -1.474047522457034e-08,
+              0.0
+            ],
+            [
+              -0.1142731485190196,
+              0.5285131872871776,
+              0.8411988221527054,
+              0.0
+            ],
+            [
+              0.1777729628446714,
+              -0.8221996303042991,
+              0.5407259394637,
+              0.0
+            ],
+            [
+              0.36000001430511475,
+              -0.49000000953674316,
+              0.4300000071525574,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.5699999928474426,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        }
+      ],
+      "runtime_ready": false,
+      "missing": [
+        "Contact-qualified fixtures and controller",
+        "Task resets and observations",
+        "Explicit science model where required",
+        "Application backend registration",
+        "Actual execution and held-out evaluation"
+      ]
+    },
+    {
+      "id": "05_filtration",
+      "name": "Dirty-water filtration",
+      "student_variable": "Filter paper",
+      "two_conditions": [
+        "Paper",
+        "No paper"
+      ],
+      "observable": "Retained insoluble particles and filtrate clarity",
+      "blender": "05_filtration/Scene.blend",
+      "usd": "05_filtration/Environment.usdc",
+      "geometry_and_interaction_manifest": "05_filtration/manifest.json",
+      "procedure_and_requirements": "05_filtration/EXPERIMENT.md",
+      "views": {
+        "Front": "05_filtration/Front.png",
+        "Overhead": "05_filtration/Overhead.png",
+        "Result": "05_filtration/Result.png"
+      },
+      "usd_camera_prims": [
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Overhead/Camera_Overhead",
+          "world_matrix_row_major": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.17000000178813934,
+              0.014999999664723873,
+              1.350000023841858,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.4399999976158142,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Front/Camera_Front",
+          "world_matrix_row_major": [
+            [
+              0.6716588949744522,
+              0.7408605326252006,
+              4.533441613817799e-08,
+              0.0
+            ],
+            [
+              -0.3668238950045035,
+              0.3325598837186993,
+              0.868817607202711,
+              0.0
+            ],
+            [
+              0.6436726985158272,
+              -0.583549125400106,
+              0.49513217975619866,
+              0.0
+            ],
+            [
+              1.100000023841858,
+              -0.75,
+              0.8199999928474426,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.5,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/Cameras/Camera_Result/Camera_Result",
+          "world_matrix_row_major": [
+            [
+              0.7759210690430736,
+              0.630830004529789,
+              -1.7639685160516367e-08,
+              0.0
+            ],
+            [
+              -0.36830897115336486,
+              0.4530201526629873,
+              0.8118628228026911,
+              0.0
+            ],
+            [
+              0.5121474361773218,
+              -0.6299414628885371,
+              0.5838482310933605,
+              0.0
+            ],
+            [
+              0.7799999713897705,
+              -0.47999998927116394,
+              0.7200000286102295,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.5699999928474426,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        }
+      ],
+      "runtime_ready": false,
+      "missing": [
+        "Contact-qualified fixtures and controller",
+        "Task resets and observations",
+        "Explicit science model where required",
+        "Application backend registration",
+        "Actual execution and held-out evaluation"
+      ]
+    },
+    {
+      "id": "06_precipitation",
+      "name": "Clear liquids to cloudy solid",
+      "student_variable": "Second dose identity",
+      "two_conditions": [
+        "Reactive B",
+        "Water control"
+      ],
+      "observable": "Turbidity / pattern contrast; separately modeled solid fraction",
+      "blender": "06_precipitation/Scene.blend",
+      "usd": "06_precipitation/Environment.usdc",
+      "geometry_and_interaction_manifest": "06_precipitation/manifest.json",
+      "procedure_and_requirements": "06_precipitation/EXPERIMENT.md",
+      "views": {
+        "Front": "06_precipitation/Front.png",
+        "Overhead": "06_precipitation/Overhead.png",
+        "Result": "06_precipitation/Result.png"
+      },
+      "usd_camera_prims": [
+        {
+          "prim_path": "/ClassicLab/ClassicLab/Cameras/Front/Front",
+          "world_matrix_row_major": [
+            [
+              0.8537546159529652,
+              0.5206755762843043,
+              1.1126586482861074e-07,
+              0.0
+            ],
+            [
+              -0.17464661354301453,
+              0.28636881475600723,
+              0.9420675894562505,
+              0.0
+            ],
+            [
+              0.4905115824125934,
+              -0.8042946204098586,
+              0.3354229436082975,
+              0.0
+            ],
+            [
+              0.8299999833106995,
+              -1.090000033378601,
+              0.6000000238418579,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.49000000953674316,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/ClassicLab/Cameras/Result/Result",
+          "world_matrix_row_major": [
+            [
+              0.9210016084325509,
+              0.38955877254228743,
+              -2.7750568620983927e-08,
+              0.0
+            ],
+            [
+              -0.1170019498139717,
+              0.2766181075438593,
+              0.9538306801097262,
+              0.0
+            ],
+            [
+              0.37157311663302983,
+              -0.878479587306501,
+              0.30034485792404786,
+              0.0
+            ],
+            [
+              0.6399999856948853,
+              -0.7699999809265137,
+              0.3700000047683716,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.6200000047683716,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        },
+        {
+          "prim_path": "/ClassicLab/ClassicLab/Cameras/Overhead/Overhead",
+          "world_matrix_row_major": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.14000000059604645,
+              0.03500000014901161,
+              1.2999999523162842,
+              1.0
+            ]
+          ],
+          "focal_length_usd_units": 0.4399999976158142,
+          "horizontal_aperture_usd_units": 0.36000001430511475
+        }
+      ],
+      "runtime_ready": false,
+      "missing": [
+        "Contact-qualified fixtures and controller",
+        "Task resets and observations",
+        "Explicit science model where required",
+        "Application backend registration",
+        "Actual execution and held-out evaluation"
+      ]
+    }
+  ]
+}

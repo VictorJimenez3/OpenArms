@@ -1,0 +1,12 @@
+{
+  "six_blender_projects": true,
+  "six_robot_free_environment_usds": true,
+  "eighteen_actual_blender_renders_reviewed": true,
+  "usd_structure_validated": true,
+  "six_blender_imports_passed": true,
+  "isaac_import_validated": false,
+  "six_experiments_executed": false,
+  "application_backend_integrated": false,
+  "science_models_implemented": false,
+  "harness_improvement_measured": false
+}

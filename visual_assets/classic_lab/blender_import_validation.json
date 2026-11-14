@@ -1,0 +1,68 @@
+[
+  {
+    "file": "01_serial_dilution/Environment.usdc",
+    "meshes": 195,
+    "cameras": [
+      "Front",
+      "Overhead",
+      "Result"
+    ],
+    "ok": true,
+    "scope": "Blender USD roundtrip import; no Isaac execution"
+  },
+  {
+    "file": "02_titration/Environment.usdc",
+    "meshes": 172,
+    "cameras": [
+      "Front",
+      "Overhead",
+      "Result"
+    ],
+    "ok": true,
+    "scope": "Blender USD roundtrip import; no Isaac execution"
+  },
+  {
+    "file": "03_colorimetry/Environment.usdc",
+    "meshes": 243,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead",
+      "Camera_Result"
+    ],
+    "ok": true,
+    "scope": "Blender USD roundtrip import; no Isaac execution"
+  },
+  {
+    "file": "04_dissolution/Environment.usdc",
+    "meshes": 218,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead",
+      "Camera_Result"
+    ],
+    "ok": true,
+    "scope": "Blender USD roundtrip import; no Isaac execution"
+  },
+  {
+    "file": "05_filtration/Environment.usdc",
+    "meshes": 250,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead",
+      "Camera_Result"
+    ],
+    "ok": true,
+    "scope": "Blender USD roundtrip import; no Isaac execution"
+  },
+  {
+    "file": "06_precipitation/Environment.usdc",
+    "meshes": 203,
+    "cameras": [
+      "Front",
+      "Overhead",
+      "Result"
+    ],
+    "ok": true,
+    "scope": "Blender USD roundtrip import; no Isaac execution"
+  }
+]

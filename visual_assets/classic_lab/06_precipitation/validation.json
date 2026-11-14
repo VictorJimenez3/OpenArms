@@ -1,0 +1,46 @@
+{
+  "files": {
+    "build.py": true,
+    "Scene.blend": true,
+    "Environment.usdc": true,
+    "EXPERIMENT.md": true,
+    "manifest.json": true,
+    "Front.png": true,
+    "Overhead.png": true,
+    "Result.png": true
+  },
+  "default_prim": "/ClassicLab",
+  "meters_per_unit": 1.0,
+  "up_axis": "Z",
+  "prim_count": 457,
+  "external_layer_dependencies": [],
+  "asset_dependencies": [],
+  "physics_schemas": [],
+  "robot_prims": [],
+  "usd_preview_surface_opacity": {
+    "/ClassicLab/_materials/Fixture_gray/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Warm_white_bench/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Floor_gray/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Approximate_glass_12percent/Principled_BSDF": 0.11999999731779099,
+    "/ClassicLab/_materials/Matte_charcoal_print/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Clear_liquid_5percent/Principled_BSDF": 0.05000000074505806,
+    "/ClassicLab/_materials/White_reference_panel/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Reagent_B_ochre_identifier/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Brushed_stainless/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Silicone_seats/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Reagent_A_blue_identifier/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Illustrative_enlarged_particles/Principled_BSDF": 1.0,
+    "/ClassicLab/_materials/Illustrative_white_suspension/Principled_BSDF": 0.9399999976158142,
+    "/ClassicLab/_materials/Illustrative_settled_solid/Principled_BSDF": 1.0
+  },
+  "render_status": "Three completed actual Blender renders, visually reviewed by coordinating agent",
+  "orchestrator_visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "scope": "Actual Blender PNGs inspected; staged science, not runtime proof"
+  }
+}

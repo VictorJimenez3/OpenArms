@@ -1,0 +1,430 @@
+{
+  "schema_version": 1,
+  "experiment": "Color comparison: find the unknown concentration",
+  "status": "ART PREVIEW; MODEL-PREDICTED readings; no runtime evidence",
+  "units": "meters",
+  "up_axis": "Z",
+  "default_prim": "/ClassicLab",
+  "tabletop_z_m": 0,
+  "table_center_m": [
+    0.12,
+    0,
+    -0.022
+  ],
+  "table_dimensions_m": [
+    1,
+    0.75,
+    0.044
+  ],
+  "robot_in_environment_usd": false,
+  "physics_attached": false,
+  "robot_runtime_base_reference_m": [
+    -0.05,
+    0,
+    0
+  ],
+  "robot_preview_translation_m": [
+    -0.05,
+    0,
+    -0.03008145
+  ],
+  "robot_added_yaw_rad": 0,
+  "robot_source": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/assets/Robot_STATIC_ART_ONLY.usdc",
+  "references": [
+    {
+      "prim_path": "/ClassicLab/References/Reference_0",
+      "base_transform_m": [
+        0.125,
+        -0.128,
+        0.016
+      ],
+      "center_m": [
+        0.125,
+        -0.128,
+        0.0505
+      ],
+      "dimensions_m": [
+        0.018,
+        0.018,
+        0.069
+      ],
+      "liquid_depth_m": 0.048,
+      "grasp_height_m": 0.07400000000000001,
+      "open_top_z_m": 0.085
+    },
+    {
+      "prim_path": "/ClassicLab/References/Reference_1",
+      "base_transform_m": [
+        0.16799999999999998,
+        -0.128,
+        0.016
+      ],
+      "center_m": [
+        0.16799999999999998,
+        -0.128,
+        0.0505
+      ],
+      "dimensions_m": [
+        0.018,
+        0.018,
+        0.069
+      ],
+      "liquid_depth_m": 0.048,
+      "grasp_height_m": 0.07400000000000001,
+      "open_top_z_m": 0.085
+    },
+    {
+      "prim_path": "/ClassicLab/References/Reference_2",
+      "base_transform_m": [
+        0.211,
+        -0.128,
+        0.016
+      ],
+      "center_m": [
+        0.211,
+        -0.128,
+        0.0505
+      ],
+      "dimensions_m": [
+        0.018,
+        0.018,
+        0.069
+      ],
+      "liquid_depth_m": 0.048,
+      "grasp_height_m": 0.07400000000000001,
+      "open_top_z_m": 0.085
+    },
+    {
+      "prim_path": "/ClassicLab/References/Reference_3",
+      "base_transform_m": [
+        0.254,
+        -0.128,
+        0.016
+      ],
+      "center_m": [
+        0.254,
+        -0.128,
+        0.0505
+      ],
+      "dimensions_m": [
+        0.018,
+        0.018,
+        0.069
+      ],
+      "liquid_depth_m": 0.048,
+      "grasp_height_m": 0.07400000000000001,
+      "open_top_z_m": 0.085
+    },
+    {
+      "prim_path": "/ClassicLab/References/Reference_4",
+      "base_transform_m": [
+        0.297,
+        -0.128,
+        0.016
+      ],
+      "center_m": [
+        0.297,
+        -0.128,
+        0.0505
+      ],
+      "dimensions_m": [
+        0.018,
+        0.018,
+        0.069
+      ],
+      "liquid_depth_m": 0.048,
+      "grasp_height_m": 0.07400000000000001,
+      "open_top_z_m": 0.085
+    }
+  ],
+  "unknown_comparison_aliquot": {
+    "prim_path": "/ClassicLab/References/Unknown_comparison_aliquot",
+    "base_transform_m": [
+      0.359,
+      -0.128,
+      0.026
+    ],
+    "center_m": [
+      0.359,
+      -0.128,
+      0.0605
+    ],
+    "dimensions_m": [
+      0.018,
+      0.018,
+      0.069
+    ],
+    "liquid_depth_m": 0.048,
+    "grasp_height_m": 0.084,
+    "open_top_z_m": 0.095
+  },
+  "unknown_measurement_aliquot": {
+    "prim_path": "/ClassicLab/Photometer/Unknown_in_optical_holder",
+    "base_transform_m": [
+      0.267,
+      0.13,
+      0.057
+    ],
+    "center_m": [
+      0.267,
+      0.13,
+      0.0915
+    ],
+    "dimensions_m": [
+      0.018,
+      0.018,
+      0.069
+    ],
+    "liquid_depth_m": 0.048,
+    "grasp_height_m": 0.115,
+    "open_top_z_m": 0.126
+  },
+  "source_bottle_center_m": [
+    0.453,
+    0.15,
+    0.06
+  ],
+  "pipette_fixture_m": [
+    0.44,
+    0.053000000000000005,
+    0.185
+  ],
+  "photometer_dimensions_m": [
+    0.267,
+    0.161,
+    0.126
+  ],
+  "optical_path_direction": "+X",
+  "cuvette_internal_path_m": 0.015,
+  "model": {
+    "kind": "Illustrative linear absorbance calibration",
+    "concentration_unit": "relative units, not mg/L",
+    "standards": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "assumed_absorbance_per_relative_unit": 0.2,
+    "unknown_relative_concentration": 3,
+    "displayed_absorbance": 0.6,
+    "transmittance_equation": "T=10^(-A)",
+    "unknown_predicted_transmittance": 0.251188643150958,
+    "solution_colors": "Artist-authored illustrative magenta ramp, not spectral rendering",
+    "measured_data": false,
+    "light_ray_geometry": "Explanatory visible glyph, not physically visible laboratory beam"
+  },
+  "robot_requirements": "Controller, reach, grasp, force, insertion and optical measurements unqualified; no motion executed. Two staged equal aliquots represent comparison and measuring views.",
+  "cameras": {
+    "Camera_Front": {
+      "position_m": [
+        0.800000011920929,
+        -1.149999976158142,
+        0.47999998927116394
+      ],
+      "rotation_euler_xyz_rad": [
+        1.3027305603027344,
+        -5.3218556672618433e-08,
+        0.49394139647483826
+      ],
+      "lens_mm": 52.0,
+      "world_matrix_row_major": [
+        [
+          0.8804711103439331,
+          -0.12557335197925568,
+          0.4571673572063446,
+          0.800000011920929
+        ],
+        [
+          0.4740998446941376,
+          0.23320752382278442,
+          -0.8490250706672668,
+          -1.149999976158142
+        ],
+        [
+          5.3218556672618433e-08,
+          0.9642850160598755,
+          0.26486676931381226,
+          0.47999998927116394
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "resolution_px": [
+        1600,
+        1000
+      ]
+    },
+    "Camera_Overhead": {
+      "position_m": [
+        0.14000000059604645,
+        0.03500000014901161,
+        1.25
+      ],
+      "rotation_euler_xyz_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lens_mm": 44.0,
+      "world_matrix_row_major": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.14000000059604645
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.03500000014901161
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "resolution_px": [
+        1600,
+        1000
+      ]
+    },
+    "Camera_Result": {
+      "position_m": [
+        0.5600000023841858,
+        -0.6399999856948853,
+        0.4699999988079071
+      ],
+      "rotation_euler_xyz_rad": [
+        1.0311421155929565,
+        -1.7573084321043098e-08,
+        0.42319196462631226
+      ],
+      "lens_mm": 62.0,
+      "world_matrix_row_major": [
+        [
+          0.9117827415466309,
+          -0.21101993322372437,
+          0.3523107171058655,
+          0.5600000023841858
+        ],
+        [
+          0.4106729328632355,
+          0.46850985288619995,
+          -0.7822059988975525,
+          -0.6399999856948853
+        ],
+        [
+          1.7573084321043098e-08,
+          0.8578864336013794,
+          0.5138393640518188,
+          0.4699999988079071
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "resolution_px": [
+        1600,
+        1000
+      ]
+    }
+  },
+  "groups": [
+    "Bench",
+    "References",
+    "Photometer",
+    "Preparation",
+    "Cameras",
+    "Lighting",
+    "Robot_ART_ONLY",
+    "Overlay_ART_ONLY"
+  ],
+  "runtime_handoff": {
+    "static_prim_roots": [
+      "/ClassicLab/Bench",
+      "/ClassicLab/Photometer",
+      "/ClassicLab/Preparation"
+    ],
+    "movable_cuvette_roots": [
+      "/ClassicLab/References/Reference_0",
+      "/ClassicLab/References/Reference_1",
+      "/ClassicLab/References/Reference_2",
+      "/ClassicLab/References/Reference_3",
+      "/ClassicLab/References/Reference_4",
+      "/ClassicLab/References/Unknown_comparison_aliquot",
+      "/ClassicLab/Photometer/Unknown_in_optical_holder"
+    ],
+    "static_exception": "Photometer group contains a removable Unknown_in_optical_holder cuvette; split this child from static assembly before assigning rigid bodies.",
+    "grasp": "Cuvette side flats at local Z=.054-.063 m; fingers parallel to X, avoiding front/back optical windows and rim. 18 mm outer width. Reference center spacing 43 mm leaves 25 mm nominal gap before finger thickness.",
+    "approach": "Vertical +Z clearance above open socket required. Lift cuvette at least 40 mm before lateral transfer. No reach, swept-volume or collision test performed.",
+    "source_base_transform_m": [
+      0.359,
+      -0.128,
+      0.026
+    ],
+    "target_base_transform_m": [
+      0.267,
+      0.13,
+      0.057
+    ],
+    "source_and_target_rotation_euler_rad": [
+      0,
+      0,
+      0
+    ],
+    "holder_nominal_clear_width_m": 0.022,
+    "clearance_note": "Nominal 2 mm each side for 18 mm cuvette; not manufacturing tolerance or proven robotic insertion margin.",
+    "student_variable": "Unknown relative dye concentration, keeping path length and fill height fixed.",
+    "conditions": [
+      {
+        "unknown_concentration": 1,
+        "predicted_absorbance": 0.2,
+        "predicted_transmittance": 0.6309573444801932,
+        "visual": "pale magenta matches standard 1"
+      },
+      {
+        "unknown_concentration": 3,
+        "predicted_absorbance": 0.6,
+        "predicted_transmittance": 0.251188643150958,
+        "visual": "dark magenta matches standard 3; staged scene"
+      }
+    ],
+    "observable": "Change in transmitted light / absorbance and matched reference index.",
+    "missing": [
+      "articulated robot",
+      "collision and rigid-body assignments",
+      "grasp and insertion controller",
+      "button actuation",
+      "liquid transfer model",
+      "spectral optical model",
+      "real calibration",
+      "measured camera/sensor observations"
+    ],
+    "dependencies": {
+      "Environment.usdc": [],
+      "Scene.blend": [],
+      "build.py": [
+        "Blender 4.5 or compatible",
+        "../assets/Robot_STATIC_ART_ONLY.usdc for preview only"
+      ]
+    }
+  }
+}
