@@ -1,0 +1,843 @@
+{
+  "experiment": "tiny titration",
+  "policy": "deterministic position-actuator feedback, joint convergence and end-effector geometric paddle engagement",
+  "actuator_simulation": true,
+  "physics_validation": "MuJoCo robot dynamics and position actuators; no calibrated contact/friction claim. Dosing trigger is geometric engagement, not force contact.",
+  "playback_speed": 1.0,
+  "initial_state": {
+    "robot_pose": "HOME",
+    "samples": [
+      {
+        "trial": "small",
+        "sample_ml": 5.0,
+        "normalized_acid_equivalent": 0.5,
+        "normalized_base_added": 0.0,
+        "metered_drops": 0,
+        "initial_indicator": "blue-gray",
+        "initial_rgb": [
+          0.8,
+          0.85,
+          0.91
+        ]
+      },
+      {
+        "trial": "large",
+        "sample_ml": 8.0,
+        "normalized_acid_equivalent": 0.8,
+        "normalized_base_added": 0.0,
+        "metered_drops": 0,
+        "initial_indicator": "blue-gray",
+        "initial_rgb": [
+          0.8,
+          0.85,
+          0.91
+        ]
+      }
+    ]
+  },
+  "science_model": {
+    "kind": "normalized neutralization and indicator teaching model",
+    "dose_ml": 0.12,
+    "base_equivalent_per_drop": 0.1,
+    "endpoint_rule": "faint pink when normalized excess base is >0 and <=0.10; require two consecutive post-dose observations",
+    "overshoot_rule": "stop on persistent faint pink; darker pink beyond 0.10 excess; finite maximum 13 presses",
+    "assumptions": "pre-mixed prepared samples; sample acid equivalent is 0.50 or 0.80 normalized units; drop volume fixed; acid-base reaction is stoichiometric; optical colors illustrative and not calibrated pH"
+  },
+  "success": false,
+  "negative_control": true,
+  "simulated_seconds": 47.21,
+  "trials": [
+    {
+      "trial": "small",
+      "prepared_sample_ml": 5.0,
+      "normalized_neutralization_equivalent": 0.5,
+      "drop_ml": 0.12,
+      "drops": 0,
+      "total_dose_ml": 0.0,
+      "normalized_base_added": 0.0,
+      "endpoint": null,
+      "persistent_observations": 0,
+      "overshoot_drops": 0,
+      "success": false,
+      "mode": "negative_control_actions_disabled"
+    },
+    {
+      "trial": "large",
+      "prepared_sample_ml": 8.0,
+      "normalized_neutralization_equivalent": 0.8,
+      "drop_ml": 0.12,
+      "drops": 0,
+      "total_dose_ml": 0.0,
+      "normalized_base_added": 0.0,
+      "endpoint": null,
+      "persistent_observations": 0,
+      "overshoot_drops": 0,
+      "success": false,
+      "mode": "negative_control_actions_disabled"
+    }
+  ],
+  "events": [
+    {
+      "t_s": 2.384,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 3.926,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 5.468,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 7.01,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 8.552,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 10.094,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 11.636,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 13.178,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 14.72,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 16.262,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 17.804,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 19.346,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 20.888,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 21.652,
+      "event": "trial_complete",
+      "trial": "small",
+      "success": false,
+      "drops": 0
+    },
+    {
+      "t_s": 26.1,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 27.642,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 29.184,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 30.726,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 32.268,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 33.81,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 35.352,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 36.894,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 38.436,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 39.978,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 41.52,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 43.062,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 44.604,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 45.368,
+      "event": "trial_complete",
+      "trial": "large",
+      "success": false,
+      "drops": 0
+    }
+  ],
+  "policy_timeline": [
+    {
+      "t_s": 1.62,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0009471692320555114,
+      "elapsed_s": 1.62
+    },
+    {
+      "t_s": 2.384,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 3.148,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 3.162,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 3.926,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 4.69,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 4.704,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 5.468,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 6.232,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 6.246,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 7.01,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 7.774,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 7.788,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 8.552,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 9.316,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 9.33,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 10.094,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 10.858,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 10.872,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 11.636,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 12.4,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 12.414,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 13.178,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 13.942,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 13.956,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 14.72,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 15.484,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 15.498,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 16.262,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 17.026,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 17.04,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 17.804,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 18.568,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 18.582,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 19.346,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 20.11,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 20.124,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 20.888,
+      "event": "motion_complete",
+      "target": "GRASP_A",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 21.652,
+      "event": "motion_complete",
+      "target": "ABOVE_A",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 23.494,
+      "event": "motion_complete",
+      "target": "HOME",
+      "joint_error_rad": 0.000879246982010029,
+      "elapsed_s": 1.842
+    },
+    {
+      "t_s": 25.336,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0010697928490448483,
+      "elapsed_s": 1.842
+    },
+    {
+      "t_s": 26.1,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577643619,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 26.864,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 26.878,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 27.642,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 28.406,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 28.42,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 29.184,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 29.948,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 29.962,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 30.726,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 31.49,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 31.504,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 32.268,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 33.032,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 33.046,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 33.81,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 34.574,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 34.588,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 35.352,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 36.116,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 36.13,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 36.894,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 37.658,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 37.672,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 38.436,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 39.2,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 39.214,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 39.978,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 40.742,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 40.756,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 41.52,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 42.284,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 42.298,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 43.062,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 43.826,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 43.84,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0016335814034039164,
+      "elapsed_s": 0.014
+    },
+    {
+      "t_s": 44.604,
+      "event": "motion_complete",
+      "target": "GRASP_C",
+      "joint_error_rad": 0.0009369469577642509,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 45.368,
+      "event": "motion_complete",
+      "target": "ABOVE_C",
+      "joint_error_rad": 0.0003088076984067989,
+      "elapsed_s": 0.764
+    },
+    {
+      "t_s": 47.21,
+      "event": "motion_complete",
+      "target": "HOME",
+      "joint_error_rad": 0.000879246982010029,
+      "elapsed_s": 1.842
+    }
+  ],
+  "observations": [],
+  "joint_bounds_checked": true,
+  "finite_state_checked": true,
+  "target_engagement_distance_m": 0.014
+}
