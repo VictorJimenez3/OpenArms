@@ -255,6 +255,8 @@ class GeminiBridge:
         self.watch_cursor = None
         self.watch_failure = None
         self.last_state_signature = None
+        self.preview_repair = None
+        self.preview_attempts = (None, 0)
         self.speech_active = False
         self.silence_seconds = 0.
         self.input_boundary = None
@@ -516,6 +518,8 @@ class GeminiBridge:
                           if (event := feedback_event(raw)) is not None]
                 cursor = notebook[-1]['sequence'] if notebook else self.watch_cursor
                 pending = state.get('pending') or {}
+                repair = (self.preview_repair == (pending.get('request_id'), pending.get('proposal_version'))
+                          and not pending.get('presented'))
                 control = state.get('voice_control')
                 # Send every event, but keep telemetry and already-presented
                 # previews silent. User follow-ups can still read current state.
@@ -534,7 +538,7 @@ class GeminiBridge:
                 significant |= bool(observation and observation != previous_observation)
                 rejected = control and control != previous_control
                 welcome = first and not resumed
-                quiet = not welcome and not rejected and (pending.get('presented') or not significant)
+                quiet = not welcome and not rejected and not repair and (pending.get('presented') or not significant)
                 instruction = ('Use current state and new events. Ignore already reported sequences and superseded proposals. '
                                'Answer a student question first. Give one short update for related progress events. '
                                'Report actual failure codes only when relevant. '
@@ -546,6 +550,10 @@ class GeminiBridge:
                 if welcome:
                     instruction = ('If this is the Start Voice gesture, greet the student briefly, '
                                    'or acknowledge their active task. ' + instruction)
+                if repair:
+                    instruction = ('The previous invitation to confirm did not include the exact plan and cannot authorize execution. '
+                                   'Read this summary verbatim now, then say "Say confirm or cancel": ' + pending['summary'])
+                self.preview_repair = None
                 for offset in range(0, max(1, len(events)), EVENT_BATCH):
                     batch = events[offset:offset + EVENT_BATCH]
                     more = offset + EVENT_BATCH < len(events)
@@ -709,6 +717,21 @@ class GeminiBridge:
                                 any(pending.get(k) != v for k, v in proposal.items()) or
                                 words(pending['summary']) not in words(text)):
                             proposal = None
+                        if (proposal is None and self.reply_proposal and not pending.get('presented')
+                                and all(pending.get(k) == v for k,v in self.reply_proposal.items())
+                                and 'say confirm' in words(text)):
+                            repair_key = (pending['request_id'], pending['proposal_version'])
+                            previous, count = self.preview_attempts
+                            count = count if previous == repair_key else 0
+                            self.preview_attempts = (repair_key, count + 1)
+                            if count < 2 and self.watcher_id:
+                                self.preview_repair = repair_key
+                                if self.state_updates.full():
+                                    self.state_updates.get_nowait()
+                                self.state_updates.put_nowait(compact(self.context))
+                            else:
+                                await self.emit({'type':'error', 'recoverable':True,
+                                    'message':'The spoken plan could not be verified. Review the on-screen plan or ask me to repeat it.'})
                         if self.reply_id == rid and self.reply_seconds:
                             # Reply UUIDs are one-use playback tokens. A delayed ACK
                             # for a dropped/expired reply cannot present a new one.

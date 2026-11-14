@@ -334,6 +334,36 @@ async def test_spoken_preview_is_only_presented_after_matching_playback():
     await assert_clean(bridge, client)
 
 
+async def test_paraphrased_confirmation_prompt_requests_exact_readout_after_playback():
+    state = {**context(), 'pending': {'request_id':'proposal','proposal_version':1,
+                                     'summary':'Inspect the prepared sample.'}}
+    client, sent, presented = Client(), [], []
+    async def emit(frame):
+        sent.append(frame)
+    async def tool(name,args):
+        if name == '_present_audio':
+            presented.append(args)
+    bridge = live.GeminiBridge(lambda:state,tool,emit,client_factory=lambda:client)
+    runner=asyncio.create_task(bridge.run())
+    try:
+        await until(lambda:bridge.ready)
+        session=client.sessions[0]
+        session.incoming.put_nowait(function_calls(tool_call('watch','watch_lab_events')))
+        await until(lambda:len(session.tools)==1)
+        session.incoming.put_nowait(output_reply('I will take a look. Say confirm or cancel.'))
+        await until(lambda:any(e['type']=='reply_end'for e in sent))
+        rid=next(e['reply_id']for e in sent if e['type']=='reply_end')
+        assert len(session.tools)==1 and not presented
+        await bridge.played(rid)
+        await until(lambda:len(session.tools)==2)
+        repair=session.tools[-1]
+        assert repair.scheduling.value=='WHEN_IDLE'
+        assert state['pending']['summary'] in repair.response['instruction']
+        assert not presented
+    finally:
+        await finish(bridge,runner)
+
+
 @pytest.mark.parametrize('resumed', [True, False])
 async def test_reconnect_recovers_subscription_and_replays_real_correlated_feedback(resumed):
     state = {**context(), 'generation': 0, 'notebook': []}
