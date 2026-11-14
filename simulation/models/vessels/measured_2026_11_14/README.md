@@ -1,11 +1,11 @@
 # Photo-derived vessel assets — 14 November 2026
 
-First model delivery for D1 / [issue #19](https://github.com/VictorJimenez3/OpenArms/issues/19). These are the best current **photo-derived estimates**, not exact manufacturer CAD or direct caliper measurements. All nine supplied photographs were inspected. The physical vessels are the reference; older simulation sizes are not evidence. Fixtures, robot motion and physical calibration are excluded.
+First model delivery for D1 / [issue #19](https://github.com/VictorJimenez3/OpenArms/issues/19). These are the best current **photo-derived estimates**, not exact manufacturer CAD or direct caliper measurements. All fourteen supplied photographs were inspected; revision 2 adds five receiver views. The physical vessels are the reference; older simulation sizes are not evidence. Fixtures, robot motion and physical calibration are excluded.
 
 | Dimension, mm | Donor A | Receiver C | Evidence / method |
 | --- | --- | --- | --- |
-| Outside height | 51 (47–56) | 36 (31–41) | A: 9257/9265; C: oblique 9264; ruler-scaled |
-| Circular rim outside diameter | 41 (38–44) | 80 (75–85) | A: 9259/9260; C: 9261–9263; ruler-scaled |
+| Outside height | 51 (47–56) | 32 (30–35) | A: 9257/9265; C: upright/inverted 9270/9271; ruler-scaled |
+| Circular rim outside diameter | 41 (38–44) | 78 (75–82) | A: 9259/9260; C: 9269, checked against 9261–9263; ruler-scaled |
 | Opening diameter | 34 (31–37) | 75 (70–79) | Transparent edges; low confidence |
 | Lower-body/base envelope diameter | 31 (28–34) | 59 (54–66) | A: 9259/9265; C: 9261/9264; low confidence |
 | Spout extension beyond circular rim | 4 (2–6) | None visible | 9259/9260; approximate |
@@ -17,13 +17,17 @@ Ranges are judgment bounds, not statistical confidence intervals. No directly me
 
 ## Evidence and volume consistency
 
-`parameters.json` records input values, provenance classes, uncertainty, unknowns and original HEIC hashes. `image_measurements.json` records reproducible pixel endpoints; `evidence/` shows annotated ruler and feature locations. Image coordinates refer to 2000×1500 derivatives (multiply by 2.856 for the original 5712×4284 images). Source originals remain in the user's Downloads. Exported images have no original EXIF metadata.
+`parameters.json` records input values, provenance classes, uncertainty, unknowns and original HEIC hashes. `image_measurements.json` records reproducible pixel endpoints; `evidence/` shows annotated ruler and feature locations, including the new side-plane measurements. Image coordinates refer to 2000×1500 derivatives (multiply by 2.856 for the original 5712×4284 images). Source originals remain in the user's Downloads. Exported images have no original EXIF metadata.
 
-Receiver rim readings are about **76 mm in 9263 versus 83 mm in 9261**. Different camera angles and feature elevations make them incompatible as exact measurements. We retain a broad range rather than reduce uncertainty by averaging correlated views. Ruler bending, uncalibrated lens distortion, depth mismatch and unclear transparent edges remain systematic limitations. Receiver height is awaiting a direct measurement.
+Receiver rim readings are about **76 mm in 9263 versus 83 mm in 9261**. Different camera angles and feature elevations make them incompatible as exact measurements. We retain a broad range rather than reduce uncertainty by averaging correlated views. Ruler bending, uncalibrated lens distortion, depth mismatch and unclear transparent edges remain systematic limitations. The new side views give apparent axial heights about 31 and 33 mm; revision 2 uses 32 mm (30–35 mm). This is still image-derived, not a directly reported ruler reading.
 
 The donor has 5–25 mL raised fill marks. The receiver's **100 mL is embossed on its underside**, not at a recoverable fill height. Neither is established brim capacity.
 
-Piecewise-linear interior radii are integrated as frusta: `V = π Δz (r₀² + r₀r₁ + r₁²) / 3`; cubic millimetres are divided by 1000 for mL. The selected donor profile gives **23.8 mL** at the estimated 25 mL line, **1.2 mL (5%) below** the label. This is a consistency check conditional on assumed interior dimensions, not a calibration. The model was not fitted to force 25 mL. Its axial cavity to the rim is **38.5 mL**; the receiver's is **124.4 mL**, about 24 mL above its nominal label. No receiver fill line is available to interpret that difference. These calculations exclude the small spout expansion and do not establish usable capacity or pour dose.
+Piecewise-linear interior radii are integrated as frusta: `V = π Δz (r₀² + r₀r₁ + r₁²) / 3`; cubic millimetres are divided by 1000 for mL. The selected donor profile gives **23.8 mL** at the estimated 25 mL line, **1.2 mL (5%) below** the label. This is a consistency check conditional on assumed interior dimensions, not a calibration. The model was not fitted to force 25 mL. Its axial cavity to the rim is **38.5 mL**; the receiver's is **110.2 mL**, about 10 mL above its nominal label. No receiver fill line is available to interpret that difference. These calculations exclude the small spout expansion and do not establish usable capacity or pour dose.
+
+## Receiver refinement (revision 2)
+
+IMG_9269 gives a near-central rim chord of approximately 77.2 mm, with contour interpretation supporting 78 mm OD (75–82 mm). Its ruler placement is more useful than the earlier separate-ruler views; this replaces the 80 mm nominal. IMG_9267/9268 show an inverted or ambiguous configuration with different feature planes, so their apparent 67 mm / 55 mm spans are not averaged into rim OD. IMG_9270/9271 expose axial plane centres and support 32 mm outside height (30–35 mm), superseding 36 mm. Profiles are regenerated with those changes; internal thickness and base dimensions remain uncertain.
 
 ## Assets and coordinates
 

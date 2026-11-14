@@ -17,15 +17,15 @@
     }
   },
   "receiver_C": {
-    "axisymmetric_cavity_to_rim_ml": 124.4348847435107,
+    "axisymmetric_cavity_to_rim_ml": 110.23124170180667,
     "dimensions_m": [
-      0.08,
-      0.08,
-      0.036
+      0.078,
+      0.078,
+      0.032
     ],
     "visual_triangles": 2560,
     "nominal_identity": "unconfirmed",
     "interior_status": "assumed tapered profile; floor and wall thickness unmeasured"
   },
-  "parameters_sha256": "f02e11a4678f398c24bcb9bc8980fe12b31e03e081a94060d92c586da6324809"
+  "parameters_sha256": "b898a6ae352e7c0f630662e9c9dac4e83d7b473c868af36a2e5cf32322c80b81"
 }
