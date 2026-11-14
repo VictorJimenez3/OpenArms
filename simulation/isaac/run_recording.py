@@ -30,12 +30,17 @@ args.output.mkdir(parents=True, exist_ok=True)
 receipt_path = args.output/'receipt.json'
 receipt = json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
 observed = receipt.get('observation_status', receipt.get('status', 'unknown'))
+cleanup_failed = receipt.get('shutdown_status') == 'failed' or any(
+    step.get('status') == 'failed'
+    for step in receipt.get('cleanup_diagnostic', {}).get('steps', []))
 execution = {'command': command, 'returncode': returncode, 'stopped': stopped,
              'wall_seconds': time.time()-started, 'observation_status': observed,
-             'status': 'passed' if returncode == 0 and observed == 'passed' and not stopped else 'failed'}
+             'cleanup_failed': cleanup_failed,
+             'status': 'passed' if returncode == 0 and observed == 'passed' and not stopped and not cleanup_failed else 'failed'}
 (args.output/'execution.json').write_text(json.dumps(execution, indent=2))
 receipt.update(status=execution['status'], process_returncode=returncode,
-               shutdown_status='process_exited_zero' if returncode == 0 else 'process_failed')
+               shutdown_status=('failed' if cleanup_failed else
+                                'process_exited_zero' if returncode == 0 else 'process_failed'))
 with (args.output/'events.jsonl').open('a') as events:
     events.write(json.dumps({'request_id': receipt.get('request_id'), 'backend': 'simulated',
                              'provenance': 'SIMULATED', 'event': 'finished',
