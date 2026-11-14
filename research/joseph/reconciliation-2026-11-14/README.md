@@ -1,0 +1,34 @@
+# Reconciliation acceptance — November 14, 2026
+
+Local pre-push receipt, reviewed against D1–D4 and R1–R6. Starting remote/main baseline: `4f9c3ec03882ba864ba6ebde25e904b5686a275e`. Implementation through `355a224`, including fixture `4b2e3df`. The containing commit carries final documentation and the existing rehearsal script's two-vessel option. Remote publication is separately verified by the coordinator; this receipt does not anticipate its success.
+
+## Delivered and checked
+
+- One existing application/runtime/registry, with explicit MuJoCo `two_vessel` water A→C, donor return and HOME; fresh scene validation before execution and separate post-execution image observation. Camera/configuration/object identity, stale/moved/missing/swapped cases and STOP generations are checked.
+- Exact operation previews and backend-provided choices in browser/iPhone clients. Gemini Live speech from PR #25 is preserved; expert profiles remain separate. An unsupported chemistry correction revokes the prior water consent; delayed capture failures cannot revive cancelled work.
+- Actual Gemini Live `gemini-3.8-live` water conversation passed using generated student audio: questions and repeat preserve the proposal, exact presentation and fresh confirmation precede simulated execution, observed outcome and idle STOP/follow-up complete. See [voice receipt](gemini-water-receipt.json). Existing PR #25 active mock STOP/barge-in evidence remains separate. No human audibility or actual iPhone claim.
+- Actual Codex CLI requested **Sol high**: cold run used seven calls, independent evaluator admitted its version, then the equivalent warm run used the same version and zero expert calls. Both completed with separate SIMULATED water-appearance observations; all four warm outcome checks passed. Total harness elapsed 148.62 seconds includes cold reasoning, execution, evaluation and warm execution; it is not warm latency or first-minute acceptance. CLI telemetry did not verify the underlying model identity. See [cold/warm receipt](cold-warm-receipt.json).
+- Two-seat fixture: 170×156×8.5 mm, fit gauges, ArUco DICT_4X4_50 IDs 20–23, 27 mm black squares and machine-readable coordinates. Independent OpenSCAD rebuild matched unordered STL triangles; PDF/PNG/JSON outputs were byte-identical. PDF markers decoded in every quarter turn and measured within 0.35 mm at the review raster scale. Three exports loaded in MuJoCo with declared units/yaw. Nine original four-cup blobs were preserved byte-identically. [Fixture evidence](../../../firmware/fixtures/cup_dock/README.md).
+
+## Tests and retained failures
+
+Combined command, using the existing project environment:
+
+```sh
+OPENARMS_ENV_FILE=/dev/null PYTHON_DOTENV_DISABLED=1 PYTHONPATH=agentic:simulation:. \
+  python -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q
+```
+
+Result: **564 passed, one failed** in 457.88 seconds. The existing simulation-preview test exceeded its ten-second status wait during concurrent rendering. Its unchanged isolated rerun passed in 5.67 seconds. Preserve both [full-suite failure](python-suite.log) and [rerun](render-rerun.log); this was not a clean all-green single suite. No assertion or deadline was weakened. Runtime follow-up: 58 focused regressions passed after the admission-contract fix; independent review reran six selected checks. Clients: 38 browser, five audio and 18 portable Swift tests passed; generic iOS Simulator build passed with signing disabled, without device launch.
+
+The first live expert water candidate omitted `expected_state.at=HOME`; initial admission correctly rejected it even though the simulated task completed. Commit `355a224` made the controller-state versus independent-image contract explicit. The subsequent actual cold/warm run above passed. Failures, transcripts, audio, scene images and complete CLI receipts remain in the coordinator's local rehearsal archive. [Artifact hashes](local-artifact-sha256.json) identify those records without publishing credentials or machine-local payloads.
+
+## Review and limits
+
+Independent Sol-high camera/runtime reviewer examined the actual diff, negative dispatch cases, CAD outputs and cold/warm artifacts. The coordinator checked the final evidence, including correcting an initial review summary that mislabeled the requested effort as medium: all three recorded expert runs explicitly requested high. Runtime and client owners supplied bounded focused checks; no GitHub review/comment was posted under the current read-only conversation rule. Account 2 was unavailable due to quota, so the independent review used the authorized native worker.
+
+Initial skill admission/reuse is **D3**, not a substantive **D4 improvement**. The existing improvement owner retains that separate task. Its later local study `c5d904e` found no spatial-adaptation advantage and identified two extension limits: injected non-nominal yaw is not bound to the execution starting state, and a monkey-patched trusted host observer can forge features over an empty image. The independent reviewer reproduced both against this integration using actual MuJoCo and test-only producer/observer injection: a 90-degree donor yaw dispatched once into a reconstructed nominal world, and forged water appearance over fresh dark-receiver pixels passed the evaluator. Neither path is exposed as normal student input; source/observer code is trusted and scope-hashed. Arbitrary pose support and grading a replaceable observer need explicit continuity and an independently pinned pixel judge before qualification. The two-vessel scene still has provisional 70/60 mm vessel heights and old dock spacing; it does not yet consume the photo-derived vessels and new fixture. One overview is aliased as both views; colored simulation patches are not decoded ArUco. Kinematic motion/drawn liquid do not establish fluid dynamics, quantity, spill safety or chemistry. Physical dispatch remains disabled.
+
+Print fit, jaw clearance, marker readability on the mounted camera, surveyed robot registration, repeatable supervised water trials, actual packets/recipe adaptation, chemical response, human/device audio and the first-minute physical demonstration remain unverified. Existing hardware calibration and unique teammate branches were preserved. [Canonical TODO](../TODO.md) owns next actions; the separate Smartivity simulation and improvement lanes continue independently.
+
+The shared hub, 00–09, one-page team brief and P0–P7 were reconciled in place. Current status timestamps and final published commit are read back after the authorized push; no duplicate specification space or private personal-page dependency was introduced. GitHub issues/PR conversations remain read-only; repository and shared Notion TODOs carry current updates.

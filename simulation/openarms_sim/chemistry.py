@@ -23,7 +23,7 @@ class Outcome:
     observations: list[str] = field(default_factory=list)  # e.g. ["fizzing"]
 
     def describe(self) -> str:
-        return " with ".join([self.label, *self.observations]) if self.observations else self.label
+        return f"{self.label} with {' and '.join(self.observations)}" if self.observations else self.label
 
 
 class ChemistryModel(Protocol):
@@ -51,18 +51,42 @@ class RuleTableChemistry:
 
     def predict(self, contents: dict[str, float]) -> Outcome:
         kinds = self._kinds(contents)
+        present = {name for name, amount in contents.items() if amount > 0}
+        # A rule may name kinds (acid, base) or particular substances (snow_powder, water).
         observations = [
-            rule["text"] for rule in self.cfg.get("observations", []) if all(k in kinds for k in rule["when_all"])
+            rule["text"]
+            for rule in self.cfg.get("observations", [])
+            if all(k in kinds or k in present for k in rule["when_all"])
         ]
         if not kinds:
             return Outcome((0.9, 0.9, 0.9), "empty")
+        dyes = {n: contents[n] for n in present if self.substances.get(n, {}).get("kind") == "dye"}
+        if dyes and "indicator" not in kinds:
+            return Outcome(*self._dye_mix(dyes), observations)
         if "indicator" in kinds:
             net = kinds.get("acid", 0) - kinds.get("base", 0)
             row = next(r for r in self.scale if net >= r["min"])
             return Outcome(tuple(row["color"]), row["label"], observations)
         plain = self.cfg["plain_colors"]
         dominant = max((k for k in kinds if k in plain), key=lambda k: kinds[k], default="neutral")
-        return Outcome(tuple(plain[dominant]), "clear", observations)
+        return Outcome(tuple(plain[dominant]), "white" if dominant == "powder" else "clear", observations)
+
+
+    def _dye_mix(self, dyes: dict[str, float]) -> tuple[tuple[float, float, float], str]:
+        """Colour and name of mixed food colours. Dyes subtract light, so the mix is the
+        amount-weighted geometric mean of their colours (red and yellow give orange, not pink)."""
+        total = sum(dyes.values())
+        rgb = [1.0, 1.0, 1.0]
+        for name, amount in dyes.items():
+            for i, c in enumerate(self.substances[name]["color"]):
+                rgb[i] *= max(c, 0.02) ** (amount / total)
+        hues = sorted({self.substances[n].get("hue", n) for n in dyes})
+        if len(hues) == 1:
+            return tuple(rgb), hues[0]
+        for row in self.cfg.get("dye_mixes", []):
+            if sorted(row["of"]) == hues:
+                return tuple(rgb), row["label"]
+        return tuple(rgb), " and ".join(hues) + " mixed"
 
 
 MODELS = {"rule_table": RuleTableChemistry}

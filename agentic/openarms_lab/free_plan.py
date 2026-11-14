@@ -1,7 +1,7 @@
-"""Free-form commands built from the saved positions. Turned on with OPENARMS_FREE_PLANS=1.
+"""Free-form commands built from the saved positions, for the real-bench lane (bench_lane.py).
 
-The skill registry knows one motion (transfer A or C to B). This adds plans the student
-composes from what the pose file actually holds:
+Restored from the earlier app (commit 19a37ae) and decoupled from the pH task contracts:
+results here are plain dicts. Plans the student composes from what the pose file holds:
 
     move the mandarin from B to A
     go to above B, then return home
@@ -21,7 +21,6 @@ import re
 from pathlib import Path
 
 from agentic.openarms_agent.validator import validate
-from .contracts import ExecutionResult, Observation
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = 'free_plan.v1'
@@ -42,12 +41,6 @@ _CLOSE = re.compile(r'\b(?:close|grab|grip|grasp|hold|clamp)\b')
 _WAIT = re.compile(r'\b(?:wait|pause|hold on)\b.*?(\d+(?:\.\d+)?)')
 _NEGATED = re.compile(r"\b(?:don't|dont|do not|without|no need to|never)\b")
 _AGAIN = re.compile(r"^(?:(?:please\s+)?(?:do|run|try|execute|repeat)\s+)?(?:(?:it|that|this|the same(?: thing| command)?|the (?:previous|last) (?:command|one|action|request))\s*)?(?:again|once more|one more time)?$")
-
-
-def from_env():
-    if os.getenv('OPENARMS_FREE_PLANS', '').strip().lower() in ('', '0', 'off', 'false', 'no'):
-        return None
-    return FreePlans(planner=ClaudePlanner() if ClaudePlanner.available() else None)
 
 
 def repeat_requested(text):
@@ -277,13 +270,13 @@ class FreePlans:
             await asyncio.sleep(getattr(backend, 'delay', 0.05))
             if stopped is not None and stopped.is_set():
                 backend._state['armed'] = False
-                return ExecutionResult(request_id=r['request_id'], backend=backend.mode, status='stopped', reason='STOP requested.')
+                return {'request_id': r['request_id'], 'backend': backend.mode, 'status': 'stopped',
+                        'controller_completed': False, 'reason': 'STOP requested.', 'expected': None}
         end = v['end_state']
         backend._state.update(at=end['at'], holding=end['holding'], gripper=end.get('gripper'))
         backend._state['point_holds'].update(end['point_holds'])
-        return ExecutionResult(request_id=r['request_id'], backend=backend.mode, status='completed', controller_completed=True,
-                               observation=Observation(provenance='MOCK', text='Mock controller reports ' + self._where(end) + '.',
-                                                       source='mock state inspection', value=end['point_holds']))
+        return {'request_id': r['request_id'], 'backend': backend.mode, 'status': 'completed', 'controller_completed': True,
+                'reason': None, 'expected': end['point_holds']}
 
     async def _execute_physical(self, backend, r, progress):
         from agentic.openarms_agent.runner import run
@@ -300,14 +293,10 @@ class FreePlans:
         backend._state['point_holds'].update(state.get('point_holds') or {})
         backend._state.update(at=state['at'], holding=state['holding'], armed=state['armed'])
         status = {'executed': 'completed', 'stopped': 'stopped'}.get(done['status'], 'failed')
-        if status == 'completed':
-            text = 'Controller finished; independent physical placement evidence is not available.'
-        else:
-            text = 'Physical outcome is unknown; the operator must check the bench.'
-        return ExecutionResult(request_id=r['request_id'], backend='physical', status=status, operator_authorized=True,
-                               controller_completed=status == 'completed', physical_success=None,
-                               observation=Observation(provenance='UNKNOWN', text=text, source='controller report'),
-                               reason=None if status == 'completed' else f"{done.get('failed_step') or 'run'}: {done.get('reason')}")
+        return {'request_id': r['request_id'], 'backend': 'physical', 'status': status, 'operator_authorized': True,
+                'controller_completed': status == 'completed',
+                'reason': None if status == 'completed' else f"{done.get('failed_step') or 'run'}: {done.get('reason')}",
+                'expected': state.get('point_holds') if status == 'completed' else None}
 
     def stop(self):
         self._stop = True

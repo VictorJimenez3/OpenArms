@@ -17,7 +17,7 @@ def block(plan, **kw):
 
 
 def liquid(plan, **kw):
-    return preview(plan, render=False, setup="liquid", **kw)
+    return preview(plan, render=False, setup="liquid_legacy", **kw)
 
 
 def move(a, b):
@@ -25,7 +25,7 @@ def move(a, b):
 
 
 def add(source, into, portions=1):
-    return example_plan(source, into, portions, setup="liquid")
+    return example_plan(source, into, portions, setup="liquid_legacy")
 
 
 def codes(result):
@@ -122,8 +122,8 @@ def test_unknown_setup_is_a_programming_error():
 # ---- liquid setup: the normal case -----------------------------------------
 
 
-@pytest.mark.parametrize("source", load_bench("liquid").sources)
-@pytest.mark.parametrize("into", load_bench("liquid").receivers)
+@pytest.mark.parametrize("source", load_bench("liquid_legacy").sources)
+@pytest.mark.parametrize("into", load_bench("liquid_legacy").receivers)
 def test_every_pour_runs_clean(source, into):
     result = liquid(add(source, into))
     assert result["ok"], result["warnings"]
@@ -136,7 +136,7 @@ def test_acid_turns_indicator_pink_and_base_turns_it_blue():
 
 
 def test_acid_then_base_fizzes_back_to_purple():
-    start = {"C": {"cabbage_indicator": 1, "vinegar": 1}}
+    start = {"C": {"ph_indicator": 1, "vinegar": 1}}
     c = receiver(liquid(add("B", "C"), contents=start), "C")
     assert c["color"] == "purple" and c["observations"] == ["fizzing"]
 
@@ -162,12 +162,12 @@ def test_simulation_only_substance_is_blocked_even_alone():
 
 
 def test_overflow_is_blocked():
-    full = {"C": {"cabbage_indicator": 1, "water": load_bench("liquid").receiver_capacity - 1}}
+    full = {"C": {"ph_indicator": 1, "water": load_bench("liquid_legacy").receiver_capacity - 1}}
     assert "overflow" in codes(liquid(add("A", "C"), contents=full))
 
 
 def test_gripper_that_misses_the_cup_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     poses["GRASP_A"]["shoulder_pan"] += 12
     result = liquid(add("A", "C"), poses=poses)
     assert "missed_grasp" in codes(result)
@@ -175,7 +175,7 @@ def test_gripper_that_misses_the_cup_is_blocked():
 
 
 def test_pouring_beside_the_receiver_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     for name in ("ABOVE_C", "TIP_C"):
         poses[name]["shoulder_pan"] -= 12  # swings the pour to the empty gap between B and C
     result = liquid(add("A", "C"), poses=poses)
@@ -184,13 +184,13 @@ def test_pouring_beside_the_receiver_is_blocked():
 
 
 def test_reaching_into_the_table_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     poses["GRASP_A"]["shoulder_lift"] += 14
     assert codes(liquid(add("A", "C"), poses=poses)) & {"hits_table", "held_hits_table"}
 
 
 def test_not_tipping_far_enough_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     poses["TIP_C"] = dict(poses["ABOVE_C"])
     assert "no_pour" in codes(liquid(add("A", "C"), poses=poses))
 
@@ -231,7 +231,7 @@ def test_go_to_never_exceeds_the_speed_limit():
 
 def test_safety_list_is_independent_of_the_colour_model():
     cfg = load_chemistry_config()
-    assert safety_issues(cfg, {"cabbage_indicator": 1, "vinegar": 2, "baking_soda": 1}) == []
+    assert safety_issues(cfg, {"ph_indicator": 1, "vinegar": 2, "baking_soda": 1}) == []
     assert safety_issues(cfg, {"mystery": 1}) == ["mystery is not a known substance"]
     assert load_model(cfg).predict({}).label == "empty"
 
@@ -351,3 +351,94 @@ def test_script_preview_geometry_is_a_note_until_the_joint_map_is_measured(firmw
 def test_script_preview_rejects_an_incomplete_arm_target(firmware_poses):
     out = _run_script(firmware_poses, marks={"A": {"shoulder_pan.pos": 0.0}, "B": firmware_poses["poses"]["GRASP_B"]})
     assert not out["ok"] and out["issues"][0]["code"] == "bad_plan"
+
+
+# ---- science kit setup ------------------------------------------------------------------
+
+
+def _pour(source, into):
+    return {"plan_id": "kit", "steps": [{"action": "add_sample", "args": {"source": source, "into": into, "portions": 1}}]}
+
+
+def _receiver(out, name):
+    return next(p for p in out["predicted"] if p["station"] == name)
+
+
+def test_kit_volcano_fizzes_and_foams():
+    out = preview(_pour("A", "C"), setup="kit", render=False)
+    assert out["ok"], out["warnings"]
+    c = _receiver(out, "C")
+    assert c["color"] == "red" and c["observations"] == ["fizzing", "foam rising like a volcano"]
+    assert _receiver(out, "D")["observations"] == []
+
+
+def test_kit_water_on_snow_powder_and_on_cornstarch():
+    assert _receiver(preview(_pour("B", "D"), setup="kit", render=False), "D")["observations"] == [
+        "swelling into fluffy instant snow"
+    ]
+    oobleck = preview(_pour("B", "D"), contents={"D": {"cornstarch": 2}}, setup="kit", render=False)
+    assert _receiver(oobleck, "D")["observations"] == ["thickening into oobleck"]
+    assert _receiver(oobleck, "D")["color"] == "white"
+
+
+@pytest.mark.parametrize("a,b,label", [("yellow", "blue", "green"), ("red", "yellow", "orange"), ("red", "blue", "purple")])
+def test_kit_food_colours_mix(a, b, label):
+    contents = {"A": {f"{a}_colour": 1}, "C": {"water": 1, f"{b}_colour": 1}}
+    c = _receiver(preview(_pour("A", "C"), contents=contents, setup="kit", render=False), "C")
+    assert c["color"] == label
+    r, g, bl = c["rgb"]
+    if label == "green":
+        assert g > r and g > bl
+    if label == "orange":
+        assert r > g > bl
+
+
+def test_kit_substances_are_allowed_on_the_real_bench_and_bleach_still_is_not():
+    cfg = load_chemistry_config()
+    assert safety_issues(cfg, {"citric_acid": 1, "baking_soda": 1, "liquid_soap": 1, "red_colour": 1}) == []
+    assert safety_issues(cfg, {"snow_powder": 1, "water": 1, "cornstarch": 1}) == []
+    assert safety_issues(cfg, {"bleach": 1, "citric_acid": 1})
+
+
+def test_describe_joins_several_observations_readably():
+    out = load_model(load_chemistry_config()).predict({"baking_soda": 1, "citric_acid": 1, "liquid_soap": 1, "red_colour": 1})
+    assert out.describe() == "red with fizzing and foam rising like a volcano"
+
+
+def test_the_command_line_default_plan_pours_on_any_bench_with_receivers():
+    assert example_plan("A", "C", setup="kit")["steps"][0]["action"] == "add_sample"
+    assert example_plan(setup="liquid")["steps"][0]["action"] == "add_sample"
+    assert example_plan(setup="block")["steps"][0]["action"] == "move_block"
+
+
+# ---- positions read off the bench rulers --------------------------------------------------
+
+
+def test_ruler_centimetres_become_arm_frame_metres():
+    from openarms_sim.config import ruler_to_arm
+
+    ahead = {"arm_cm": [10, 20], "arm_heading_deg": 0}  # arm at (10, 20) pointing along +X
+    assert ruler_to_arm([30, 20], ahead) == (0.2, 0.0)  # straight ahead
+    assert ruler_to_arm([10, 10], ahead) == (0.0, 0.1)  # smaller Y is to its left
+    toward_x_ruler = {"arm_cm": [16, 33], "arm_heading_deg": -90}  # pointing along -Y
+    assert ruler_to_arm([16, 3], toward_x_ruler) == (0.3, 0.0)
+    assert ruler_to_arm([6, 33], toward_x_ruler) == (0.0, 0.1)  # smaller X is to its left
+    with pytest.raises(ValueError, match="two numbers"):
+        ruler_to_arm(["4,6", 4.2], ahead)
+
+
+def test_demo_bench_uses_the_measured_containers_and_ruler_positions():
+    bench = load_bench("demo")
+    assert bench.stations["A"].kind == "source" and bench.stations["C"].kind == "receiver"
+    assert (bench.cup_height, bench.receiver_radius, bench.receiver_height) == (0.047, 0.041, 0.030)
+    # The bench file holds whatever `firmware.openarms_camera locate --apply` last wrote; as committed
+    # that is the layout where the pour works: side by side about 30 cm in front of the arm.
+    for station in ("A", "C"):
+        x, y = bench.stations[station].pos
+        assert 0.25 < x < 0.33, (station, x, y)
+    assert bench.stations["A"].pos[1] < -0.03 and bench.stations["C"].pos[1] > 0.05  # beaker right, container left
+    # The grip and the pour follow the pour recorded on the real arm (see bench.yaml).
+    assert (bench.wrist_roll_deg, bench.tip_angle_deg, bench.pour_offset) == (180, 90, 0.030)
+    out = preview(_pour("A", "C"), setup="demo", render=False)
+    assert out["ok"], out["warnings"]
+    assert _receiver(out, "C")["observations"] == ["fizzing", "foam rising like a volcano"]

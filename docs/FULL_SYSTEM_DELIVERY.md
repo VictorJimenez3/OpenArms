@@ -1,0 +1,107 @@
+# OpenArms full-system delivery contract
+Reconciled November 14, 2026 · current two-vessel product and shared runtime
+
+## Product and evidence boundary
+The selected physical direction is the two-vessel Smartivity A→C pour defined in [PROJECT](PROJECT.md). Preferred chemistry and fallback need physical verification. MuJoCo is active for development; Isaac is parked. The physical demonstration does not require a simulator preview. The product is a continuous conversational agent connected to a background expert, scene evidence and perception tools, deterministic execution, independent observations, and an evaluated reusable-skill library. Physical actuation is disabled for this delivery. That does not exclude reasoning, image inspection, perception integration, skill authoring, or improvement.
+
+The reviewed software baseline includes PR #22 (`0ab5819`) and PR #25 (`4f9c3ec`), which preserves actual Gemini Live conversation. [MAIN_INTEGRATION](MAIN_INTEGRATION.md) separates main from the current local two-vessel/camera integration, bounded review evidence and verified software/live-provider results. Preserve it while implementing the selected kit activity. Use isolated worktrees for new concurrent tasks; archive completed lanes after integration. No second runtime or registry. No further push until the integrator reviews changes against R1–R6. Component tests alone do not meet completion.
+
+Sources: [01 — current product vision](https://app.notion.com/p/41871c9c107e8133aa70cf1588e620e4), [02 — skills](https://app.notion.com/p/41871c9c107e811d875beeab9dd78d26), [03 — interfaces](https://app.notion.com/p/41871c9c107e810aad00c2bd7d99014e), [10 — perception/improvement](https://app.notion.com/p/41871c9c107e8185977ce8c72365fcff), [P1 — agent harness](https://app.notion.com/p/41871c9c107e81bf8598e4f84fd29798).
+
+## Requirement IDs
+R1: A continuous voice agent remains responsive to the student. Joseph retained Gemini Live for speech on November 14; only Gemini thinking was withdrawn. Expert selection remains independent of speech.
+R2: The selected Codex or Claude expert (default OpenAI gpt-6.1-sol at medium reasoning through Codex) performs image-aware planning and makes tool-level decisions during execution; familiar tasks reuse skills and unfamiliar supported tasks escalate.
+R3: Timestamped raw images and recognition/localization tools inform planning.
+R4: Execution and independent observation feedback reach both agents; progress, clarification, failure, cancellation and bounded replanning work.
+R5: Expert-authored, validated, versioned skills become conversationally callable.
+R6: A real recorded limitation causes a substantive expert revision, unchanged-baseline comparison, and evidence-based promotion or rejection.
+
+The current `demo-speed-v2` product correction also applies: D1 reliable direct actions; D2 responsive voice; D3 one expensive expert pass produces a tested parameterized skill with fast subsequent reuse; D4 measured improvement. Students can issue individual supported actions immediately. Prediction and reflection are optional. A successful familiar skill must not wait for another expert call at each checkpoint; independent validation and observation continue, with uncertainty/failure escalating to the expert.
+
+November 14 provider compatibility correction: Joseph requested shared Codex/Claude agents and hot model selection. [Expert profiles](EXPERT_MODELS.md) own configuration and qualification details; a task retains its selection through confirmation/checkpoints. This does not alter the shared tools, registry, consent or supported hardware-disabled execution.
+
+## Responsibility map
+
+The [root ownership rules](../AGENTS.md#ownership) name the current area owners. The roles below describe how components connect. Victor retains integration ownership. Joseph has authorized the existing reconciliation coordinator to review, integrate and push this task; shared changes remain coordinated with affected owners.
+
+| Accountable owner / isolated lane | Requirements and owned connection | Dependencies | Required evidence / remaining gap |
+| --- | --- | --- | --- |
+| Integrator, shared service and contracts | R1/R4 and architecture acceptance; HTTP/WS authentication, session lease, voice bridge, asynchronous task/event delivery to both agents, shared docs and full-loop test | Runtime task API; perception/evaluation artifacts; both clients | Real provider conversation remains usable during expert work; progress and delayed observations are spoken/displayed; no fake student turns; final cross-lane evidence. Shared session repairs are integrated; Gemini Live conversation and actual-device checks have separate evidence. |
+| Runtime owner (agentic) | R2/R4/R5; sole task orchestrator, skill matching/authoring/registry, validation, candidate promotion and mock execution; integrator owns the Codex provider adapter | Shared evidence tool API; integrator gateway; provider qualification | One real cold planning trace using conversation + images + tools, one parameterized skill artifact, equivalent warm reuse, recorded cost/latency and negative routing. The current image-aware expert and task loop are integrated; a kit activity needs new validated bindings. |
+| Perception/evaluation owner, existing runtime | R3/R6; image/episode ingestion, bench_vision adapters, independent observer, frozen scenario suite, candidate-vs-baseline evaluation | Runtime expert/tool/candidate APIs; existing bench_vision schemas | Raw timestamped images with hashes, tool invocations and detections, uncertainty/coordinate semantics, outcome derived independently of executor status, actual limitation/revision/evaluation receipts. Never another dispatcher or registry. |
+| Browser owner (ui/lab) | R1/R3/R4/R5 presentation; supported activity flow, audio lifecycle, scene/evidence view, task progress/clarification, exact proposal, reusable-skill status | Stable session/task snapshot and event contract | Desktop/mobile end-to-end interaction, keyboard use, interruptions, reconnect, text alternative, useful scene/result display. No inference or promotion authority in the client. |
+| Native client owner (SwiftUI) | Same session and observation/progress behavior as browser; streaming audio, actual playback acknowledgment, lifecycle recovery | Same gateway; real-device reachable endpoint | Compiling native app, portable tests, simulator checks, physical device rehearsal explicitly separated. No parallel voice/runtime backend. |
+| Integrator and independent review pass | R1–R6; review lane diffs and evidence, integration merges and final acceptance | All lane receipts and test corpus | Requirements/dependencies/evidence/gaps recorded in each assignment and PR; no merge based solely on passing isolated tests. |
+
+[GitHub #19](https://github.com/VictorJimenez3/OpenArms/issues/19) is the shared full-system delivery issue; preserve its current P0/P1 revision and other coordinators’ updates. GitHub #9 remains the shared-interface decision; #10 tracks the complete software loop; #4 tracks actual iPhone connectivity/audio. Preserve their history. Do not create a duplicate architecture issue.
+
+## Shared domain contract
+Existing HTTP/WS security, heartbeat, presentation, playback and transcript contracts remain. Extend the canonical session with task, scene, plan, skill and evaluation records; do not fork the service. All writes are server-owned and all records have stable IDs.
+
+Every event carries event_id, session_id, turn_id where applicable, task_id, trial_id, request_id, skill_id/version and evidence_ids where applicable, sequence/revision, timestamp and provenance. Missing associations are explicit null, never guessed.
+
+| Record | Required contents and rules |
+| --- | --- |
+| ExperimentCommand / TaskContext | Original natural request, relevant conversation and optional prediction, task goal, backend/capability limits, current scene and evidence references, available tool schemas, registered skills, budget/deadline and cancellation token. |
+| SceneEvidence | Frame/episode/camera IDs, capture timestamp and clock, original image bytes via immutable artifact reference + hash, provenance (recorded real, recorded simulation, synthetic), freshness, labels/detections with method/model/version, uncertainty, coordinate frame/units/calibration or explicit unknown. Replay age is measured against the episode clock; recorded footage is never presented as a live camera. |
+| ExpertTask | Task ID and status queued/running/needs_clarification/awaiting_confirmation/executing/observing/completed/failed/cancelled; actual provider/model/configuration, tool receipts, concise decision rationale, measured calls/tokens/latency, maximum two replans with bounded tools/time. Never store hidden reasoning as a deliverable. |
+| PlanProposal | Immutable plan/version hash, ordered bounded tool/skill operations and parameter bindings, referenced scene/evidence/skill versions, preconditions, expected observation checks, supported backend, student-readable exact preview, expiry and presentation binding. A changed plan requires new presentation and confirmation. |
+| SkillDefinition | Content-derived version, intent and retrieval examples, typed/bounded parameters, preconditions, validated primitive/executor references, composition, expected final state, observation checks, limitations, source evidence, evaluation receipts and lifecycle candidate/task-validated/active/rejected/retired. New labels alone do not constitute improvement. |
+| ExecutionReceipt | Plan/skill/task IDs, backend, progress, controller lifecycle/status, timestamps, cancellation/failure and trace references. Completion is not an observation. |
+| ExperimentOutcome | Independently sourced image/sensor/observer result, linked input evidence, observed features, uncertainty and provenance. Mock/controller success never implies pink, delivery or a physical result. Model reference expectations are a separate record. |
+| SkillEvaluation / PromotionDecision | Immutable baseline and candidate hashes, frozen cases/split and artifact hashes, routing/outcome/unknown/STOP regressions, calls/tokens/latency and interventions, semantic diff, pass/fail reasons, promotion or rejection and rollback target. Only the registry's deterministic promotion gate changes the active version. |
+
+### Agent and tool connections
+
+The expert is the robot agent: it uses fresh images and tool receipts DURING a task to choose the next supported action, revise a failing skill, and check the outcome. The voice agent is separate from the expert. Preserve the observed camera-assisted C→B behavior in the November 14 bench log: the agent inspected successive webcam frames, adjusted pickup alignment, added lift/carry clearance, and verified placement. This was a supervised staged physical run using LeRobot-backed tools, not a trained ACT policy demonstration. The product must encode that feedback loop; it must not reduce the expert to one initial recipe-selection call. [Committed physical evidence](https://github.com/VictorJimenez3/OpenArms/tree/8f6344faee38bc35f84861bf634bb753b082d5c5/research/joseph/mandarin-transfer-2026-11-14).
+
+1. The voice agent submits a natural task through start_task and receives its task ID promptly. The background expert must not block microphone handling, conversation, cancel or STOP.
+2. The router checks active skills and parameter/context coverage. A supported unfamiliar request, uncertain match or failed precondition reaches the expert; an unsupported capability produces a clear limitation, not fabricated execution.
+3. The expert receives the TaskContext and can call inspect_scene, localize_objects, list/get_skill, validate_plan, propose_skill and evaluate_candidate. It can inspect raw images as well as tool results. Tool adapters carry source/model/version and uncertainty.
+4. Expert output is a structured candidate/plan, clarification or rejection. Validation is independent of model confidence. Only registered bounded mock/simulation primitives can execute; no generated Python or arbitrary motor code.
+5. The server presents the exact validated plan. Consent binds the exact plan/version and presented scene/context. Late tool results after cancellation or context changes cannot restore it.
+6. One selected supported executor emits per-step progress and receipts. At observation checkpoints, a separate observer reads fresh resulting frames/episode; a cold or uncertain task sends them to the expert before continuation or correction. A validated familiar skill uses deterministic checkpoint checks without blocking on repeated model calls; feedback remains in its task record for expert escalation and improvement. UNKNOWN remains possible after successful controller completion. Changed executable proposals require a new version and confirmation; STOP invalidates outstanding tools.
+7. Execution and observation events are persisted and delivered to BOTH the voice agent and the expert. Use supported asynchronous tool/task outcomes and correlated completion messages, not fabricated student turns. Replanning may request another observation or produce a revised plan; it never reuses old consent.
+8. A task-validated candidate may be invoked once under that task's explicit consent. Reusable activation requires its evaluation/observation evidence and a promotion decision. Equivalent subsequent requests use the exact active skill version without reauthoring it.
+9. STOP/cancel invalidate task generations, pending approvals and scheduled expert actions. No automatic resumption of execution on reconnect. History is passive and preserves backend/provenance.
+
+### Supported capabilities and active simulation
+The physical contract is donor A → receiver C → donor A → HOME, with exactly two active vessels. Actual prepared material bindings and independently observable chemistry remain unqualified. The current local integration supports a water-only carried-donor scene (`OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`) with fresh per-action camera validation and separate post-action observation. The default `metered_dropper` retains the older `indicator_ph` regression. `TwoVesselSkillEvaluator` supplies independent replay-backed admission and warm reuse of a supported expert-authored skill; this initial capability is not D4. Preserve one task loop, registry and executor interface.
+
+MuJoCo is the active development simulator; Isaac is parked. [The simulation guide](../simulation/README.md) distinguishes existing alternatives from the active slice. Optional volcano/additional-vessel simulations do not expand physical scope. Rendered liquid, rule-based color and illustrative motion are modeling assumptions, not fluid dynamics or chemical measurements. The expert may request frames on demand; camera acquisition, inference and motor cadence are separate. Freshness/identity checks continue on warm reuse, without mandatory simulation previews or model calls in the motor loop.
+
+## One improvement cycle to demonstrate
+Freeze clear-view, occluded-view, distractor, missing-object and stale-frame cases before revision. Retain the unchanged baseline skill. Run it and record an actual limitation such as UNKNOWN when the receiver is occluded. Give the expert that failure receipt and permitted tools. It proposes a substantive revision, for example a genuinely independent alternative observation or an explicit ambiguity/freshness check. The two-vessel backend's primary and secondary labels are the same overview, so selecting the other name does not supply an independent viewpoint. Compare baseline and candidate on the same frozen cases, including held-out cases not shown during revision. Promote only with improved recovery and no new false-success/consent/STOP regressions; otherwise record rejection. Preserve both artifacts and replay the decision. A saturated suite that both versions already pass cannot demonstrate improvement; initial admission/evaluator capability is not the improvement itself. This is skill/workflow improvement, not an unproven motor-policy claim.
+
+## Acceptance checklist
+- [ ] A natural spoken supported request starts a real background expert task; the voice agent remains responsive to a follow-up while it runs.
+- [ ] The expert receives relevant conversation, task, registry and scene; receipts show actual image inspection and at least one recognition/localization tool invocation. Fresh checkpoint images must influence the next tool action or bounded skill revision during execution, not only an initial plan.
+- [ ] Ambiguous, absent or stale scene evidence produces clarification/UNKNOWN/rejection with provenance intact.
+- [ ] The expert authors a nontrivial structured supported plan/skill; independent validation rejects unsupported operations and malformed bindings.
+- [ ] The exact validated proposal is presented; fresh explicit consent executes it once. Negation, assistant speech, stale/duplicate input, changed scene/plan and reconnect replay cannot execute it.
+- [ ] Supported execution emits progress and a separate observer reads resulting images. Successful controller completion plus an unreadable image remains UNKNOWN.
+- [ ] Both expert and the voice agent receive execution and observation results. The voice agent describes their actual provenance and limitation.
+- [ ] Clarification, provider timeout, failure, cancellation, STOP and at most two replans are exercised. Each materially changed execution plan needs fresh consent.
+- [ ] Evaluation-backed registration makes the expert-created skill callable through conversation.
+- [ ] Equivalent natural requests reuse the same version with measured cold/warm calls, tokens and planning latency; motor/mock travel time is reported separately.
+- [ ] A real saved failure/limitation yields a substantive expert revision, same-suite baseline comparison, and justified promotion/rejection with rollback.
+- [ ] Browser and iPhone show task progress, scene evidence, proposals, results and recovery without exposing developer controls or credentials.
+- [ ] Actual Mac and unplugged iPhone audible checks are reported separately from generated speech, headless browsers and simulator checks.
+- [ ] A final run index links commit/build, provider/model, input hashes, artifacts, all failures, tests and architectural coverage. No architectural-completion claim from component counts.
+
+## Provider qualification and current gaps
+Current decision: Gemini Live remains the speech provider when a local GEMINI_API_KEY or GOOGLE_API_KEY is configured. Only Gemini thinking was withdrawn. Expert inference uses its independent Codex/Claude profile and authentication. Text and direct STOP remain available if voice is unavailable. Never reuse Codex authentication as a voice API credential; generated speech does not establish actual-device acceptance.
+
+The default image-aware expert is **OpenAI gpt-6.1-sol, medium reasoning, through Codex**. [Expert profiles](EXPERT_MODELS.md) describe the shared Codex/Claude boundary, independent authentication and remaining live qualifications. Fresh tool images and execution feedback belong to the same task loop regardless of model. Retain requested/actual model identity and evidence receipts.
+
+The current local integration through `355a224` has [reconciliation evidence](../research/joseph/reconciliation-2026-11-14/README.md): actual Gemini Live generated-audio water dialogue passed; real Codex CLI requested Sol high, with underlying identity unverified; cold used 7 calls and admitted warm reuse used zero calls for the same skill version. The independently rendered SIMULATED outcome passed all four checks. The first missing-HOME candidate was rejected and the admission contract clarified before rerun. This supports bounded initial D3, not D4. The combined software run had 564 passes and one existing rendering-poll timeout under load; the unchanged isolated case passed in 5.67 s and 58 follow-up checks passed.
+
+The merged baseline and historical measured results are in [the main ledger](MAIN_INTEGRATION.md) and [evidence index](../research/joseph/software-consolidation-2026-11-14/README.md). Historical provider probes, quotas and simulation outcomes do not qualify actual-device voice or the selected kit.
+
+## Remaining delivery work
+1. Keep Gemini Live and the shared expert/session working; qualify responsive progress, results, cancellation and actual-device audio.
+2. Verify actual kit packets, the manual-reviewed two-vessel adaptation and visible chemistry with the physical team; map the supported actions and independent observations through the existing runtime.
+3. Preserve the verified water cold loop, admission and same-version warm reuse. Demonstrate a separate substantive improvement from a real limitation on comparable cases; current initial D3 evidence does not complete D4. Retain an unchanged baseline and failures.
+4. Complete supervised dry/water/chemistry trials, first-minute timing and real-device checks in the architecture checklist. Current tasks and statuses are in [the repository TODO](../research/joseph/TODO.md). Review all requirement connections before claiming completion.
+
+Every assignment and PR includes requirement IDs, owned connections, integration dependencies, produced evidence, remaining gaps and baseline/rollback impact. Independent MuJoCo/camera work continues while hardware evidence is pending; extra presentation experiments are optional.

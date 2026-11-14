@@ -1,0 +1,10 @@
+{
+  "request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a",
+  "session_id": "isaac-mass-weight",
+  "skill_id": "isaac.mass_weight.light.v1",
+  "parameters": {
+    "object": "sample",
+    "source": "A",
+    "destination": "B"
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "actual_expert": true,
+  "provider": "openai_codex_cli",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "provenance": "SYNTHETIC",
+  "limitation_task": "4b0acb5e-e03c-496b-bb3f-6fc4fef09685",
+  "decision": {
+    "skill_id": "prepared_sample_indicator_check",
+    "candidate_hash": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+    "baseline_hash": "2a467ced2c8af9088aba3f0a764b83eede3a0a9c178e5bd8f8804c36f76eeecf",
+    "rollback_target": "2a467ced2c8af9088aba3f0a764b83eede3a0a9c178e5bd8f8804c36f76eeecf",
+    "evaluation_id": "296c58b154f04bc293c7a68332472275",
+    "status": "promoted"
+  },
+  "receipt": {
+    "evaluation_id": "296c58b154f04bc293c7a68332472275",
+    "suite_hash": "65f0074f38d6564b394060bd1d20e952aeac60dbf586f1879f3640b8b373cb72",
+    "candidate_hash": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+    "baseline_hash": "2a467ced2c8af9088aba3f0a764b83eede3a0a9c178e5bd8f8804c36f76eeecf",
+    "artifact_hashes": [
+      "4565c720f10e217dd9a8b140fad5e2ac29b3ae3dd53d266c1f6c4cafa1a9491d",
+      "fd5b078f65cbb1c29a38a265178f687bb90e2e45257501a2053fb3652befd41e"
+    ],
+    "baseline_recovered": 9,
+    "candidate_recovered": 12,
+    "regression_gates": {
+      "routing": true,
+      "outcome": true,
+      "unknown": true,
+      "consent": true,
+      "stop": true,
+      "active_registry_routing": true
+    },
+    "passed": true,
+    "reasons": [
+      "Independent readable outcomes: baseline 9, candidate 12.",
+      "Recovered-case change: 3; unchanged-baseline non-regression required."
+    ],
+    "metrics": {
+      "artifact": "296c58b154f04bc293c7a68332472275/comparison.json",
+      "provenance": "SYNTHETIC",
+      "case_count": 24,
+      "recovered_gain": 3,
+      "physical_qualification": false,
+      "active_registry_routing": {
+        "passed": true,
+        "active_versions": {
+          "prepared_sample_indicator_check": "2a467ced2c8af9088aba3f0a764b83eede3a0a9c178e5bd8f8804c36f76eeecf"
+        },
+        "candidate": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+        "cases": [
+          {
+            "text": "Test the prepared vinegar sample and check the cabbage indicator color.",
+            "skill_id": "prepared_sample_indicator_check",
+            "version": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+            "bindings": {
+              "condition": "vinegar"
+            },
+            "passed": true
+          },
+          {
+            "text": "Test the prepared baking soda sample and check the cabbage indicator color.",
+            "skill_id": "prepared_sample_indicator_check",
+            "version": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+            "bindings": {
+              "condition": "baking_soda"
+            },
+            "passed": true
+          },
+          {
+            "text": "Test the prepared water sample and check the cabbage indicator color.",
+            "skill_id": "prepared_sample_indicator_check",
+            "version": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+            "bindings": {
+              "condition": "water"
+            },
+            "passed": true
+          },
+          {
+            "text": "Test the prepared vinegar sample and check the cabbage indicator color.",
+            "skill_id": "prepared_sample_indicator_check",
+            "version": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+            "bindings": {
+              "condition": "vinegar"
+            },
+            "passed": true
+          },
+          {
+            "text": "Test the prepared baking soda sample and check the cabbage indicator color.",
+            "skill_id": "prepared_sample_indicator_check",
+            "version": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+            "bindings": {
+              "condition": "baking_soda"
+            },
+            "passed": true
+          },
+          {
+            "text": "Test the prepared water sample and check the cabbage indicator color.",
+            "skill_id": "prepared_sample_indicator_check",
+            "version": "7d11fe42ffe5d19377a815211ea21877c69f4d0a2bee225fdab8833ccce15a77",
+            "bindings": {
+              "condition": "water"
+            },
+            "passed": true
+          }
+        ]
+      }
+    }
+  },
+  "baseline_steps": [
+    {
+      "operation": "inspect_scene",
+      "arguments": {
+        "view": "primary"
+      }
+    },
+    {
+      "operation": "mock_prepared_sample",
+      "arguments": {
+        "condition_id": "$condition",
+        "source": "A",
+        "destination": "C"
+      }
+    },
+    {
+      "operation": "observe",
+      "arguments": {
+        "view": "primary"
+      }
+    }
+  ],
+  "candidate_steps": [
+    {
+      "operation": "inspect_scene",
+      "arguments": {
+        "view": "primary"
+      }
+    },
+    {
+      "operation": "mock_prepared_sample",
+      "arguments": {
+        "condition_id": "$condition",
+        "source": "A",
+        "destination": "C"
+      }
+    },
+    {
+      "operation": "observe",
+      "arguments": {
+        "view": "primary",
+        "fallback_view": "secondary"
+      }
+    }
+  ],
+  "physical_hardware_used": false,
+  "_source_artifact_sha256": "4318990956a092a1e21bba5039d80d26a7da6d8f380c4fe36609f730b7cc9897",
+  "_source_run": "improvement-final-2"
+}

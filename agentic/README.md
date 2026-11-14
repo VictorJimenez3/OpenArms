@@ -1,33 +1,9 @@
-# agentic/
+# OpenArms agents
 
-The agent harness: the LLM "brain" turns a student's words into a short plan, local code checks it, the teacher approves it, and the arm runs it. Design: [research/duc/harness.md](../research/duc/harness.md). Owner: Duc.
+The application entrypoint is `python -m agentic.openarms_lab`. Follow the [runbook](../docs/LAB_RUNBOOK.md) for installation and configuration. `openarms_lab` owns the one authenticated session, task loop, registry, deterministic validation and shared client gateway. The default expert is Codex gpt-6.1-sol medium; the [expert profiles](../docs/EXPERT_MODELS.md) keep model selection separate from task/execution authority. Gemini Live remains the speech provider; only Gemini thinking was withdrawn. Speech and expert authentication/configuration are independent.
 
-## Setup
+The physical target is the selected two-vessel Smartivity A→C pour. MuJoCo is the active simulator and Isaac is parked. The current local integration supports the water-only carried-donor scene with `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`, fresh dispatch inspection and replay-backed skill admission. The default scene remains `metered_dropper`, an explicit `indicator_ph` regression apparatus. [The integration ledger](../docs/MAIN_INTEGRATION.md) records reviewed components and pending complete-loop acceptance. Physical execution remains disabled in this app. See [architecture](../docs/ARCHITECTURE.md), [interfaces](../docs/INTERFACES.md), and the [R1–R6 acceptance contract](../docs/FULL_SYSTEM_DELIVERY.md). Optional prediction/reflection never gate control.
 
-```bash
-conda create -y -n openarms python=3.12
-conda activate openarms
-pip install -r agentic/requirements.txt
-echo "ANTHROPIC_API_KEY=..." > agentic/.env   # ignored by git
-```
+`openarms_agent`, its original Claude prompts and older `scripts` are preserved research/fallback components, not an alternate application entrypoint. Do not start a second dispatcher or registry when integrating new capabilities. Firmware and recorded physical evidence retain their separate supervision and authorization requirements.
 
-Run everything from the repo root as modules, for example `python -m agentic.scripts.check_validator`.
-
-## Layout
-
-| File | What it does | Lane |
-|---|---|---|
-| `contracts/*.example.json` | One example of each shared shape; the team agrees on these in `docs/INTERFACES.md` | master |
-| `openarms_agent/types.py` | Key names for those shapes, the `ArmPort` protocol, `ArmError` | master |
-| `openarms_agent/catalog.py` | Plan actions (`add_sample`, `wait`, `look`) and `expand()` into arm steps | core |
-| `openarms_agent/validator.py` | `validate(plan, state, stations)`: fixed rules, one readable reason | core |
-| `openarms_agent/mock_arm.py` | Fake `ArmPort` for development | core |
-| `openarms_agent/runner.py` | Runs approved steps on an `ArmPort`; stops on error or STOP; never retries | core |
-| `openarms_agent/notebook.py` | Session log to `outputs/sessions/<id>.json` | core |
-| `prompts/brain_system.md`, `openarms_agent/prompting.py` | The brain's system prompt | brain |
-| `openarms_agent/tools.py`, `openarms_agent/brain.py` | Claude tools and the turn loop | brain |
-| `relay_adapter.py`, `server.py`, `preview.py` | Links to the voice relay, teacher UI and sim | api (later) |
-
-The real `ArmPort` (saved-pose replay on the SO-101) is drafted in `firmware/openarms_executor/` for Joseph to review.
-
-Files marked "M0 stub" return canned values so lanes can run before the real code lands.
+Victor is the existing agentic owner; Joseph coordinates camera/integration changes with him. Duc owns firmware/calibration. The authorized integration lane coordinates shared contracts. Each substantial assignment names the GitHub issue, requirement, owned files, producer/consumer dependency, baseline, evidence and gaps. [Consolidation status](../docs/MAIN_INTEGRATION.md).

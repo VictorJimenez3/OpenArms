@@ -1,0 +1,83 @@
+{
+  "rows": [
+    {
+      "question": "How is it going?",
+      "elapsed_ms": 1.6494998708367348,
+      "proposal_preserved": true,
+      "new_tasks": 0,
+      "expert_calls": 0,
+      "executions": 0,
+      "messages": [
+        {
+          "id": "2b70e860-4b1f-4d02-9a60-288db11ebfe6",
+          "role": "user",
+          "text": "How is it going?",
+          "turn_id": "question-0",
+          "final": true
+        },
+        {
+          "id": "dfd7ba1b-9a05-4bf7-ad87-c74d49a1bd3c",
+          "role": "assistant",
+          "text": "I\u2019m waiting for your confirmation. In the simulation, I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera.",
+          "turn_id": "1b880b3e-b07d-4249-8016-6a62d34bb651",
+          "final": true
+        }
+      ],
+      "last_task_status": "awaiting_confirmation"
+    },
+    {
+      "question": "What can you see?",
+      "elapsed_ms": 1.4880415983498096,
+      "proposal_preserved": true,
+      "new_tasks": 0,
+      "expert_calls": 0,
+      "executions": 0,
+      "messages": [
+        {
+          "id": "bd4c1829-d632-468c-9962-4de232688ba3",
+          "role": "user",
+          "text": "What can you see?",
+          "turn_id": "question-1",
+          "final": true
+        },
+        {
+          "id": "5220412a-d623-41c1-9460-5b481989c185",
+          "role": "assistant",
+          "text": "In the simulation, the latest scene shows receiver, source.",
+          "turn_id": "ad0d149b-39c4-4e59-b592-d885da0a0cf0",
+          "final": true
+        }
+      ],
+      "last_task_status": "awaiting_confirmation"
+    },
+    {
+      "question": "Which cup is that?",
+      "elapsed_ms": 1.5484592877328396,
+      "proposal_preserved": true,
+      "new_tasks": 0,
+      "expert_calls": 0,
+      "executions": 0,
+      "messages": [
+        {
+          "id": "d8e3bc2b-9c38-4096-bcbd-1344d7748198",
+          "role": "user",
+          "text": "Which cup is that?",
+          "turn_id": "question-2",
+          "final": true
+        },
+        {
+          "id": "499a1c86-5945-4626-a523-1f1d565e22be",
+          "role": "assistant",
+          "text": "In the simulation, the latest scene shows receiver, source.",
+          "turn_id": "3869377c-b3f1-4acc-a453-27a8c13dc0b6",
+          "final": true
+        }
+      ],
+      "last_task_status": "awaiting_confirmation"
+    }
+  ],
+  "skill_version": "faf8a17abcca99ae2aaf2a78aea498e001409571c054e306c3c22c1243c36202",
+  "provenance": "SYNTHETIC",
+  "actual_expert": true,
+  "physical_execution": false
+}

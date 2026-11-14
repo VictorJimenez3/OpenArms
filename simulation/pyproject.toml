@@ -14,7 +14,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+recording = ["pandas", "pyarrow"]
+dev = ["pytest", "pandas", "pyarrow"]
 
 [build-system]
 requires = ["setuptools>=68"]

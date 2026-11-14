@@ -1,26 +1,22 @@
 # OpenArms
 
-A HackPrinceton project for accessible, student-directed lab work. The [student lab runbook](docs/LAB_RUNBOOK.md) is the primary setup: continuous Gemini Live voice, text controls, experiment lessons, confirmed mock actions, quizzes, and a persistent notebook. Start it with `.venv/bin/python -m agentic.openarms_lab`, then open <http://127.0.0.1:8000>.
+The product gives students control of accessible lab work through responsive conversation, camera-aware expert tools and fast, improving reusable skills. Start with [the runbook](docs/LAB_RUNBOOK.md) to run the app. Read [the architecture](docs/ARCHITECTURE.md) before assigning work and [the consolidation ledger](docs/MAIN_INTEGRATION.md) before merging branches.
 
-The [mandarin phone demo](research/joseph/mandarin-transfer-handoff.md) documents the older SwiftUI/Whisper path. Physical bench work and its separate operator approval remain in the [wet-lab guide](docs/WET_LAB.md). Simulation is deferred.
+**The physical demo is a student-directed two-vessel A→C pour, donor return and HOME.** Preferred Smartivity magic-tea/citric-acid chemistry and fallback fizz still need actual preparation and outcome verification. Use water for calibration. [Project](docs/PROJECT.md) owns the current definition and [wet-lab](docs/WET_LAB.md) the physical checks. First-minute physical action is an unmet target. Prediction and reflection are optional.
 
-**Physical result:** On November 14 the SO-101 picked up a mandarin from C and placed it at B on the red card. The [run evidence, actual poses, logs and camera frames](research/joseph/mandarin-transfer-2026-11-14/README.md) document the successful supervised, camera-assisted transfer using local `bench-a.json` checkpoints and staged corrections. Phone-to-physical integration and the packaged replay have separate verification status.
+The [student app](docs/LAB_RUNBOOK.md) uses one Mac/iPhone session, an image-aware Codex expert, and a persistent notebook. It includes a synthetic regression fixture. MuJoCo is the active development simulator; Isaac is parked. The current local integration adds a water-only carried-donor simulation with fresh camera checks and replay-backed skill admission; start it with `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`. The older fixed-dispenser regression remains available. Geometry is provisional and kit chemistry is unimplemented; [the integration ledger](docs/MAIN_INTEGRATION.md) separates local integration from main and pending acceptance. The simplified student view centers on camera, Talk and Stop; `/developer` adds agent evidence and diagnostics, plus simulation frames when that backend is selected. Hardware execution is disabled. Gemini Live provides speech when configured; expert inference is independently selectable. Actual-device acceptance remains open. Observed simulation colors are not physical measurements. The [full delivery contract](docs/FULL_SYSTEM_DELIVERY.md) tracks perception, feedback to both agents, skill admission, reuse and evaluated improvement, including remaining device acceptance. The [session contract](docs/INTERFACES.md) describes their shared transport.
+
+Mandarin transfer is historical hardware evidence, not a student experiment. A supervised C→B transfer succeeded once; its [poses, logs and camera evidence](research/joseph/mandarin-transfer-2026-11-14/README.md) remain preserved. Actual kit/bench qualification is separate in the [wet-lab guide](docs/WET_LAB.md).
 
 ## Where to start
 
-Pull `main`, create a branch for your work, and start in your area. Ownership is provisional.
+Start in your own Git worktree and task branch. Check the [ownership table](AGENTS.md#ownership) before editing and use the [team work plan](docs/TEAM_WORK_PLAN.md) for current handoffs. Victor handles changes to `main`.
 
-| Code | Owner | Research |
-| --- | --- | --- |
-| [`firmware/`](firmware/) | Joseph | [`research/joseph/`](research/joseph/) |
-| [`simulation/`](simulation/) | Stefanie | [`research/stefanie/`](research/stefanie/) |
-| [`agentic/`](agentic/) | Duc | [`research/duc/`](research/duc/) |
-| [`ui/`](ui/) | Victor | [`research/victor/`](research/victor/) |
+Save findings and evidence using the [research guide](research/README.md). Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
 
-Put research notes and source links in your folder. Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
-
+- [Agent instructions](AGENTS.md) cover edit scope, working in parallel, and handoffs.
 - [Project](docs/PROJECT.md) has the demo goal and open decisions.
-- [Architecture and team to-do](docs/ARCHITECTURE.md) covers component ownership, the command flow, and issues you can claim.
+- [Architecture](docs/ARCHITECTURE.md) covers the command flow; [current TODO](research/joseph/TODO.md) records priorities, owners and evidence.
 - [Interfaces](docs/INTERFACES.md) is where we record examples shared between areas.
 - [Arm setup and teleoperation](firmware/README.md) covers LeRobot, calibration, and the physical arms.
 - [Wet-lab bring-up and training](docs/WET_LAB.md) covers the first water pour, demo scopes, and reuse across recorded takes.

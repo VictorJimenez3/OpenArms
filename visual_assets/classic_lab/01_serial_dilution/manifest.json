@@ -1,0 +1,625 @@
+{
+  "experiment": "serial_dilution",
+  "scientific_status": "ILLUSTRATIVE / MODEL-PREDICTED, staged colored-water result. No fluid simulation or measured result.",
+  "units": "metres",
+  "up_axis": "Z",
+  "tabletop_z_m": 0,
+  "table_dimensions_m": [
+    1,
+    0.75,
+    0.044
+  ],
+  "table_center_m": [
+    0.12,
+    0,
+    -0.022
+  ],
+  "default_prim": "/ClassicLab",
+  "robot_in_environment": false,
+  "physics_apis": false,
+  "robot_preview": {
+    "source": "../assets/Robot_STATIC_ART_ONLY.usdc",
+    "translation_m": [
+      -0.05,
+      0,
+      -0.03008145
+    ],
+    "added_yaw_degrees": 0,
+    "articulation": "not evaluated",
+    "camera_mounted": false
+  },
+  "runtime_base_reference_m": [
+    -0.05,
+    0,
+    0
+  ],
+  "groups": [
+    "Bench",
+    "Dilution_station",
+    "Dosing_fixture",
+    "Stock_and_water",
+    "Cameras",
+    "Lighting",
+    "Robot_ART_ONLY",
+    "Preview_annotation"
+  ],
+  "apparatus": {
+    "beakers": {
+      "quantity": 5,
+      "outer_radius_m": 0.0228,
+      "inner_radius_m": 0.0216,
+      "height_m": 0.092,
+      "nominal_capacity_mL": 125,
+      "final_volume_mL": 50,
+      "centers_m": [
+        [
+          0.17,
+          -0.105,
+          0.009
+        ],
+        [
+          0.24,
+          -0.105,
+          0.009
+        ],
+        [
+          0.31,
+          -0.105,
+          0.009
+        ],
+        [
+          0.38,
+          -0.105,
+          0.009
+        ],
+        [
+          0.45,
+          -0.105,
+          0.009
+        ]
+      ],
+      "final_relative_concentrations": [
+        0.5,
+        0.25,
+        0.125,
+        0.0625,
+        0.03125
+      ]
+    },
+    "stock_flask_center_m": [
+      0.08,
+      -0.09,
+      0.001
+    ],
+    "water_reservoir_center_m": [
+      0.44,
+      0.105,
+      0.002
+    ],
+    "guided_transfer_syringe": {
+      "nominal_mL": 50,
+      "tip_m": [
+        0.24,
+        -0.105,
+        0.092
+      ],
+      "plunger_top_m": [
+        0.24,
+        -0.105,
+        0.26
+      ]
+    }
+  },
+  "active_locations_m": {
+    "initial_source": [
+      0.08,
+      -0.09,
+      0.127
+    ],
+    "targets": [
+      [
+        0.17,
+        -0.105,
+        0.101
+      ],
+      [
+        0.24,
+        -0.105,
+        0.101
+      ],
+      [
+        0.31,
+        -0.105,
+        0.101
+      ],
+      [
+        0.38,
+        -0.105,
+        0.101
+      ],
+      [
+        0.45,
+        -0.105,
+        0.101
+      ]
+    ],
+    "fixture_plunger": [
+      0.24,
+      -0.105,
+      0.26
+    ]
+  },
+  "reach_qualification": "Pending; outer vessels and tall plunger require fixture relocation or qualified controller. No verified robot reach, grasp or motion.",
+  "color_model": "Each equal-volume serial dilution halves concentration; material palette is perceptually exaggerated for illustration and is not calibrated absorbance.",
+  "result_staging": "Five completed steps shown with equal 50 mL remaining after transfer/discard. Syringe is a static ready pose.",
+  "cameras": {
+    "Front": {
+      "position_m": [
+        0.7200000286102295,
+        -1.100000023841858,
+        0.5299999713897705
+      ],
+      "rotation_xyz_radians": [
+        1.231201171875,
+        -2.1385773152360343e-08,
+        0.465506374835968
+      ],
+      "lens_mm": 49.0,
+      "world_matrix_row_major": [
+        [
+          0.8935943841934204,
+          -0.1495228260755539,
+          0.42323988676071167,
+          0.7200000286102295
+        ],
+        [
+          0.4488753378391266,
+          0.29766109585762024,
+          -0.8425608277320862,
+          -1.100000023841858
+        ],
+        [
+          2.1385773152360343e-08,
+          0.9428895711898804,
+          0.3331053853034973,
+          0.5299999713897705
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "resolution_px": [
+        1600,
+        1000
+      ]
+    },
+    "Overhead": {
+      "position_m": [
+        0.14000000059604645,
+        0.03500000014901161,
+        1.25
+      ],
+      "rotation_xyz_radians": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lens_mm": 44.0,
+      "world_matrix_row_major": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.14000000059604645
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.03500000014901161
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.25
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "resolution_px": [
+        1600,
+        1000
+      ]
+    },
+    "Result": {
+      "position_m": [
+        0.5400000214576721,
+        -0.8299999833106995,
+        0.4000000059604645
+      ],
+      "rotation_xyz_radians": [
+        1.1985234022140503,
+        -3.1777410924860305e-08,
+        0.3257991671562195
+      ],
+      "lens_mm": 66.0,
+      "world_matrix_row_major": [
+        [
+          0.9473952651023865,
+          -0.11641879379749298,
+          0.2981424331665039,
+          0.5400000214576721
+        ],
+        [
+          0.32006600499153137,
+          0.34459948539733887,
+          -0.8825015425682068,
+          -0.8299999833106995
+        ],
+        [
+          3.1777410924860305e-08,
+          0.9315029978752136,
+          0.3637336194515228,
+          0.4000000059604645
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "resolution_px": [
+        1600,
+        1000
+      ]
+    }
+  },
+  "runtime_handoff": {
+    "student_variable": "transfer volume at fixed 50 mL preloaded water",
+    "conditions": [
+      {
+        "name": "A shown",
+        "transfer_mL": 50,
+        "water_mL": 50,
+        "concentrations": [
+          0.5,
+          0.25,
+          0.125,
+          0.0625,
+          0.03125
+        ]
+      },
+      {
+        "name": "B comparison",
+        "transfer_mL": 25,
+        "water_mL": 50,
+        "concentrations": [
+          0.3333333333333333,
+          0.1111111111111111,
+          0.037037037037037035,
+          0.012345679012345678,
+          0.00411522633744856
+        ]
+      }
+    ],
+    "observable": "relative concentration by dilution count; visible blue is qualitative and uncalibrated",
+    "static_prim_paths": [
+      "/ClassicLab/Bench",
+      "/ClassicLab/Dilution_station/Ordered_five_position_rack_base",
+      "/ClassicLab/Dosing_fixture/Fixture_steel_foot",
+      "/ClassicLab/Dosing_fixture/Stand_upright"
+    ],
+    "movable_vessels": [
+      {
+        "prim_path": "/ClassicLab/Dilution_station/Vessel_01",
+        "origin_m": [
+          0.17,
+          -0.105,
+          0.009
+        ],
+        "rotation_xyz_radians": [
+          0,
+          0,
+          0
+        ],
+        "grasp_band_world_z_m": [
+          0.064,
+          0.084
+        ],
+        "grasp_outer_diameter_m": 0.0456,
+        "adjacent_wall_gap_m": 0.0244,
+        "grasp_qualified": false,
+        "usd_world_matrix_row_major": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.17000000178813934,
+            -0.10499999672174454,
+            0.008999999612569809,
+            1.0
+          ]
+        ]
+      },
+      {
+        "prim_path": "/ClassicLab/Dilution_station/Vessel_02",
+        "origin_m": [
+          0.24,
+          -0.105,
+          0.009
+        ],
+        "rotation_xyz_radians": [
+          0,
+          0,
+          0
+        ],
+        "grasp_band_world_z_m": [
+          0.064,
+          0.084
+        ],
+        "grasp_outer_diameter_m": 0.0456,
+        "adjacent_wall_gap_m": 0.0244,
+        "grasp_qualified": false,
+        "usd_world_matrix_row_major": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.23999999463558197,
+            -0.10499999672174454,
+            0.008999999612569809,
+            1.0
+          ]
+        ]
+      },
+      {
+        "prim_path": "/ClassicLab/Dilution_station/Vessel_03",
+        "origin_m": [
+          0.31,
+          -0.105,
+          0.009
+        ],
+        "rotation_xyz_radians": [
+          0,
+          0,
+          0
+        ],
+        "grasp_band_world_z_m": [
+          0.064,
+          0.084
+        ],
+        "grasp_outer_diameter_m": 0.0456,
+        "adjacent_wall_gap_m": 0.0244,
+        "grasp_qualified": false,
+        "usd_world_matrix_row_major": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.3100000023841858,
+            -0.10499999672174454,
+            0.008999999612569809,
+            1.0
+          ]
+        ]
+      },
+      {
+        "prim_path": "/ClassicLab/Dilution_station/Vessel_04",
+        "origin_m": [
+          0.38,
+          -0.105,
+          0.009
+        ],
+        "rotation_xyz_radians": [
+          0,
+          0,
+          0
+        ],
+        "grasp_band_world_z_m": [
+          0.064,
+          0.084
+        ],
+        "grasp_outer_diameter_m": 0.0456,
+        "adjacent_wall_gap_m": 0.0244,
+        "grasp_qualified": false,
+        "usd_world_matrix_row_major": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.3799999952316284,
+            -0.10499999672174454,
+            0.008999999612569809,
+            1.0
+          ]
+        ]
+      },
+      {
+        "prim_path": "/ClassicLab/Dilution_station/Vessel_05",
+        "origin_m": [
+          0.45,
+          -0.105,
+          0.009
+        ],
+        "rotation_xyz_radians": [
+          0,
+          0,
+          0
+        ],
+        "grasp_band_world_z_m": [
+          0.064,
+          0.084
+        ],
+        "grasp_outer_diameter_m": 0.0456,
+        "adjacent_wall_gap_m": 0.0244,
+        "grasp_qualified": false,
+        "usd_world_matrix_row_major": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.44999998807907104,
+            -0.10499999672174454,
+            0.008999999612569809,
+            1.0
+          ]
+        ]
+      }
+    ],
+    "dosing_barrel_prim": "/ClassicLab/Dosing_fixture/_50mL_syringe_clear_barrel",
+    "plunger_prim": "/ClassicLab/Dosing_fixture/Syringe_plunger_rod",
+    "source_prim": "/ClassicLab/Stock_and_water/Stock_flask_glass",
+    "source_opening_world_m": [
+      0.08,
+      -0.09,
+      0.127
+    ],
+    "source_neck_inner_diameter_m": 0.023,
+    "target_openings_world_m": [
+      [
+        0.17,
+        -0.105,
+        0.101
+      ],
+      [
+        0.24,
+        -0.105,
+        0.101
+      ],
+      [
+        0.31,
+        -0.105,
+        0.101
+      ],
+      [
+        0.38,
+        -0.105,
+        0.101
+      ],
+      [
+        0.45,
+        -0.105,
+        0.101
+      ]
+    ],
+    "target_inner_diameter_m": 0.0432,
+    "dependencies": {
+      "environment_usd": [],
+      "preview_blend": [],
+      "regeneration_robot": "../assets/Robot_STATIC_ART_ONLY.usdc"
+    },
+    "missing": [
+      "articulated robot",
+      "collision and mass",
+      "dosing fixture constraint",
+      "reach and collision qualification",
+      "dosing/mixing science state model",
+      "controller",
+      "calibrated optical model",
+      "measured success"
+    ],
+    "outcome_meshes": "illustrative visual geometry only, excluded from evidence of runtime success"
+  },
+  "usd_prim_paths_verified": [
+    "/ClassicLab/Bench",
+    "/ClassicLab/Dilution_station/Ordered_five_position_rack_base",
+    "/ClassicLab/Dosing_fixture/Fixture_steel_foot",
+    "/ClassicLab/Dosing_fixture/Stand_upright",
+    "/ClassicLab/Dosing_fixture/_50mL_syringe_clear_barrel",
+    "/ClassicLab/Dosing_fixture/Syringe_plunger_rod",
+    "/ClassicLab/Stock_and_water/Stock_flask_glass",
+    "/ClassicLab/Dilution_station/Vessel_01",
+    "/ClassicLab/Dilution_station/Vessel_02",
+    "/ClassicLab/Dilution_station/Vessel_03",
+    "/ClassicLab/Dilution_station/Vessel_04",
+    "/ClassicLab/Dilution_station/Vessel_05"
+  ],
+  "usd_dependencies_verified": {
+    "external_assets": [],
+    "unresolved": []
+  }
+}

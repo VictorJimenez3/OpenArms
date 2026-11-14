@@ -1,0 +1,7 @@
+JobID|JobName|State|ExitCode|Elapsed|AllocTRES
+1273420|openarms-contact-session|CANCELLED by 1905244589|0:0|00:24:08|billing=1,cpu=2,gres/gpu=1,mem=32G,node=1
+1273420.batch|batch|CANCELLED|0:0|00:24:08|cpu=2,gres/gpu=1,mem=32G,node=1
+1273420.extern|extern|CANCELLED|0:0|00:24:08|billing=1,cpu=2,gres/gpu=1,mem=32G,node=1
+1273420.0|bash|COMPLETED|0:0|00:01:01|cpu=2,gres/gpu=1,mem=32G,node=1
+1273420.1|bash|COMPLETED|0:0|00:01:04|cpu=2,gres/gpu=1,mem=32G,node=1
+1273420.2|env|COMPLETED|0:0|00:02:40|cpu=2,gres/gpu=1,mem=32G,node=1

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -97,8 +98,13 @@ def _segments(script: list, home: dict, jm: JointMap, seconds: float, source: st
     A target is the five arm joints, the gripper alone, or a number (hold still that many
     seconds). `labels` names the arm step each target belongs to, e.g. "pick(A)"; without
     it the script is taken to be one pick at `source` and one place at `destination`."""
+    if isinstance(seconds, bool) or not isinstance(seconds, (int, float)) or not math.isfinite(seconds) or not 0 < seconds <= 60:
+        raise ValueError('Motion duration must be finite and between zero and 60 seconds.')
+    if labels is not None and (not isinstance(labels, list) or len(labels) != len(script) or
+                               any(not isinstance(label, str) or not label.strip() for label in labels)):
+        raise ValueError('labels must name every target in the script')
     arm = _arm(home)
-    first_grip = next((t[GRIPPER] for t in script if isinstance(t, dict) and set(t) == {GRIPPER}), 50.0)
+    first_grip = script[0].get(GRIPPER, 50.0) if script and isinstance(script[0], dict) else 50.0
     grip = float(home.get(GRIPPER, first_grip))
     q = np.array(jm.pose_to_model(arm))
     out, held, released = [], False, False
@@ -115,6 +121,8 @@ def _segments(script: list, home: dict, jm: JointMap, seconds: float, source: st
         else:
             index, step = 0, f"pick({source})"
         if isinstance(target, (int, float)):
+            if isinstance(target, bool) or not math.isfinite(target) or not 0 <= target <= 60:
+                raise ValueError('Hold duration must be finite and between zero and 60 seconds.')
             out.append(Segment(index, step, "wait", q, q, grip, grip, float(target), None))
         elif set(target) == {GRIPPER}:
             new = float(target[GRIPPER])

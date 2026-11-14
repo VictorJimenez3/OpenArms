@@ -1,0 +1,57 @@
+# The live demo bench, from the photo outputs/camera/live_demo.jpg (2026-11-14): a small
+# beaker (the cup the arm holds) and a wide round container (the receiver), with two
+# 30 cm rulers taped in an L as the bench's coordinate axes.
+#
+# Positions are in RULER centimetres, so they can be read straight off the rulers and
+# edited here when things move:
+#   origin = inner corner of the L; X along one ruler, Y along the other
+#   (standing at the open side of the L: X to the right, Y toward you).
+# Read the centre of each container's base against both rulers.
+#
+# MEASURED from the photo, using the rulers' millimetre marks for scale. The photo was
+# taken at a tilt (the scale runs from 7.4 to 9.9 px/mm across it), so:
+#   widths are good to about +/- 0.5 cm, heights (from parallax) to about +/- 1 cm.
+# Check them with the ruler against the real pieces.
+#
+# The arm's place (ruler_frame) is from outputs/camera/live_demo_2.jpg, flattened to a true
+# top-down view with `python -m firmware.openarms_camera locate`. The base plate, which lies
+# on the table, shows to the left of the arm from X 11.5 and from Y 33; the swivel axis is
+# 5.5 cm in from the plate's side and 2.6 cm back from its front, so about (17, 35.5).
+# The marker in that photo touches a raised part of the arm, so it reads further forward than
+# the base really is. Direction: base to gripper tip (11.3, 1.8). Good to about 1.5 cm, 5 degrees.
+
+table:
+  size: [0.70, 0.90]
+  center: [0.20, 0.0]
+
+ruler_frame:
+  # Corrected 2026-11-14 from a pour recorded on the real arm (outputs/pour-take-1.json, beaker at
+  # (22.3, 7.6), container at (5.8, 7.6)): the recorded grasp only lands on the beaker if the arm
+  # faces the X ruler almost squarely. The earlier -100 was the direction the gripper happened to
+  # point in the photo, not the base's own forward direction.
+  arm_cm: [17.0, 36.0]        # the arm's base axis (shoulder pan), in ruler centimetres
+  arm_heading_deg: -88        # the base's forward direction (shoulder pan at zero)
+
+containers:
+  mini_cup:                   # the small beaker (about 50 mL): rim 4.5 cm, base 3.2 cm, about 4.7 cm tall
+    radius: 0.0195            # at the height where it is gripped
+    height: 0.047
+  receiver:                   # the wide round container marked 100 mL: rim 8.4 cm, base 6.0 cm, about 3.0 cm tall
+    radius: 0.041
+    height: 0.030
+    capacity_portions: 4
+
+stations:
+  # Updated by `python -m firmware.openarms_camera locate --apply`. Photographed at A (4.8, 4.1), C (5.6, 12.8).
+  A: {kind: source,   ruler: [22.3, 7.6],  contents: {citric_acid: 1}}
+  C: {kind: receiver, ruler: [5.8, 7.6], contents: {baking_soda: 1, liquid_soap: 1, red_colour: 1}}
+
+grasp:
+  # Matched to the recorded real pour, so the solved poses resemble what the arm really did there.
+  height: 0.025               # above the table, when the beaker stands on it. Recorded: about 1.6 cm, but at 2 cm
+                              # the simulated gripper scrapes the table in other layouts, so this stays at 2.5.
+  lift: 0.100
+  tip_angle_deg: 90           # recorded: the wrist rolled a quarter turn to pour
+  pour_clearance: 0.055       # recorded: the gripper was 8.5 cm above the table while pouring
+  wrist_roll_deg: 180         # recorded: the gripper holds the beaker this way up (wrist roll near -90 on the arm)
+  pour_offset: 0.030          # recorded: the beaker pours about 3 cm from the container's centre, not over the middle

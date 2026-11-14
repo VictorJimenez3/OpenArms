@@ -1,0 +1,25 @@
+{
+  "request_id": "d81ef174-ea5c-46ad-bc47-9058d6f7034c",
+  "backend": "simulated",
+  "status": "completed",
+  "operator_authorized": false,
+  "controller_completed": true,
+  "physical_success": null,
+  "observation": {
+    "provenance": "SIMULATED",
+    "source": "Isaac execution receipt",
+    "text": "The 40 g block produced 0.3924 N of measured support force in simulation.",
+    "value": {
+      "condition": "heavy",
+      "mass_kg": 0.04,
+      "mean_support_force_N": 0.39239999183938523,
+      "expected_weight_N": 0.3924,
+      "expected_weight_provenance": "ANALYTIC_PREDICTION"
+    },
+    "evidence": [
+      "/common/users/jdr317/openarms-isaac/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/receipt.json",
+      "/common/users/jdr317/openarms-isaac/evidence/job-1273420-heavy-20261114T153817Z-3955121/experiment.json"
+    ]
+  },
+  "reason": null
+}

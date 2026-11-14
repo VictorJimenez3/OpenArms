@@ -1,0 +1,4702 @@
+{
+  "file": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/01_serial_dilution/Environment.usdc",
+  "errors": [],
+  "warnings": [
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_borosilicate",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_water",
+    "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+    "UsdLux presence does not establish photometric or renderer equivalence"
+  ],
+  "usd_version": [
+    0,
+    26,
+    11
+  ],
+  "metersPerUnit": 1.0,
+  "upAxis": "Z",
+  "defaultPrim": "/ClassicLab",
+  "composition_errors": [],
+  "dependencies": {
+    "layers": [
+      "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/01_serial_dilution/Environment.usdc"
+    ],
+    "assets": [],
+    "unresolved": []
+  },
+  "self_contained_single_layer": true,
+  "authored_asset_paths": [],
+  "absolute_asset_paths": [],
+  "physics_or_articulation": [],
+  "bounds_time": "default",
+  "mesh_count": 195,
+  "meshes": [
+    {
+      "path": "/ClassicLab/Bench/Laboratory_bench/Cube",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.380000002682209,
+          -0.375,
+          -0.04399999976158142
+        ],
+        "max": [
+          0.619999997317791,
+          0.375,
+          0.0
+        ],
+        "size": [
+          1.0,
+          0.75,
+          0.04399999976158142
+        ]
+      },
+      "material": "/ClassicLab/_materials/Pale_laboratory_laminate"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg/Cube_001",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          -0.31750001199543476,
+          -0.7600000202655792
+        ],
+        "max": [
+          -0.29250000230968,
+          -0.28250001184642315,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg_003/Cube_004",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          0.28250001184642315,
+          -0.7600000202655792
+        ],
+        "max": [
+          0.5675000119954348,
+          0.31750001199543476,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg_001/Cube_002",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          0.28250001184642315,
+          -0.7600000202655792
+        ],
+        "max": [
+          -0.29250000230968,
+          0.31750001199543476,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Floor/Cube_005",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          -99.88000000268221,
+          -100.0,
+          -0.7999999709427357
+        ],
+        "max": [
+          100.11999999731779,
+          100.0,
+          -0.7599999718368053
+        ],
+        "size": [
+          200.0,
+          200.0,
+          0.03999999910593033
+        ]
+      },
+      "material": "/ClassicLab/_materials/Neutral_gray_floor"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg_002/Cube_003",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          -0.31750001199543476,
+          -0.7600000202655792
+        ],
+        "max": [
+          0.5675000119954348,
+          -0.28250001184642315,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_capacity_001/Beaker_3_capacity_001",
+      "points": 1136,
+      "faces": 832,
+      "world_bounds": {
+        "min": [
+          0.3045982522889972,
+          -0.12861500133967865,
+          0.08996309984814058
+        ],
+        "max": [
+          0.31618895241990685,
+          -0.12858500095827285,
+          0.09283310012160301
+        ],
+        "size": [
+          0.011590700130909681,
+          3.0000381405798082e-05,
+          0.002870000273462431
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_meniscus/Torus_010",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.2886500023305416,
+          -0.12634999677538872,
+          0.0465659893816337
+        ],
+        "max": [
+          0.33135000243782997,
+          -0.08364999666810036,
+          0.047265989356674254
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_125"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_50_print_001/Beaker_3_50_print_001",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.3113899976015091,
+          -0.12856499304235255,
+          0.04457822630666112
+        ],
+        "max": [
+          0.3148859977227403,
+          -0.12853499268890997,
+          0.04723822651630699
+        ],
+        "size": [
+          0.003496000121231191,
+          3.0000353442583005e-05,
+          0.0026600002096458727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_rolled_rim/Torus_009",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.2864000014960766,
+          -0.12859999760985374,
+          0.10000000719446689
+        ],
+        "max": [
+          0.333600003272295,
+          -0.08139999583363533,
+          0.10200000728946179
+        ],
+        "size": [
+          0.047200001776218414,
+          0.047200001776218414,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_50mL_tick/Cube_018",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.314500005915761,
+          -0.12844999457593076,
+          0.045837429352104664
+        ],
+        "max": [
+          0.3235000055283308,
+          -0.12794999455218203,
+          0.04638742934912443
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_75_print_001/Beaker_3_75_print_001",
+      "points": 336,
+      "faces": 244,
+      "world_bounds": {
+        "min": [
+          0.311386197572574,
+          -0.12856499304235255,
+          0.0616344418611369
+        ],
+        "max": [
+          0.31476439769903664,
+          -0.128534992693464,
+          0.06426024204319775
+        ],
+        "size": [
+          0.003378200126462616,
+          3.000034888855918e-05,
+          0.002625800182060843
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_100_print_001/Beaker_3_100_print_001",
+      "points": 784,
+      "faces": 584,
+      "world_bounds": {
+        "min": [
+          0.3100675977766514,
+          -0.12856499304235255,
+          0.07869065741561268
+        ],
+        "max": [
+          0.3148859977227403,
+          -0.12853499268890997,
+          0.08135065762525856
+        ],
+        "size": [
+          0.004818399946088903,
+          3.0000353442583005e-05,
+          0.0026600002096458797
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_100mL_tick/Cube_020",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.314500005915761,
+          -0.12844999457593076,
+          0.07994985301047564
+        ],
+        "max": [
+          0.3235000055283308,
+          -0.12794999455218203,
+          0.0804998530074954
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_25mL_tick/Cube_017",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.314500005915761,
+          -0.12844999457593076,
+          0.02878121379762888
+        ],
+        "max": [
+          0.3235000055283308,
+          -0.12794999455218203,
+          0.029331213794648647
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_pouring_lip/Beaker_3_spout",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.30399999022483826,
+          -0.08399999886751175,
+          0.09719501435756683
+        ],
+        "max": [
+          0.3160000145435333,
+          -0.07559750229120255,
+          0.10199999809265137
+        ],
+        "size": [
+          0.012000024318695068,
+          0.008402496576309204,
+          0.004804983735084534
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_open_glass/Beaker_3_open_glass",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.28619998693466187,
+          -0.12880000472068787,
+          0.008999999612569809
+        ],
+        "max": [
+          0.33379998803138733,
+          -0.0812000036239624,
+          0.10100000351667404
+        ],
+        "size": [
+          0.047600001096725464,
+          0.047600001096725464,
+          0.09200000390410423
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_25_print_001/Beaker_3_25_print_001",
+      "points": 668,
+      "faces": 493,
+      "world_bounds": {
+        "min": [
+          0.31132919737137854,
+          -0.12856499304235255,
+          0.02752201447747563
+        ],
+        "max": [
+          0.31476439769903664,
+          -0.12853499268890997,
+          0.030182014687121506
+        ],
+        "size": [
+          0.0034352003276580945,
+          3.0000353442583005e-05,
+          0.0026600002096458762
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_75mL_tick/Cube_019",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.314500005915761,
+          -0.12844999457593076,
+          0.06289364490658045
+        ],
+        "max": [
+          0.3235000055283308,
+          -0.12794999455218203,
+          0.06344364490360022
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_03/Beaker_3_50_mL_illustrative_solution/Cylinder_008",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2886500023305416,
+          -0.12634999677538872,
+          0.012000000104308128
+        ],
+        "max": [
+          0.33135000243782997,
+          -0.08364999666810036,
+          0.046915991231799126
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.034915991127491
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_125"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Card_repeat_001/Card_repeat_001",
+      "points": 3520,
+      "faces": 2576,
+      "world_bounds": {
+        "min": [
+          0.25614240765571594,
+          -0.2610576073930133,
+          0.0026850000704143895
+        ],
+        "max": [
+          0.35421600565314293,
+          -0.25657760724425316,
+          0.0027150000696565257
+        ],
+        "size": [
+          0.09807359799742699,
+          0.004480000148760155,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_5_ratio_001/Beaker_5_ratio_001",
+      "points": 1344,
+      "faces": 988,
+      "world_bounds": {
+        "min": [
+          0.44579198816791177,
+          -0.1480150019146396,
+          0.010942399936360623
+        ],
+        "max": [
+          0.4552831877954304,
+          -0.14798500131884937,
+          0.015422400089115482
+        ],
+        "size": [
+          0.009491199627518654,
+          3.000059579022496e-05,
+          0.004480000152754859
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_2_ratio_001/Beaker_2_ratio_001",
+      "points": 460,
+      "faces": 333,
+      "world_bounds": {
+        "min": [
+          0.23739199480041862,
+          -0.1480150019146396,
+          0.010942399936360623
+        ],
+        "max": [
+          0.2437151945196092,
+          -0.14798500131884937,
+          0.015422400089115482
+        ],
+        "size": [
+          0.0063231997191905975,
+          3.000059579022496e-05,
+          0.004480000152754859
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Transfer_sequence_arrow_shaft/Cylinder_001",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.198000006377697,
+          -0.14350000669946894,
+          0.008499999588821082
+        ],
+        "max": [
+          0.21300000697374344,
+          -0.1425000066519715,
+          0.009499999636318536
+        ],
+        "size": [
+          0.015000000596046448,
+          0.0010000000474974513,
+          0.0010000000474974548
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_1_ratio_001/Beaker_1_ratio_001",
+      "points": 756,
+      "faces": 551,
+      "world_bounds": {
+        "min": [
+          0.167392001952976,
+          -0.1480150019146396,
+          0.010942399936360623
+        ],
+        "max": [
+          0.17368320166133344,
+          -0.14798500131884937,
+          0.015422400089115482
+        ],
+        "size": [
+          0.006291199708357453,
+          3.000059579022496e-05,
+          0.004480000152754859
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_006/Cylinder_014",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.41870000035397026,
+          -0.14639999791020447,
+          0.00849999953227513
+        ],
+        "max": [
+          0.4233000072754243,
+          -0.14260000661974853,
+          0.009499999692864488
+        ],
+        "size": [
+          0.004600006921454014,
+          0.0037999912904559396,
+          0.0010000001605893587
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Card_heading_001/Card_heading_001",
+      "points": 2036,
+      "faces": 1487,
+      "world_bounds": {
+        "min": [
+          0.2619735039770603,
+          -0.22409900691855,
+          0.0026850000704143895
+        ],
+        "max": [
+          0.3476415127515793,
+          -0.21639900654554367,
+          0.0027150000696565257
+        ],
+        "size": [
+          0.08566800877451897,
+          0.007700000373006333,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_3_ratio_001/Beaker_3_ratio_001",
+      "points": 1168,
+      "faces": 868,
+      "world_bounds": {
+        "min": [
+          0.30739200254902244,
+          -0.1480150019146396,
+          0.010942399936360623
+        ],
+        "max": [
+          0.31369600212201476,
+          -0.14798500131884937,
+          0.015422400089115482
+        ],
+        "size": [
+          0.006303999572992325,
+          3.000059579022496e-05,
+          0.004480000152754859
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_5_position_badge/Cube_031",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.42099998891353607,
+          -0.14749999990453944,
+          0.005499999038875103
+        ],
+        "max": [
+          0.478999987244606,
+          -0.14649999985704198,
+          0.03249999973922968
+        ],
+        "size": [
+          0.057999998331069946,
+          0.0010000000474974513,
+          0.027000000700354576
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_3_position_badge/Cube_021",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2810000032186508,
+          -0.14749999990453944,
+          0.005499999038875103
+        ],
+        "max": [
+          0.33900000154972076,
+          -0.14649999985704198,
+          0.03249999973922968
+        ],
+        "size": [
+          0.057999998331069946,
+          0.0010000000474974513,
+          0.027000000700354576
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Procedure_card/Cube_032",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.15900000929832458,
+          -0.27950000390410423,
+          0.0004999999655410647
+        ],
+        "max": [
+          0.45100000500679016,
+          -0.1965000070631504,
+          0.0025000000605359674
+        ],
+        "size": [
+          0.2919999957084656,
+          0.08299999684095383,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead/Cylinder_002",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.20869999903934727,
+          -0.14639999800791556,
+          0.008499999255926673
+        ],
+        "max": [
+          0.21329999190074672,
+          -0.14260000652203744,
+          0.009499999969212945
+        ],
+        "size": [
+          0.004599992861399449,
+          0.003799991485878118,
+          0.0010000007132862712
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_2_number_001/Beaker_2_number_001",
+      "points": 740,
+      "faces": 551,
+      "world_bounds": {
+        "min": [
+          0.2365689945872873,
+          -0.14801500191571818,
+          0.021934299873286243
+        ],
+        "max": [
+          0.24340179492719471,
+          -0.1479850012360383,
+          0.02704430045759735
+        ],
+        "size": [
+          0.006832800339907408,
+          3.000067967987019e-05,
+          0.005110000584311106
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_007/Cylinder_015",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.41869999955998666,
+          -0.1433999990672722,
+          0.008499999180530696
+        ],
+        "max": [
+          0.4233000080694079,
+          -0.13959999330333328,
+          0.009500000044608922
+        ],
+        "size": [
+          0.004600008509421216,
+          0.0038000057639389073,
+          0.0010000008640782265
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Ordered_five_position_rack_base/Cube_006",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.1340000033378601,
+          -0.1524999961256981,
+          0.0
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.057499997317790985,
+          0.00800000037997961
+        ],
+        "size": [
+          0.35199999809265137,
+          0.0949999988079071,
+          0.00800000037997961
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_25_print_001/Beaker_4_25_print_001",
+      "points": 668,
+      "faces": 493,
+      "world_bounds": {
+        "min": [
+          0.38132919021882117,
+          -0.12856499304235255,
+          0.02752201447747563
+        ],
+        "max": [
+          0.38476439054647926,
+          -0.12853499268890997,
+          0.030182014687121506
+        ],
+        "size": [
+          0.0034352003276580945,
+          3.0000353442583005e-05,
+          0.0026600002096458762
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_100mL_tick/Cube_025",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3844999987632036,
+          -0.12844999457593076,
+          0.07994985301047564
+        ],
+        "max": [
+          0.39349999837577343,
+          -0.12794999455218203,
+          0.0804998530074954
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_open_glass/Beaker_4_open_glass",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.3562000095844269,
+          -0.12880000472068787,
+          0.008999999612569809
+        ],
+        "max": [
+          0.40380001068115234,
+          -0.0812000036239624,
+          0.10100000351667404
+        ],
+        "size": [
+          0.047600001096725464,
+          0.047600001096725464,
+          0.09200000390410423
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_25mL_tick/Cube_022",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3844999987632036,
+          -0.12844999457593076,
+          0.02878121379762888
+        ],
+        "max": [
+          0.39349999837577343,
+          -0.12794999455218203,
+          0.029331213794648647
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_100_print_001/Beaker_4_100_print_001",
+      "points": 784,
+      "faces": 584,
+      "world_bounds": {
+        "min": [
+          0.380067590624094,
+          -0.12856499304235255,
+          0.07869065741561268
+        ],
+        "max": [
+          0.3848859905701829,
+          -0.12853499268890997,
+          0.08135065762525856
+        ],
+        "size": [
+          0.004818399946088903,
+          3.0000353442583005e-05,
+          0.0026600002096458797
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_pouring_lip/Beaker_4_spout",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.37400001287460327,
+          -0.08399999886751175,
+          0.09719501435756683
+        ],
+        "max": [
+          0.38600000739097595,
+          -0.07559750229120255,
+          0.10199999809265137
+        ],
+        "size": [
+          0.01199999451637268,
+          0.008402496576309204,
+          0.004804983735084534
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_50_print_001/Beaker_4_50_print_001",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.3813899904489517,
+          -0.12856499304235255,
+          0.04457822630666112
+        ],
+        "max": [
+          0.3848859905701829,
+          -0.12853499268890997,
+          0.04723822651630699
+        ],
+        "size": [
+          0.003496000121231191,
+          3.0000353442583005e-05,
+          0.0026600002096458727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_75mL_tick/Cube_024",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3844999987632036,
+          -0.12844999457593076,
+          0.06289364490658045
+        ],
+        "max": [
+          0.39349999837577343,
+          -0.12794999455218203,
+          0.06344364490360022
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_50_mL_illustrative_solution/Cylinder_012",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.35864999517798424,
+          -0.12634999677538872,
+          0.012000000104308128
+        ],
+        "max": [
+          0.4013499952852726,
+          -0.08364999666810036,
+          0.046915991231799126
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.034915991127491
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_0625"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_75_print_001/Beaker_4_75_print_001",
+      "points": 336,
+      "faces": 244,
+      "world_bounds": {
+        "min": [
+          0.38138619042001665,
+          -0.12856499304235255,
+          0.0616344418611369
+        ],
+        "max": [
+          0.38476439054647926,
+          -0.128534992693464,
+          0.06426024204319775
+        ],
+        "size": [
+          0.003378200126462616,
+          3.000034888855918e-05,
+          0.002625800182060843
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_capacity_001/Beaker_4_capacity_001",
+      "points": 1136,
+      "faces": 832,
+      "world_bounds": {
+        "min": [
+          0.3745982451364398,
+          -0.12861500133967865,
+          0.08996309984814058
+        ],
+        "max": [
+          0.3861889452673495,
+          -0.12858500095827285,
+          0.09283310012160301
+        ],
+        "size": [
+          0.011590700130909681,
+          3.0000381405798082e-05,
+          0.002870000273462431
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_50mL_tick/Cube_023",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3844999987632036,
+          -0.12844999457593076,
+          0.045837429352104664
+        ],
+        "max": [
+          0.39349999837577343,
+          -0.12794999455218203,
+          0.04638742934912443
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_meniscus/Torus_012",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.35864999517798424,
+          -0.12634999677538872,
+          0.0465659893816337
+        ],
+        "max": [
+          0.4013499952852726,
+          -0.08364999666810036,
+          0.047265989356674254
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_0625"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_04/Beaker_4_rolled_rim/Torus_011",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.3563999943435192,
+          -0.12859999760985374,
+          0.10000000719446689
+        ],
+        "max": [
+          0.4035999961197376,
+          -0.08139999583363533,
+          0.10200000728946179
+        ],
+        "size": [
+          0.047200001776218414,
+          0.047200001776218414,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_4_position_badge/Cube_026",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.35099999606609344,
+          -0.14749999990453944,
+          0.005499999038875103
+        ],
+        "max": [
+          0.4089999943971634,
+          -0.14649999985704198,
+          0.03249999973922968
+        ],
+        "size": [
+          0.057999998331069946,
+          0.0010000000474974513,
+          0.027000000700354576
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Transfer_sequence_arrow_shaft_001/Cylinder_005",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2680000066757202,
+          -0.14350000669946894,
+          0.008499999588821082
+        ],
+        "max": [
+          0.28299999237060547,
+          -0.1425000066519715,
+          0.009499999636318536
+        ],
+        "size": [
+          0.014999985694885254,
+          0.0010000000474974513,
+          0.0010000000474974548
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_meniscus/Torus_006",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.14865000173449516,
+          -0.12634999677538872,
+          0.0465659893816337
+        ],
+        "max": [
+          0.19135000184178352,
+          -0.08364999666810036,
+          0.047265989356674254
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_5"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_rolled_rim/Torus_005",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.14640000090003014,
+          -0.12859999760985374,
+          0.10000000719446689
+        ],
+        "max": [
+          0.19360000267624855,
+          -0.08139999583363533,
+          0.10200000728946179
+        ],
+        "size": [
+          0.047200001776218414,
+          0.047200001776218414,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_50_print_001/Beaker_1_50_print_001",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.17138999700546265,
+          -0.12856499304235255,
+          0.04457822630666112
+        ],
+        "max": [
+          0.17488599712669384,
+          -0.12853499268890997,
+          0.04723822651630699
+        ],
+        "size": [
+          0.003496000121231191,
+          3.0000353442583005e-05,
+          0.0026600002096458727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_100mL_tick/Cube_010",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.17450000531971455,
+          -0.12844999457593076,
+          0.07994985301047564
+        ],
+        "max": [
+          0.18350000493228436,
+          -0.12794999455218203,
+          0.0804998530074954
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_25mL_tick/Cube_007",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.17450000531971455,
+          -0.12844999457593076,
+          0.02878121379762888
+        ],
+        "max": [
+          0.18350000493228436,
+          -0.12794999455218203,
+          0.029331213794648647
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_25_print_001/Beaker_1_25_print_001",
+      "points": 668,
+      "faces": 493,
+      "world_bounds": {
+        "min": [
+          0.1713291967753321,
+          -0.12856499304235255,
+          0.02752201447747563
+        ],
+        "max": [
+          0.1747643971029902,
+          -0.12853499268890997,
+          0.030182014687121506
+        ],
+        "size": [
+          0.0034352003276580945,
+          3.0000353442583005e-05,
+          0.0026600002096458762
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_100_print_001/Beaker_1_100_print_001",
+      "points": 784,
+      "faces": 584,
+      "world_bounds": {
+        "min": [
+          0.17006759718060493,
+          -0.12856499304235255,
+          0.07869065741561268
+        ],
+        "max": [
+          0.17488599712669384,
+          -0.12853499268890997,
+          0.08135065762525856
+        ],
+        "size": [
+          0.004818399946088903,
+          3.0000353442583005e-05,
+          0.0026600002096458797
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_pouring_lip/Beaker_1_spout",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.164000004529953,
+          -0.08399999886751175,
+          0.09719501435756683
+        ],
+        "max": [
+          0.17599999904632568,
+          -0.07559750229120255,
+          0.10199999809265137
+        ],
+        "size": [
+          0.01199999451637268,
+          0.008402496576309204,
+          0.004804983735084534
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_50mL_tick/Cube_008",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.17450000531971455,
+          -0.12844999457593076,
+          0.045837429352104664
+        ],
+        "max": [
+          0.18350000493228436,
+          -0.12794999455218203,
+          0.04638742934912443
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_open_glass/Beaker_1_open_glass",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.1462000012397766,
+          -0.12880000472068787,
+          0.008999999612569809
+        ],
+        "max": [
+          0.19380000233650208,
+          -0.0812000036239624,
+          0.10100000351667404
+        ],
+        "size": [
+          0.047600001096725464,
+          0.047600001096725464,
+          0.09200000390410423
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_75mL_tick/Cube_009",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.17450000531971455,
+          -0.12844999457593076,
+          0.06289364490658045
+        ],
+        "max": [
+          0.18350000493228436,
+          -0.12794999455218203,
+          0.06344364490360022
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_50_mL_illustrative_solution/Cylinder",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.14865000173449516,
+          -0.12634999677538872,
+          0.012000000104308128
+        ],
+        "max": [
+          0.19135000184178352,
+          -0.08364999666810036,
+          0.046915991231799126
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.034915991127491
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_5"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_75_print_001/Beaker_1_75_print_001",
+      "points": 336,
+      "faces": 244,
+      "world_bounds": {
+        "min": [
+          0.17138619697652757,
+          -0.12856499304235255,
+          0.0616344418611369
+        ],
+        "max": [
+          0.1747643971029902,
+          -0.128534992693464,
+          0.06426024204319775
+        ],
+        "size": [
+          0.003378200126462616,
+          3.000034888855918e-05,
+          0.002625800182060843
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_01/Beaker_1_capacity_001/Beaker_1_capacity_001",
+      "points": 1136,
+      "faces": 832,
+      "world_bounds": {
+        "min": [
+          0.16459825169295073,
+          -0.12861500133967865,
+          0.08996309984814058
+        ],
+        "max": [
+          0.1761889518238604,
+          -0.12858500095827285,
+          0.09283310012160301
+        ],
+        "size": [
+          0.011590700130909681,
+          3.0000381405798082e-05,
+          0.002870000273462431
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_4_number_001/Beaker_4_number_001",
+      "points": 444,
+      "faces": 333,
+      "world_bounds": {
+        "min": [
+          0.37656899518333375,
+          -0.14801500191571818,
+          0.021934299873286243
+        ],
+        "max": [
+          0.3834382954519242,
+          -0.1479850012360383,
+          0.02704430045759735
+        ],
+        "size": [
+          0.00686930026859045,
+          3.000067967987019e-05,
+          0.005110000584311106
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Rubber_anti_slip_locating_ring/Torus",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.1445000022649765,
+          -0.13049999624490738,
+          0.008499999763444066
+        ],
+        "max": [
+          0.19550000131130219,
+          -0.0794999971985817,
+          0.011499999789521098
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_002/Cylinder_006",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.27870002837373176,
+          -0.14639999765444497,
+          0.008499999218230123
+        ],
+        "max": [
+          0.28330000786589227,
+          -0.14260000687550803,
+          0.009500000006909495
+        ],
+        "size": [
+          0.004599979492160511,
+          0.003799990778936946,
+          0.0010000007886793727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Card_instruction_001/Card_instruction_001",
+      "points": 6324,
+      "faces": 4691,
+      "world_bounds": {
+        "min": [
+          0.26172250881791115,
+          -0.2456100027775392,
+          0.0026850000704143895
+        ],
+        "max": [
+          0.3486345037817955,
+          -0.23916300246492028,
+          0.0027150000696565257
+        ],
+        "size": [
+          0.08691199496388435,
+          0.006447000312618911,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_001/Cylinder_003",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.20869999811359416,
+          -0.1433999986193513,
+          0.00849999916168294
+        ],
+        "max": [
+          0.21329999282649983,
+          -0.13959999375125418,
+          0.009500000063456677
+        ],
+        "size": [
+          0.004599994712905675,
+          0.0038000048680971177,
+          0.0010000009017737364
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_75mL_tick/Cube_029",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.45449999161064625,
+          -0.12844999457593076,
+          0.06289364490658045
+        ],
+        "max": [
+          0.46349999122321606,
+          -0.12794999455218203,
+          0.06344364490360022
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_50_print_001/Beaker_5_50_print_001",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.45139001309871674,
+          -0.12856499304235255,
+          0.04457822630666112
+        ],
+        "max": [
+          0.4548860132199479,
+          -0.12853499268890997,
+          0.04723822651630699
+        ],
+        "size": [
+          0.003496000121231191,
+          3.0000353442583005e-05,
+          0.0026600002096458727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_50_mL_illustrative_solution/Cylinder_016",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.42864998802542686,
+          -0.12634999677538872,
+          0.012000000104308128
+        ],
+        "max": [
+          0.4713499881327152,
+          -0.08364999666810036,
+          0.046915991231799126
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.034915991127491
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_03125"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_25_print_001/Beaker_5_25_print_001",
+      "points": 668,
+      "faces": 493,
+      "world_bounds": {
+        "min": [
+          0.4513292128685862,
+          -0.12856499304235255,
+          0.02752201447747563
+        ],
+        "max": [
+          0.4547644131962443,
+          -0.12853499268890997,
+          0.030182014687121506
+        ],
+        "size": [
+          0.0034352003276580945,
+          3.0000353442583005e-05,
+          0.0026600002096458762
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_100_print_001/Beaker_5_100_print_001",
+      "points": 784,
+      "faces": 584,
+      "world_bounds": {
+        "min": [
+          0.450067613273859,
+          -0.12856499304235255,
+          0.07869065741561268
+        ],
+        "max": [
+          0.4548860132199479,
+          -0.12853499268890997,
+          0.08135065762525856
+        ],
+        "size": [
+          0.004818399946088903,
+          3.0000353442583005e-05,
+          0.0026600002096458797
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_50mL_tick/Cube_028",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.45449999161064625,
+          -0.12844999457593076,
+          0.045837429352104664
+        ],
+        "max": [
+          0.46349999122321606,
+          -0.12794999455218203,
+          0.04638742934912443
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_meniscus/Torus_014",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.42864998802542686,
+          -0.12634999677538872,
+          0.0465659893816337
+        ],
+        "max": [
+          0.4713499881327152,
+          -0.08364999666810036,
+          0.047265989356674254
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_03125"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_rolled_rim/Torus_013",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.42639998719096184,
+          -0.12859999760985374,
+          0.10000000719446689
+        ],
+        "max": [
+          0.47359998896718025,
+          -0.08139999583363533,
+          0.10200000728946179
+        ],
+        "size": [
+          0.047200001776218414,
+          0.047200001776218414,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_100mL_tick/Cube_030",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.45449999161064625,
+          -0.12844999457593076,
+          0.07994985301047564
+        ],
+        "max": [
+          0.46349999122321606,
+          -0.12794999455218203,
+          0.0804998530074954
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_75_print_001/Beaker_5_75_print_001",
+      "points": 336,
+      "faces": 244,
+      "world_bounds": {
+        "min": [
+          0.45138621306978166,
+          -0.12856499304235255,
+          0.0616344418611369
+        ],
+        "max": [
+          0.4547644131962443,
+          -0.128534992693464,
+          0.06426024204319775
+        ],
+        "size": [
+          0.003378200126462616,
+          3.000034888855918e-05,
+          0.002625800182060843
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_25mL_tick/Cube_027",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.45449999161064625,
+          -0.12844999457593076,
+          0.02878121379762888
+        ],
+        "max": [
+          0.46349999122321606,
+          -0.12794999455218203,
+          0.029331213794648647
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_capacity_001/Beaker_5_capacity_001",
+      "points": 1136,
+      "faces": 832,
+      "world_bounds": {
+        "min": [
+          0.4445982379838824,
+          -0.12861500133967865,
+          0.08996309984814058
+        ],
+        "max": [
+          0.4561889381147921,
+          -0.12858500095827285,
+          0.09283310012160301
+        ],
+        "size": [
+          0.011590700130909681,
+          3.0000381405798082e-05,
+          0.002870000273462431
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_pouring_lip/Beaker_5_spout",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.4440000057220459,
+          -0.08399999886751175,
+          0.09719501435756683
+        ],
+        "max": [
+          0.4560000002384186,
+          -0.07559750229120255,
+          0.10199999809265137
+        ],
+        "size": [
+          0.01199999451637268,
+          0.008402496576309204,
+          0.004804983735084534
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_05/Beaker_5_open_glass/Beaker_5_open_glass",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.4262000024318695,
+          -0.12880000472068787,
+          0.008999999612569809
+        ],
+        "max": [
+          0.47380000352859497,
+          -0.0812000036239624,
+          0.10100000351667404
+        ],
+        "size": [
+          0.047600001096725464,
+          0.047600001096725464,
+          0.09200000390410423
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Rubber_anti_slip_locating_ring_001/Torus_001",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.21449999511241913,
+          -0.13049999624490738,
+          0.008499999763444066
+        ],
+        "max": [
+          0.2654999941587448,
+          -0.0794999971985817,
+          0.011499999789521098
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_1_position_badge/Cube_011",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.14100000262260437,
+          -0.14749999990453944,
+          0.005499999038875103
+        ],
+        "max": [
+          0.19900000095367432,
+          -0.14649999985704198,
+          0.03249999973922968
+        ],
+        "size": [
+          0.057999998331069946,
+          0.0010000000474974513,
+          0.027000000700354576
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Transfer_sequence_arrow_shaft_002/Cylinder_009",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.33799999952316284,
+          -0.14350000669946894,
+          0.008499999588821082
+        ],
+        "max": [
+          0.3529999852180481,
+          -0.1425000066519715,
+          0.009499999636318536
+        ],
+        "size": [
+          0.014999985694885254,
+          0.0010000000474974513,
+          0.0010000000474974548
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Rubber_anti_slip_locating_ring_004/Torus_004",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.4244999885559082,
+          -0.13049999624490738,
+          0.008499999763444066
+        ],
+        "max": [
+          0.4754999876022339,
+          -0.0794999971985817,
+          0.011499999789521098
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_003/Cylinder_007",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2787000276090519,
+          -0.14339999842212997,
+          0.008499999569972421
+        ],
+        "max": [
+          0.28330000863057214,
+          -0.1395999939484755,
+          0.009499999655167197
+        ],
+        "size": [
+          0.004599981021520261,
+          0.0038000044736544725,
+          0.0010000000851947757
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_25mL_tick/Cube_012",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.24449999816715717,
+          -0.12844999457593076,
+          0.02878121379762888
+        ],
+        "max": [
+          0.253499997779727,
+          -0.12794999455218203,
+          0.029331213794648647
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_pouring_lip/Beaker_2_spout",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23399999737739563,
+          -0.08399999886751175,
+          0.09719501435756683
+        ],
+        "max": [
+          0.2460000067949295,
+          -0.07559750229120255,
+          0.10199999809265137
+        ],
+        "size": [
+          0.012000009417533875,
+          0.008402496576309204,
+          0.004804983735084534
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_25_print_001/Beaker_2_25_print_001",
+      "points": 668,
+      "faces": 493,
+      "world_bounds": {
+        "min": [
+          0.24132920452393591,
+          -0.12856499304235255,
+          0.02752201447747563
+        ],
+        "max": [
+          0.244764404851594,
+          -0.12853499268890997,
+          0.030182014687121506
+        ],
+        "size": [
+          0.0034352003276580945,
+          3.0000353442583005e-05,
+          0.0026600002096458762
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_open_glass/Beaker_2_open_glass",
+      "points": 768,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.21619999408721924,
+          -0.12880000472068787,
+          0.008999999612569809
+        ],
+        "max": [
+          0.2637999951839447,
+          -0.0812000036239624,
+          0.10100000351667404
+        ],
+        "size": [
+          0.047600001096725464,
+          0.047600001096725464,
+          0.09200000390410423
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_50_print_001/Beaker_2_50_print_001",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.24139000475406647,
+          -0.12856499304235255,
+          0.04457822630666112
+        ],
+        "max": [
+          0.24488600487529766,
+          -0.12853499268890997,
+          0.04723822651630699
+        ],
+        "size": [
+          0.003496000121231191,
+          3.0000353442583005e-05,
+          0.0026600002096458727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_50_mL_illustrative_solution/Cylinder_004",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2186499945819378,
+          -0.12634999677538872,
+          0.012000000104308128
+        ],
+        "max": [
+          0.26134999468922615,
+          -0.08364999666810036,
+          0.046915991231799126
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.034915991127491
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_25"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_100_print_001/Beaker_2_100_print_001",
+      "points": 784,
+      "faces": 584,
+      "world_bounds": {
+        "min": [
+          0.24006760492920876,
+          -0.12856499304235255,
+          0.07869065741561268
+        ],
+        "max": [
+          0.24488600487529766,
+          -0.12853499268890997,
+          0.08135065762525856
+        ],
+        "size": [
+          0.004818399946088903,
+          3.0000353442583005e-05,
+          0.0026600002096458797
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_75mL_tick/Cube_014",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.24449999816715717,
+          -0.12844999457593076,
+          0.06289364490658045
+        ],
+        "max": [
+          0.253499997779727,
+          -0.12794999455218203,
+          0.06344364490360022
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_50mL_tick/Cube_013",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.24449999816715717,
+          -0.12844999457593076,
+          0.045837429352104664
+        ],
+        "max": [
+          0.253499997779727,
+          -0.12794999455218203,
+          0.04638742934912443
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_meniscus/Torus_008",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.2186499945819378,
+          -0.12634999677538872,
+          0.0465659893816337
+        ],
+        "max": [
+          0.26134999468922615,
+          -0.08364999666810036,
+          0.047265989356674254
+        ],
+        "size": [
+          0.04270000010728836,
+          0.04270000010728836,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_0_25"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_rolled_rim/Torus_007",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.21639999374747276,
+          -0.12859999760985374,
+          0.10000000719446689
+        ],
+        "max": [
+          0.2635999955236912,
+          -0.08139999583363533,
+          0.10200000728946179
+        ],
+        "size": [
+          0.047200001776218414,
+          0.047200001776218414,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_capacity_001/Beaker_2_capacity_001",
+      "points": 1136,
+      "faces": 832,
+      "world_bounds": {
+        "min": [
+          0.23459824454039335,
+          -0.12861500133967865,
+          0.08996309984814058
+        ],
+        "max": [
+          0.24618894467130303,
+          -0.12858500095827285,
+          0.09283310012160301
+        ],
+        "size": [
+          0.011590700130909681,
+          3.0000381405798082e-05,
+          0.002870000273462431
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_75_print_001/Beaker_2_75_print_001",
+      "points": 336,
+      "faces": 244,
+      "world_bounds": {
+        "min": [
+          0.2413862047251314,
+          -0.12856499304235255,
+          0.0616344418611369
+        ],
+        "max": [
+          0.244764404851594,
+          -0.128534992693464,
+          0.06426024204319775
+        ],
+        "size": [
+          0.003378200126462616,
+          3.000034888855918e-05,
+          0.002625800182060843
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Vessel_02/Beaker_2_100mL_tick/Cube_015",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.24449999816715717,
+          -0.12844999457593076,
+          0.07994985301047564
+        ],
+        "max": [
+          0.253499997779727,
+          -0.12794999455218203,
+          0.0804998530074954
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0005499999970197678
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_005/Cylinder_011",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3487000204564945,
+          -0.14339999842212997,
+          0.008499999569972421
+        ],
+        "max": [
+          0.35330000147801477,
+          -0.1395999939484755,
+          0.009499999655167197
+        ],
+        "size": [
+          0.004599981021520261,
+          0.0038000044736544725,
+          0.0010000000851947757
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_1_number_001/Beaker_1_number_001",
+      "points": 400,
+      "faces": 296,
+      "world_bounds": {
+        "min": [
+          0.16656900173984468,
+          -0.14801500191571818,
+          0.021934299873286243
+        ],
+        "max": [
+          0.17219000193290412,
+          -0.1479850012360383,
+          0.02704430045759735
+        ],
+        "size": [
+          0.005621000193059444,
+          3.000067967987019e-05,
+          0.005110000584311106
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_3_number_001/Beaker_3_number_001",
+      "points": 972,
+      "faces": 725,
+      "world_bounds": {
+        "min": [
+          0.3065690023358911,
+          -0.14801500191571818,
+          0.021934299873286243
+        ],
+        "max": [
+          0.3130952026695013,
+          -0.1479850012360383,
+          0.02704430045759735
+        ],
+        "size": [
+          0.006526200333610177,
+          3.000067967987019e-05,
+          0.005110000584311106
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Rubber_anti_slip_locating_ring_002/Torus_002",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.28450000286102295,
+          -0.13049999624490738,
+          0.008499999763444066
+        ],
+        "max": [
+          0.33550000190734863,
+          -0.0794999971985817,
+          0.011499999789521098
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Arrowhead_004/Cylinder_010",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3487000212211744,
+          -0.14639999765444497,
+          0.008499999218230123
+        ],
+        "max": [
+          0.3533000007133349,
+          -0.14260000687550803,
+          0.009500000006909495
+        ],
+        "size": [
+          0.004599979492160511,
+          0.003799990778936946,
+          0.0010000007886793727
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_5_number_001/Beaker_5_number_001",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.4465689880307764,
+          -0.14801500191571818,
+          0.021934299873286243
+        ],
+        "max": [
+          0.4531973882112652,
+          -0.1479850012360383,
+          0.02704430045759735
+        ],
+        "size": [
+          0.006628400180488825,
+          3.000067967987019e-05,
+          0.005110000584311106
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_2_position_badge/Cube_016",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.210999995470047,
+          -0.14749999990453944,
+          0.005499999038875103
+        ],
+        "max": [
+          0.26899999380111694,
+          -0.14649999985704198,
+          0.03249999973922968
+        ],
+        "size": [
+          0.057999998331069946,
+          0.0010000000474974513,
+          0.027000000700354576
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Rubber_anti_slip_locating_ring_003/Torus_003",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.3544999957084656,
+          -0.13049999624490738,
+          0.008499999763444066
+        ],
+        "max": [
+          0.40549999475479126,
+          -0.0794999971985817,
+          0.011499999789521098
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Beaker_4_ratio_001/Beaker_4_ratio_001",
+      "points": 900,
+      "faces": 659,
+      "world_bounds": {
+        "min": [
+          0.37579199532046914,
+          -0.1480150019146396,
+          0.010942399936360623
+        ],
+        "max": [
+          0.3852767953649163,
+          -0.14798500131884937,
+          0.015422400089115482
+        ],
+        "size": [
+          0.009484800044447184,
+          3.000059579022496e-05,
+          0.004480000152754859
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dilution_station/Transfer_sequence_arrow_shaft_003/Cylinder_013",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4079999774694443,
+          -0.14350000669946894,
+          0.008499999588821082
+        ],
+        "max": [
+          0.4229999929666519,
+          -0.1425000066519715,
+          0.009499999636318536
+        ],
+        "size": [
+          0.015000015497207642,
+          0.0010000000474974513,
+          0.0010000000474974548
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Fixture_foot_screw_001/Cylinder_029",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.28799999551847577,
+          0.08399999933317304,
+          0.016000000876374543
+        ],
+        "max": [
+          0.2959999958984554,
+          0.09199999971315265,
+          0.018000000971369445
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00800000037997961,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_finger_flange/Cube_065",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.21849999390542507,
+          -0.11349999718368053,
+          0.20999999740161002
+        ],
+        "max": [
+          0.26149999536573887,
+          -0.09649999625980854,
+          0.21399999759159982
+        ],
+        "size": [
+          0.0430000014603138,
+          0.017000000923871994,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Clamp_crossbolt/Cylinder_034",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.21400000900030136,
+          -0.09500000230036676,
+          0.20600000419653952
+        ],
+        "max": [
+          0.2669999971985817,
+          -0.09100000211037695,
+          0.21000000438652933
+        ],
+        "size": [
+          0.052999988198280334,
+          0.004000000189989805,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/_50mL_syringe_clear_barrel/_50mL_syringe_clear_barrel",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.22699999809265137,
+          -0.11800000071525574,
+          0.11999999731779099
+        ],
+        "max": [
+          0.2529999911785126,
+          -0.09200000017881393,
+          0.21199999749660492
+        ],
+        "size": [
+          0.025999993085861206,
+          0.026000000536441803,
+          0.09200000017881393
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Fixture_steel_foot/Cube_064",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.20999998599290848,
+          0.05049999803304672,
+          0.0
+        ],
+        "max": [
+          0.31999998539686203,
+          0.12550000101327896,
+          0.01600000075995922
+        ],
+        "size": [
+          0.10999999940395355,
+          0.07500000298023224,
+          0.01600000075995922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_graduation_003/Cube_069",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000090897083,
+          -0.11854999835486524,
+          0.18769999354844913
+        ],
+        "max": [
+          0.24750000052154064,
+          -0.11804999833111651,
+          0.1882999935769476
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0006000000284984708
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_graduation/Cube_066",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000090897083,
+          -0.11854999835486524,
+          0.13820000499254093
+        ],
+        "max": [
+          0.24750000052154064,
+          -0.11804999833111651,
+          0.1388000050210394
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0006000000284984708
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_numeral_005/Syringe_numeral_005",
+      "points": 400,
+      "faces": 296,
+      "world_bounds": {
+        "min": [
+          0.23320700135082006,
+          -0.11881499936008538,
+          0.13746850297484695
+        ],
+        "max": [
+          0.23589500152593246,
+          -0.118784999034606,
+          0.13991850312067627
+        ],
+        "size": [
+          0.0026880001751123928,
+          3.0000325479381806e-05,
+          0.0024500001458293286
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_tapered_outlet/Cone_007",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.22799999453127384,
+          -0.11699999682605267,
+          0.10599999781697989
+        ],
+        "max": [
+          0.2519999947398901,
+          -0.09299999661743641,
+          0.11999999824911356
+        ],
+        "size": [
+          0.024000000208616257,
+          0.024000000208616257,
+          0.014000000432133675
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Guide_clamp_jaw/Cube_071",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.21950000477954745,
+          -0.12249999679625034,
+          0.2000000039115548
+        ],
+        "max": [
+          0.2265000049956143,
+          -0.08749999664723873,
+          0.21600000467151403
+        ],
+        "size": [
+          0.007000000216066837,
+          0.03500000014901161,
+          0.01600000075995922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_numeral_006/Syringe_numeral_006",
+      "points": 740,
+      "faces": 551,
+      "world_bounds": {
+        "min": [
+          0.2326190012972802,
+          -0.11881499936008538,
+          0.15396849916014968
+        ],
+        "max": [
+          0.23589500152593246,
+          -0.118784999034606,
+          0.156418499305979
+        ],
+        "size": [
+          0.003276000228652265,
+          3.0000325479381806e-05,
+          0.0024500001458293286
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_nozzle/Cylinder_030",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23839999467600137,
+          -0.10659999668132514,
+          0.09199999924749136
+        ],
+        "max": [
+          0.24159999459516257,
+          -0.10339999676216394,
+          0.10599999967962503
+        ],
+        "size": [
+          0.0031999999191612005,
+          0.0031999999191612005,
+          0.014000000432133675
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Stand_horizontal_arm/Cylinder_026",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23602804871602331,
+          -0.10547284890070655,
+          0.20899998523288624
+        ],
+        "max": [
+          0.26897194651560513,
+          0.10547284890070655,
+          0.21700001381343945
+        ],
+        "size": [
+          0.03294389779958182,
+          0.2109456978014131,
+          0.008000028580553209
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_graduation_004/Cube_070",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000090897083,
+          -0.11854999835486524,
+          0.20420000463491306
+        ],
+        "max": [
+          0.24750000052154064,
+          -0.11804999833111651,
+          0.20480000466341153
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0006000000284984708
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Stir_rod_support/Cube_073",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3409999986179173,
+          0.036000002175569534,
+          0.0020000003278255463
+        ],
+        "max": [
+          0.3489999989978969,
+          0.05400000140070915,
+          0.014000000432133675
+        ],
+        "size": [
+          0.00800000037997961,
+          0.017999999225139618,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_graduation_001/Cube_067",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000090897083,
+          -0.11854999835486524,
+          0.15470000117784366
+        ],
+        "max": [
+          0.24750000052154064,
+          -0.11804999833111651,
+          0.15530000120634213
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0006000000284984708
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Stir_rod_support_001/Cube_074",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.38099999027326703,
+          0.036000002175569534,
+          0.0020000003278255463
+        ],
+        "max": [
+          0.38899999065324664,
+          0.05400000140070915,
+          0.014000000432133675
+        ],
+        "size": [
+          0.00800000037997961,
+          0.017999999225139618,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_piston_seal/Cylinder_031",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2287999950349331,
+          -0.11619999632239342,
+          0.192000005627051
+        ],
+        "max": [
+          0.25119999423623085,
+          -0.09379999712109566,
+          0.1960000058170408
+        ],
+        "size": [
+          0.02239999920129776,
+          0.02239999920129776,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Clamp_boss/Cylinder_027",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2539999857544899,
+          0.09399999678134918,
+          0.20299999974668026
+        ],
+        "max": [
+          0.2759999856352806,
+          0.11599999666213989,
+          0.22299999929964542
+        ],
+        "size": [
+          0.02199999988079071,
+          0.02199999988079071,
+          0.019999999552965164
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_numeral_008/Syringe_numeral_008",
+      "points": 444,
+      "faces": 333,
+      "world_bounds": {
+        "min": [
+          0.23253850126639009,
+          -0.11881499936008538,
+          0.18696850643191634
+        ],
+        "max": [
+          0.23589500152593246,
+          -0.118784999034606,
+          0.18941850657774567
+        ],
+        "size": [
+          0.003356500259542372,
+          3.0000325479381806e-05,
+          0.0024500001458293286
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Glass_stirring_rod/Cylinder_035",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.33500000834465027,
+          0.043000001693144434,
+          0.014000000664964311
+        ],
+        "max": [
+          0.39500001072883606,
+          0.04700000188313425,
+          0.01800000085495413
+        ],
+        "size": [
+          0.06000000238418579,
+          0.004000000189989819,
+          0.004000000189989819
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_plunger_rod/Cylinder_032",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23599999444559216,
+          -0.10899999691173434,
+          0.1959999967366457
+        ],
+        "max": [
+          0.24399999482557178,
+          -0.10099999653175473,
+          0.2559999953955412
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00800000037997961,
+          0.05999999865889549
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Fixture_foot_screw/Cylinder_028",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23400000529363751,
+          0.08399999933317304,
+          0.016000000876374543
+        ],
+        "max": [
+          0.24200000567361712,
+          0.09199999971315265,
+          0.018000000971369445
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00800000037997961,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_numeral_007/Syringe_numeral_007",
+      "points": 972,
+      "faces": 725,
+      "world_bounds": {
+        "min": [
+          0.23272400139831007,
+          -0.11881499936008538,
+          0.17046849534545241
+        ],
+        "max": [
+          0.23589500152593246,
+          -0.118784999034606,
+          0.17291849549128174
+        ],
+        "size": [
+          0.003171000127622392,
+          3.0000325479381806e-05,
+          0.0024500001458293286
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_graduation_002/Cube_068",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000090897083,
+          -0.11854999835486524,
+          0.1711999973631464
+        ],
+        "max": [
+          0.24750000052154064,
+          -0.11804999833111651,
+          0.17179999739164487
+        ],
+        "size": [
+          0.008999999612569809,
+          0.0005000000237487257,
+          0.0006000000284984708
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_numeral_009/Syringe_numeral_009",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.23267500125803053,
+          -0.11881499936008538,
+          0.20346850261721908
+        ],
+        "max": [
+          0.23589500152593246,
+          -0.118784999034606,
+          0.2059185027630484
+        ],
+        "size": [
+          0.0032200002679019235,
+          3.0000325479381806e-05,
+          0.0024500001458293286
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Syringe_thumb_flange/Cylinder_033",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.22299999371170998,
+          -0.12199999764561653,
+          0.2559999863151461
+        ],
+        "max": [
+          0.25699999555945396,
+          -0.08799999579787254,
+          0.2599999865051359
+        ],
+        "size": [
+          0.03400000184774399,
+          0.03400000184774399,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Stand_upright/Cylinder_025",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.25999998580664396,
+          0.09999999683350325,
+          0.008000001311302185
+        ],
+        "max": [
+          0.26999998558312654,
+          0.10999999660998583,
+          0.3060000091791153
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.2980000078678131
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing_fixture/Guide_clamp_jaw_001/Cube_072",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.25349999917671084,
+          -0.12249999679625034,
+          0.2000000039115548
+        ],
+        "max": [
+          0.2604999993927777,
+          -0.08749999664723873,
+          0.21600000467151403
+        ],
+        "size": [
+          0.007000000216066837,
+          0.03500000014901161,
+          0.01600000075995922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Water_in_reservoir/Cylinder_017",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4104999974370003,
+          0.0754999965429306,
+          0.004499997943639755
+        ],
+        "max": [
+          0.46949999779462814,
+          0.13449999690055847,
+          0.079500000923872
+        ],
+        "size": [
+          0.05900000035762787,
+          0.05900000035762787,
+          0.07500000298023224
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_water"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_012/Cube_046",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.42193111131200567,
+          0.11296073446283117,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4229311113595031,
+          0.11396073451032862,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Tip_rack_socket_004/Cylinder_023",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.5179999889805913,
+          -0.08999999891966581,
+          0.018999999505467713
+        ],
+        "max": [
+          0.5299999890848994,
+          -0.07799999881535769,
+          0.020999999600462615
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Stock_blue_solution/Cone",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.044499997049570084,
+          -0.12550000473856926,
+          0.0040000006556510925
+        ],
+        "max": [
+          0.11549999937415123,
+          -0.05450000241398811,
+          0.05000000074505806
+        ],
+        "size": [
+          0.07100000232458115,
+          0.07100000232458115,
+          0.04600000008940697
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_concentration_1"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Water_reservoir_glass/Water_reservoir_glass",
+      "points": 1056,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.40799999237060547,
+          0.0729999989271164,
+          0.0020000000949949026
+        ],
+        "max": [
+          0.47200000286102295,
+          0.13699999451637268,
+          0.1469999998807907
+        ],
+        "size": [
+          0.06400001049041748,
+          0.06399999558925629,
+          0.1449999997857958
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_005/Cube_039",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.44796072790632024,
+          0.12206889042863622,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4489607279538177,
+          0.12306889047613367,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Stock_title_001/Stock_title_001",
+      "points": 1340,
+      "faces": 989,
+      "world_bounds": {
+        "min": [
+          0.06890849769115448,
+          -0.12501500000801002,
+          0.061936998977947834
+        ],
+        "max": [
+          0.09136449731886387,
+          -0.12498499935629338,
+          0.06683699926561175
+        ],
+        "size": [
+          0.02245599962770939,
+          3.0000651716641236e-05,
+          0.004900000287663915
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_018/Cube_052",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.42734196136007085,
+          0.08925428340444341,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4283419614075683,
+          0.09025428345194086,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Reservoir_blue_cap/Cylinder_018",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.42049999721348286,
+          0.08549999631941319,
+          0.1440000059083104
+        ],
+        "max": [
+          0.45949999801814556,
+          0.12449999712407589,
+          0.15600000601261854
+        ],
+        "size": [
+          0.039000000804662704,
+          0.039000000804662704,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Stock_rolled_neck/Torus_015",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.06649999786168337,
+          -0.10350000392645597,
+          0.1259000040590763
+        ],
+        "max": [
+          0.09349999856203794,
+          -0.0765000032261014,
+          0.12810000404715538
+        ],
+        "size": [
+          0.027000000700354576,
+          0.027000000700354576,
+          0.002199999988079071
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_025/Cube_059",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4547457034350373,
+          0.09234194556483999,
+          0.1450000060722232
+        ],
+        "max": [
+          0.45574570348253474,
+          0.09334194561233744,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_011/Cube_045",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4242542917490937,
+          0.11665804783115163,
+          0.1450000060722232
+        ],
+        "max": [
+          0.42525429179659113,
+          0.11765804787864909,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_syringe_tip_003/Cone_004",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.5189999891445041,
+          -0.11700000334531069,
+          0.019500001333653927
+        ],
+        "max": [
+          0.5289999889209867,
+          -0.1070000035688281,
+          0.04450000170618296
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_006/Cube_040",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.44383915612706915,
+          0.12351109186420217,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4448391561745666,
+          0.12451109191169962,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_019/Cube_053",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4310392672778107,
+          0.086931110417936,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4320392673253082,
+          0.08793111046543345,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Tip_rack_socket_005/Cylinder_024",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.5179999889805913,
+          -0.06200000178068876,
+          0.018999999505467713
+        ],
+        "max": [
+          0.5299999890848994,
+          -0.050000001676380634,
+          0.020999999600462615
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Tip_rack_socket_001/Cylinder_020",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4970000209286809,
+          -0.08999999891966581,
+          0.018999999505467713
+        ],
+        "max": [
+          0.509000021032989,
+          -0.07799999881535769,
+          0.020999999600462615
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl/Cube_034",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4590000147582032,
+          0.10449999669799581,
+          0.1450000060722232
+        ],
+        "max": [
+          0.46000001480570063,
+          0.10549999674549326,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_013/Cube_047",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4204889173270203,
+          0.10883915523299947,
+          0.1450000060722232
+        ],
+        "max": [
+          0.42148891737451777,
+          0.10983915528049693,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_015/Cube_049",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4204889173270203,
+          0.10016083816299215,
+          0.1450000060722232
+        ],
+        "max": [
+          0.42148891737451777,
+          0.1011608382104896,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_026/Cube_060",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4570688838721253,
+          0.09603926638374105,
+          0.1450000060722232
+        ],
+        "max": [
+          0.45806888391962275,
+          0.0970392664312385,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_syringe_tip_005/Cone_006",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.5189999891445041,
+          -0.06100000161677599,
+          0.019500001333653927
+        ],
+        "max": [
+          0.5289999889209867,
+          -0.05100000184029341,
+          0.04450000170618296
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_007/Cube_041",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4394999975920655,
+          0.12399999896297231,
+          0.1450000060722232
+        ],
+        "max": [
+          0.44049999763956293,
+          0.12499999901046976,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Water_label_title_001/Water_label_title_001",
+      "points": 552,
+      "faces": 402,
+      "world_bounds": {
+        "min": [
+          0.42804049607366323,
+          0.07198499689534477,
+          0.08095800023311664
+        ],
+        "max": [
+          0.4519594991579652,
+          0.07201499753960461,
+          0.08580200094929395
+        ],
+        "size": [
+          0.02391900308430195,
+          3.000064425984217e-05,
+          0.004844000716177313
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_020/Cube_054",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4351608390570618,
+          0.08548890898237005,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4361608391045593,
+          0.0864889090298675,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_024/Cube_058",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4516580636263825,
+          0.08925428340444341,
+          0.1450000060722232
+        ],
+        "max": [
+          0.45265806367387995,
+          0.09025428345194086,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Tip_rack_socket_003/Cylinder_022",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.5179999889805913,
+          -0.11800000350922346,
+          0.018999999505467713
+        ],
+        "max": [
+          0.5299999890848994,
+          -0.10600000340491533,
+          0.020999999600462615
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_001/Cube_035",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.45851110765943304,
+          0.10883915523299947,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4595111077069305,
+          0.10983915528049693,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Water_label_volume_001/Water_label_volume_001",
+      "points": 1504,
+      "faces": 1112,
+      "world_bounds": {
+        "min": [
+          0.4325724979862571,
+          0.0719849968949453,
+          0.06695500166625049
+        ],
+        "max": [
+          0.44754749769344926,
+          0.07201499736024065,
+          0.0704550019019699
+        ],
+        "size": [
+          0.014974999707192183,
+          3.0000465295360046e-05,
+          0.0035000002357194193
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_014/Cube_048",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4200000102282502,
+          0.10449999669799581,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4210000102757476,
+          0.10549999674549326,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_syringe_tip/Cone_001",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.49800002109259367,
+          -0.11700000334531069,
+          0.019500001333653927
+        ],
+        "max": [
+          0.5080000208690763,
+          -0.1070000035688281,
+          0.04450000170618296
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_027/Cube_061",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.45851110765943304,
+          0.10016083816299215,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4595111077069305,
+          0.1011608382104896,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_008/Cube_042",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4351608390570618,
+          0.12351109186420217,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4361608391045593,
+          0.12451109191169962,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_021/Cube_055",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4394999975920655,
+          0.08500000188359991,
+          0.1450000060722232
+        ],
+        "max": [
+          0.44049999763956293,
+          0.08600000193109736,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_002/Cube_036",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4570688838721253,
+          0.11296073446283117,
+          0.1450000060722232
+        ],
+        "max": [
+          0.45806888391962275,
+          0.11396073451032862,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_syringe_tip_002/Cone_003",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.49800002109259367,
+          -0.06100000161677599,
+          0.019500001333653927
+        ],
+        "max": [
+          0.5080000208690763,
+          -0.05100000184029341,
+          0.04450000170618296
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Stock_flask_glass/Stock_flask_glass",
+      "points": 1248,
+      "faces": 1152,
+      "world_bounds": {
+        "min": [
+          0.041999999433755875,
+          -0.12800000607967377,
+          0.0010000000474974513
+        ],
+        "max": [
+          0.11800000071525574,
+          -0.052000001072883606,
+          0.12700000405311584
+        ],
+        "size": [
+          0.07600000128149986,
+          0.07600000500679016,
+          0.1260000040056184
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Water_label/Cube_062",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4164999984204769,
+          0.07249999890336767,
+          0.05900000222027302
+        ],
+        "max": [
+          0.4634999968111515,
+          0.07349999895086512,
+          0.09100000374019146
+        ],
+        "size": [
+          0.04699999839067459,
+          0.0010000000474974513,
+          0.03200000151991844
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Tip_rack_socket_002/Cylinder_021",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4970000209286809,
+          -0.06200000178068876,
+          0.018999999505467713
+        ],
+        "max": [
+          0.509000021032989,
+          -0.050000001676380634,
+          0.020999999600462615
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Stock_label/Cube_033",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.05699999816715717,
+          -0.1244999979971908,
+          0.04549999814480543
+        ],
+        "max": [
+          0.10299999825656414,
+          -0.12349999794969335,
+          0.07049999851733446
+        ],
+        "size": [
+          0.04600000008940697,
+          0.0010000000474974513,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_laboratory_label"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_009/Cube_043",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4310392672778107,
+          0.12206889042863622,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4320392673253082,
+          0.12306889047613367,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Tip_rack_socket/Cylinder_019",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4970000209286809,
+          -0.11800000350922346,
+          0.018999999505467713
+        ],
+        "max": [
+          0.509000021032989,
+          -0.10600000340491533,
+          0.020999999600462615
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Dark_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_022/Cube_056",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.44383915612706915,
+          0.08548890898237005,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4448391561745666,
+          0.0864889090298675,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_003/Cube_037",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4547457034350373,
+          0.11665804783115163,
+          0.1450000060722232
+        ],
+        "max": [
+          0.45574570348253474,
+          0.11765804787864909,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_syringe_tip_001/Cone_002",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.49800002109259367,
+          -0.08899999875575304,
+          0.019500001333653927
+        ],
+        "max": [
+          0.5080000208690763,
+          -0.07899999897927046,
+          0.04450000170618296
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_syringe_tip_004/Cone_005",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.5189999891445041,
+          -0.08899999875575304,
+          0.019500001333653927
+        ],
+        "max": [
+          0.5289999889209867,
+          -0.07899999897927046,
+          0.04450000170618296
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_borosilicate"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_016/Cube_050",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.42193111131200567,
+          0.09603926638374105,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4229311113595031,
+          0.0970392664312385,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_010/Cube_044",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.42734196136007085,
+          0.11974571744212881,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4283419614075683,
+          0.12074571748962626,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Stock_reference_001/Stock_reference_001",
+      "points": 1568,
+      "faces": 1168,
+      "world_bounds": {
+        "min": [
+          0.07511599827557802,
+          -0.12501500000694477,
+          0.050944999040260765
+        ],
+        "max": [
+          0.08585749845951796,
+          -0.12498499949431172,
+          0.05480049923262058
+        ],
+        "size": [
+          0.010741500183939934,
+          3.000051263304937e-05,
+          0.0038555001923598134
+        ]
+      },
+      "material": "/ClassicLab/_materials/Charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_023/Cube_057",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.44796072790632024,
+          0.086931110417936,
+          0.1450000060722232
+        ],
+        "max": [
+          0.4489607279538177,
+          0.08793111046543345,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_004/Cube_038",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4516580636263825,
+          0.11974571744212881,
+          0.1450000060722232
+        ],
+        "max": [
+          0.45265806367387995,
+          0.12074571748962626,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Clean_transfer_tips_tray/Cube_063",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.48899998515844345,
+          -0.12799999862909317,
+          0.0010000001639127731
+        ],
+        "max": [
+          0.5409999862313271,
+          -0.037999995052814484,
+          0.01899999938905239
+        ],
+        "size": [
+          0.052000001072883606,
+          0.09000000357627869,
+          0.017999999225139618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_polypropylene"
+    },
+    {
+      "path": "/ClassicLab/Stock_and_water/Cap_knurl_017/Cube_051",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4242542917490937,
+          0.09234194556483999,
+          0.1450000060722232
+        ],
+        "max": [
+          0.42525429179659113,
+          0.09334194561233744,
+          0.15500000584870577
+        ],
+        "size": [
+          0.0010000000474974513,
+          0.0010000000474974513,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Blue_fixture_details"
+    }
+  ],
+  "materials": [
+    {
+      "path": "/ClassicLab/_materials/Pale_laboratory_laminate",
+      "universal_surface_shader": "/ClassicLab/_materials/Pale_laboratory_laminate/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Brushed_steel",
+      "universal_surface_shader": "/ClassicLab/_materials/Brushed_steel/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Neutral_gray_floor",
+      "universal_surface_shader": "/ClassicLab/_materials/Neutral_gray_floor/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Charcoal_print",
+      "universal_surface_shader": "/ClassicLab/_materials/Charcoal_print/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_concentration_0_125",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_concentration_0_125/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Clear_borosilicate",
+      "universal_surface_shader": "/ClassicLab/_materials/Clear_borosilicate/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.18000000715255737,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Blue_fixture_details",
+      "universal_surface_shader": "/ClassicLab/_materials/Blue_fixture_details/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/White_laboratory_label",
+      "universal_surface_shader": "/ClassicLab/_materials/White_laboratory_label/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Warm_white_polypropylene",
+      "universal_surface_shader": "/ClassicLab/_materials/Warm_white_polypropylene/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_concentration_0_0625",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_concentration_0_0625/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_concentration_0_5",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_concentration_0_5/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Dark_rubber",
+      "universal_surface_shader": "/ClassicLab/_materials/Dark_rubber/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_concentration_0_03125",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_concentration_0_03125/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_concentration_0_25",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_concentration_0_25/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Clear_water",
+      "universal_surface_shader": "/ClassicLab/_materials/Clear_water/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.07999999821186066,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_concentration_1",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_concentration_1/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    }
+  ],
+  "cameras": [
+    "/ClassicLab/Cameras/Front/Front",
+    "/ClassicLab/Cameras/Result/Result",
+    "/ClassicLab/Cameras/Overhead/Overhead"
+  ],
+  "lights": [
+    {
+      "path": "/ClassicLab/Lighting/Broad_daylight_fill/Broad_daylight_fill",
+      "type": "DiskLight",
+      "intensity": 20.690141677856445,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/Large_neutral_softbox/Large_neutral_softbox",
+      "type": "DiskLight",
+      "intensity": 28.647890090942383,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/Glass_rim_light/Glass_rim_light",
+      "type": "DiskLight",
+      "intensity": 14.323945045471191,
+      "exposure": 0.0,
+      "normalize": true
+    }
+  ],
+  "proxies": [],
+  "world_mesh_bounds": {
+    "min": [
+      -99.88000000268221,
+      -100.0,
+      -0.7999999709427357
+    ],
+    "max": [
+      100.11999999731779,
+      100.0,
+      0.3060000091791153
+    ],
+    "size": [
+      200.0,
+      200.0,
+      1.105999980121851
+    ]
+  },
+  "limitations": [
+    "Static geometry/material/bounds inspection at the selected time only; default is the default time",
+    "Proxy naming is heuristic unless --expect-proxy is supplied; proxy geometry is not a collider",
+    "Does not render, evaluate texture pixels, prove complete shader-network support, or validate physical/robot capability",
+    "Composed traversal uses selected variants; authored physics/dependencies are also inspected across layer specs"
+  ],
+  "ok": true
+}

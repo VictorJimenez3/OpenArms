@@ -1,0 +1,424 @@
+[
+  {
+    "id": "vial_placement",
+    "name": "Vial placement repeatability",
+    "one_robot_action": "Pick one capped vial from the source station and place it upright in a fixed rack pocket.",
+    "conditions": [
+      {
+        "id": "nominal",
+        "source_x_offset": {
+          "value": 0,
+          "units": "mm"
+        }
+      },
+      {
+        "id": "shifted",
+        "source_x_offset": {
+          "value": 8,
+          "units": "mm"
+        }
+      }
+    ],
+    "controlled_setup": {
+      "vial_outer_diameter": {
+        "value": 33.896,
+        "units": "mm",
+        "source": "measured original USD world AABB width; runtime must qualify grasp envelope"
+      },
+      "vial_total_mass": {
+        "value": 20,
+        "units": "g"
+      },
+      "pocket_inner_diameter": {
+        "value": 48.11,
+        "units": "mm",
+        "source": "estimated top aperture from original mesh vertices; throat/collider qualification pending"
+      },
+      "source_y_offset": {
+        "value": 0,
+        "units": "mm"
+      }
+    },
+    "observable_outcome": "Vial center, upright angle and stable supported placement after release; failed grasps and drops remain failures.",
+    "success_check": "After gripper clears, center error <=4 mm, tilt <=5 deg and linear speed <5 mm/s continuously for 1 s, with no drop or collision with forbidden fixtures. Report dispersion over repeated runs separately from mean target error.",
+    "science_provenance": {
+      "kind": "SIMULATED robotics metrology; no chemistry",
+      "model": "Repeatability is spread under each fixed condition; target error measures accuracy.",
+      "source": null,
+      "limitations": "Proposed geometry and tolerances, not measured SO101 performance or certified repeatability."
+    },
+    "required_physics_beyond_meshes": [
+      "SO101 articulation and calibrated gripper contacts",
+      "Vial mass/inertia and convex collision geometry",
+      "Rack pocket collision geometry with actual opening, not a solid bounding box",
+      "Contact/friction, stable release, pose/velocity logging"
+    ],
+    "current_capability": "asset_candidate_not_runtime_verified",
+    "visual_asset": "01_vial_placement/Experiment.usdc",
+    "camera_ids": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "condition_in_preview": "nominal",
+    "runtime_verified": false
+  },
+  {
+    "id": "sample_sorting",
+    "name": "Size-based sample sorting",
+    "one_robot_action": "Pick one dry sample carrier and place it in the bin designated by its observed diameter.",
+    "conditions": [
+      {
+        "id": "small",
+        "carrier_diameter": {
+          "value": 16,
+          "units": "mm"
+        },
+        "correct_bin": "small_bin"
+      },
+      {
+        "id": "large",
+        "carrier_diameter": {
+          "value": 24,
+          "units": "mm"
+        },
+        "correct_bin": "large_bin"
+      }
+    ],
+    "controlled_setup": {
+      "carrier_mass": {
+        "value": 15,
+        "units": "g"
+      },
+      "carrier_height": {
+        "value": 15,
+        "units": "mm"
+      },
+      "bin_inner_width": {
+        "value": 105,
+        "units": "mm"
+      },
+      "decision_threshold_diameter": {
+        "value": 20,
+        "units": "mm"
+      },
+      "bin_inner_depth": {
+        "value": 90,
+        "units": "mm"
+      }
+    },
+    "observable_outcome": "Observed size class, chosen bin and final supported carrier location.",
+    "success_check": "Correct size class AND entire carrier inside the matching bin interior, stable for 1 s after gripper clears; wrong bin, drop or abstention reported separately. Counterbalance bin positions and sample identities.",
+    "science_provenance": {
+      "kind": "SIMULATED robotics classification and manipulation",
+      "model": "Diameter <20 mm maps to small_bin; diameter >=20 mm maps to large_bin.",
+      "source": null,
+      "limitations": "A sorting benchmark, not chemical sample identification. Changes in diameter change contact geometry and are part of the treatment."
+    },
+    "required_physics_beyond_meshes": [
+      "Rigid carrier and open bin collision geometry",
+      "Mass/inertia, grasp/contact and release",
+      "Perception or explicit measured-size input contract; no ground-truth class supplied to a vision-only policy",
+      "Multiple named destinations and occupancy measurements"
+    ],
+    "current_capability": "asset_candidate_not_runtime_verified",
+    "visual_asset": "02_sample_sorting/Experiment.usdc",
+    "camera_ids": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "condition_in_preview": "small",
+    "runtime_verified": false
+  },
+  {
+    "id": "density",
+    "name": "Density: float or sink",
+    "one_robot_action": "Pick one sealed sample and gently release it at a fixed water-surface station.",
+    "conditions": [
+      {
+        "id": "low_density",
+        "sample_density": {
+          "value": 0.8,
+          "units": "g/mL"
+        },
+        "sample_mass": {
+          "value": 16,
+          "units": "g"
+        }
+      },
+      {
+        "id": "high_density",
+        "sample_density": {
+          "value": 1.2,
+          "units": "g/mL"
+        },
+        "sample_mass": {
+          "value": 24,
+          "units": "g"
+        }
+      }
+    ],
+    "controlled_setup": {
+      "external_displacement_volume": {
+        "value": 20,
+        "units": "mL",
+        "geometry": "cube side 27.144 mm (rounded)"
+      },
+      "fluid_density": {
+        "value": 1.0,
+        "units": "g/mL"
+      },
+      "gravity": {
+        "value": 9.81,
+        "units": "m/s^2"
+      },
+      "tank_water_depth": {
+        "value": 50,
+        "units": "mm"
+      }
+    },
+    "observable_outcome": "Model-produced surface float versus bottom rest, plus whether the robot actually released into the tank.",
+    "success_check": "Manipulation: actual release inside tank without wall/gripper interference. Model check: low density equilibrium submerged fraction 0.80 +/-0.02; high density fully submerged and bottom-supported. Never count the model output as an independent validation of Archimedes physics.",
+    "science_provenance": {
+      "kind": "MODEL-PREDICTED science + SIMULATED manipulation",
+      "model": "F_b=rho_fluid*g*V_submerged; weight=m*g; equilibrium submerged fraction=rho_sample/rho_fluid for a floating sealed body.",
+      "source": "https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy",
+      "limitations": "Ideal still fluid, constant density, sealed rigid body; no CFD, waves, wetting or measured liquid. Any visual settling path is illustrative unless a validated force/drag model is added."
+    },
+    "required_physics_beyond_meshes": [
+      "Robot/sample rigid-body manipulation",
+      "Analytical submerged-volume/buoyancy model with explicit version and parameters",
+      "Tank volume trigger and release detection; remove any collision surface pretending water is solid",
+      "Separate model-generated display state from rigid-body state; do not silently teleport before a verified release"
+    ],
+    "current_capability": "asset_candidate_not_runtime_verified",
+    "visual_asset": "03_density/Experiment.usdc",
+    "camera_ids": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "condition_in_preview": "low_density",
+    "runtime_verified": false
+  },
+  {
+    "id": "ramp_friction",
+    "name": "Ramp friction comparison",
+    "one_robot_action": "Place and release one flat test block at the same marked start pose on the ramp.",
+    "conditions": [
+      {
+        "id": "low_friction",
+        "effective_static_friction": {
+          "value": 0.2,
+          "units": "1"
+        },
+        "effective_dynamic_friction": {
+          "value": 0.15,
+          "units": "1"
+        }
+      },
+      {
+        "id": "high_friction",
+        "effective_static_friction": {
+          "value": 0.6,
+          "units": "1"
+        },
+        "effective_dynamic_friction": {
+          "value": 0.5,
+          "units": "1"
+        }
+      }
+    ],
+    "controlled_setup": {
+      "ramp_angle": {
+        "value": 20,
+        "units": "deg"
+      },
+      "block_mass": {
+        "value": 20,
+        "units": "g"
+      },
+      "ramp_length": {
+        "value": 200,
+        "units": "mm"
+      },
+      "gravity": {
+        "value": 9.81,
+        "units": "m/s^2"
+      },
+      "release_tangential_speed_max": {
+        "value": 0.01,
+        "units": "m/s"
+      }
+    },
+    "observable_outcome": "Ramp-axis displacement and velocity after actual gripper release, with onset of sliding and final catch-tray location.",
+    "success_check": "With valid low-impulse release: low-friction block travels >=100 mm downhill within 1 s; high-friction block stays within 5 mm of release coordinate for 1 s. Record tipping/edge loss separately; check free-slide acceleration before the ramp end against 1.97 m/s^2 as a diagnostic, not an assumed trajectory.",
+    "science_provenance": {
+      "kind": "SIMULATED rigid-body mechanics with analytical reference",
+      "model": "Slide onset when tan(theta)>mu_s; a=g*(sin(theta)-mu_k*cos(theta)) while sliding.",
+      "source": "https://openstax.org/books/university-physics-volume-1/pages/6-2-friction",
+      "limitations": "Coulomb approximation; solver/contact settings and friction combine mode matter. Neither a material color nor a mesh encodes friction."
+    },
+    "required_physics_beyond_meshes": [
+      "PhysX dynamic block and static ramp colliders",
+      "Explicit friction materials on BOTH contacting surfaces and verified combine mode yielding listed effective values",
+      "Mass/inertia, gravity, contact solver/time step and stable release",
+      "Contact/pose telemetry and catch tray; no scripted block trajectory"
+    ],
+    "current_capability": "asset_candidate_not_runtime_verified",
+    "visual_asset": "04_ramp_friction/Experiment.usdc",
+    "camera_ids": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "condition_in_preview": "low_friction",
+    "runtime_verified": false
+  },
+  {
+    "id": "lever_balance",
+    "name": "Lever balance and torque",
+    "one_robot_action": "Pick one 10 g weight and seat it in the selected pocket of a level loading-locked beam.",
+    "conditions": [
+      {
+        "id": "balanced",
+        "right_weight_mass": {
+          "value": 10,
+          "units": "g"
+        },
+        "right_pocket_distance": {
+          "value": 100,
+          "units": "mm"
+        },
+        "predicted_initial_net_torque_magnitude": {
+          "value": 0,
+          "units": "N*m"
+        }
+      },
+      {
+        "id": "left_heavy",
+        "right_weight_mass": {
+          "value": 10,
+          "units": "g"
+        },
+        "right_pocket_distance": {
+          "value": 50,
+          "units": "mm"
+        },
+        "predicted_initial_net_torque_magnitude": {
+          "value": 0.004905,
+          "units": "N*m"
+        }
+      }
+    ],
+    "controlled_setup": {
+      "left_weight_mass": {
+        "value": 20,
+        "units": "g"
+      },
+      "left_pocket_distance": {
+        "value": 50,
+        "units": "mm"
+      },
+      "beam_center_of_mass_offset": {
+        "value": 0,
+        "units": "mm"
+      },
+      "initial_beam_angle": {
+        "value": 0,
+        "units": "deg"
+      },
+      "joint_limit_magnitude": {
+        "value": 15,
+        "units": "deg"
+      },
+      "gravity": {
+        "value": 9.81,
+        "units": "m/s^2"
+      }
+    },
+    "observable_outcome": "Beam angle and angular velocity after harness removes loading lock only once weight is seated and gripper clear.",
+    "success_check": "Balanced condition stays within +/-2 deg for 1 s after unlock; left-heavy condition tilts left >=8 deg within 2 s. Verify weight remains seated and no controller drive remains enabled. Record unlock time and joint damping/friction; tune and freeze these during development.",
+    "science_provenance": {
+      "kind": "SIMULATED revolute-joint mechanics with analytical reference",
+      "model": "Initial signed torque=sum(m*g*r); equal opposite moments yield zero net gravity torque at level.",
+      "source": "https://openstax.org/books/university-physics-volume-1/pages/12-1-conditions-for-static-equilibrium",
+      "limitations": "Zero net torque alone does not restore a perturbed neutrally balanced beam to level; begin level with near-zero angular velocity. Beam must be tared and pivot friction bounded."
+    },
+    "required_physics_beyond_meshes": [
+      "Dynamic beam mass/inertia and centered COM",
+      "PhysX revolute joint on fixed fulcrum with correct axis and angle limits",
+      "Explicit low joint friction/damping and disabled drive after unlock",
+      "Weight-pocket contact that retains weights during tilt",
+      "Harness loading lock/unlock event, not a second undisclosed robot action"
+    ],
+    "current_capability": "asset_candidate_not_runtime_verified",
+    "visual_asset": "05_lever_balance/Experiment.usdc",
+    "camera_ids": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "condition_in_preview": "balanced",
+    "runtime_verified": false
+  },
+  {
+    "id": "indicator",
+    "name": "pH indicator model",
+    "one_robot_action": "Pick one fresh indicator tab and dip its tip into a fixed prepared sample well, then lift it to a reading pose.",
+    "conditions": [
+      {
+        "id": "acidic",
+        "sample_pH": {
+          "value": 5.0,
+          "units": "1 (pH is dimensionless)"
+        },
+        "expected_category": "yellow"
+      },
+      {
+        "id": "basic",
+        "sample_pH": {
+          "value": 9.0,
+          "units": "1 (pH is dimensionless)"
+        },
+        "expected_category": "blue"
+      }
+    ],
+    "controlled_setup": {
+      "sample_volume": {
+        "value": 20,
+        "units": "mL"
+      },
+      "dip_depth": {
+        "value": 5,
+        "units": "mm"
+      },
+      "dip_duration": {
+        "value": 1,
+        "units": "s"
+      },
+      "model_indicator_pKa": {
+        "value": 7.1,
+        "units": "1 (chosen illustrative model parameter)"
+      }
+    },
+    "observable_outcome": "Analytical indicator response appears only after valid tip-well contact; camera reads yellow versus blue with a text category.",
+    "success_check": "Robot: tip intersects liquid region at 5 +/-2 mm depth for >=1 s and returns to visible reading pose. Model: base-form fraction 1/(1+10^(pKa-pH)) is about 0.0079 at pH 5 and 0.9876 at pH 9; display classifier returns expected category or unknown if occluded. Separately report classifier agreement and contact success.",
+    "science_provenance": {
+      "kind": "MODEL-PREDICTED chemistry + SIMULATED manipulation",
+      "model": "Ideal single-indicator acid/base fraction using chosen pKa; qualitative endpoints inspired by bromothymol-blue response interval about pH 6.0-7.6.",
+      "source": "https://openstax.org/books/chemistry-2e/pages/14-7-acid-base-titrations",
+      "limitations": "No reaction, fluid mixing, diffusion, buffering, wetting kinetics or calibrated spectral rendering is solved. pKa 7.1 and dip timing are design parameters; this is not validated strip chemistry or a physical pH measurement."
+    },
+    "required_physics_beyond_meshes": [
+      "Rigid tab grasp/reach and contact-free well approach",
+      "Tip immersion-volume trigger with dwell timer",
+      "Versioned analytical indicator model and renderer color mapping",
+      "Separate hidden pH/model state and camera-derived color observation; fresh-tab reset"
+    ],
+    "current_capability": "asset_candidate_not_runtime_verified",
+    "visual_asset": "06_indicator/Experiment.usdc",
+    "camera_ids": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "condition_in_preview": "acidic",
+    "runtime_verified": false
+  }
+]

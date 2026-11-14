@@ -1,0 +1,38 @@
+# The Smartivity "My First Science Experiment Kit" on the bench: the two kit cups are poured
+# by the arm into the kit's beaker and flask, all standing on the kit's tray.
+# Units: metres. Origin is the arm's base frame; +x points away from the arm along its
+# zero pose, +y to the arm's left, +z up. The table top is z = 0.
+#
+# STATUS: PLACEHOLDER, in two ways.
+#   - Sizes: the listing gives no dimensions for the cups, beaker or flask. These are
+#     estimates for a children's kit. Measure the real pieces when the kit arrives.
+#   - Positions: chosen so the simulated arm can reach them, not measured.
+# The flask is drawn as a second beaker: the simulation has one receiver shape.
+
+table:
+  size: [0.70, 0.90]        # x, y extent
+  center: [0.20, 0.0]
+
+containers:
+  mini_cup:                 # kit cup, pre-filled with one portion, held by the gripper
+    radius: 0.019
+    height: 0.055
+  receiver:                 # kit beaker / flask, stays on the tray
+    radius: 0.032
+    height: 0.070
+    capacity_portions: 4    # total portions it holds, including what it starts with
+
+# Default bench: the erupting volcano. Other experiments use the same layout with
+# different starting contents; see simulation/README.md ("Science kit setup").
+stations:
+  A: {kind: source,   pos: [0.269,  0.193], contents: {citric_acid: 1}}
+  B: {kind: source,   pos: [0.331,  0.068], contents: {water: 1}}
+  C: {kind: receiver, pos: [0.331, -0.068], contents: {baking_soda: 1, liquid_soap: 1, red_colour: 1}}
+  D: {kind: receiver, pos: [0.269, -0.193], contents: {snow_powder: 1}}
+
+# Where on the cup the gripper holds it, and how the pour is shaped.
+grasp:
+  height: 0.032             # above the table, when the cup stands on it
+  lift: 0.100               # extra height for ABOVE_x / LIFT_x
+  tip_angle_deg: 115        # how far the cup is rolled over to pour
+  pour_clearance: 0.050     # cup mouth above the receiver rim while tipping

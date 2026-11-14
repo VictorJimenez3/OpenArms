@@ -1,21 +1,28 @@
 # Simulation
 
-A MuJoCo model of the SO-101 arm and the bench. Given a plan, it plays the arm's motion, reports what would go wrong, and says whether the plan is safe to run on the real arm.
+A MuJoCo model of the SO-101 arm and bench. It previews modeled motion and reports configured checks; it does not establish that a real trajectory is safe or physically qualified. **MuJoCo is active. Isaac is parked**, with its source and completed evidence preserved.
 
-There are two bench setups:
+Current setups:
 
-- **`block`** (the default): one block, moved between three marked points A, B and C.
-- **`liquid`**: mini-cups at A and B poured into receivers at C and D, with a predicted colour change.
+- **`liquid`**: exactly two active vessels, donor A and fixed receiver C. One premeasured water portion, donor return, HOME. This is the physical rehearsal baseline.
+- **`block`** (the standalone CLI default): retained block-transfer diagnostic, outside the selected physical chemistry demo.
+- **`liquid_legacy`**: retained four-station example under `config/setups/liquid/legacy/`, outside current physical scope.
 
-**Status:** both setups run end to end, but neither has been matched to the real arm yet. The poses and the bench positions are placeholders, and the joint mapping is unmeasured. Every result says so in its `warnings` until that is done. See [Matching the real arm](#matching-the-real-arm).
+**Status:** the two-vessel scene, renderer, image checks and return sequence are implemented. The poses, dock/robot placement and joint mapping remain provisional. The active liquid scene still uses provisional 70 mm donor / 60 mm receiver heights; it has not yet consumed the newer [photo-derived vessel meshes](models/vessels/measured_2026_11_14/README.md) or [two-seat CAD](../firmware/fixtures/cup_dock/README.md). Those inputs must be reconciled without silently resizing docks or claiming measured registration. See [Matching the real arm](#matching-the-real-arm).
+
+The student application selects this carried-donor apparatus with `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`; follow [the runbook](../docs/LAB_RUNBOOK.md). The earlier fixed-dispenser `metered_dropper` apparatus remains a distinct regression backend. No preview or simulator enables physical dispatch.
+
+`openarms_sim.two_vessel` captures fresh overview images and detects colored reference patches and vessel rims from pixels. These simulated color patches are **not ArUco/AprilTag markers**. Actual printable marker patterns and machine-readable fixture coordinates belong to the CAD directory. Both application view names currently use the same overview; there is no independent side-camera corroboration. Camera shifts, missing/swapped vessels, occlusion, stale timestamps and reset generations are rejection cases. Ground-truth state remains separate from image detections; receiver water appearance is not a measured transferred volume.
+
+Smartivity volcano and broader virtual experiments are an independently owned extension in development. Their apparatus may differ from the two-vessel physical demo. Modeled chemistry and attached-object grasp must remain explicit, and the hardware pour need not wait for simulation polish.
 
 ## Setup
 
-From the repo root, in the same conda environment as LeRobot:
+From the repo root, use a separate application/simulation environment and preserve the working hardware environment:
 
 ```bash
-conda activate lerobot
-pip install -e simulation
+python3 -m venv .venv-lab
+.venv-lab/bin/python -m pip install -e simulation -r agentic/requirements-lab.txt
 ```
 
 ## Try it
@@ -49,9 +56,9 @@ python -m openarms_sim --setup liquid --from A --to C --contents '{"A": {"bleach
 
 To make liquid the default for a terminal session, run `export OPENARMS_SETUP=liquid`.
 
-## From the simulation to the real arm
+## Historical taught-block integration procedure
 
-This path needs no ruler. You show the arm two spots once; after that the simulation plans moves between them and the real arm runs them. Run these from the repo root.
+The retained procedure below is separate from the current two-vessel application. It is not executed by software reconciliation. Physical operators own calibration and qualification; use the current [wet-lab runbook](../docs/WET_LAB.md) for A→C dry/water bring-up. A successful simulated preview alone cannot authorize this real-arm path.
 
 1. **Record one move with the leader arm**: pick the object up at A, put it down at B, and bring the arm back to rest before the time runs out.
 
@@ -164,6 +171,64 @@ A plan may also contain the arm steps `pick`, `place`, `pour`, `return_cup` and 
 
 Rendering a block move takes about 1.5 seconds on an M2 MacBook, and a pour about 3 seconds, which is at the agent's timeout. Videos are cached by plan, starting state and config, so a repeat request returns instantly. Run `python -m openarms_sim.prerender` before a demo, and again after changing anything in `config/`.
 
+## Science kit setup
+
+`--setup kit` puts the Smartivity "My First Science Experiment Kit" on the bench: the kit's two cups (A and B) are poured by the arm into its beaker (C) and flask (D).
+
+```bash
+python -m openarms_sim --setup kit --from A --into C     # erupting volcano
+python -m openarms_sim --setup kit --from B --into D     # instant snow
+python -m openarms_sim --setup kit --from B --into D --contents '{"D": {"cornstarch": 2}}'    # oobleck
+python -m openarms_sim --setup kit --from A --into C \
+  --contents '{"A": {"yellow_colour": 1}, "C": {"water": 1, "blue_colour": 1}}'              # colour mixing: green
+```
+
+| Experiment | In the cup | In the beaker or flask | Predicted |
+| --- | --- | --- | --- |
+| Erupting volcano | citric acid solution | baking soda, liquid soap, red colour | red with fizzing and foam rising like a volcano |
+| Instant snow | water | snow powder | white, swelling into fluffy instant snow |
+| Oobleck | water | cornstarch | white, thickening into oobleck |
+| Colour mixing | one food colour | water and another colour | orange, green or purple |
+
+The kit's substances, the colour-mixing rule and these reactions are in `config/chemistry.yaml`. The predictions come from that rule table: the simulation draws the liquid and names what the student should see, it does not simulate foam, swelling or thickening. All of the kit's substances are on the `real_bench` list.
+
+Two things are placeholders in `config/setups/kit/bench.yaml`: the sizes of the cups, beaker and flask (the listing gives none, so they are estimates) and their positions (chosen so the simulated arm reaches them). The poses in `poses.json` are solved by the simulation, not recorded on the arm. Measure the pieces and record real poses once the kit is on the bench.
+
+## Demo bench with the rulers as axes
+
+`--setup demo` is the live demo bench: a small beaker (about 50 mL) that the arm pours into a wide round container marked 100 mL. Two 30 cm rulers taped in an L are the bench's axes, and `config/setups/demo/bench.yaml` gives every position in **ruler centimetres**, so a layout change is an edit of two numbers:
+
+```yaml
+ruler_frame:
+  arm_cm: [16.0, 33.0]      # where the arm's base axis sits, read off the rulers
+  arm_heading_deg: -90      # which way the arm points: 0 along +X, 90 along +Y, -90 along -Y
+stations:
+  A: {kind: source,   ruler: [4.6, 4.2], ...}    # centre of the beaker's base
+  C: {kind: receiver, ruler: [4.8, 13.6], ...}   # centre of the container's base
+```
+
+The origin is the inner corner of the L. Standing at the open side of the L, X runs to the right along one ruler and Y toward you along the other. After editing, run `python -m openarms_sim.ik --setup demo` to re-solve the arm poses, then `python -m openarms_sim --setup demo --from A --into C`.
+
+What is measured and what is not:
+
+- **Container sizes** come from `outputs/camera/live_demo.jpg`, scaled by the rulers' millimetre marks: beaker rim 4.5 cm, base 3.2 cm, about 4.7 cm tall; container rim 8.4 cm, base 6.0 cm, about 3.0 cm tall. The photo is tilted, so widths are good to about 0.5 cm and heights to about 1 cm. Check them against the real pieces.
+- **Container positions** are read from the same photo.
+- **The arm's position and heading** were first read from `outputs/camera/live_demo_2.jpg`, then corrected from a pour recorded on the real arm (2026-11-14, beaker at (22.3, 7.6), container at (5.8, 7.6)): swivel axis at about ruler (17, 36), base facing the X ruler almost squarely (heading -88). With that, the recorded grasp lands 0.6 cm from the photographed beaker. The earlier heading of -100 was the direction the gripper pointed in the photo, not the base's forward direction.
+- **The grip and the pour** (`grasp:` in `bench.yaml`) also follow that recording: which way up the gripper holds the beaker (`wrist_roll_deg`), a quarter-turn tip (`tip_angle_deg`), and pouring about 3 cm from the container's centre (`pour_offset`). The solved grasp pose is within 8 degrees of the recorded one on every joint; the pouring pose is within 17 degrees and 4 cm. One recording is not a calibration: `joint_map.yaml` is still unmeasured and the solved poses are not sent to the real arm.
+- The poses are solved by the simulation, not recorded on the arm.
+
+### Rebuilding the bench from a picture
+
+```bash
+python -m firmware.openarms_camera locate --photo outputs/camera/your_photo.jpg          # look only
+python -m firmware.openarms_camera locate --photo outputs/camera/your_photo.jpg --apply  # update the bench and run the pour
+python -m firmware.openarms_camera locate --camera 0 --apply --beaker 4,7                # webcam; beaker position typed in
+```
+
+It finds the two red rulers, saves a flattened top-down picture with a 5 cm grid (`outputs/camera/bench_flat.jpg`), looks for the container and the beaker, and with `--apply` writes their positions into `bench.yaml`, re-solves the poses and runs the pour preview. The ruler mapping is good to about 0.5 cm near the rulers. Finding the clear containers is not reliable: on the two bench photos the container was right in one and 1.8 cm out in the other, and the beaker was 1 cm and 3.5 cm out, because its raised rim is easier to see than its base. Open `bench_flat.jpg`, read the true base position off the grid, and pass `--beaker X,Y` or `--dish X,Y` to correct it. The arm's own position is not detected; edit `arm_cm` if the arm moves.
+
+Where the pour works in the simulation: both about 28 to 31 cm from the arm's base, on either side of it. Checked with the arm at (17, 36): beaker (22.3, 7.6) with container (5.8, 7.6), the mirror layout beaker (4, 7) with container (22, 4), and beaker (12, 6) with container (24, 8). Closer than about 25 cm the grasp is out of reach. As first photographed (beaker (4.8, 4.1), container (5.6, 12.8)) the container is between the arm and the beaker and the pour is blocked.
+
 ## Preview inside the student lab app
 
 With `OPENARMS_PREVIEW=mujoco`, the lab app (`agentic/openarms_lab/`) simulates every
@@ -213,7 +278,20 @@ The real arm replays poses that were recorded on the real arm, so reality is the
 3. **Measured joint map.** Run the bench check below and fill in `joint_map.yaml`, then set `measured: true`.
 4. **Measured bench.** Measure each mark's position from the arm's base with a ruler and put it in `bench.yaml`.
 
-### Bench check for the joint map
+### Measuring the joint map without a ruler
+
+```bash
+source env.sh
+python -m openarms_sim.calibrate collect --port /dev/tty.usbmodemXXXX   # motors off, arm moved by hand
+python -m openarms_sim.calibrate fit            # look at the result
+python -m openarms_sim.calibrate fit --write    # save it to config/joint_map.yaml
+```
+
+The table is flat, so every time the gripper's tip touches it the model must put the gripper's lowest point at table height. `collect` records about fourteen touches in different places and postures; `fit` finds the direction and offset of shoulder lift, elbow and wrist flex (and the height of the base above the table) that put all of them on one plane. On synthetic touches with 0.3 degrees of reading noise it recovers the offsets to within about 1 to 2 degrees, and it refuses to save when the touches are too alike or do not fit a plane. Shoulder pan and wrist roll are not measured: they do not change any height.
+
+Once `measured: true` is saved, table and object contacts in the app's preview block a plan; until then they are notes. Re-run after any LeRobot recalibration, which moves every joint's zero.
+
+### Bench check by eye (older method)
 
 Not yet run on the real arm.
 
@@ -243,13 +321,13 @@ The colour prediction is swappable. `RuleTableChemistry` in `chemistry.py` looks
 
 Safety is separate from the prediction and stays a list: only substances under `real_bench` may reach the real arm, and combinations under `hazards` are blocked. Anything not listed is simulation-only.
 
-## Open questions for the team
+## Current handoff and retained diagnostic questions
 
-- **Block or liquid for the demo** is still undecided in `docs/PROJECT.md`. Both work here; block is the default because it is simpler to get reliable on the real arm.
+- **Decided physical demo:** two vessels with preferred Smartivity indicator/citric-acid adaptation, pending actual packet, bench adaptation and outcome verification; contained fizz is fallback. Water qualifies motion. Block and four-station scenes are historical diagnostics.
 - **Action names.** `move_block(from, to)` follows the name suggested in `research/duc/harness.md`; the agent's catalog needs the same one.
 - **Who tracks where the block is.** The simulation takes the block's position as an input each time. The firmware's `state()` is the natural owner.
 - **Serving the video.** `video_url` is a `file://` link, which only works on the bench laptop. The UI needs it served over HTTP.
-- **Liquid only: showing the predicted result.** The preview shows the predicted colour, while the agent prompt currently says not to tell the student the expected result before testing.
+- **Science evidence:** distinguish a model prediction from independently observed results. Prediction/reflection is optional; the current water rehearsal makes no chemical claim.
 - **Liquid only: `portions` greater than 1.** `add_sample` expands to several `pour` steps with the same cup, which is empty after the first. The simulation reports this as a note.
 
 ## Credits

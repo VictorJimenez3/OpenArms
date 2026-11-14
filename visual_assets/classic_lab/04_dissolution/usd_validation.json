@@ -1,0 +1,5224 @@
+{
+  "file": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/04_dissolution/Environment.usdc",
+  "errors": [],
+  "warnings": [
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Glass_rim_alpha_035",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Approximate_clear_glass_alpha_009",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_water_alpha_0025",
+    "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+    "UsdLux presence does not establish photometric or renderer equivalence"
+  ],
+  "usd_version": [
+    0,
+    26,
+    11
+  ],
+  "metersPerUnit": 1.0,
+  "upAxis": "Z",
+  "defaultPrim": "/ClassicLab",
+  "composition_errors": [],
+  "dependencies": {
+    "layers": [
+      "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/04_dissolution/Environment.usdc"
+    ],
+    "assets": [],
+    "unresolved": []
+  },
+  "self_contained_single_layer": true,
+  "authored_asset_paths": [],
+  "absolute_asset_paths": [],
+  "physics_or_articulation": [],
+  "bounds_time": "default",
+  "mesh_count": 218,
+  "meshes": [
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_open_rim/Stirred_open_rim",
+      "points": 970,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.08920000493526459,
+          0.0272000003606081,
+          0.1532391607761383
+        ],
+        "max": [
+          0.19279956817626953,
+          0.12280000001192093,
+          0.15476083755493164
+        ],
+        "size": [
+          0.10359956324100494,
+          0.09559999965131283,
+          0.001521676778793335
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_alpha_035"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stir_plate_power_lead/Stir_plate_power_lead",
+      "points": 40,
+      "faces": 30,
+      "world_bounds": {
+        "min": [
+          0.20331412553787231,
+          0.11857344955205917,
+          0.0020144470036029816
+        ],
+        "max": [
+          0.23690779507160187,
+          0.27600377798080444,
+          0.016732357442378998
+        ],
+        "size": [
+          0.03359366953372955,
+          0.15743032842874527,
+          0.014717910438776016
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_volume_1/Stirred_volume_1",
+      "points": 1124,
+      "faces": 839,
+      "world_bounds": {
+        "min": [
+          0.17215300584211946,
+          0.03285188029264686,
+          0.07045950131014603
+        ],
+        "max": [
+          0.17861500568687916,
+          0.032881880711336874,
+          0.07360950135825634
+        ],
+        "size": [
+          0.006461999844759703,
+          3.0000418690015462e-05,
+          0.0031500000481103074
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_graduation_0/Stirred_graduation_0",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.16200000047683716,
+          0.03291688114404678,
+          0.05626223608851433
+        ],
+        "max": [
+          0.1720000058412552,
+          0.033416882157325745,
+          0.056737761944532394
+        ],
+        "size": [
+          0.01000000536441803,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stir_speed_knob/Cylinder_005",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.1789999958127737,
+          -0.013000001599801372,
+          0.007999998782866868
+        ],
+        "max": [
+          0.19899999536573887,
+          -0.0029999991601578494,
+          0.027999999667412366
+        ],
+        "size": [
+          0.019999999552965164,
+          0.010000002439643524,
+          0.020000000884545496
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_front_band/Cube_007",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.0754999965429306,
+          -0.0035000000498257577,
+          0.0059999991208314896
+        ],
+        "max": [
+          0.21449999511241913,
+          -0.0025000000023283064,
+          0.03199999965727329
+        ],
+        "size": [
+          0.13899999856948853,
+          0.0010000000474974513,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Stir_teal"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_foot_002/Cylinder_002",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.18799999728798866,
+          0.010999999940395355,
+          0.0
+        ],
+        "max": [
+          0.20599999651312828,
+          0.028999999165534973,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_sugar_000/Cube_010",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.1395869325862519,
+          0.05268432877404478,
+          0.041045462966984574
+        ],
+        "max": [
+          0.14292090423244316,
+          0.05632532455580446,
+          0.04356707793372267
+        ],
+        "size": [
+          0.0033339716461912583,
+          0.003640995781759679,
+          0.0025216149667380977
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_graduation_1/Stirred_graduation_1",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.16200000047683716,
+          0.03291688114404678,
+          0.07176223397254944
+        ],
+        "max": [
+          0.1720000058412552,
+          0.033416882157325745,
+          0.0722377598285675
+        ],
+        "size": [
+          0.01000000536441803,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_platform/Cube_006",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.07099999487400055,
+          -0.002499997615814209,
+          0.0
+        ],
+        "max": [
+          0.21899999678134918,
+          0.1525000035762787,
+          0.035999998450279236
+        ],
+        "size": [
+          0.14800000190734863,
+          0.1550000011920929,
+          0.035999998450279236
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_capacity/Stirred_capacity",
+      "points": 1704,
+      "faces": 1270,
+      "world_bounds": {
+        "min": [
+          0.12324200342118274,
+          0.027185000354395708,
+          0.1369504945121697
+        ],
+        "max": [
+          0.13965950347483158,
+          0.027215000866296378,
+          0.1408004947026676
+        ],
+        "size": [
+          0.016417500053648837,
+          3.0000511900669935e-05,
+          0.0038500001904978876
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_walls/Stirred_wall_mesh",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.09000000357627869,
+          0.02800000086426735,
+          0.03799999877810478
+        ],
+        "max": [
+          0.19200000166893005,
+          0.12200000137090683,
+          0.15399999916553497
+        ],
+        "size": [
+          0.10199999809265137,
+          0.09400000050663948,
+          0.11600000038743019
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_clear_glass_alpha_009"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_heel/Stirred_heel",
+      "points": 970,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.0973999947309494,
+          0.027400000020861626,
+          0.041429366916418076
+        ],
+        "max": [
+          0.19259968400001526,
+          0.1226000040769577,
+          0.042570631951093674
+        ],
+        "size": [
+          0.09519968926906586,
+          0.09520000405609608,
+          0.0011412650346755981
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_alpha_035"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_graduation_3/Stirred_graduation_3",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.16200000047683716,
+          0.03291688114404678,
+          0.10276223719120026
+        ],
+        "max": [
+          0.1720000058412552,
+          0.033416882157325745,
+          0.10323776304721832
+        ],
+        "size": [
+          0.01000000536441803,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Knob_index/Cube_008",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.18824999558273703,
+          -0.014350000419653952,
+          0.02150000026449561
+        ],
+        "max": [
+          0.18974999559577554,
+          -0.013650000444613397,
+          0.026500000152736902
+        ],
+        "size": [
+          0.001500000013038516,
+          0.000699999975040555,
+          0.004999999888241291
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_condition/Stirred_condition",
+      "points": 912,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.08855999959632754,
+          -0.00401500020638879,
+          0.018873999373503345
+        ],
+        "max": [
+          0.11482400260865688,
+          -0.003984998902197646,
+          0.02867399994483643
+        ],
+        "size": [
+          0.02626400301232934,
+          3.000130419114448e-05,
+          0.009800000571333085
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_water_meniscus/Stirred_water_meniscus",
+      "points": 970,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.09970000386238098,
+          0.02969999983906746,
+          0.11271467804908752
+        ],
+        "max": [
+          0.1902998387813568,
+          0.12029999494552612,
+          0.11328531801700592
+        ],
+        "size": [
+          0.09059983491897583,
+          0.09059999510645866,
+          0.000570639967918396
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_alpha_035"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_graduation_4/Stirred_graduation_4",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.16200000047683716,
+          0.03291688114404678,
+          0.11826223880052567
+        ],
+        "max": [
+          0.1720000058412552,
+          0.033416882157325745,
+          0.11873776465654373
+        ],
+        "size": [
+          0.01000000536441803,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_foot_003/Cylinder_003",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.18799999728798866,
+          0.12099999561905861,
+          0.0
+        ],
+        "max": [
+          0.20599999651312828,
+          0.13899999484419823,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_foot/Cylinder",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.08400000259280205,
+          0.010999999940395355,
+          0.0
+        ],
+        "max": [
+          0.10200000181794167,
+          0.028999999165534973,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_glass_bottom/Cylinder_007",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.09799999743700027,
+          0.028000004589557648,
+          0.03800000180490315
+        ],
+        "max": [
+          0.19199999421834946,
+          0.12200000137090683,
+          0.04100000183098018
+        ],
+        "size": [
+          0.09399999678134918,
+          0.09399999678134918,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_clear_glass_alpha_009"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Power_indicator/Cylinder_006",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.20700000622309744,
+          -0.005000000096349747,
+          0.01899999955530402
+        ],
+        "max": [
+          0.21100000641308725,
+          -0.003999999516220062,
+          0.022999999878451853
+        ],
+        "size": [
+          0.004000000189989805,
+          0.0010000005801296848,
+          0.0040000003231478315
+        ]
+      },
+      "material": "/ClassicLab/_materials/Power_LED"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_result_caption/Stirred_result_caption",
+      "points": 1656,
+      "faces": 1198,
+      "world_bounds": {
+        "min": [
+          0.07768399961059913,
+          -0.021080999715195503,
+          0.000784999980169232
+        ],
+        "max": [
+          0.15001699328422546,
+          -0.01478099962696433,
+          0.0008149999794113683
+        ],
+        "size": [
+          0.07233299367362633,
+          0.006300000088231172,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Stir_teal"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_PTFE_bar/Cube_009",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.12997781634180341,
+          0.06664184641620431,
+          0.041500001680105925
+        ],
+        "max": [
+          0.16002217531354632,
+          0.08335815954426017,
+          0.04850000189617276
+        ],
+        "size": [
+          0.0300443589717429,
+          0.016716313128055854,
+          0.007000000216066837
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_subcondition/Stirred_subcondition",
+      "points": 1012,
+      "faces": 731,
+      "world_bounds": {
+        "min": [
+          0.0884379995695781,
+          -0.004015000196801409,
+          0.008945999606843422
+        ],
+        "max": [
+          0.11990199983119965,
+          -0.003984999638295394,
+          0.013145999984950406
+        ],
+        "size": [
+          0.03146400026162155,
+          3.000055850601452e-05,
+          0.004200000378106984
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_graduation_2/Stirred_graduation_2",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.16200000047683716,
+          0.03291688114404678,
+          0.08726223558187485
+        ],
+        "max": [
+          0.1720000058412552,
+          0.033416882157325745,
+          0.08773776143789291
+        ],
+        "size": [
+          0.01000000536441803,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_volume_3/Stirred_volume_3",
+      "points": 828,
+      "faces": 621,
+      "world_bounds": {
+        "min": [
+          0.1720495058434608,
+          0.03285188029264686,
+          0.10145949707821625
+        ],
+        "max": [
+          0.17861500568687916,
+          0.032881880711336874,
+          0.10460949712632656
+        ],
+        "size": [
+          0.006565499843418365,
+          3.0000418690015462e-05,
+          0.0031500000481103074
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_observation_plate/Cylinder_004",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.08299999684095383,
+          0.0130000039935112,
+          0.03600000042933971
+        ],
+        "max": [
+          0.2069999948143959,
+          0.13700000196695328,
+          0.03800000052433461
+        ],
+        "size": [
+          0.12399999797344208,
+          0.12399999797344208,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_observation_bases"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_foot_001/Cylinder_001",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.08400000259280205,
+          0.12099999561905861,
+          0.0
+        ],
+        "max": [
+          0.10200000181794167,
+          0.13899999484419823,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_sugar_002/Cube_012",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.14894891416879893,
+          0.0994493286913924,
+          0.04107393873979303
+        ],
+        "max": [
+          0.15135019385961293,
+          0.10213800558385326,
+          0.04316586451481131
+        ],
+        "size": [
+          0.0024012796908139955,
+          0.002688676892460856,
+          0.00209192577501828
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_clear_water/Cylinder_008",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.09969999641180038,
+          0.029700003564357758,
+          0.04100000113248825
+        ],
+        "max": [
+          0.19029999524354935,
+          0.12030000239610672,
+          0.11299999803304672
+        ],
+        "size": [
+          0.09059999883174896,
+          0.09059999883174896,
+          0.07199999690055847
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_water_alpha_0025"
+    },
+    {
+      "path": "/ClassicLab/Stirred_station/Stirred_sugar_001/Cube_011",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.12801192232281475,
+          0.042089346499273365,
+          0.04100918453124013
+        ],
+        "max": [
+          0.1309223668941805,
+          0.04529677733676713,
+          0.0433212252340034
+        ],
+        "size": [
+          0.0029104445713657445,
+          0.003207430837493766,
+          0.0023120407027632656
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Timing/Timer_body/Cube_155",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.18400000035762787,
+          0.20049999468028545,
+          0.005499999970197678
+        ],
+        "max": [
+          0.29999999701976776,
+          0.23549999482929707,
+          0.08450000360608101
+        ],
+        "size": [
+          0.11599999666213989,
+          0.03500000014901161,
+          0.07900000363588333
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Timing/Timer_display/Cube_156",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.19349999725818634,
+          0.19894999789539725,
+          0.032499998807907104
+        ],
+        "max": [
+          0.2905000001192093,
+          0.20044999790843576,
+          0.07349999994039536
+        ],
+        "size": [
+          0.09700000286102295,
+          0.001500000013038516,
+          0.04100000113248825
+        ]
+      },
+      "material": "/ClassicLab/_materials/LCD_background"
+    },
+    {
+      "path": "/ClassicLab/Timing/Timer_readout/Timer_readout",
+      "points": 1552,
+      "faces": 1152,
+      "world_bounds": {
+        "min": [
+          0.19981000100960955,
+          0.19858499415060818,
+          0.03875700078588477
+        ],
+        "max": [
+          0.25810300558805466,
+          0.1986149966665379,
+          0.05765700340470716
+        ],
+        "size": [
+          0.05829300457844511,
+          3.000251592971681e-05,
+          0.018900002618822395
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Timing/Timer_shared/Timer_shared",
+      "points": 796,
+      "faces": 569,
+      "world_bounds": {
+        "min": [
+          0.20632000028854236,
+          0.1984850073817675,
+          0.014927999652903843
+        ],
+        "max": [
+          0.24432000517845154,
+          0.19851500812669484,
+          0.020528000315785975
+        ],
+        "size": [
+          0.03800000488990918,
+          3.000074492734428e-05,
+          0.005600000662882132
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Timing/Timer_top/Timer_top",
+      "points": 1440,
+      "faces": 1040,
+      "world_bounds": {
+        "min": [
+          0.19849399896338582,
+          0.2119414974913525,
+          0.0849850008944486
+        ],
+        "max": [
+          0.23830000311136246,
+          0.21649149805307388,
+          0.08501500089369074
+        ],
+        "size": [
+          0.03980600414797664,
+          0.00455000056172139,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_foot_001/Cylinder_010",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2640000022947788,
+          0.12099999561905861,
+          0.0
+        ],
+        "max": [
+          0.28200000151991844,
+          0.13899999484419823,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_026/Cube_042",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3180508742858844,
+          0.048470295599346964,
+          0.04109339262106127
+        ],
+        "max": [
+          0.3210195769737286,
+          0.05191747880851665,
+          0.043697239507654244
+        ],
+        "size": [
+          0.0029687026878442158,
+          0.003447183209169688,
+          0.0026038468865929726
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_131/Cube_147",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.35486341473613514,
+          0.07717109893112756,
+          0.04096604478660215
+        ],
+        "max": [
+          0.35766153576816784,
+          0.07959971155375861,
+          0.04338455605205904
+        ],
+        "size": [
+          0.0027981210320326966,
+          0.0024286126226310545,
+          0.0024185112654568908
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_071/Cube_087",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30476773237503657,
+          0.09380260412700228,
+          0.041078278956640936
+        ],
+        "max": [
+          0.3081914141245972,
+          0.09746159310333677,
+          0.04357431626535537
+        ],
+        "size": [
+          0.0034236817495606475,
+          0.0036589889763344874,
+          0.0024960373087144355
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_003/Cube_019",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32433240427897164,
+          0.09464648638443272,
+          0.043386635381615996
+        ],
+        "max": [
+          0.3267057059772234,
+          0.09776478733344753,
+          0.04590870718296683
+        ],
+        "size": [
+          0.002373301698251784,
+          0.0031183009490148017,
+          0.0025220718013508336
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_021/Cube_037",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3018542881873398,
+          0.10278607586954155,
+          0.04099074557671429
+        ],
+        "max": [
+          0.30488648453681183,
+          0.1056328745689579,
+          0.04321366742005466
+        ],
+        "size": [
+          0.0030321963494720494,
+          0.002846798699416342,
+          0.0022229218433403725
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_foot_002/Cylinder_011",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.36800000444054604,
+          0.010999999940395355,
+          0.0
+        ],
+        "max": [
+          0.38600000366568565,
+          0.028999999165534973,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_111/Cube_127",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31667386505434186,
+          0.04327429642259334,
+          0.041041327330282415
+        ],
+        "max": [
+          0.3196639516608986,
+          0.04686717877805974,
+          0.0438161514075487
+        ],
+        "size": [
+          0.002990086606556752,
+          0.003592882355466398,
+          0.0027748240772662858
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_002/Cube_018",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29844651405133704,
+          0.0811601440456199,
+          0.04092922639495371
+        ],
+        "max": [
+          0.3017319064923336,
+          0.08395053343507773,
+          0.043559120777783414
+        ],
+        "size": [
+          0.0032853924409965707,
+          0.0027903893894578313,
+          0.002629894382829706
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_004/Cube_020",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3140757379768069,
+          0.08192837379887481,
+          0.042181815449438186
+        ],
+        "max": [
+          0.31783184430621314,
+          0.08526041962191681,
+          0.045071911569394975
+        ],
+        "size": [
+          0.0037561063294062613,
+          0.0033320458230420014,
+          0.0028900961199567893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_041/Cube_057",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2992706358551115,
+          0.1006275429246315,
+          0.04106581657911991
+        ],
+        "max": [
+          0.30390488504180013,
+          0.1049984381678215,
+          0.044319424035294305
+        ],
+        "size": [
+          0.004634249186688644,
+          0.0043708952431900094,
+          0.0032536074561743955
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_011/Cube_027",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3389078569939229,
+          0.09465159235090027,
+          0.04087410930473566
+        ],
+        "max": [
+          0.34267578596567183,
+          0.0989115262261032,
+          0.044090575837304594
+        ],
+        "size": [
+          0.003767928971748935,
+          0.004259933875202931,
+          0.0032164665325689346
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_001/Cube_017",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32450492151435306,
+          0.11068751556671615,
+          0.04121988610495432
+        ],
+        "max": [
+          0.3266843461209924,
+          0.11327067868911271,
+          0.04329421027432577
+        ],
+        "size": [
+          0.0021794246066393352,
+          0.0025831631223965645,
+          0.00207432416937145
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_foot_003/Cylinder_012",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.36800000444054604,
+          0.12099999561905861,
+          0.0
+        ],
+        "max": [
+          0.38600000366568565,
+          0.13899999484419823,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_000/Cube_016",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32911543525822917,
+          0.10943733916804496,
+          0.04098084015198047
+        ],
+        "max": [
+          0.3314712794863387,
+          0.11237803830578622,
+          0.04340865271739667
+        ],
+        "size": [
+          0.002355844228109527,
+          0.002940699137741254,
+          0.0024278125654162014
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_056/Cube_072",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3240990233556076,
+          0.06395899489086003,
+          0.04308630547394508
+        ],
+        "max": [
+          0.32728211163126986,
+          0.06783961520034938,
+          0.04604935624728447
+        ],
+        "size": [
+          0.0031830882756622714,
+          0.003880620309489352,
+          0.0029630507733393874
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_PTFE_bar/Cube_015",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31049998849630356,
+          0.07100000279024243,
+          0.041500001680105925
+        ],
+        "max": [
+          0.33949998766183853,
+          0.07900000317022204,
+          0.04850000189617276
+        ],
+        "size": [
+          0.028999999165534973,
+          0.00800000037997961,
+          0.007000000216066837
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_125/Cube_141",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3309053195118252,
+          0.08513270782151133,
+          0.04215155247795318
+        ],
+        "max": [
+          0.33436298245198093,
+          0.08875172866664022,
+          0.04467232074392106
+        ],
+        "size": [
+          0.0034576629401557035,
+          0.003619020845128884,
+          0.0025207682659678793
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_volume_3/Still_volume_3",
+      "points": 828,
+      "faces": 621,
+      "world_bounds": {
+        "min": [
+          0.35204949809485697,
+          0.03285188029264686,
+          0.10145949707821625
+        ],
+        "max": [
+          0.35861499793827534,
+          0.032881880711336874,
+          0.10460949712632656
+        ],
+        "size": [
+          0.006565499843418365,
+          3.0000418690015462e-05,
+          0.0031500000481103074
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_031/Cube_047",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2958682565801016,
+          0.04989242484532349,
+          0.040809155721893635
+        ],
+        "max": [
+          0.3006804199106821,
+          0.054065988159551694,
+          0.04450578121400801
+        ],
+        "size": [
+          0.004812163330580543,
+          0.004173563314228204,
+          0.003696625492114372
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_006/Cube_022",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2931830656176418,
+          0.07395647718749794,
+          0.04109328366711773
+        ],
+        "max": [
+          0.2971759069317967,
+          0.07695024953045097,
+          0.04445877544686161
+        ],
+        "size": [
+          0.0039928413141548935,
+          0.0029937723429530327,
+          0.003365491779743879
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_result_caption/Still_result_caption",
+      "points": 2900,
+      "faces": 2135,
+      "world_bounds": {
+        "min": [
+          0.2573599992902018,
+          -0.021080999715195503,
+          0.000784999980169232
+        ],
+        "max": [
+          0.3339499905705452,
+          -0.01478099962696433,
+          0.0008149999794113683
+        ],
+        "size": [
+          0.07658999128034338,
+          0.006300000088231172,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Still_amber"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_foot/Cylinder_009",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2640000022947788,
+          0.010999999940395355,
+          0.0
+        ],
+        "max": [
+          0.28200000151991844,
+          0.028999999165534973,
+          0.006000000052154064
+        ],
+        "size": [
+          0.017999999225139618,
+          0.017999999225139618,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_glass_bottom/Cylinder_014",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.27799998968839645,
+          0.028000004589557648,
+          0.03800000180490315
+        ],
+        "max": [
+          0.37199998646974564,
+          0.12200000137090683,
+          0.04100000183098018
+        ],
+        "size": [
+          0.09399999678134918,
+          0.09399999678134918,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_clear_glass_alpha_009"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_083/Cube_099",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3582746483747855,
+          0.06953443652051398,
+          0.040941894233978274
+        ],
+        "max": [
+          0.3616974256570443,
+          0.07247631186586907,
+          0.04389578086062622
+        ],
+        "size": [
+          0.0034227772822588154,
+          0.0029418753453550883,
+          0.0029538866266479447
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_front_band/Cube_014",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2554999887943268,
+          -0.0035000000498257577,
+          0.0059999991208314896
+        ],
+        "max": [
+          0.3944999873638153,
+          -0.0025000000023283064,
+          0.03199999965727329
+        ],
+        "size": [
+          0.13899999856948853,
+          0.0010000000474974513,
+          0.026000000536441803
+        ]
+      },
+      "material": "/ClassicLab/_materials/Still_amber"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_067/Cube_083",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3002924429282854,
+          0.1008311067049808,
+          0.041137592263494116
+        ],
+        "max": [
+          0.30446391235735915,
+          0.10518190224716001,
+          0.04403770589085998
+        ],
+        "size": [
+          0.00417146942907376,
+          0.004350795542179209,
+          0.0029001136273658634
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_007/Cube_023",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3561217881530735,
+          0.08730051340676048,
+          0.04090759414643524
+        ],
+        "max": [
+          0.36004673468170434,
+          0.09102443931483528,
+          0.0440254036763263
+        ],
+        "size": [
+          0.003924946528630846,
+          0.003723925908074799,
+          0.0031178095298910607
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_graduation_3/Still_graduation_3",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.34200000762939453,
+          0.03291688114404678,
+          0.10276223719120026
+        ],
+        "max": [
+          0.35199999809265137,
+          0.033416882157325745,
+          0.10323776304721832
+        ],
+        "size": [
+          0.009999990463256836,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_121/Cube_137",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30587295182106644,
+          0.04248048391081652,
+          0.04084176926568457
+        ],
+        "max": [
+          0.3088745128357634,
+          0.04594819221757093,
+          0.04358280838772348
+        ],
+        "size": [
+          0.003001561014696952,
+          0.0034677083067544134,
+          0.0027410391220389074
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_127/Cube_143",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3072804917253442,
+          0.10036761713498797,
+          0.04086329980998718
+        ],
+        "max": [
+          0.31064938412533327,
+          0.10415837513929639,
+          0.04380138025373734
+        ],
+        "size": [
+          0.003368892399989054,
+          0.00379075800430842,
+          0.0029380804437501573
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_033/Cube_049",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3548321810006413,
+          0.0609441874570177,
+          0.04099356444093087
+        ],
+        "max": [
+          0.35884158942706257,
+          0.06450184900099774,
+          0.04398084370878837
+        ],
+        "size": [
+          0.004009408426421279,
+          0.003557661543980045,
+          0.0029872792678574955
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_057/Cube_073",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.292164182274234,
+          0.09116989417840538,
+          0.04087300564104716
+        ],
+        "max": [
+          0.29623421469460753,
+          0.09534835771749917,
+          0.04419451241439184
+        ],
+        "size": [
+          0.004070032420373515,
+          0.004178463539093791,
+          0.003321506773344682
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_132/Cube_148",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.300311466671532,
+          0.09939805941456373,
+          0.04120238632998376
+        ],
+        "max": [
+          0.30483613350241817,
+          0.10375537200099413,
+          0.04419888793387503
+        ],
+        "size": [
+          0.004524666830886148,
+          0.004357312586430406,
+          0.002996501603891269
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_059/Cube_075",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30275286193080925,
+          0.0698323900255392,
+          0.04131174538488451
+        ],
+        "max": [
+          0.3067586327057264,
+          0.07297278396757145,
+          0.04431125815753874
+        ],
+        "size": [
+          0.00400577077491715,
+          0.003140393942032249,
+          0.002999512772654228
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_119/Cube_135",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32893551619876527,
+          0.0482016636711318,
+          0.0410733683045771
+        ],
+        "max": [
+          0.3321377512611041,
+          0.05228395176113062,
+          0.04414106029907204
+        ],
+        "size": [
+          0.003202235062338854,
+          0.004082288089998817,
+          0.003067691994494942
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_117/Cube_133",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3119217462865666,
+          0.05202820551950192,
+          0.04228845579813458
+        ],
+        "max": [
+          0.31670710369664873,
+          0.056300561601336244,
+          0.046055194304480775
+        ],
+        "size": [
+          0.004785357410082125,
+          0.004272356081834322,
+          0.0037667385063461928
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_108/Cube_124",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.28990016501796445,
+          0.05853030921408971,
+          0.04112642969226345
+        ],
+        "max": [
+          0.294103462282298,
+          0.06217667369654338,
+          0.044009738012795604
+        ],
+        "size": [
+          0.00420329726433355,
+          0.0036463644824536734,
+          0.0028833083205321575
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_118/Cube_134",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3029673813590335,
+          0.08013153074409166,
+          0.041286431670707065
+        ],
+        "max": [
+          0.30659006845862397,
+          0.08356547357414565,
+          0.04387583541818301
+        ],
+        "size": [
+          0.0036226870995904603,
+          0.003433942830053993,
+          0.0025894037474759463
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_034/Cube_050",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32729761807866425,
+          0.05322707179757587,
+          0.041391425320968754
+        ],
+        "max": [
+          0.33105571062616973,
+          0.057400720978055084,
+          0.04460234891427981
+        ],
+        "size": [
+          0.003758092547505476,
+          0.004173649180479216,
+          0.0032109235933110575
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_112/Cube_128",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2944297250572145,
+          0.0644262012389542,
+          0.04103612930488544
+        ],
+        "max": [
+          0.2985241357025206,
+          0.06787101660696254,
+          0.04410789131212277
+        ],
+        "size": [
+          0.004094410645306135,
+          0.003444815368008336,
+          0.0030717620072373275
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_009/Cube_025",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3324466421377443,
+          0.06335818800939914,
+          0.042200933416841536
+        ],
+        "max": [
+          0.3371453807580687,
+          0.0677929517267764,
+          0.045499344150068254
+        ],
+        "size": [
+          0.0046987386203244386,
+          0.004434763717377249,
+          0.003298410733226717
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_042/Cube_058",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33399338043992427,
+          0.04640047602852426,
+          0.04111506124400927
+        ],
+        "max": [
+          0.3381360717886219,
+          0.05089977777997412,
+          0.04432952324485944
+        ],
+        "size": [
+          0.0041426913486976025,
+          0.004499301751449858,
+          0.0032144620008501684
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_107/Cube_123",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3463747265538084,
+          0.06061683121734572,
+          0.040982873991212344
+        ],
+        "max": [
+          0.3504795667925966,
+          0.06490667637771652,
+          0.04426247452191403
+        ],
+        "size": [
+          0.00410484023878821,
+          0.0042898451603708004,
+          0.0032796005307016846
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_116/Cube_132",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30908286780490823,
+          0.08903317274323586,
+          0.041264163289754005
+        ],
+        "max": [
+          0.3122448304258352,
+          0.09222267447241661,
+          0.04331708517244616
+        ],
+        "size": [
+          0.003161962620926939,
+          0.003189501729180755,
+          0.0020529218826921547
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_037/Cube_053",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3055721352532758,
+          0.05957714398258223,
+          0.04132901514193834
+        ],
+        "max": [
+          0.3092279603048907,
+          0.06314130197412476,
+          0.043512236231352676
+        ],
+        "size": [
+          0.0036558250516148805,
+          0.003564157991542534,
+          0.002183221089414336
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_102/Cube_118",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3116042791477248,
+          0.09290290403069591,
+          0.04111458649647455
+        ],
+        "max": [
+          0.31494812382545023,
+          0.09655250084696675,
+          0.04355487683999319
+        ],
+        "size": [
+          0.003343844677725416,
+          0.0036495968162708337,
+          0.002440290343518642
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_086/Cube_102",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.34666638553434787,
+          0.08320643726742998,
+          0.04115767011797295
+        ],
+        "max": [
+          0.35088379203980985,
+          0.08710781510912642,
+          0.04408637454354896
+        ],
+        "size": [
+          0.004217406505461985,
+          0.003901377841696446,
+          0.002928704425576009
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_clear_water/Cylinder_015",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.27969998866319656,
+          0.029700003564357758,
+          0.04100000113248825
+        ],
+        "max": [
+          0.3702999874949455,
+          0.12030000239610672,
+          0.11299999803304672
+        ],
+        "size": [
+          0.09059999883174896,
+          0.09059999883174896,
+          0.07199999690055847
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_water_alpha_0025"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_032/Cube_048",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3266561389546097,
+          0.09309266472763097,
+          0.04128836954481437
+        ],
+        "max": [
+          0.3299792050738632,
+          0.09664604102664912,
+          0.04425220077388451
+        ],
+        "size": [
+          0.0033230661192534816,
+          0.0035533762990181406,
+          0.002963831229070138
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_010/Cube_026",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3124321955816041,
+          0.03832103182205254,
+          0.04118456188000564
+        ],
+        "max": [
+          0.31620625074942005,
+          0.04278860370984977,
+          0.04428067561827775
+        ],
+        "size": [
+          0.003774055167815926,
+          0.004467571887797228,
+          0.0030961137382721077
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_114/Cube_130",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3163077214756771,
+          0.049446980036729274,
+          0.04101855547996213
+        ],
+        "max": [
+          0.32032931055633584,
+          0.05343754353380829,
+          0.04433305321363757
+        ],
+        "size": [
+          0.0040215890806587495,
+          0.003990563497079019,
+          0.0033144977336754394
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_092/Cube_108",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3016486718983114,
+          0.053412121139439404,
+          0.04101123269562381
+        ],
+        "max": [
+          0.30538744184070227,
+          0.057452331878272235,
+          0.04389210436578137
+        ],
+        "size": [
+          0.0037387699423908627,
+          0.004040210738832831,
+          0.0028808716701575615
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_036/Cube_052",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3396274423745688,
+          0.046916818404645275,
+          0.04102670883026983
+        ],
+        "max": [
+          0.34402597187485134,
+          0.05194720796301906,
+          0.04457736278685664
+        ],
+        "size": [
+          0.004398529500282522,
+          0.005030389558373788,
+          0.0035506539565868106
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_113/Cube_129",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3338637967750958,
+          0.0971812193921596,
+          0.04251789077641379
+        ],
+        "max": [
+          0.3370751122787067,
+          0.10029384142841993,
+          0.04447335973857034
+        ],
+        "size": [
+          0.0032113155036108676,
+          0.0031126220362603374,
+          0.0019554689621565507
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_087/Cube_103",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31668187437040146,
+          0.0553421856442406,
+          0.04166723417041569
+        ],
+        "max": [
+          0.3200309747697658,
+          0.05910137728062131,
+          0.04416212065221996
+        ],
+        "size": [
+          0.003349100399364313,
+          0.003759191636380707,
+          0.002494886481804265
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_062/Cube_078",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3152372684742838,
+          0.06270098794493094,
+          0.04228679265135251
+        ],
+        "max": [
+          0.3190919313166708,
+          0.06644463430848703,
+          0.045012286051574125
+        ],
+        "size": [
+          0.003854662842387002,
+          0.0037436463635560913,
+          0.0027254934002216152
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_082/Cube_098",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.34473719918721374,
+          0.08805465282325159,
+          0.040965876146961414
+        ],
+        "max": [
+          0.3488550511599237,
+          0.09190918921108832,
+          0.043956430092643536
+        ],
+        "size": [
+          0.004117851972709974,
+          0.0038545363878367267,
+          0.002990553945682123
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_open_rim/Still_open_rim",
+      "points": 970,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.26919999718666077,
+          0.0272000003606081,
+          0.1532391607761383
+        ],
+        "max": [
+          0.3727995753288269,
+          0.12280000001192093,
+          0.15476083755493164
+        ],
+        "size": [
+          0.10359957814216614,
+          0.09559999965131283,
+          0.001521676778793335
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_alpha_035"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_073/Cube_089",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3150225121342108,
+          0.10656834579193156,
+          0.04128641028458826
+        ],
+        "max": [
+          0.3180852692760065,
+          0.10994829797065694,
+          0.0435842857832218
+        ],
+        "size": [
+          0.0030627571417957133,
+          0.0033799521787253872,
+          0.002297875498633542
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_088/Cube_104",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33115041535015555,
+          0.10266983594408538,
+          0.040987433167847795
+        ],
+        "max": [
+          0.3347483249414399,
+          0.10683180306443665,
+          0.0442641663823994
+        ],
+        "size": [
+          0.003597909591284365,
+          0.004161967120351273,
+          0.0032767332145516026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_condition/Still_condition",
+      "points": 584,
+      "faces": 418,
+      "world_bounds": {
+        "min": [
+          0.2685600067488849,
+          -0.00401500020638879,
+          0.018873999373503345
+        ],
+        "max": [
+          0.2999480068683624,
+          -0.003984998902197646,
+          0.02867399994483643
+        ],
+        "size": [
+          0.03138800011947751,
+          3.000130419114448e-05,
+          0.009800000571333085
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_106/Cube_122",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2986222751843967,
+          0.08099123585786151,
+          0.04091714513381281
+        ],
+        "max": [
+          0.30304185073494533,
+          0.08512830984030438,
+          0.04448704230705938
+        ],
+        "size": [
+          0.004419575550548616,
+          0.004137073982442868,
+          0.0035698971732465723
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_068/Cube_084",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32574385877987566,
+          0.09568399907740574,
+          0.04107655856664064
+        ],
+        "max": [
+          0.32825046304324446,
+          0.09885581611004848,
+          0.04364285346214888
+        ],
+        "size": [
+          0.0025066042633687946,
+          0.003171817032642743,
+          0.0025662948955082338
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_012/Cube_028",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29257413225994244,
+          0.07238482576266107,
+          0.040920832680712865
+        ],
+        "max": [
+          0.29552308243884906,
+          0.07472816962346258,
+          0.04360909618233569
+        ],
+        "size": [
+          0.0029489501789066175,
+          0.002343343860801511,
+          0.002688263501622823
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_110/Cube_126",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3108096057575753,
+          0.047346733925970864,
+          0.04110030324518146
+        ],
+        "max": [
+          0.3141644662219474,
+          0.0507271658199703,
+          0.04351270704210339
+        ],
+        "size": [
+          0.003354860464372056,
+          0.0033804318939994332,
+          0.0024124037969219247
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_063/Cube_079",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3433373842224743,
+          0.06581215146697159,
+          0.0410902349708711
+        ],
+        "max": [
+          0.34765580558923226,
+          0.06935631152474289,
+          0.04421505346315752
+        ],
+        "size": [
+          0.004318421366757974,
+          0.003544160057771306,
+          0.0031248184922864214
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_128/Cube_144",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3126102171252754,
+          0.05158233716951201,
+          0.04262676438015429
+        ],
+        "max": [
+          0.31663661381497116,
+          0.05520410016311815,
+          0.045270372427287424
+        ],
+        "size": [
+          0.004026396689695733,
+          0.0036217629936061424,
+          0.0026436080471331364
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_109/Cube_125",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.34055520677637235,
+          0.10040741016624657,
+          0.04131966962271782
+        ],
+        "max": [
+          0.34498993968892916,
+          0.10505023250819953,
+          0.04422513262576012
+        ],
+        "size": [
+          0.004434732912556805,
+          0.004642822341952957,
+          0.0029054630030422995
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_089/Cube_105",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3035590275997497,
+          0.04422492496313313,
+          0.04124342278115358
+        ],
+        "max": [
+          0.30781743676716317,
+          0.048739798743112295,
+          0.04412686451800261
+        ],
+        "size": [
+          0.0042584091674134905,
+          0.004514873779979167,
+          0.0028834417368490267
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_058/Cube_074",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3103331195458952,
+          0.038752021615550095,
+          0.04105722501091364
+        ],
+        "max": [
+          0.3135636580839571,
+          0.04266569542403502,
+          0.0438772182244837
+        ],
+        "size": [
+          0.003230538538061878,
+          0.003913673808484924,
+          0.0028199932135700573
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_123/Cube_139",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2909013523631595,
+          0.0599150788194345,
+          0.0410764817656591
+        ],
+        "max": [
+          0.29571635584301725,
+          0.06405595129664673,
+          0.044535927051155326
+        ],
+        "size": [
+          0.004815003479857749,
+          0.004140872477212232,
+          0.0034594452854962293
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_133/Cube_149",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3544105333320832,
+          0.09081798247147305,
+          0.041168404718742495
+        ],
+        "max": [
+          0.35909312543943167,
+          0.09540732749652164,
+          0.044337587455406065
+        ],
+        "size": [
+          0.004682592107348449,
+          0.004589345025048597,
+          0.00316918273666357
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_064/Cube_080",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3196475098976925,
+          0.06365932719817541,
+          0.04267565174290509
+        ],
+        "max": [
+          0.3224664141287968,
+          0.06699357731232264,
+          0.045036367939025455
+        ],
+        "size": [
+          0.0028189042311043133,
+          0.0033342501141472303,
+          0.0023607161961203688
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_023/Cube_039",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3087981219073219,
+          0.0492356934002012,
+          0.04196309502412885
+        ],
+        "max": [
+          0.3138592963437157,
+          0.05373083126038611,
+          0.04548329655836016
+        ],
+        "size": [
+          0.005061174436393756,
+          0.004495137860184906,
+          0.0035202015342313125
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_090/Cube_106",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3118367080294811,
+          0.10103178011422564,
+          0.04121797597852012
+        ],
+        "max": [
+          0.31458104805114634,
+          0.10394616437906812,
+          0.04310554199967125
+        ],
+        "size": [
+          0.002744340021665237,
+          0.0029143842648424734,
+          0.0018875660211511297
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_048/Cube_064",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33876783868592575,
+          0.04343937016283301,
+          0.04120386755732055
+        ],
+        "max": [
+          0.34283839443403885,
+          0.04771409504855844,
+          0.0440832042071486
+        ],
+        "size": [
+          0.004070555748113103,
+          0.004274724885725431,
+          0.0028793366498280487
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_018/Cube_034",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3323805332506169,
+          0.09559413970044742,
+          0.04277240836119211
+        ],
+        "max": [
+          0.3354816436445247,
+          0.09856332659193387,
+          0.04472240454459631
+        ],
+        "size": [
+          0.0031011103939078133,
+          0.0029691868914864528,
+          0.001949996183404204
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_078/Cube_094",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3354128267568811,
+          0.062293516487090195,
+          0.0417586198475161
+        ],
+        "max": [
+          0.338781211157395,
+          0.06545607557872096,
+          0.044173098501940684
+        ],
+        "size": [
+          0.003368384400513902,
+          0.0031625590916307678,
+          0.0024144786544245816
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_014/Cube_030",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3350860547638265,
+          0.06341217078100043,
+          0.041979848937107114
+        ],
+        "max": [
+          0.33896445516583046,
+          0.06706227742304009,
+          0.044637538894103976
+        ],
+        "size": [
+          0.003878400402003934,
+          0.0036501066420396577,
+          0.0026576899569968615
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_043/Cube_059",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3294878900842609,
+          0.05070124120402886,
+          0.04088450011076864
+        ],
+        "max": [
+          0.3329359590215741,
+          0.054913964858764874,
+          0.04429754081902567
+        ],
+        "size": [
+          0.003448068937313198,
+          0.004212723654736017,
+          0.0034130407082570285
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_013/Cube_029",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.312571609939107,
+          0.08901524442132043,
+          0.0414707484247749
+        ],
+        "max": [
+          0.3162948837628278,
+          0.09283757311407996,
+          0.044172714411967504
+        ],
+        "size": [
+          0.0037232738237208407,
+          0.00382232869275953,
+          0.002701965987192606
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_038/Cube_054",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33358453893880724,
+          0.057191099231973686,
+          0.04145545033072131
+        ],
+        "max": [
+          0.336605556962682,
+          0.06018133907960316,
+          0.04363579782391889
+        ],
+        "size": [
+          0.0030210180238747775,
+          0.0029902398476294723,
+          0.002180347493197579
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_091/Cube_107",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3456862504997133,
+          0.05231152376380157,
+          0.04083437931521242
+        ],
+        "max": [
+          0.35036940021134627,
+          0.05739473650011826,
+          0.04472916114346678
+        ],
+        "size": [
+          0.004683149711632972,
+          0.005083212736316692,
+          0.003894781828254354
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_104/Cube_120",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29808985000243793,
+          0.07679222079935216,
+          0.04115409962249949
+        ],
+        "max": [
+          0.3017965077818333,
+          0.08033809510049678,
+          0.04418961145566747
+        ],
+        "size": [
+          0.0037066577793953837,
+          0.0035458743011446137,
+          0.0030355118331679837
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_066/Cube_082",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3305488358575649,
+          0.05761956142450493,
+          0.04300761266026452
+        ],
+        "max": [
+          0.33417724265271953,
+          0.06029507798885185,
+          0.046192571088934396
+        ],
+        "size": [
+          0.0036284067951546373,
+          0.002675516564346919,
+          0.003184958428669879
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_103/Cube_119",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2901490744403354,
+          0.07533936690876034,
+          0.04081806139611242
+        ],
+        "max": [
+          0.2939598742672452,
+          0.07853045571258518,
+          0.04432493104077341
+        ],
+        "size": [
+          0.0038107998269097942,
+          0.0031910888038248486,
+          0.003506869644660987
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_028/Cube_044",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3188351967921411,
+          0.05359387429498014,
+          0.04335242009669188
+        ],
+        "max": [
+          0.32265788525436767,
+          0.057230800072924526,
+          0.04599568002909776
+        ],
+        "size": [
+          0.0038226884622265533,
+          0.0036369257779443886,
+          0.0026432599324058836
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_capacity/Still_capacity",
+      "points": 1704,
+      "faces": 1270,
+      "world_bounds": {
+        "min": [
+          0.3032420031231595,
+          0.027185000354395708,
+          0.1369504945121697
+        ],
+        "max": [
+          0.31965950317680836,
+          0.027215000866296378,
+          0.1408004947026676
+        ],
+        "size": [
+          0.016417500053648837,
+          3.0000511900669935e-05,
+          0.0038500001904978876
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_water_meniscus/Still_water_meniscus",
+      "points": 970,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.27970001101493835,
+          0.02969999983906746,
+          0.11271467804908752
+        ],
+        "max": [
+          0.3702998459339142,
+          0.12029999494552612,
+          0.11328531801700592
+        ],
+        "size": [
+          0.09059983491897583,
+          0.09059999510645866,
+          0.000570639967918396
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_alpha_035"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_016/Cube_032",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3258351426051074,
+          0.05203440654591299,
+          0.041171648576329954
+        ],
+        "max": [
+          0.3280464072300977,
+          0.05487594884320521,
+          0.043386607394148104
+        ],
+        "size": [
+          0.002211264624990328,
+          0.002841542297292221,
+          0.0022149588178181495
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_heel/Still_heel",
+      "points": 970,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.2773999869823456,
+          0.027400000020861626,
+          0.041429366916418076
+        ],
+        "max": [
+          0.37259969115257263,
+          0.1226000040769577,
+          0.042570631951093674
+        ],
+        "size": [
+          0.09519970417022705,
+          0.09520000405609608,
+          0.0011412650346755981
+        ]
+      },
+      "material": "/ClassicLab/_materials/Glass_rim_alpha_035"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_graduation_0/Still_graduation_0",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.34200000762939453,
+          0.03291688114404678,
+          0.05626223608851433
+        ],
+        "max": [
+          0.35199999809265137,
+          0.033416882157325745,
+          0.056737761944532394
+        ],
+        "size": [
+          0.009999990463256836,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_subcondition/Still_subcondition",
+      "points": 1012,
+      "faces": 731,
+      "world_bounds": {
+        "min": [
+          0.26844400668051094,
+          -0.004015000196801409,
+          0.008945999606843422
+        ],
+        "max": [
+          0.2999500073492527,
+          -0.003984999638295394,
+          0.013145999984950406
+        ],
+        "size": [
+          0.03150600066874176,
+          3.000055850601452e-05,
+          0.004200000378106984
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_017/Cube_033",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30222026103483857,
+          0.08649814280205319,
+          0.04116153540473391
+        ],
+        "max": [
+          0.3060341120387393,
+          0.08995729533500126,
+          0.04366540340323041
+        ],
+        "size": [
+          0.003813851003900748,
+          0.0034591525329480677,
+          0.0025038679984965007
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_129/Cube_145",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29431540193822203,
+          0.08708389040578048,
+          0.04093950695811438
+        ],
+        "max": [
+          0.29947971877787294,
+          0.09139819506060441,
+          0.044755536248100525
+        ],
+        "size": [
+          0.0051643168396509065,
+          0.004314304654823936,
+          0.0038160292899861448
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_graduation_1/Still_graduation_1",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.34200000762939453,
+          0.03291688114404678,
+          0.07176223397254944
+        ],
+        "max": [
+          0.35199999809265137,
+          0.033416882157325745,
+          0.0722377598285675
+        ],
+        "size": [
+          0.009999990463256836,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_124/Cube_140",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3471372602599438,
+          0.0585476847688034,
+          0.04097401261102897
+        ],
+        "max": [
+          0.3520991327149097,
+          0.06286307998501511,
+          0.04457865745055932
+        ],
+        "size": [
+          0.004961872454965932,
+          0.004315395216211715,
+          0.003604644839530352
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_134/Cube_150",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3178615018931283,
+          0.10199111697415504,
+          0.040943201617751564
+        ],
+        "max": [
+          0.3208452418240653,
+          0.10553884508868065,
+          0.04388562218710378
+        ],
+        "size": [
+          0.002983739930937035,
+          0.003547728114525611,
+          0.0029424205693522193
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_069/Cube_085",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30268768840550303,
+          0.09427618168995959,
+          0.0410216758866298
+        ],
+        "max": [
+          0.30584551519633413,
+          0.09723509169413465,
+          0.04323619502592208
+        ],
+        "size": [
+          0.0031578267908310975,
+          0.0029589100041750582,
+          0.002214519139292284
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_054/Cube_070",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32119746710163105,
+          0.04760276611827167,
+          0.04081192137442453
+        ],
+        "max": [
+          0.3243511149753953,
+          0.05138169888474194,
+          0.04423233596839087
+        ],
+        "size": [
+          0.003153647873764265,
+          0.003778932766470275,
+          0.003420414593966345
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_024/Cube_040",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30234856364554324,
+          0.05712765536347601,
+          0.04092928298210612
+        ],
+        "max": [
+          0.30650233271294675,
+          0.06078711816033151,
+          0.0439804988315154
+        ],
+        "size": [
+          0.004153769067403501,
+          0.0036594627968555005,
+          0.003051215849409275
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_volume_1/Still_volume_1",
+      "points": 1124,
+      "faces": 839,
+      "world_bounds": {
+        "min": [
+          0.35215299809351563,
+          0.03285188029264686,
+          0.07045950131014603
+        ],
+        "max": [
+          0.35861499793827534,
+          0.032881880711336874,
+          0.07360950135825634
+        ],
+        "size": [
+          0.006461999844759703,
+          3.0000418690015462e-05,
+          0.0031500000481103074
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_049/Cube_065",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3171392854995288,
+          0.09442239371536182,
+          0.041086464953154864
+        ],
+        "max": [
+          0.32009158760838136,
+          0.09794000419380261,
+          0.043603718447952924
+        ],
+        "size": [
+          0.002952302108852556,
+          0.0035176104784407913,
+          0.0025172534947980607
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_019/Cube_035",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3322349740190999,
+          0.04827857151380301,
+          0.04081467253707086
+        ],
+        "max": [
+          0.33641350734991865,
+          0.052556453796713344,
+          0.044447596244591124
+        ],
+        "size": [
+          0.0041785333308187456,
+          0.004277882282910331,
+          0.003632923707520261
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_055/Cube_071",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33544433443377475,
+          0.05171778945428242,
+          0.042273950484929664
+        ],
+        "max": [
+          0.33903169305493375,
+          0.05499780030745159,
+          0.044803018959822076
+        ],
+        "size": [
+          0.003587358621158998,
+          0.003280010853169174,
+          0.0025290684748924125
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_044/Cube_060",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3522298265781305,
+          0.05777792314168747,
+          0.04114196854748172
+        ],
+        "max": [
+          0.35535956131554625,
+          0.060774262453348084,
+          0.04326323759637433
+        ],
+        "size": [
+          0.0031297347374157347,
+          0.0029963393116606146,
+          0.0021212690488926073
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_093/Cube_109",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3119148649341199,
+          0.06373685014677016,
+          0.042048418553061746
+        ],
+        "max": [
+          0.3152002654903796,
+          0.06724283682870896,
+          0.04450549033146355
+        ],
+        "size": [
+          0.003285400556259699,
+          0.0035059866819387997,
+          0.0024570717784018065
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_039/Cube_055",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31169617936054433,
+          0.09490640937722139,
+          0.042419942913247924
+        ],
+        "max": [
+          0.31613909438213145,
+          0.09932676971518584,
+          0.04563975066165747
+        ],
+        "size": [
+          0.004442915021587113,
+          0.004420360337964446,
+          0.0032198077484095478
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_096/Cube_112",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.34213834017408923,
+          0.04312938478538655,
+          0.040965545108518776
+        ],
+        "max": [
+          0.3459019759307997,
+          0.04686879339864589,
+          0.043833208153047386
+        ],
+        "size": [
+          0.0037636357567104595,
+          0.0037394086132593457,
+          0.0028676630445286094
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_020/Cube_036",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3371702371257159,
+          0.09119642849745965,
+          0.042285392052663545
+        ],
+        "max": [
+          0.3403996886593488,
+          0.09374955717739844,
+          0.044772347443567534
+        ],
+        "size": [
+          0.0032294515336328544,
+          0.0025531286799387876,
+          0.0024869553909039888
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_099/Cube_115",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3248515561237321,
+          0.0373903242756033,
+          0.041291868900999805
+        ],
+        "max": [
+          0.32744337767219683,
+          0.040721316833386416,
+          0.04381905623699687
+        ],
+        "size": [
+          0.0025918215484647122,
+          0.003330992557783116,
+          0.0025271873359970637
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_029/Cube_045",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3546734454012577,
+          0.06700761923677766,
+          0.04104751375864897
+        ],
+        "max": [
+          0.3583393691205318,
+          0.07006092062108672,
+          0.043906360590945145
+        ],
+        "size": [
+          0.0036659237192741,
+          0.003053301384309065,
+          0.0028588468322961746
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_094/Cube_110",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3092696858938484,
+          0.06338323866295849,
+          0.04194184308577121
+        ],
+        "max": [
+          0.31357560619752123,
+          0.0675611623628136,
+          0.04480524445247113
+        ],
+        "size": [
+          0.004305920303672828,
+          0.004177923699855118,
+          0.002863401366699922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_097/Cube_113",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2970358225397602,
+          0.09543496025365117,
+          0.0412887253438016
+        ],
+        "max": [
+          0.3012523559041485,
+          0.09949122714239833,
+          0.043908812793634316
+        ],
+        "size": [
+          0.00421653336438832,
+          0.004056266888747162,
+          0.00262008744983272
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_graduation_2/Still_graduation_2",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.34200000762939453,
+          0.03291688114404678,
+          0.08726223558187485
+        ],
+        "max": [
+          0.35199999809265137,
+          0.033416882157325745,
+          0.08773776143789291
+        ],
+        "size": [
+          0.009999990463256836,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_072/Cube_088",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3299228271791753,
+          0.04190991820998484,
+          0.04100342885264095
+        ],
+        "max": [
+          0.3332808294942561,
+          0.045754238942191064,
+          0.044072657370484505
+        ],
+        "size": [
+          0.003358002315080766,
+          0.0038443207322062245,
+          0.003069228517843553
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_084/Cube_100",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31418960296849596,
+          0.03813718813108191,
+          0.041228811700485035
+        ],
+        "max": [
+          0.3176142076279701,
+          0.042020412212145475,
+          0.04396868918404789
+        ],
+        "size": [
+          0.0034246046594741397,
+          0.003883224081063563,
+          0.002739877483562858
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_098/Cube_114",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29568437878305226,
+          0.07535548869411371,
+          0.04090064164952625
+        ],
+        "max": [
+          0.2997088616687605,
+          0.07896190520485022,
+          0.044625444740492216
+        ],
+        "size": [
+          0.004024482885708225,
+          0.00360641651073651,
+          0.0037248030909659696
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Passive_platform_label/Passive_platform_label",
+      "points": 2144,
+      "faces": 1576,
+      "world_bounds": {
+        "min": [
+          0.2774380100599956,
+          0.1379459965392016,
+          0.03698500047721609
+        ],
+        "max": [
+          0.32159801200032234,
+          0.14214599691331387,
+          0.037015000476458226
+        ],
+        "size": [
+          0.044160001940326765,
+          0.004200000374112278,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_070/Cube_086",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.339535728533959,
+          0.06034156842556988,
+          0.04127406172855889
+        ],
+        "max": [
+          0.34246633903195894,
+          0.06338006095560993,
+          0.04333738393680061
+        ],
+        "size": [
+          0.0029306104979999192,
+          0.0030384925300400434,
+          0.002063322208241722
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_022/Cube_038",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.327351823798274,
+          0.051644516961174024,
+          0.04301946047487561
+        ],
+        "max": [
+          0.33218185568704706,
+          0.05684326045076369,
+          0.046902833545777164
+        ],
+        "size": [
+          0.0048300318887730675,
+          0.005198743489589666,
+          0.003883373070901558
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_065/Cube_081",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3465383504567691,
+          0.06789193535749959,
+          0.040856228456341216
+        ],
+        "max": [
+          0.3505353475870541,
+          0.0714191398530717,
+          0.044289192869819215
+        ],
+        "size": [
+          0.003996997130285007,
+          0.003527204495572117,
+          0.0034329644134779985
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_graduation_4/Still_graduation_4",
+      "points": 20,
+      "faces": 10,
+      "world_bounds": {
+        "min": [
+          0.34200000762939453,
+          0.03291688114404678,
+          0.11826223880052567
+        ],
+        "max": [
+          0.35199999809265137,
+          0.033416882157325745,
+          0.11873776465654373
+        ],
+        "size": [
+          0.009999990463256836,
+          0.0005000010132789612,
+          0.0004755258560180664
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_047/Cube_063",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.35734903148078695,
+          0.08165993471487877,
+          0.04121943130581283
+        ],
+        "max": [
+          0.36153227755165324,
+          0.08543241839066627,
+          0.04426917121322251
+        ],
+        "size": [
+          0.004183246070866287,
+          0.0037724836757875024,
+          0.003049739907409685
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_060/Cube_076",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33639620717639324,
+          0.05017504093614245,
+          0.04106965413109355
+        ],
+        "max": [
+          0.3410372239721358,
+          0.05527041109833097,
+          0.04458769658788152
+        ],
+        "size": [
+          0.004641016795742581,
+          0.0050953701621885145,
+          0.0035180424567879676
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_074/Cube_090",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3107830453650075,
+          0.055131276883242084,
+          0.04119856999170832
+        ],
+        "max": [
+          0.3146718572839183,
+          0.05930201914155726,
+          0.04397905274379202
+        ],
+        "size": [
+          0.003888811918910773,
+          0.00417074225831518,
+          0.0027804827520837017
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_046/Cube_062",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3468027091507072,
+          0.08859160826039154,
+          0.04118277703939616
+        ],
+        "max": [
+          0.35134870047529987,
+          0.09312344803977173,
+          0.044314736374033104
+        ],
+        "size": [
+          0.0045459913245926575,
+          0.004531839779380181,
+          0.0031319593346369468
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_120/Cube_136",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3372769486947005,
+          0.09631334413701602,
+          0.04206456380667582
+        ],
+        "max": [
+          0.340916918511873,
+          0.09987631271665982,
+          0.04454240066228017
+        ],
+        "size": [
+          0.003639969817172517,
+          0.003562968579643805,
+          0.0024778368556043484
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_130/Cube_146",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30283784620413373,
+          0.051762253925676356,
+          0.04084109943865635
+        ],
+        "max": [
+          0.3066718006884139,
+          0.0561274206782627,
+          0.04417690205813549
+        ],
+        "size": [
+          0.0038339544842801443,
+          0.004365166752586344,
+          0.0033358026194791335
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_100/Cube_116",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29507638923730733,
+          0.07625367340235593,
+          0.040830390378606314
+        ],
+        "max": [
+          0.2988178540030491,
+          0.07939250174374697,
+          0.044286733642447
+        ],
+        "size": [
+          0.0037414647657417754,
+          0.0031388283413910367,
+          0.003456343263840686
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_050/Cube_066",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3198077506688046,
+          0.052116143424566955,
+          0.04115064990562041
+        ],
+        "max": [
+          0.32238485148878815,
+          0.054930997173730164,
+          0.04333702671486299
+        ],
+        "size": [
+          0.0025771008199835244,
+          0.0028148537491632097,
+          0.0021863768092425795
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_115/Cube_131",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3424997301698316,
+          0.0911263020921822,
+          0.04128974776409897
+        ],
+        "max": [
+          0.3464232711195361,
+          0.09511107781637951,
+          0.043768971155655055
+        ],
+        "size": [
+          0.003923540949704485,
+          0.003984775724197309,
+          0.002479223391556082
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_075/Cube_091",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3029444672838502,
+          0.05838981247187103,
+          0.04126384869840652
+        ],
+        "max": [
+          0.30669464089714954,
+          0.062107093868251195,
+          0.04364119454595536
+        ],
+        "size": [
+          0.0037501736132993235,
+          0.0037172813963801676,
+          0.0023773458475488396
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_045/Cube_061",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3440019131176166,
+          0.08591044380258539,
+          0.0408483416751698
+        ],
+        "max": [
+          0.3489914893634625,
+          0.09026710257936499,
+          0.04465472987138477
+        ],
+        "size": [
+          0.00498957624584595,
+          0.004356658776779598,
+          0.0038063881962149687
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_015/Cube_031",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3392897421280187,
+          0.0546453166665415,
+          0.041681382664855486
+        ],
+        "max": [
+          0.34353898225628915,
+          0.0581224542198797,
+          0.04517429708558702
+        ],
+        "size": [
+          0.004249240128270437,
+          0.0034771375533382,
+          0.0034929144207315327
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_101/Cube_117",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31927993790987197,
+          0.10044921376097574,
+          0.04100757686759433
+        ],
+        "max": [
+          0.32182458145734605,
+          0.10357845388066397,
+          0.043489852562890445
+        ],
+        "size": [
+          0.002544643547474079,
+          0.003129240119688237,
+          0.0024822756952961184
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_105/Cube_121",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.30793717701807277,
+          0.04638056137652607,
+          0.041294361634260736
+        ],
+        "max": [
+          0.31152066390142186,
+          0.05023618361859112,
+          0.043676552193158545
+        ],
+        "size": [
+          0.003583486883349085,
+          0.0038556222420650516,
+          0.0023821905588978093
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_081/Cube_097",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3370068832910358,
+          0.05382096740112171,
+          0.04075775582829494
+        ],
+        "max": [
+          0.3421104982816876,
+          0.058469780062581446,
+          0.04480916719397526
+        ],
+        "size": [
+          0.005103614990651817,
+          0.004648812661459736,
+          0.004051411365680324
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_025/Cube_041",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3016609363051195,
+          0.061423241386019595,
+          0.04114162723015658
+        ],
+        "max": [
+          0.3048202581910353,
+          0.06438916992226897,
+          0.04324805190373548
+        ],
+        "size": [
+          0.0031593218859158334,
+          0.002965928536249371,
+          0.0021064246735788966
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_035/Cube_051",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3562714253959464,
+          0.06478156255764823,
+          0.041153810533476706
+        ],
+        "max": [
+          0.35954191336061486,
+          0.0676946629376902,
+          0.043514177588032846
+        ],
+        "size": [
+          0.003270487964668445,
+          0.002913100380041972,
+          0.0023603670545561395
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_005/Cube_021",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3063985111471816,
+          0.057269926190448905,
+          0.041153338842933526
+        ],
+        "max": [
+          0.3105037210229234,
+          0.061583419322894906,
+          0.04403792590563978
+        ],
+        "size": [
+          0.004105209875741811,
+          0.004313493132446,
+          0.002884587062706251
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_030/Cube_046",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.32688330130436916,
+          0.09955103525062542,
+          0.04095595252158969
+        ],
+        "max": [
+          0.3300306944384287,
+          0.10365754536251087,
+          0.04435997534153134
+        ],
+        "size": [
+          0.0031473931340595396,
+          0.004106510111885453,
+          0.003404022819941649
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_095/Cube_111",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.28881912005931226,
+          0.08618026826958045,
+          0.041127197570565883
+        ],
+        "max": [
+          0.291885211338698,
+          0.08899895991702692,
+          0.043284281962152775
+        ],
+        "size": [
+          0.00306609127938573,
+          0.0028186916474464696,
+          0.0021570843915868915
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_051/Cube_067",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2937904420378619,
+          0.0872272609030451,
+          0.041056299760949315
+        ],
+        "max": [
+          0.29677833886118593,
+          0.09018206016667231,
+          0.043293362304556667
+        ],
+        "size": [
+          0.00298789682332401,
+          0.0029547992636272113,
+          0.0022370625436073516
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_040/Cube_056",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33218528711960604,
+          0.04863028564694819,
+          0.04108697369432035
+        ],
+        "max": [
+          0.3353732637150497,
+          0.051842984173265126,
+          0.04352901682520327
+        ],
+        "size": [
+          0.0031879765954436756,
+          0.0032126985263169344,
+          0.0024420431308829205
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_079/Cube_095",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3278897115664336,
+          0.0928972238810158,
+          0.041264676901469725
+        ],
+        "max": [
+          0.3319644620938447,
+          0.09740151221441266,
+          0.04475273057543228
+        ],
+        "size": [
+          0.004074750527411131,
+          0.004504288333396861,
+          0.0034880536739625573
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_077/Cube_093",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33222332480489464,
+          0.04235710246940698,
+          0.041101665282569554
+        ],
+        "max": [
+          0.335018665761359,
+          0.04551821903804694,
+          0.04342482141224322
+        ],
+        "size": [
+          0.002795340956464387,
+          0.00316111656863996,
+          0.0023231561296736675
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_085/Cube_101",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31249758491867546,
+          0.05729398914909611,
+          0.04135868615054493
+        ],
+        "max": [
+          0.3169392060244703,
+          0.06167989185714474,
+          0.04483123952007885
+        ],
+        "size": [
+          0.004441621105794824,
+          0.004385902708048631,
+          0.0034725533695339206
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_076/Cube_092",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3197763501596569,
+          0.058508245091982096,
+          0.041854439477819416
+        ],
+        "max": [
+          0.3224290073919178,
+          0.06164840813343981,
+          0.04440649022589305
+        ],
+        "size": [
+          0.0026526572322609354,
+          0.0031401630414577136,
+          0.002552050748073631
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_052/Cube_068",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3377192399552858,
+          0.10211944912680995,
+          0.04107459109461803
+        ],
+        "max": [
+          0.34075804733719467,
+          0.1052633639692365,
+          0.043288921600217634
+        ],
+        "size": [
+          0.00303880738190887,
+          0.003143914842426543,
+          0.0022143305055996043
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_platform/Cube_013",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.25099998712539673,
+          -0.002499997615814209,
+          0.0
+        ],
+        "max": [
+          0.39899998903274536,
+          0.1525000035762787,
+          0.035999998450279236
+        ],
+        "size": [
+          0.14800000190734863,
+          0.1550000011920929,
+          0.035999998450279236
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_080/Cube_096",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2972937088153245,
+          0.05998047138400733,
+          0.041058099415553495
+        ],
+        "max": [
+          0.30008651207472065,
+          0.0628337964897567,
+          0.04315846547816904
+        ],
+        "size": [
+          0.002792803259396126,
+          0.0028533251057493714,
+          0.002100366062615544
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_walls/Still_wall_mesh",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.27000001072883606,
+          0.02800000086426735,
+          0.03799999877810478
+        ],
+        "max": [
+          0.3720000088214874,
+          0.12200000137090683,
+          0.15399999916553497
+        ],
+        "size": [
+          0.10199999809265137,
+          0.09400000050663948,
+          0.11600000038743019
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_clear_glass_alpha_009"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_008/Cube_024",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.29486734017916455,
+          0.057810106184527595,
+          0.04117478745307067
+        ],
+        "max": [
+          0.2995704378168987,
+          0.06211461046691207,
+          0.044346649774655314
+        ],
+        "size": [
+          0.004703097637734133,
+          0.004304504282384478,
+          0.0031718623215846453
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_027/Cube_043",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33161591801074847,
+          0.09690341049286277,
+          0.04107728789339251
+        ],
+        "max": [
+          0.3343939253387083,
+          0.09986403888610451,
+          0.043284988005064064
+        ],
+        "size": [
+          0.0027780073279598527,
+          0.0029606283932417377,
+          0.002207700111671554
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_observation_plate/Cylinder_013",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.26299998909235,
+          0.0130000039935112,
+          0.03600000042933971
+        ],
+        "max": [
+          0.3869999870657921,
+          0.13700000196695328,
+          0.03800000052433461
+        ],
+        "size": [
+          0.12399999797344208,
+          0.12399999797344208,
+          0.0020000000949949026
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_observation_bases"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_122/Cube_138",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3513453218580856,
+          0.04964280122633693,
+          0.041187897297479306
+        ],
+        "max": [
+          0.35504058865293125,
+          0.05331031238917592,
+          0.04355978223409494
+        ],
+        "size": [
+          0.003695266794845664,
+          0.0036675111628389906,
+          0.002371884936615637
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_053/Cube_069",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3206661212116886,
+          0.039723475908536726,
+          0.04101314212618408
+        ],
+        "max": [
+          0.3235007059901547,
+          0.043313110733728594,
+          0.0440260711735672
+        ],
+        "size": [
+          0.0028345847784660982,
+          0.0035896348251918675,
+          0.0030129290473831227
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_061/Cube_077",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.31918324461022324,
+          0.08983121361993877,
+          0.04166386785517638
+        ],
+        "max": [
+          0.32241498002966934,
+          0.0936412707302657,
+          0.04465437916506822
+        ],
+        "size": [
+          0.0032317354194461023,
+          0.00381005711032692,
+          0.0029905113098918357
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Still_station/Still_sugar_126/Cube_142",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3050714297410726,
+          0.09698224593295182,
+          0.041555979485239446
+        ],
+        "max": [
+          0.3079163269880534,
+          0.09959786604748641,
+          0.04334684348610455
+        ],
+        "size": [
+          0.002844897246980782,
+          0.002615620114534589,
+          0.0017908640008651028
+        ]
+      },
+      "material": "/ClassicLab/_materials/Sugar_crystals"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_0_walls/Dose_cup_mesh",
+      "points": 256,
+      "faces": 192,
+      "world_bounds": {
+        "min": [
+          0.12200000137090683,
+          -0.12800000607967377,
+          0.004000000189989805
+        ],
+        "max": [
+          0.1679999977350235,
+          -0.0820000022649765,
+          0.020999999716877937
+        ],
+        "size": [
+          0.04599999636411667,
+          0.046000003814697266,
+          0.016999999526888132
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_1_grip/Cube_152",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.34649998880922794,
+          -0.11199999693781137,
+          0.006500000134110451
+        ],
+        "max": [
+          0.37749998830258846,
+          -0.0979999965056777,
+          0.019500000402331352
+        ],
+        "size": [
+          0.03099999949336052,
+          0.014000000432133675,
+          0.013000000268220901
+        ]
+      },
+      "material": "/ClassicLab/_materials/Still_amber"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_1_walls/Dose_cup_mesh_001",
+      "points": 256,
+      "faces": 192,
+      "world_bounds": {
+        "min": [
+          0.3019999861717224,
+          -0.12800000607967377,
+          0.004000000189989805
+        ],
+        "max": [
+          0.3479999899864197,
+          -0.0820000022649765,
+          0.020999999716877937
+        ],
+        "size": [
+          0.046000003814697266,
+          0.046000003814697266,
+          0.016999999526888132
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_1_label/Dose_1_label",
+      "points": 2396,
+      "faces": 1785,
+      "world_bounds": {
+        "min": [
+          0.29261600866448134,
+          -0.14984000206459314,
+          0.000784999980169232
+        ],
+        "max": [
+          0.33022401109337807,
+          -0.14247200125828385,
+          0.0008149999794113683
+        ],
+        "size": [
+          0.037608002428896725,
+          0.007368000806309283,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_0_label/Dose_0_label",
+      "points": 2396,
+      "faces": 1785,
+      "world_bounds": {
+        "min": [
+          0.11261600151192397,
+          -0.14984000206459314,
+          0.000784999980169232
+        ],
+        "max": [
+          0.1502240039408207,
+          -0.14247200125828385,
+          0.0008149999794113683
+        ],
+        "size": [
+          0.037608002428896725,
+          0.007368000806309283,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Matched_conditions/Matched_conditions",
+      "points": 6296,
+      "faces": 4634,
+      "world_bounds": {
+        "min": [
+          0.07331999897724018,
+          -0.20107200501661282,
+          0.0009850000478763832
+        ],
+        "max": [
+          0.2698800265789032,
+          -0.19547200435772538,
+          0.0010150000471185194
+        ],
+        "size": [
+          0.19656002760166302,
+          0.0056000006588874385,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_print"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Spoon_rest/Cube_153",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.41250001173466444,
+          -0.12700000405311584,
+          0.0
+        ],
+        "max": [
+          0.43750001210719347,
+          -0.03700000047683716,
+          0.01600000075995922
+        ],
+        "size": [
+          0.02500000037252903,
+          0.09000000357627869,
+          0.01600000075995922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_0_rim/Dose_cup_0_rim",
+      "points": 650,
+      "faces": 640,
+      "world_bounds": {
+        "min": [
+          0.12040000408887863,
+          -0.12960000336170197,
+          0.019478309899568558
+        ],
+        "max": [
+          0.1695980727672577,
+          -0.0804000049829483,
+          0.022521689534187317
+        ],
+        "size": [
+          0.04919806867837906,
+          0.04919999837875366,
+          0.003043379634618759
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Spoon_handle/Cube_154",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.42050001211464405,
+          -0.1314999982714653,
+          0.017499999376013875
+        ],
+        "max": [
+          0.42950001172721386,
+          -0.05649999529123306,
+          0.020499999402090907
+        ],
+        "size": [
+          0.008999999612569809,
+          0.07500000298023224,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_1_rim/Dose_cup_1_rim",
+      "points": 650,
+      "faces": 640,
+      "world_bounds": {
+        "min": [
+          0.3003999888896942,
+          -0.12960000336170197,
+          0.01947830803692341
+        ],
+        "max": [
+          0.3495980501174927,
+          -0.0804000049829483,
+          0.022521689534187317
+        ],
+        "size": [
+          0.04919806122779846,
+          0.04919999837875366,
+          0.0030433814972639084
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Spoon_bowl/Cylinder_018",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4120800113809109,
+          -0.061000000685453415,
+          0.017499999376013875
+        ],
+        "max": [
+          0.43792001246094703,
+          -0.026999998837709427,
+          0.020499999402090907
+        ],
+        "size": [
+          0.025840001080036146,
+          0.03400000184774399,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_steel"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_0_grip/Cube_151",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.16649999655783176,
+          -0.11199999693781137,
+          0.006500000134110451
+        ],
+        "max": [
+          0.19749999605119228,
+          -0.0979999965056777,
+          0.019500000402331352
+        ],
+        "size": [
+          0.03099999949336052,
+          0.014000000432133675,
+          0.013000000268220901
+        ]
+      },
+      "material": "/ClassicLab/_materials/Stir_teal"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_0_base/Cylinder_016",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.12199999578297138,
+          -0.12799999676644802,
+          0.0020000000949949026
+        ],
+        "max": [
+          0.16799999587237835,
+          -0.08199999667704105,
+          0.006000000284984708
+        ],
+        "size": [
+          0.04600000008940697,
+          0.04600000008940697,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Dosing/Dose_cup_1_base/Cylinder_017",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.30199998803436756,
+          -0.12799999676644802,
+          0.0020000000949949026
+        ],
+        "max": [
+          0.34799998812377453,
+          -0.08199999667704105,
+          0.006000000284984708
+        ],
+        "size": [
+          0.04600000008940697,
+          0.04600000008940697,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_housing"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg/Cube_001",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          -0.31750001199543476,
+          -0.7600000202655792
+        ],
+        "max": [
+          -0.29250000230968,
+          -0.28250001184642315,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg_001/Cube_002",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          0.28250001184642315,
+          -0.7600000202655792
+        ],
+        "max": [
+          -0.29250000230968,
+          0.31750001199543476,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg_003/Cube_004",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          0.28250001184642315,
+          -0.7600000202655792
+        ],
+        "max": [
+          0.5675000119954348,
+          0.31750001199543476,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Environment/Table_leg_002/Cube_003",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          -0.31750001199543476,
+          -0.7600000202655792
+        ],
+        "max": [
+          0.5675000119954348,
+          -0.28250001184642315,
+          -0.03999999165534973
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7200000286102295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Rubber"
+    },
+    {
+      "path": "/ClassicLab/Environment/Floor/Cube_005",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          -99.88000000268221,
+          -100.0,
+          -0.8100000265985727
+        ],
+        "max": [
+          100.11999999731779,
+          100.0,
+          -0.7600000258535147
+        ],
+        "size": [
+          200.0,
+          200.0,
+          0.05000000074505806
+        ]
+      },
+      "material": "/ClassicLab/_materials/Neutral_floor"
+    },
+    {
+      "path": "/ClassicLab/Environment/Work_surface/Cube",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.380000002682209,
+          -0.375,
+          -0.04399999976158142
+        ],
+        "max": [
+          0.619999997317791,
+          0.375,
+          0.0
+        ],
+        "size": [
+          1.0,
+          0.75,
+          0.04399999976158142
+        ]
+      },
+      "material": "/ClassicLab/_materials/Light_bench"
+    }
+  ],
+  "materials": [
+    {
+      "path": "/ClassicLab/_materials/Glass_rim_alpha_035",
+      "universal_surface_shader": "/ClassicLab/_materials/Glass_rim_alpha_035/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.3499999940395355,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Rubber",
+      "universal_surface_shader": "/ClassicLab/_materials/Rubber/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Matte_print",
+      "universal_surface_shader": "/ClassicLab/_materials/Matte_print/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Stir_teal",
+      "universal_surface_shader": "/ClassicLab/_materials/Stir_teal/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Sugar_crystals",
+      "universal_surface_shader": "/ClassicLab/_materials/Sugar_crystals/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Warm_white_housing",
+      "universal_surface_shader": "/ClassicLab/_materials/Warm_white_housing/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Approximate_clear_glass_alpha_009",
+      "universal_surface_shader": "/ClassicLab/_materials/Approximate_clear_glass_alpha_009/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.09000000357627869,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Power_LED",
+      "universal_surface_shader": "/ClassicLab/_materials/Power_LED/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Graphite_observation_bases",
+      "universal_surface_shader": "/ClassicLab/_materials/Graphite_observation_bases/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Clear_water_alpha_0025",
+      "universal_surface_shader": "/ClassicLab/_materials/Clear_water_alpha_0025/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.02500000037252903,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/LCD_background",
+      "universal_surface_shader": "/ClassicLab/_materials/LCD_background/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Still_amber",
+      "universal_surface_shader": "/ClassicLab/_materials/Still_amber/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Brushed_steel",
+      "universal_surface_shader": "/ClassicLab/_materials/Brushed_steel/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Neutral_floor",
+      "universal_surface_shader": "/ClassicLab/_materials/Neutral_floor/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Light_bench",
+      "universal_surface_shader": "/ClassicLab/_materials/Light_bench/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    }
+  ],
+  "cameras": [
+    "/ClassicLab/Cameras/Camera_Overhead/Camera_Overhead",
+    "/ClassicLab/Cameras/Camera_Front/Camera_Front",
+    "/ClassicLab/Cameras/Camera_Result/Camera_Result"
+  ],
+  "lights": [
+    {
+      "path": "/ClassicLab/Lighting/Key/Key",
+      "type": "DiskLight",
+      "intensity": 25.46479034423828,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/Rim/Rim",
+      "type": "DiskLight",
+      "intensity": 9.549296379089355,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/Fill/Fill",
+      "type": "DiskLight",
+      "intensity": 14.323945045471191,
+      "exposure": 0.0,
+      "normalize": true
+    }
+  ],
+  "proxies": [],
+  "world_mesh_bounds": {
+    "min": [
+      -99.88000000268221,
+      -100.0,
+      -0.8100000265985727
+    ],
+    "max": [
+      100.11999999731779,
+      100.0,
+      0.15476083755493164
+    ],
+    "size": [
+      200.0,
+      200.0,
+      0.9647608641535044
+    ]
+  },
+  "limitations": [
+    "Static geometry/material/bounds inspection at the selected time only; default is the default time",
+    "Proxy naming is heuristic unless --expect-proxy is supplied; proxy geometry is not a collider",
+    "Does not render, evaluate texture pixels, prove complete shader-network support, or validate physical/robot capability",
+    "Composed traversal uses selected variants; authored physics/dependencies are also inspected across layer specs"
+  ],
+  "ok": true
+}

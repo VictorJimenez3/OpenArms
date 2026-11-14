@@ -1,1292 +1,673 @@
-/**
- * OpenArms Lab - Main Application Controller
- *
- * Implements the student-directed accessible science lab interface.
- * Connects vanilla UI with REST API, Events WS, and Gemini Live Voice WS.
- * No build dependency. Standard ES Modules.
- */
+import { LabApiClient } from './api.js';
+import { SessionClient } from './live-client.js';
+import { DeveloperView } from './developer.js';
 
-import { LabApiClient, ApiError } from './api.js';
-import { EventsClient } from './events-client.js';
-import { LiveClient } from './live-client.js';
+const $ = selector => document.querySelector(selector);
+const api = new LabApiClient();
+const developer = new DeveloperView(api);
+let client;
+let snapshot;
+let busy = false;
+let connection = 'connecting';
+let audio;
+let pendingKey = '';
+let pendingSummary = '';
+let acknowledgedKey = '';
+let proposalGeneration = 0;
+let sceneView;
+const attemptedPresentations = new Set();
+const invalidatedProposals = new Set();
+const liveTurns = new Map();
+const conditionChoices = () => snapshot?.conditions || [];
+const waterFixture = () => snapshot?.experiment?.id === 'two_vessel_water';
+const text = (selector, value) => {
+  const element = $(selector);
+  const content = value || '';
+  if (element.textContent !== content) element.textContent = content;
+};
+const keyFor = proposal => proposal ? `${proposal.request_id}:${proposal.proposal_version}` : '';
+const currentObservation = () => (snapshot?.observations || []).filter(observation => observation.trial_id === snapshot.trial?.trial_id).at(-1);
+const currentTask = () => snapshot?.tasks?.findLast(task => !task.trial_id || task.trial_id === snapshot.trial?.trial_id);
+const isDeveloper = () => document.body.dataset.view === 'developer';
+const mediaReady = () => connection === 'connected' && client?.ready && snapshot?.generation === client.generation;
 
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function showRoute() {
+  const open = /^\/developer\/?$/.test(location.pathname);
+  document.body.dataset.view = open ? 'developer' : 'lab';
+  document.title = open ? 'OpenArms Developer' : 'OpenArms Lab';
+  $('#developer').hidden = !open;
+  $('#view-link').href = open ? '/' : '/developer';
+  text('#view-link', open ? 'Lab' : 'Developer');
+  if (open) developer.render(mediaReady() ? snapshot : undefined, audio, currentTask());
+  else developer.release();
 }
-function epochDate(value) { return new Date(typeof value === 'number' ? value * 1000 : value); }
 
-class OpenArmsApp {
-  constructor() {
-    this.api = new LabApiClient();
-    this.sessionId = null;
-    this.snapshot = null;
-    this.health = null;
-    this.experiments = [];
-    this.skills = [];
-    this.composedCandidate = null;
-
-    // Clients
-    this.eventsClient = null;
-    this.liveClient = null;
-
-    // Proposal countdown timer
-    this.proposalCountdownInterval = null;
-
-    // Bound DOM elements cache
-    this.dom = {};
-  }
-
-  async init() {
-    this._cacheDom();
-    this._bindEvents();
-
-    try {
-      // 1. Fetch system health
-      await this._loadHealth();
-
-      // 2. Fetch available experiments
-      await this._loadExperiments();
-
-      // 3. Initialize or restore session
-      await this._initSession();
-
-      // 4. Load initial skills registry
-      this._loadSkills().catch((e) => console.warn('Skills load error:', e));
-    } catch (err) {
-      console.error('Initialization error:', err);
-      this._showToast(`Init error: ${err.message}`, true);
-    }
-  }
-
-  _cacheDom() {
-    this.dom = {
-      // Header badges & controls
-      badgeBackend: document.getElementById('badge-backend'),
-      badgeBackendText: document.getElementById('badge-backend-text'),
-      badgeVoice: document.getElementById('badge-voice'),
-      badgeVoiceText: document.getElementById('badge-voice-text'),
-      badgeConnection: document.getElementById('badge-connection'),
-      badgeConnectionText: document.getElementById('badge-connection-text'),
-      sessionIdDisplay: document.getElementById('session-id-display'),
-      btnCopySession: document.getElementById('btn-copy-session'),
-      btnNewSession: document.getElementById('btn-new-session'),
-      btnHeaderStop: document.getElementById('btn-header-stop'),
-      btnMobileStop: document.getElementById('btn-mobile-stop'),
-      offlineBanner: document.getElementById('offline-banner'),
-      offlineBannerText: document.getElementById('offline-banner-text'),
-      btnRetryNetwork: document.getElementById('btn-retry-network'),
-
-      // Proposal section
-      proposalSection: document.getElementById('proposal-section'),
-      proposalSummary: document.getElementById('proposal-summary'),
-      proposalSkillId: document.getElementById('proposal-skill-id'),
-      proposalParameters: document.getElementById('proposal-parameters'),
-      proposalRequestId: document.getElementById('proposal-request-id'),
-      proposalExpiresRow: document.getElementById('proposal-expires-row'),
-      proposalExpiresVal: document.getElementById('proposal-expires-val'),
-      btnConfirmProposal: document.getElementById('btn-confirm-proposal'),
-      proposalPreview: document.getElementById('proposal-preview'),
-      proposalPreviewStatus: document.getElementById('proposal-preview-status'),
-      proposalPreviewVideo: document.getElementById('proposal-preview-video'),
-      proposalPreviewNotes: document.getElementById('proposal-preview-notes'),
-      btnCancelProposal: document.getElementById('btn-cancel-proposal'),
-      proposalCorrectForm: document.getElementById('proposal-correct-form'),
-      proposalCorrectInput: document.getElementById('proposal-correct-input'),
-
-      // Experiment Section
-      experimentTitle: document.getElementById('experiment-title'),
-      experimentQuestion: document.getElementById('experiment-question'),
-      experimentInstructions: document.getElementById('experiment-instructions'),
-      experimentIndepVar: document.getElementById('experiment-indep-var'),
-      experimentControlledVars: document.getElementById('experiment-controlled-vars'),
-      btnOpenExperiments: document.getElementById('btn-open-experiments'),
-      experimentModal: document.getElementById('experiment-modal'),
-      btnCloseExperimentModal: document.getElementById('btn-close-experiment-modal'),
-      experimentsListContainer: document.getElementById('experiments-list-container'),
-
-      // Prediction Section
-      predictionSavedContainer: document.getElementById('prediction-saved-container'),
-      predictionSavedDisplay: document.getElementById('prediction-saved-display'),
-      btnEditPrediction: document.getElementById('btn-edit-prediction'),
-      predictionForm: document.getElementById('prediction-form'),
-      predictionInput: document.getElementById('prediction-input'),
-
-      // Voice & Command Section
-      btnToggleMic: document.getElementById('btn-toggle-mic'),
-      btnMobileMic: document.getElementById('btn-mobile-mic'),
-      micIcon: document.getElementById('mic-icon'),
-      micPulseRing: document.getElementById('mic-pulse-ring'),
-      voiceStatusText: document.getElementById('voice-status-text'),
-      voiceHintText: document.getElementById('voice-hint-text'),
-      audioLevelFill: document.getElementById('audio-level-fill'),
-      btnToggleMute: document.getElementById('btn-toggle-mute'),
-      muteIcon: document.getElementById('mute-icon'),
-      muteText: document.getElementById('mute-text'),
-      btnDisconnectVoice: document.getElementById('btn-disconnect-voice'),
-      liveNoticeBox: document.getElementById('live-notice-box'),
-      liveNoticeText: document.getElementById('live-notice-text'),
-      liveFallbackBadge: document.getElementById('live-fallback-badge'),
-      transcriptFeed: document.getElementById('transcript-feed'),
-      commandForm: document.getElementById('command-form'),
-      commandInput: document.getElementById('command-input'),
-
-      // Bench & Arm State
-      armStageTag: document.getElementById('arm-stage-tag'),
-      stationAPod: document.getElementById('station-a-pod'),
-      stationAContents: document.getElementById('station-a-contents'),
-      stationAStatus: document.getElementById('station-a-status'),
-      stationBPod: document.getElementById('station-b-pod'),
-      stationBContents: document.getElementById('station-b-contents'),
-      stationBStatus: document.getElementById('station-b-status'),
-      armStatusVal: document.getElementById('arm-status-val'),
-      armGripperVal: document.getElementById('arm-gripper-val'),
-      armPositionVal: document.getElementById('arm-position-val'),
-      armSafetyVal: document.getElementById('arm-safety-val'),
-
-      // Observations Section
-      observationsList: document.getElementById('observations-list'),
-      observationsCount: document.getElementById('observations-count'),
-      noObservationsMsg: document.getElementById('no-observations-msg'),
-
-      // Quiz Section
-      quizSection: document.getElementById('quiz-section'),
-      quizPrompt: document.getElementById('quiz-prompt'),
-      quizForm: document.getElementById('quiz-form'),
-      quizOptionsContainer: document.getElementById('quiz-options-container'),
-      quizFreeformContainer: document.getElementById('quiz-freeform-container'),
-      quizFreeformInput: document.getElementById('quiz-freeform-input'),
-
-      // Notebook & Messages
-      notebookTimeline: document.getElementById('notebook-timeline'),
-      noNotebookMsg: document.getElementById('no-notebook-msg'),
-      btnExportNotebook: document.getElementById('btn-export-notebook'),
-      messagesTimeline: document.getElementById('messages-timeline'),
-      noMessagesMsg: document.getElementById('no-messages-msg'),
-
-      // Developer Panel
-      skillsTableBody: document.getElementById('skills-table-body'),
-      btnRefreshSkills: document.getElementById('btn-refresh-skills'),
-      skillComposeInput: document.getElementById('skill-compose-input'),
-      btnComposeSkill: document.getElementById('btn-compose-skill'),
-      composedCandidatePreview: document.getElementById('composed-candidate-preview'),
-      candidateJsonPreview: document.getElementById('candidate-json-preview'),
-      btnTestCandidate: document.getElementById('btn-test-candidate'),
-      btnPromoteCandidate: document.getElementById('btn-promote-candidate'),
-      snapshotInspector: document.getElementById('snapshot-inspector'),
-    };
-  }
-
-  _bindEvents() {
-    window.addEventListener('pagehide', () => this.liveClient?.cleanup());
-    // Emergency STOP (Header, Mobile Bar, and Escape key)
-    const handleStop = (e) => {
-      e?.preventDefault();
-      this._triggerEmergencyStop();
-    };
-    this.dom.btnHeaderStop.addEventListener('click', handleStop);
-    this.dom.btnMobileStop.addEventListener('click', handleStop);
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        handleStop(e);
+function notify(message) { text('#notice-text', message); $('#notice').hidden = false; }
+function fail(error) { notify(error.message || 'Something interrupted the request. Check your notebook before trying again.'); }
+function credentialsNeeded() {
+  client?.close();
+  client = undefined;
+  snapshot = undefined;
+  liveTurns.clear();
+  connection = 'offline';
+  pendingKey = acknowledgedKey = '';
+  proposalGeneration++;
+  releaseScene();
+  developer.release();
+  if (isDeveloper()) developer.render();
+  $('#proposal').hidden = $('#proposal-nav').hidden = true;
+  $('#connection-dot').classList.remove('online');
+  $('#voice-toggle').disabled = true;
+  $('#voice-options').hidden = true;
+  delete $('#voice-toggle').dataset.active;
+  text('#voice-title', 'Pairing required');
+  text('#voice-label', 'Talk');
+  $('#voice-detail').hidden = true;
+  for (const selector of ['#task-progress', '#evidence', '#active-skills', '#reflection-panel', '#new-trial']) $(selector).hidden = true;
+  $('#prediction').value = '';
+  text('#prediction-saved', '');
+  renderTrialContext();
+  renderMessages();
+  renderHistory();
+  controls();
+  $('#pairing').hidden = false;
+  $('#pairing-code').focus();
+  text('#connection-label', 'Pairing required');
+}
+async function boot(pairingCode) {
+  try {
+    let state;
+    if (api.sessionId && !pairingCode) {
+      try { state = await api.snapshot(); }
+      catch (error) {
+        if (![401,403,404].includes(error.status)) throw error;
+        // A retired local grant is not proof that the server requires pairing.
+        // Start a fresh session; its own response decides whether a code is needed.
+        api.forget();
+        state = await api.create();
       }
-    });
-
-    // Copy Session ID
-    this.dom.btnCopySession.addEventListener('click', async () => {
-      if (this.sessionId) {
-        try {
-          await navigator.clipboard.writeText(this.sessionId);
-          this._showToast(`Session ID copied: ${this.sessionId}`);
-        } catch { this._showToast('Could not copy. Select the session ID in the header.', true); }
-      }
-    });
-
-    // Reset / New Session
-    this.dom.btnNewSession.addEventListener('click', () => {
-      if (confirm('Start a new session? This will reset local session storage and initialize a fresh lab state.')) {
-        this._resetSession();
-      }
-    });
-
-    const prepareButton = document.getElementById('btn-prepare-trial');
-    prepareButton.addEventListener('click', async () => {
-      if (prepareButton.disabled) return;
-      prepareButton.disabled = true;
-      try {
-        const snapshot = await this.api._request(`/api/sessions/${this.sessionId}/prepare`, {method:'POST',body:{}});
-        this._updateSnapshot(snapshot);
-        this._showToast('Mock apparatus prepared. Record a new prediction and choose the next sample.');
-      } catch (err) { this._showToast(err.message,true); }
-      finally { prepareButton.disabled = false; }
-    });
-    // Offline banner retry
-    this.dom.btnRetryNetwork.addEventListener('click', () => {
-      this._syncSnapshot();
-    });
-
-    // Proposals: Confirm
-    this.dom.btnConfirmProposal.addEventListener('click', async () => {
-      if (!this.snapshot?.pending?.request_id) return;
-      try {
-        const updated = await this.api.confirmProposal(this.sessionId, this.snapshot.pending.request_id);
-        this._updateSnapshot(updated);
-        this._showToast('Student confirmed. Waiting for backend and any required operator authorization.');
-      } catch (err) {
-        this._showToast(`Confirmation failed: ${err.message}`, true);
-      }
-    });
-
-    // Proposals: Cancel
-    this.dom.btnCancelProposal.addEventListener('click', async () => {
-      const reqId = this.snapshot?.pending?.request_id;
-      try {
-        const updated = await this.api.cancelProposal(this.sessionId, reqId);
-        this._updateSnapshot(updated);
-        this._showToast('Proposal cancelled.');
-      } catch (err) {
-        this._showToast(`Cancellation failed: ${err.message}`, true);
-      }
-    });
-
-    // Proposals: Parameter Correction (Invalidates old proposal per contract)
-    this.dom.proposalCorrectForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = this.dom.proposalCorrectInput.value.trim();
-      if (!text) return;
-
-      try {
-        const clientReqId = this._generateRequestId('corr');
-        const updated = await this.api.sendRequest(this.sessionId, text, clientReqId);
-        this.dom.proposalCorrectInput.value = '';
-        this._updateSnapshot(updated);
-        this._showToast('Correction submitted. Previous proposal revised.');
-      } catch (err) {
-        this._showToast(`Correction error: ${err.message}`, true);
-      }
-    });
-
-    // Text Command Pathway (Always available credential-free)
-    this.dom.commandForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = this.dom.commandInput.value.trim();
-      if (!text) return;
-
-      try {
-        const clientReqId = this._generateRequestId('cmd');
-        const updated = await this.api.sendRequest(this.sessionId, text, clientReqId);
-        if (this.dom.commandInput.value.trim() === text) this.dom.commandInput.value = '';
-        this._updateSnapshot(updated);
-      } catch (err) {
-        this._showToast(`Command error: ${err.message}`, true);
-      }
-    });
-
-    // Voice Mic Toggle (Header & Mobile)
-    const toggleVoice = () => this._toggleVoiceCapture();
-    this.dom.btnToggleMic.addEventListener('click', toggleVoice);
-    this.dom.btnMobileMic.addEventListener('click', toggleVoice);
-
-    // Voice Mute Toggle
-    this.dom.btnToggleMute.addEventListener('click', () => {
-      if (!this.liveClient) return;
-      const willMute = !this.liveClient.isMuted;
-      this.liveClient.setMuted(willMute);
-    });
-
-    // Disconnect Voice
-    this.dom.btnDisconnectVoice.addEventListener('click', () => {
-      if (this.liveClient) {
-        this.liveClient.cleanup();
-      }
-    });
-
-    // Prediction Form Submit
-    this.dom.predictionForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = this.dom.predictionInput.value.trim();
-      if (!text) return;
-
-      try {
-        const updated = await this.api.submitPrediction(this.sessionId, text);
-        this._updateSnapshot(updated);
-        this._showToast('Hypothesis recorded!');
-      } catch (err) {
-        this._showToast(`Failed to record prediction: ${err.message}`, true);
-      }
-    });
-
-    // Prediction Edit Button
-    this.dom.btnEditPrediction.addEventListener('click', () => {
-      this.dom.predictionSavedContainer.style.display = 'none';
-      this.dom.predictionForm.style.display = 'flex';
-      this.dom.predictionInput.value = this.snapshot?.prediction || '';
-      this.dom.predictionInput.focus();
-    });
-
-    // Quiz Form Submit
-    this.dom.quizForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!this.snapshot?.quiz) return;
-
-      let answer = null;
-      if (this.snapshot.quiz.type === 'multiple_choice') {
-        const selected = this.dom.quizForm.querySelector('input[name="quiz_choice"]:checked');
-        if (!selected) {
-          this._showToast('Please select an option before submitting.', true);
-          return;
-        }
-        answer = selected.value;
-      } else {
-        answer = this.dom.quizFreeformInput.value.trim();
-        if (!answer) {
-          this._showToast('Please write your explanation before submitting.', true);
-          return;
-        }
-      }
-
-      try {
-        const updated = await this.api.submitAnswer(this.sessionId, this.snapshot.quiz.id, answer);
-        this._updateSnapshot(updated);
-        this._showToast('Answer submitted!');
-      } catch (err) {
-        this._showToast(`Quiz submission failed: ${err.message}`, true);
-      }
-    });
-
-    // Experiment Modal Open / Close
-    this.dom.btnOpenExperiments.addEventListener('click', () => {
-      this.dom.experimentModal.classList.add('active');
-    });
-    this.dom.btnCloseExperimentModal.addEventListener('click', () => {
-      this.dom.experimentModal.classList.remove('active');
-    });
-    this.dom.experimentModal.addEventListener('click', (e) => {
-      if (e.target === this.dom.experimentModal) {
-        this.dom.experimentModal.classList.remove('active');
-      }
-    });
-
-    // Export Notebook
-    this.dom.btnExportNotebook.addEventListener('click', () => {
-      this._exportNotebookReport();
-    });
-
-    // Developer Panel Actions
-    this.dom.btnRefreshSkills.addEventListener('click', () => this._loadSkills());
-    this.dom.btnComposeSkill.addEventListener('click', () => this._composeSkillCandidate());
-    this.dom.btnTestCandidate.addEventListener('click', () => this._testComposedCandidate());
-    this.dom.btnPromoteCandidate.addEventListener('click', () => this._promoteComposedCandidate());
+    } else state = await api.create(pairingCode);
+    $('#pairing').hidden = true;
+    $('#pairing-code').value = '';
+    client?.close();
+    if (snapshot?.session_id !== state.session_id) {
+      releaseScene();
+      developer.release();
+      snapshot = undefined;
+      liveTurns.clear();
+      attemptedPresentations.clear();
+      invalidatedProposals.clear();
+    }
+    connection = 'connecting';
+    pendingKey = acknowledgedKey = '';
+    proposalGeneration++;
+    client = new SessionClient(api, { onState: showState, onTranscript: transcript, onStatus: audioStatus, onError: notify, onResync: resync });
+    client.acceptState(state);
+    client.connect();
+  } catch (error) {
+    if ([401,403,404].includes(error.status)) { api.forget(); credentialsNeeded(); }
+    else { text('#connection-label', 'Notebook unavailable'); fail(error); }
   }
-
-  // --- Session Management & Lifecycle ---
-
-  async _loadHealth() {
-    try {
-      this.health = await this.api.getHealth();
-      this._renderHealth();
-    } catch (err) {
-      console.warn('Health check unavailable:', err);
-      // Fallback defaults
-      this.health = {
-        backend: 'mock',
-        live_configured: false,
-        live_model: 'unknown',
-        expert_configured: false,
-      };
-      this._renderHealth();
-    }
+}
+async function resync() {
+  const owner = client;
+  try {
+    const state = await api.snapshot();
+    if (owner === client) owner?.acceptState(state);
+  } catch (error) {
+    if (owner !== client) return;
+    fail(error);
+    if ([401,403,404].includes(error.status)) { api.forget(); credentialsNeeded(); }
   }
-
-  _renderHealth() {
-    if (!this.health) return;
-
-    // Backend pill
-    const backend = (this.snapshot?.backend || this.health.backend || 'mock').toLowerCase();
-    this.dom.badgeBackend.className = `pill pill-${backend}`;
-    this.dom.badgeBackendText.textContent = `Backend: ${backend.toUpperCase()}`;
-
-    // Live voice configured status
-    if (this.health.live_configured === false) {
-      this.dom.badgeVoice.className = 'pill pill-voice-unavailable';
-      this.dom.badgeVoiceText.textContent = 'Voice: Unavailable';
-      this.dom.liveFallbackBadge.style.display = 'inline-flex';
-      this.dom.liveNoticeText.textContent = 'Gemini Live voice not configured on server. Deterministic local text pathway active.';
+}
+async function act(action, body = {}, onSuccess) {
+  if (busy || !api.sessionId) return false;
+  busy = true; controls();
+  try {
+    const result = await api.action(action, body);
+    if (!client?.acceptState(result) && action === 'request' && result?.task_id) {
+      // An enqueue receipt can precede its first state update.
+      void resync();
     }
+    onSuccess?.();
+    $('#notice').hidden = true;
+    return true;
+  } catch (error) { fail(error); return false; }
+  finally { busy = false; controls(); }
+}
+function showState(state) {
+  if (snapshot?.generation !== state.generation) {
+    for (const [key, turn] of liveTurns) if (!turn.final) liveTurns.delete(key);
+    if (pendingKey) invalidatedProposals.add(pendingKey);
+    acknowledgedKey = '';
+    proposalGeneration++;
   }
-
-  async _loadExperiments() {
-    try {
-      const data = await this.api.getExperiments();
-      this.experiments = Array.isArray(data) ? data : [];
-      this._renderExperimentsModal();
-    } catch (err) {
-      console.warn('Could not load experiments:', err);
-      this.experiments = [];
-    }
+  snapshot = state;
+  render();
+}
+function controls() {
+  const ready = Boolean(snapshot) && !busy;
+  const complete = Boolean(currentObservation());
+  $('#conditions').disabled = !ready || complete;
+  $('#prediction').disabled = !ready || complete;
+  $('#save-prediction').disabled = $('#prediction').disabled;
+  $('#message').disabled = !ready;
+  $('#send').disabled = !ready;
+  $('#new-trial').disabled = !ready;
+  $('#reflection-form button[type=submit]').disabled = !ready;
+  $('#confirm').disabled = !ready || connection !== 'connected' || acknowledgedKey !== pendingKey || !pendingKey || invalidatedProposals.has(pendingKey) || expired(snapshot.pending);
+  $('#cancel').disabled = !ready;
+  $('#answer-clarification').disabled = !ready;
+}
+function expired(proposal) {
+  if (!proposal?.expires_at) return false;
+  const value = typeof proposal.expires_at === 'number' ? proposal.expires_at * (proposal.expires_at < 1e12 ? 1000 : 1) : Date.parse(proposal.expires_at);
+  return Number.isFinite(value) && value <= Date.now();
+}
+function renderTrialContext() {
+  const experiment = snapshot?.experiment?.id;
+  $('#message').placeholder = waterFixture() ? 'Pour one premeasured portion of water from A into C.'
+    : experiment === 'indicator_ph' ? 'Check the color of the vinegar sample.' : 'Ask a question or request an action.';
+  text('#prediction-hint', waterFixture() ? 'Predict how much water reaches the receiver, and tell us why.'
+    : experiment === 'indicator_ph' ? 'Predict a color or an acid/base category, and tell us why.' : '');
+  const choices = conditionChoices();
+  const container = $('#condition-buttons');
+  const signature = JSON.stringify(choices.map(({id, title}) => [id, title]));
+  // Keep focus when polling updates a trial without changing the available samples.
+  if (container.dataset.signature !== signature) {
+    container.replaceChildren(...choices.map(({id, title}) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'condition secondary';
+      button.dataset.condition = id;
+      button.textContent = title;
+      return button;
+    }));
+    container.dataset.signature = signature;
   }
-
-  async _initSession() {
-    const savedId = localStorage.getItem('openarms_session_id');
-    let snap = null;
-
-    if (savedId) {
-      try {
-        snap = await this.api.getSession(savedId);
-      } catch (err) {
-        console.warn(`Could not restore session ${savedId}:`, err.message);
-        snap = null;
-      }
-    }
-
-    if (!snap) {
-      snap = await this.api.createSession();
-    }
-
-    this.sessionId = snap.session_id;
-    localStorage.setItem('openarms_session_id', this.sessionId);
-    this.dom.sessionIdDisplay.textContent = this.sessionId;
-
-    // Initialize Event WebSocket
-    this._initEventsStream();
-
-    // Update state
-    this._updateSnapshot(snap);
-
-    // If no experiment selected and experiments are available, prompt or set first
-    if (!snap.experiment && this.experiments.length > 0) {
-      try {
-        const updated = await this.api.selectExperiment(this.sessionId, this.experiments[0].id);
-        this._updateSnapshot(updated);
-      } catch (e) {
-        console.warn('Auto-select experiment failed:', e);
-      }
-    }
-  }
-
-  _initEventsStream() {
-    if (this.eventsClient) {
-      this.eventsClient.close();
-    }
-
-    this.eventsClient = new EventsClient(this.sessionId, {
-      onState: (updatedSnapshot) => {
-        this._updateSnapshot(updatedSnapshot);
-      },
-      onStatusChange: ({ connected, reconnecting, attempt }) => {
-        if (connected) {
-          this.dom.badgeConnection.className = 'pill pill-voice-active';
-          this.dom.badgeConnectionText.textContent = 'Live Synced';
-          this.dom.offlineBanner.classList.remove('active');
-        } else if (reconnecting) {
-          this.dom.badgeConnection.className = 'pill pill-voice-connecting';
-          this.dom.badgeConnectionText.textContent = `Reconnecting (${attempt})...`;
-          this.dom.offlineBannerText.textContent = `Connection lost. Reconnecting with exponential backoff (attempt ${attempt})...`;
-          this.dom.offlineBanner.classList.add('active');
-        } else {
-          this.dom.badgeConnection.className = 'pill pill-voice-unavailable';
-          this.dom.badgeConnectionText.textContent = 'Offline';
-          this.dom.offlineBanner.classList.add('active');
-        }
-      },
-      onResyncNeeded: () => {
-        this._syncSnapshot();
-      },
-    });
-
-    this.eventsClient.connect();
-  }
-
-  async _syncSnapshot() {
-    if (!this.sessionId) return;
-    try {
-      const snap = await this.api.getSession(this.sessionId);
-      this._updateSnapshot(snap);
-      this.dom.offlineBanner.classList.remove('active');
-    } catch (err) {
-      console.warn('Snapshot resync failed:', err);
-    }
-  }
-
-  async _resetSession() {
-    if (this.eventsClient) {
-      this.eventsClient.close();
-      this.eventsClient = null;
-    }
-    if (this.liveClient) {
-      this.liveClient.cleanup();
-      this.liveClient = null;
-    }
-
-    localStorage.removeItem('openarms_session_id');
-
-    try {
-      const freshSnap = await this.api.createSession();
-      this.sessionId = freshSnap.session_id;
-      localStorage.setItem('openarms_session_id', this.sessionId);
-      this.dom.sessionIdDisplay.textContent = this.sessionId;
-
-      this._initEventsStream();
-      this._updateSnapshot(freshSnap);
-      this._showToast('New lab session initialized.');
-    } catch (err) {
-      this._showToast(`Session reset failed: ${err.message}`, true);
-    }
-  }
-
-  async _triggerEmergencyStop() {
-    if (!this.sessionId) return;
-    try {
-      // Audible beep for confirmation if audio context exists
-      this._playStopAlertSound();
-
-      const updated = await this.api.emergencyStop(this.sessionId);
-      this._updateSnapshot(updated);
-      this._showToast('STOP requested. Check execution status; controller stop behavior applies.', true);
-    } catch (err) {
-      this._showToast(`Emergency STOP request error: ${err.message}`, true);
-    }
-  }
-
-  _playStopAlertSound() {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(220, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  // --- Voice & AudioWorklet Stream ---
-
-  async _toggleVoiceCapture() {
-    if (!this.sessionId) return;
-
-    if (!this.liveClient) {
-      this.liveClient = new LiveClient(this.sessionId, {
-        onStatusChange: ({ status, message, isLiveAvailable, isMuted }) => {
-          this._handleLiveStatus(status, message, isLiveAvailable, isMuted);
-        },
-        onTranscript: ({ role, text }) => {
-          this._appendTranscript(role, text);
-        },
-        onInterrupted: () => {
-          this._showToast('Assistant speech interrupted by student voice');
-        },
-        onError: ({ message }) => {
-          this._showToast(`Voice error: ${message}`, true);
-        },
-        onAudioLevel: (rms) => {
-          const pct = Math.min(100, Math.round(rms * 400));
-          this.dom.audioLevelFill.style.width = `${pct}%`;
-        },
-      });
-    }
-
-    if (['active', 'connecting', 'reconnecting', 'muted'].includes(this.liveClient.status)) {
-      this.liveClient.cleanup();
-    } else {
-      try {
-        await this.liveClient.startVoice();
-      } catch (err) {
-        console.warn('Voice start failed:', err);
-      }
-    }
-  }
-
-  _handleLiveStatus(status, message, isLiveAvailable, isMuted) {
-    const connected = ['active', 'connecting', 'muted', 'reconnecting'].includes(status);
-    for (const button of [this.dom.btnToggleMic, this.dom.btnMobileMic]) {
-      button.setAttribute('aria-pressed', String(connected));
-      button.setAttribute('aria-label', connected ? 'Disconnect voice microphone' : 'Start voice microphone');
-    }
-    if (status === 'active' || status === 'muted') {
-      this.dom.liveFallbackBadge.style.display = 'none';
-      this.dom.liveNoticeText.textContent = 'Voice stays on until toggled off. Choose an experiment, predict, correct, say “confirm” or “cancel”, answer questions, or ask for the next trial.';
-    }
-    // Update Voice Badge in Header
-    if (status === 'active') {
-      this.dom.badgeVoice.className = 'pill pill-voice-active';
-      this.dom.badgeVoiceText.textContent = 'Voice: Active';
-      this.dom.btnToggleMic.className = 'btn-mic active';
-      this.dom.micIcon.textContent = '🎙️';
-      this.dom.micPulseRing.classList.add('active');
-      this.dom.voiceStatusText.textContent = 'Listening (Speak naturally)';
-      this.dom.btnToggleMute.disabled = false;
-      this.dom.btnDisconnectVoice.disabled = false;
-    } else if (status === 'muted') {
-      this.dom.badgeVoice.className = 'pill pill-voice-connecting';
-      this.dom.badgeVoiceText.textContent = 'Voice: Muted';
-      this.dom.btnToggleMic.className = 'btn-mic muted';
-      this.dom.micIcon.textContent = '🔇';
-      this.dom.micPulseRing.classList.remove('active');
-      this.dom.voiceStatusText.textContent = 'Microphone Muted';
-      this.dom.btnToggleMute.disabled = false;
-      this.dom.muteText.textContent = 'Unmute';
-      this.dom.muteIcon.textContent = '🎙️';
-    } else if (status === 'connecting' || status === 'reconnecting') {
-      this.dom.badgeVoice.className = 'pill pill-voice-connecting';
-      this.dom.badgeVoiceText.textContent = 'Voice: Connecting...';
-      this.dom.voiceStatusText.textContent = 'Connecting Voice...';
-      this.dom.micPulseRing.classList.remove('active');
-    } else if (status === 'unavailable') {
-      this.dom.badgeVoice.className = 'pill pill-voice-unavailable';
-      this.dom.badgeVoiceText.textContent = 'Voice: Unavailable';
-      this.dom.btnToggleMic.className = 'btn-mic';
-      this.dom.micIcon.textContent = '🎤';
-      this.dom.micPulseRing.classList.remove('active');
-      this.dom.voiceStatusText.textContent = 'Live Voice Unavailable';
-      this.dom.liveFallbackBadge.style.display = 'inline-flex';
-      this.dom.liveNoticeText.textContent = message || 'Live voice service unavailable. Using deterministic local text pathway.';
-      this.dom.btnToggleMute.disabled = true;
-      this.dom.btnDisconnectVoice.disabled = true;
-    } else {
-      // Disconnected or Error
-      this.dom.badgeVoice.className = 'pill pill-voice-unavailable';
-      this.dom.badgeVoiceText.textContent = 'Voice: Inactive';
-      this.dom.btnToggleMic.className = 'btn-mic';
-      this.dom.micIcon.textContent = '🎤';
-      this.dom.micPulseRing.classList.remove('active');
-      this.dom.voiceStatusText.textContent = 'Start voice · stays on until stopped';
-      this.dom.audioLevelFill.style.width = '0%';
-      this.dom.btnToggleMute.disabled = true;
-      this.dom.btnDisconnectVoice.disabled = true;
-      this.dom.muteText.textContent = 'Mute';
-      this.dom.muteIcon.textContent = '🔇';
-    }
-  }
-
-  _appendTranscript(role, text) {
-    const entry = document.createElement('div');
-    entry.className = 'transcript-entry';
-
-    const roleTag = document.createElement('span');
-    roleTag.className = `transcript-role ${role === 'user' ? 'user' : 'assistant'}`;
-    roleTag.textContent = role === 'user' ? 'Student' : 'Assistant';
-
-    const textSpan = document.createElement('span');
-    textSpan.className = 'transcript-text';
-    textSpan.textContent = text;
-
-    entry.appendChild(roleTag);
-    entry.appendChild(textSpan);
-
-    this.dom.transcriptFeed.appendChild(entry);
-    this.dom.transcriptFeed.scrollTop = this.dom.transcriptFeed.scrollHeight;
-  }
-
-  // --- Snapshot Rendering & UI State Synchronization ---
-
-  _updateSnapshot(snap) {
-    if (!snap) return;
-    // In-flight responses and events from a retired session cannot restore it.
-    if (this.sessionId && snap.session_id !== this.sessionId) return;
-    const sessionChanged = this.snapshot?.session_id !== snap.session_id;
-    this.snapshot = snap;
-    document.getElementById('btn-prepare-trial').hidden = snap.backend !== 'mock';
-
-    // 1. Session ID display
-    if (snap.session_id) {
-      this.sessionId = snap.session_id;
-      this.dom.sessionIdDisplay.textContent = snap.session_id;
-    }
-
-    // 2. Health & Backend Pill
-    this._renderHealth();
-
-    // 3. Render Proposal Section (Pending confirmation)
-    this._renderProposal(snap.pending);
-
-    // 4. Render Current Experiment
-    this._renderExperiment(snap.experiment);
-
-    // 5. Render Prediction
-    this._renderPrediction(snap.prediction, sessionChanged);
-
-    // 6. Render Arm State & Bench Pods
-    this._renderBenchState(snap.state);
-
-    // 7. Render Observations with Provenance
-    this._renderObservations(snap.observations);
-
-    // 8. Render Quiz Checkpoint
-    this._renderQuiz(snap.quiz);
-
-    // 9. Render Notebook Events Timeline
-    this._renderNotebook(snap.notebook);
-
-    // 10. Render Message Log
-    this._renderMessages(snap.messages);
-
-    // 11. Render Dev Snapshot
-    this.dom.snapshotInspector.textContent = JSON.stringify(snap, null, 2);
-  }
-
-  _renderProposal(pending) {
-    if (this.proposalCountdownInterval) {
-      clearInterval(this.proposalCountdownInterval);
-      this.proposalCountdownInterval = null;
-    }
-    if (!pending) {
-      this.dom.proposalSection.style.display = 'none';
-      if (this.proposalCountdownInterval) {
-        clearInterval(this.proposalCountdownInterval);
-        this.proposalCountdownInterval = null;
-      }
-      return;
-    }
-
-    this.dom.proposalSection.style.display = 'flex';
-    this.dom.proposalSummary.textContent = pending.summary || `Execute skill ${pending.skill_id}`;
-    this.dom.proposalSkillId.textContent = pending.skill_id || 'unknown';
-    this.dom.proposalParameters.textContent = JSON.stringify(pending.parameters || {}, null, 2);
-    this.dom.proposalRequestId.textContent = pending.request_id || 'none';
-    this.dom.btnConfirmProposal.disabled = !this._renderPreview(pending);
-
-    // Handle expiration countdown if present
-    if (pending.expires_at) {
-      this.dom.proposalExpiresRow.style.display = 'table-row';
-      const updateTimer = () => {
-        const remainingMs = epochDate(pending.expires_at).getTime() - Date.now();
-        if (remainingMs <= 0) {
-          this.dom.proposalExpiresVal.textContent = 'Expired';
-          this.dom.btnConfirmProposal.disabled = true;
-          if (this.proposalCountdownInterval) {
-            clearInterval(this.proposalCountdownInterval);
-            this.proposalCountdownInterval = null;
-          }
-        } else {
-          this.dom.proposalExpiresVal.textContent = `${Math.ceil(remainingMs / 1000)}s`;
-        }
-      };
-      updateTimer();
-      if (this.proposalCountdownInterval) clearInterval(this.proposalCountdownInterval);
-      this.proposalCountdownInterval = setInterval(updateTimer, 1000);
-    } else {
-      this.dom.proposalExpiresRow.style.display = 'none';
-    }
-  }
-
-  // Shows the simulation preview attached to a proposal. Returns whether it may be executed.
-  _renderPreview(pending) {
-    const preview = pending.preview;
-    const button = this.dom.btnConfirmProposal;
-    if (this._confirmLabel === undefined) this._confirmLabel = button.innerHTML;
-    const video = this.dom.proposalPreviewVideo;
-    if (!preview) {
-      this.dom.proposalPreview.style.display = 'none';
-      video.style.display = 'none';
-      button.innerHTML = this._confirmLabel;
-      return true;
-    }
-    this.dom.proposalPreview.style.display = 'block';
-    const target = this.snapshot?.backend === 'physical' ? 'the real arm' : `the ${this.snapshot?.backend || 'mock'} controller`;
-    const status = {
-      running: 'Simulating this plan in MuJoCo…',
-      ready: `Simulation finished. Say or type "execute" to run it on ${target}.`,
-      blocked: 'The simulation stopped this plan. It will not be executed.',
-      unavailable: `No simulation for this action: ${preview.reason || 'not modelled'}`,
-      error: `The simulation did not run: ${preview.reason || 'unknown error'}`
-    }[preview.status] || preview.status;
-    this.dom.proposalPreviewStatus.textContent = status;
-    this.dom.proposalPreview.dataset.status = preview.status;
-
-    // Only touch the video when its source changes, so state updates do not restart playback.
-    if (preview.video) {
-      if (video.dataset.src !== preview.video) {
-        video.dataset.src = preview.video;
-        video.src = preview.video;
-        video.play?.().catch(() => {});
-      }
-      video.style.display = 'block';
-    } else {
-      video.removeAttribute('src');
-      delete video.dataset.src;
-      video.style.display = 'none';
-    }
-
-    const notes = this.dom.proposalPreviewNotes;
-    notes.replaceChildren();
-    for (const [kind, items] of [['block', preview.blocks || []], ['note', preview.warnings || []]]) {
-      for (const text of items) {
-        const li = document.createElement('li');
-        li.className = `preview-${kind}`;
-        li.textContent = (kind === 'block' ? 'Blocked: ' : 'Note: ') + text;
-        notes.appendChild(li);
-      }
-    }
-    if (preview.status === 'ready' && preview.poses_file) {
-      const li = document.createElement('li');
-      li.className = 'preview-note';
-      li.textContent = `Same waypoints the arm will follow: ${preview.poses_file}, ${preview.seconds_per_move}s per move.`;
-      notes.appendChild(li);
-    }
-
-    const allowed = preview.status === 'ready' || preview.status === 'unavailable';
-    button.textContent = allowed ? `▶ Execute on ${target}` : (preview.status === 'running' ? 'Simulating…' : 'Cannot execute');
-    return allowed;
-  }
-
-  _renderExperiment(exp) {
-    if (!exp) {
-      this.dom.experimentTitle.textContent = 'No Experiment Selected';
-      this.dom.experimentQuestion.textContent = 'Choose an experiment to begin testing hypotheses.';
-      this.dom.experimentInstructions.textContent = '';
-      this.dom.experimentIndepVar.textContent = 'Independent: none';
-      this.dom.experimentControlledVars.innerHTML = '';
-      return;
-    }
-
-    this.dom.experimentTitle.textContent = exp.title || exp.id || 'Current Experiment';
-    this.dom.experimentQuestion.textContent = exp.question || '';
-    this.dom.experimentInstructions.textContent = exp.instructions || '';
-    this.dom.experimentIndepVar.textContent = `Independent: ${exp.independent_variable || 'None'}`;
-
-    this.dom.experimentControlledVars.innerHTML = '';
-    const controlled = exp.controlled_variables || [];
-    controlled.forEach((ctrl) => {
-      const tag = document.createElement('span');
-      tag.className = 'var-tag';
-      tag.textContent = `Control: ${ctrl}`;
-      this.dom.experimentControlledVars.appendChild(tag);
-    });
-  }
-
-  _renderExperimentsModal() {
-    this.dom.experimentsListContainer.innerHTML = '';
-    if (this.experiments.length === 0) {
-      this.dom.experimentsListContainer.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No experiments available.</p>';
-      return;
-    }
-
-    this.experiments.forEach((exp) => {
-      const card = document.createElement('div');
-      card.className = 'experiment-meta-box';
-      card.style.cursor = 'pointer';
-
-      card.innerHTML = `
-        <h3 style="font-size: 1rem; font-weight: 700; color: #fff;">${escapeHtml(exp.title || exp.id)}</h3>
-        <p style="font-size: 0.9rem; color: #38bdf8; font-weight: 600;">${escapeHtml(exp.question || '')}</p>
-        <p style="font-size: 0.8rem; color: var(--text-secondary);">${escapeHtml(exp.instructions || '')}</p>
-        <div style="margin-top: 6px;">
-          <button type="button" class="btn-primary" style="font-size: 0.82rem; min-height: 36px; padding: 6px 12px;">Select This Experiment</button>
-        </div>
-      `;
-
-      card.querySelector('button').addEventListener('click', async () => {
-        try {
-          const updated = await this.api.selectExperiment(this.sessionId, exp.id);
-          this._updateSnapshot(updated);
-          this.dom.experimentModal.classList.remove('active');
-          this._showToast(`Switched experiment to: ${escapeHtml(exp.title || exp.id)}`);
-        } catch (err) {
-          this._showToast(`Failed to switch experiment: ${err.message}`, true);
-        }
-      });
-
-      this.dom.experimentsListContainer.appendChild(card);
-    });
-  }
-
-  _renderPrediction(prediction, sessionChanged = false) {
-    // Keep unsaved writing and the edit form intact across streamed state updates.
-    if (!sessionChanged && this.renderedPrediction === prediction) return;
-    this.renderedPrediction = prediction;
-    if (prediction && prediction.trim()) {
-      this.dom.predictionSavedContainer.style.display = 'flex';
-      this.dom.predictionSavedDisplay.textContent = `"${prediction.trim()}"`;
-      this.dom.predictionForm.style.display = 'none';
-    } else {
-      this.dom.predictionSavedContainer.style.display = 'none';
-      this.dom.predictionForm.style.display = 'flex';
-      this.dom.predictionInput.value = '';
-    }
-  }
-
-  _renderBenchState(state) {
-    const s = state || {};
-
-    // Stage
-    const stage = s.stage || this.snapshot?.requests?.at(-1)?.status || 'ready';
-    this.dom.armStageTag.textContent = `Stage: ${stage}`;
-
-    // Arm state metrics
-    this.dom.armStatusVal.textContent = this.snapshot?.requests?.at(-1)?.status || 'idle';
-    const unverified = this.snapshot?.backend === 'physical' || this.snapshot?.state_provenance === 'UNKNOWN';
-    this.dom.armGripperVal.textContent = unverified ? 'unknown' : (s.gripper || (s.holding ? 'closed (holding)' : 'open'));
-    this.dom.armPositionVal.textContent = unverified ? 'unknown' : (s.at || s.arm_pose || s.position || 'unknown');
-    this.dom.armSafetyVal.textContent = s.armed === true ? 'armed' : s.armed === false ? 'disarmed' : 'unknown';
-
-    // Station pods
-    const staContents = unverified ? 'unknown' : (s.point_holds?.A || 'empty');
-    const stbContents = unverified ? 'unknown' : (s.point_holds?.B || 'empty');
-
-    this.dom.stationAContents.textContent = staContents;
-    this.dom.stationBContents.textContent = stbContents;
-    document.getElementById('station-c-contents').textContent = unverified ? 'unknown' : (s.point_holds?.C || 'empty');
-    for (const station of ['a', 'b', 'c']) {
-      const point = station.toUpperCase();
-      document.getElementById(`station-${station}-pod`).classList.toggle('active', !unverified && (s.at === point || s.target === point));
-      document.getElementById(`station-${station}-status`).textContent = unverified ? 'Unverified setup' : (s.point_holds?.[point] ? 'Occupied' : 'Empty');
-    }
-  }
-
-  _renderObservations(observations) {
-    const list = Array.isArray(observations) ? observations : [];
-    this.dom.observationsCount.textContent = `${list.length} observation${list.length === 1 ? '' : 's'}`;
-
-    if (list.length === 0) {
-      this.dom.noObservationsMsg.style.display = 'block';
-      this.dom.observationsList.innerHTML = '';
-      this.dom.observationsList.appendChild(this.dom.noObservationsMsg);
-      return;
-    }
-
-    this.dom.noObservationsMsg.style.display = 'none';
-    this.dom.observationsList.innerHTML = '';
-
-    list.forEach((obs) => {
-      const item = document.createElement('article');
-      item.className = 'observation-item';
-
-      const prov = (obs.provenance || 'UNKNOWN').toUpperCase();
-      let provClass = 'provenance-unknown';
-      let provLabel = 'UNKNOWN PROVENANCE';
-
-      if (prov.startsWith('MOCK')) {
-        provClass = 'provenance-model-predicted';
-        provLabel = 'MOCK';
-      } else if (prov.includes('PHYSICAL') || prov.includes('BENCH') || prov.includes('REAL')) {
-        provClass = 'provenance-physical';
-        provLabel = 'PHYSICAL BENCH';
-      } else if (prov.includes('SIMULAT') || prov.includes('ISAAC')) {
-        provClass = 'provenance-simulated';
-        provLabel = 'SIMULATED';
-      } else if (prov.includes('MODEL') || prov.includes('PREDICT')) {
-        provClass = 'provenance-model-predicted';
-        provLabel = 'MODEL-PREDICTED';
-      }
-
-      const timeFormatted = obs.timestamp ? epochDate(obs.timestamp).toLocaleTimeString() : '';
-
-      item.innerHTML = `
-        <div class="observation-header">
-          <span class="provenance-tag ${provClass}">${provLabel}</span>
-          <span class="observation-time">${timeFormatted}</span>
-        </div>
-        <p class="observation-text">${escapeHtml(obs.text || JSON.stringify(obs))}</p>
-      `;
-
-      this.dom.observationsList.appendChild(item);
-    });
-
-    this.dom.observationsList.scrollTop = this.dom.observationsList.scrollHeight;
-  }
-
-  _renderQuiz(quiz) {
-    if (!quiz) {
-      this.dom.quizSection.style.display = 'none';
-      this.renderedQuizId = null;
-      return;
-    }
-
-    this.dom.quizSection.style.display = 'flex';
-    this.dom.quizPrompt.textContent = quiz.prompt || 'Reflection Question';
-
-    if (this.renderedQuizId === quiz.id) return;
-    this.renderedQuizId = quiz.id;
-    this.dom.quizFreeformInput.value = '';
-    this.dom.quizOptionsContainer.innerHTML = '';
-    if (quiz.type === 'multiple_choice' && Array.isArray(quiz.options)) {
-      this.dom.quizOptionsContainer.style.display = 'flex';
-      this.dom.quizFreeformContainer.style.display = 'none';
-
-      quiz.options.forEach((opt, idx) => {
-        const label = document.createElement('label');
-        label.className = 'quiz-option-label';
-        label.innerHTML = `
-          <input type="radio" name="quiz_choice" value="${escapeHtml(opt)}" id="quiz_opt_${idx}" required>
-          <span style="font-size: 0.9rem; color: #fff;">${escapeHtml(opt)}</span>
-        `;
-        this.dom.quizOptionsContainer.appendChild(label);
-      });
-    } else {
-      this.dom.quizOptionsContainer.style.display = 'none';
-      this.dom.quizFreeformContainer.style.display = 'block';
-    }
-  }
-
-  _renderNotebook(events) {
-    const list = Array.isArray(events) ? events : [];
-    if (list.length === 0) {
-      this.dom.noNotebookMsg.style.display = 'block';
-      this.dom.notebookTimeline.innerHTML = '';
-      this.dom.notebookTimeline.appendChild(this.dom.noNotebookMsg);
-      return;
-    }
-
-    this.dom.noNotebookMsg.style.display = 'none';
-    this.dom.notebookTimeline.innerHTML = '';
-
-    list.forEach((evt) => {
-      const entry = document.createElement('div');
-      entry.className = 'notebook-entry';
-
-      const timeStr = evt.time ? epochDate(evt.time).toLocaleTimeString() : '';
-      const kind = evt.kind || 'event';
-      const dataStr = typeof evt.data === 'string' ? evt.data : JSON.stringify(evt.data || {});
-
-      entry.innerHTML = `
-        <div style="display:flex; justify-content:space-between;">
-          <strong style="color:var(--accent-cyan); text-transform:uppercase; font-size:0.75rem;">${escapeHtml(kind)}</strong>
-          <span class="notebook-entry-time">${timeStr}</span>
-        </div>
-        <div style="color:var(--text-secondary); word-break:break-word;">${escapeHtml(dataStr)}</div>
-      `;
-
-      this.dom.notebookTimeline.appendChild(entry);
-    });
-
-    this.dom.notebookTimeline.scrollTop = this.dom.notebookTimeline.scrollHeight;
-  }
-
-  _renderMessages(messages) {
-    const list = Array.isArray(messages) ? messages : [];
-    if (list.length === 0) {
-      this.dom.noMessagesMsg.style.display = 'block';
-      this.dom.messagesTimeline.innerHTML = '';
-      this.dom.messagesTimeline.appendChild(this.dom.noMessagesMsg);
-      return;
-    }
-
-    this.dom.noMessagesMsg.style.display = 'none';
-    this.dom.messagesTimeline.innerHTML = '';
-
-    list.forEach((msg) => {
-      const entry = document.createElement('div');
-      entry.className = 'notebook-entry';
-      entry.style.borderLeftColor = msg.role === 'user' ? 'var(--accent-blue)' : 'var(--accent-green)';
-
-      entry.innerHTML = `
-        <strong style="font-size:0.72rem; color:${msg.role === 'user' ? '#93c5fd' : '#86efac'}; text-transform:uppercase;">
-          ${escapeHtml(msg.role || 'message')}
-        </strong>
-        <div style="color:#f8fafc; font-size:0.85rem; margin-top:2px;">${escapeHtml(msg.text || '')}</div>
-      `;
-
-      this.dom.messagesTimeline.appendChild(entry);
-    });
-
-    this.dom.messagesTimeline.scrollTop = this.dom.messagesTimeline.scrollHeight;
-  }
-
-  _exportNotebookReport() {
-    if (!this.snapshot) return;
-
-    const snap = this.snapshot;
-    const now = new Date().toISOString();
-    let md = `# OpenArms Lab Scientific Report\n\n`;
-    md += `- **Date/Time:** ${now}\n`;
-    md += `- **Session ID:** \`${snap.session_id}\`\n`;
-    md += `- **Execution Backend:** \`${snap.backend || 'mock'}\`\n`;
-    md += `- **Experiment:** ${snap.experiment?.title || 'None'}\n\n`;
-
-    md += `## 1. Scientific Inquiry\n`;
-    md += `- **Question:** ${snap.experiment?.question || 'N/A'}\n`;
-    md += `- **Independent Variable:** ${snap.experiment?.independent_variable || 'N/A'}\n`;
-    md += `- **Controlled Variables:** ${(snap.experiment?.controlled_variables || []).join(', ') || 'N/A'}\n\n`;
-
-    md += `## 2. Student Hypothesis & Prediction\n`;
-    md += `> ${snap.prediction || 'No prediction recorded'}\n\n`;
-
-    md += `## 3. Observed Outcomes & Evidence (Truthful Provenance)\n`;
-    if (snap.observations && snap.observations.length > 0) {
-      snap.observations.forEach((obs, idx) => {
-        md += `${idx + 1}. **[${(obs.provenance || 'UNKNOWN').toUpperCase()}]** ${obs.text}\n`;
-      });
-    } else {
-      md += `*No observations recorded.*\n`;
-    }
-    md += `\n*Integrity Note: Simulated/Model outcomes are explicitly marked and distinct from physical measurements.*\n\n`;
-
-    md += `## 4. Lab Notebook Timeline\n`;
-    if (snap.notebook && snap.notebook.length > 0) {
-      snap.notebook.forEach((evt) => {
-        md += `- **${evt.time || ''} [${evt.kind}]**: ${JSON.stringify(evt.data)}\n`;
-      });
-    }
-
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `openarms-lab-report-${snap.session_id}.md`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    this._showToast('Lab report exported to Markdown.');
-  }
-
-  // --- Skills Registry & Expert Composer ---
-
-  async _loadSkills() {
-    try {
-      const data = await this.api.getSkills();
-      this.skills = Array.isArray(data) ? data : (data?.skills || []);
-      this._renderSkillsTable();
-    } catch (err) {
-      console.warn('Could not load skills registry:', err);
-      // Fallback to skills in snapshot
-      if (this.snapshot?.skills) {
-        this.skills = this.snapshot.skills;
-        this._renderSkillsTable();
-      }
-    }
-  }
-
-  _renderSkillsTable() {
-    this.dom.skillsTableBody.innerHTML = '';
-    if (this.skills.length === 0) {
-      this.dom.skillsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:12px;">No skills registered.</td></tr>';
-      return;
-    }
-
-    this.skills.forEach((skill) => {
-      skill = {...skill, id: skill.skill_id || skill.id};
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-family:var(--font-mono);font-weight:600;color:var(--accent-cyan);">${escapeHtml(skill.id)}</td>
-        <td>${escapeHtml(skill.name || skill.id)}</td>
-        <td style="color:var(--text-secondary);">${escapeHtml(skill.description || 'No description')}</td>
-        <td>
-          <button type="button" class="btn-icon btn-test-skill" data-id="${escapeHtml(skill.id)}" style="padding:2px 8px;font-size:0.75rem;min-height:28px;">Test</button>
-        </td>
-      `;
-
-      tr.querySelector('.btn-test-skill').addEventListener('click', async () => {
-        try {
-          const res = await this.api.testSkill(skill.id);
-          this._showToast(`Skill test executed: ${JSON.stringify(res)}`);
-        } catch (e) {
-          this._showToast(`Skill test failed: ${e.message}`, true);
-        }
-      });
-
-      this.dom.skillsTableBody.appendChild(tr);
-    });
-  }
-
-  async _composeSkillCandidate() {
-    if (this.dom.btnComposeSkill.disabled) return;
-    const instruction = this.dom.skillComposeInput.value.trim();
-    if (!instruction) {
-      this._showToast('Please type an instruction to compose.', true);
-      return;
-    }
-
-    try {
-      this.dom.btnComposeSkill.disabled = true;
-      this.composedCandidate = null;
-      this.candidateEvidenceId = null;
-      this.dom.composedCandidatePreview.style.display = 'none';
-      this._showToast('Expert agent compiling skill candidate...');
-      const candidate = await this.api.composeSkill(instruction);
-      this.composedCandidate = {...candidate, id: candidate.skill_id || candidate.id};
-      this.candidateEvidenceId = null;
-      this.dom.btnPromoteCandidate.disabled = true;
-      this.dom.candidateJsonPreview.textContent = JSON.stringify(candidate, null, 2);
-      this.dom.composedCandidatePreview.style.display = 'flex';
-      this._showToast('Skill candidate compiled!');
-    } catch (err) {
-      this._showToast(`Composition failed: ${err.message}`, true);
-    } finally { this.dom.btnComposeSkill.disabled = false; }
-  }
-
-  async _testComposedCandidate() {
-    if (!this.composedCandidate?.id) {
-      this._showToast('No active candidate to test.', true);
-      return;
-    }
-
-    const candidateId = this.composedCandidate.id;
-    this.candidateEvidenceId = null;
-    this.dom.btnPromoteCandidate.disabled = true;
-    try {
-      const res = await this.api.testSkill(candidateId);
-      if (this.composedCandidate?.id !== candidateId) return;
-      this.candidateEvidenceId = res.evidence_id;
-      this.dom.btnPromoteCandidate.disabled = !res.evidence_id || res.verdict !== 'passed';
-      this._showToast(`Candidate test completed: ${JSON.stringify(res)}`);
-    } catch (err) {
-      this._showToast(`Candidate test error: ${err.message}`, true);
-    }
-  }
-
-  async _promoteComposedCandidate() {
-    if (!this.composedCandidate?.id) {
-      this._showToast('No active candidate to promote.', true);
-      return;
-    }
-
-    try {
-      const evidenceId = this.candidateEvidenceId;
-      if (!evidenceId) throw new Error("Test this candidate before promotion.");
-      const res = await this.api.promoteSkill(this.composedCandidate.id, evidenceId);
-      this._showToast(`Candidate promoted to active skills: ${this.composedCandidate.id}`);
-      this._loadSkills();
-    } catch (err) {
-      this._showToast(`Promotion failed: ${err.message}`, true);
-    }
-  }
-
-  // --- Utilities ---
-
-  _generateRequestId(prefix = 'req') {
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-  }
-
-  _showToast(msg, isError = false) {
-    const toast = document.createElement('div');
-    toast.className = 'pill';
-    toast.style.position = 'fixed';
-    toast.style.bottom = '24px';
-    toast.style.right = '24px';
-    toast.style.zIndex = '9999';
-    toast.style.background = isError ? '#7f1d1d' : '#064e3b';
-    toast.style.color = isError ? '#fecaca' : '#a7f3d0';
-    toast.style.border = `1px solid ${isError ? '#ef4444' : '#10b981'}`;
-    toast.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.5)';
-    toast.style.padding = '8px 16px';
-    toast.style.fontSize = '0.85rem';
-    toast.setAttribute('role', isError ? 'alert' : 'status');
-    toast.classList.add('app-toast');
-    toast.textContent = msg;
-
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.transition = 'opacity 0.3s ease';
-      toast.style.opacity = '0';
-      setTimeout(() => document.body.removeChild(toast), 300);
-    }, 3500);
+  $('#conditions').hidden = !choices.length;
+  for (const button of container.children) {
+    button.setAttribute('aria-pressed', String(button.dataset.condition === snapshot?.trial?.condition_id));
   }
 }
 
-// Instantiate and boot application on DOM load
-window.addEventListener('DOMContentLoaded', () => {
-  const app = new OpenArmsApp();
-  app.init();
-  window.openArmsApp = app;
+function render() {
+  renderTrialContext();
+  // Keep a student's in-progress correction intact while state updates arrive.
+  if (document.activeElement !== $('#prediction') && !$('#prediction').dataset.dirty) $('#prediction').value = snapshot.prediction || '';
+  text('#prediction-saved', snapshot.prediction ? 'Prediction saved in your notebook.' : '');
+  text('#save-prediction', snapshot.prediction ? 'Update prediction' : 'Save prediction');
+  renderMessages();
+  renderProposal();
+  renderTask();
+  renderScene();
+  renderSkills();
+  renderEvidence();
+  renderHistory();
+  if (isDeveloper()) developer.render(mediaReady() ? snapshot : undefined, audio, currentTask());
+  controls();
+}
+
+// Persisted turns are authoritative. Live fragments are coalesced by role + turn ID.
+function renderMessages() {
+  const turns = new Map();
+  for (const [index, message] of (snapshot?.messages || []).entries()) {
+    if (!['user','assistant'].includes(message.role) || !message.text) continue;
+    const key = `${message.role}:${message.turn_id || message.id || `saved-${index}`}`;
+    const existing = turns.get(key);
+    turns.set(key, { ...message, text: existing ? joinTurn(existing.text, message.text, false) : message.text });
+  }
+  for (const [key, turn] of liveTurns) {
+    if (!turns.has(key) || !turn.final) turns.set(key, turn);
+    else liveTurns.delete(key);
+  }
+  const log = $('#messages');
+  const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 70;
+  const fragment = document.createDocumentFragment();
+  for (const [key, turn] of turns) {
+    const element = document.createElement('article'); element.className = `message ${turn.role}${turn.final === false ? ' draft' : ''}`; element.dataset.turn = key;
+    const speaker = document.createElement('span'); speaker.className = 'speaker'; speaker.textContent = turn.role === 'user' ? 'You' : 'OpenArms';
+    const paragraph = document.createElement('p'); paragraph.textContent = turn.text;
+    element.append(speaker, paragraph); fragment.append(element);
+  }
+  // Skip identical log rewrites so state heartbeats do not repeat screen-reader announcements.
+  const signature = [...turns].map(([key, turn]) => `${key}:${turn.text}:${turn.final}`).join('|');
+  if (log.dataset.signature !== signature) { log.replaceChildren(fragment); log.dataset.signature = signature; if (nearBottom) log.scrollTop = log.scrollHeight; }
+  const latest = [...turns.values()].findLast(turn => turn.role === 'assistant');
+  text('#latest-reply', latest?.text);
+  $('#latest-reply').hidden = !latest || $('#history').open;
+}
+function joinTurn(previous, incoming, final) {
+  if (final || incoming.startsWith(previous)) return incoming;
+  if (previous.endsWith(incoming)) return previous;
+  // Some providers send cumulative text; others send disjoint fragments.
+  for (let length = Math.min(previous.length, incoming.length); length > 0; length--) {
+    if (previous.endsWith(incoming.slice(0,length))) return previous + incoming.slice(length);
+  }
+  return previous + (/\s$/.test(previous) || /^[\s.,!?;:]/.test(incoming) ? '' : ' ') + incoming;
+}
+function transcript(frame) {
+  const key = `${frame.role}:${frame.turn_id}`;
+  const previous = liveTurns.get(key);
+  if (previous?.final) return;
+  liveTurns.set(key, { ...frame, text: previous ? joinTurn(previous.text, frame.text, frame.final) : frame.text });
+  if (liveTurns.size > 200) liveTurns.delete(liveTurns.keys().next().value);
+  renderMessages();
+}
+function renderProposal() {
+  const proposal = snapshot.pending;
+  const key = keyFor(proposal);
+  if (key && pendingKey === key && pendingSummary !== proposal.summary) invalidatedProposals.add(key);
+  pendingSummary = proposal?.summary || '';
+  if (pendingKey !== key) {
+    pendingKey = key; acknowledgedKey = ''; proposalGeneration++;
+  }
+  $('#proposal').hidden = !proposal;
+  $('#proposal-nav').hidden = !proposal;
+  if (!proposal) return;
+  text('#proposal-summary', proposal.summary);
+  text('#proposal-status', expired(proposal) ? 'This proposal has expired. Send a new request.' : invalidatedProposals.has(key) ? 'Connection changed. Ask for a fresh proposal before confirming.' : acknowledgedKey === key ? 'Reviewed on screen. Ready for your decision.' : 'Displaying the exact proposal before confirmation…');
+  $('#review-again').hidden = !attemptedPresentations.has(key) || acknowledgedKey === key || invalidatedProposals.has(key);
+  schedulePresentation();
+}
+function schedulePresentation(force = false) {
+  const proposal = snapshot?.pending;
+  const key = keyFor(proposal);
+  if (!key || !proposal.summary || expired(proposal) || invalidatedProposals.has(key) || connection !== 'connected' || document.hidden || (!force && attemptedPresentations.has(key))) return;
+  const epoch = proposalGeneration;
+  // Two animation frames allow the exact visible proposal to be laid out and painted.
+  requestAnimationFrame(() => requestAnimationFrame(async () => {
+    if (document.hidden || epoch !== proposalGeneration || keyFor(snapshot.pending) !== key || connection !== 'connected' || $('#proposal').hidden || $('#proposal-summary').textContent !== proposal.summary || !$('#proposal-summary').getClientRects().length || attemptedPresentations.has(key)) return;
+    // Require actual viewport visibility, not mere delivery or an off-screen DOM node.
+    const rect = $('#proposal-summary').getBoundingClientRect();
+    const viewport = window.visualViewport;
+    const viewportTop = viewport?.offsetTop || 0;
+    const top = Math.max(viewportTop, $('.masthead').getBoundingClientRect().bottom);
+    const bottom = viewportTop + (viewport?.height || innerHeight);
+    const left = viewport?.offsetLeft || 0;
+    if (rect.top < top || rect.bottom > bottom || rect.left < left || rect.right > left + (viewport?.width || innerWidth)) return;
+    attemptedPresentations.add(key);
+    try {
+      const state = await api.action('present', { request_id: proposal.request_id, proposal_version: proposal.proposal_version, channel: 'text' });
+      client?.acceptState(state);
+      if (keyFor(snapshot.pending) === key && epoch === proposalGeneration && connection === 'connected' && !expired(snapshot.pending)) {
+        acknowledgedKey = key;
+        renderProposal();
+      }
+    } catch (error) { fail(error); text('#proposal-status', 'Presentation could not be saved. Review the proposal and try again.'); $('#review-again').hidden = false; }
+    controls();
+  }));
+}
+const taskLabels = {
+  queued: 'Request queued', running: 'Reviewing your request',
+  needs_clarification: 'A question about your request', awaiting_confirmation: 'Waiting for your decision',
+  executing: 'Running the confirmed plan', observing: 'Checking the result',
+  completed: 'Task complete', failed: 'Task could not finish', cancelled: 'Task canceled',
+};
+const routeLabels = { active_skill: 'Reused an active skill', expert: 'Background expert' };
+
+function renderTask() {
+  const task = currentTask();
+  const label = Object.hasOwn(taskLabels, task?.status) ? taskLabels[task.status] : '';
+  const question = task?.status === 'needs_clarification';
+  const step = task?.feedback?.findLast(event => event.type === 'execution_progress')?.step;
+  const detail = task?.summary || task?.reason ||
+    (task?.status === 'executing' && Number.isInteger(step) && step >= 0 ? `Step ${step + 1}` : '');
+  const route = Object.hasOwn(routeLabels, task?.route) ? routeLabels[task.route] : '';
+  $('#task-progress').hidden = !label;
+  $('#answer-clarification').hidden = !question;
+  text('#task-status', label);
+  text('#task-detail', detail);
+  text('#task-reason', task?.reason !== detail ? task?.reason : '');
+  $('#task-context').hidden = !task?.request && !route;
+  text('#task-request', task?.request);
+  text('#task-route', route);
+}
+
+function releaseScene() {
+  sceneView?.controller.abort();
+  for (const url of sceneView?.urls || []) URL.revokeObjectURL(url);
+  sceneView = undefined;
+  $('#scene-frames').replaceChildren();
+  $('#camera-empty').hidden = false;
+  $('#scene-detail').hidden = true;
+}
+
+async function loadFrame(frame, view, figure, status) {
+  let url;
+  try {
+    const blob = await api.evidenceImage(frame, view.controller.signal);
+    if (sceneView !== view) return;
+    url = URL.createObjectURL(blob);
+    view.urls.add(url);
+    const image = document.createElement('img');
+    image.alt = frame.description || 'Scene evidence frame';
+    image.src = url;
+    await image.decode();
+    if (sceneView !== view) return;
+    figure.prepend(image);
+    status.remove();
+  } catch {
+    if (sceneView !== view) return;
+    if (url) {
+      URL.revokeObjectURL(url);
+      view.urls.delete(url);
+    }
+    status.textContent = 'Image unavailable.';
+  }
+}
+
+function captureTime(value) {
+  if (value == null) return '';
+  const date = typeof value === 'number' ? new Date(value * (value < 1e12 ? 1000 : 1)) : new Date(value);
+  return Number.isFinite(date.getTime()) ? `Captured ${date.toLocaleString()}` : '';
+}
+
+function renderScene() {
+  if (!mediaReady()) return;
+  const scene = snapshot.scene;
+  const frames = snapshot.scene_images || [];
+  const detail = [scene?.summary, provenanceName(scene?.provenance), scene?.fresh === false ? 'Stale scene' : ''].filter(Boolean).join(' · ');
+  text('#scene-detail', detail);
+  const container = $('#scene-frames');
+  const signature = JSON.stringify([snapshot.session_id, snapshot.generation,
+    frames.map(frame => [frame.evidence_id, frame.captured_at, frame.provenance, frame.sha256, frame.artifact_url, frame.description])]);
+  if (sceneView?.signature === signature) {
+    $('#scene-detail').hidden = !detail;
+    return;
+  }
+  releaseScene();
+  $('#scene-detail').hidden = !detail;
+  if (!frames.length) return;
+  $('#camera-empty').hidden = true;
+  const view = { signature, controller: new AbortController(), urls: new Set() };
+  sceneView = view;
+  function frameFigure(frame) {
+    const figure = document.createElement('figure');
+    const caption = document.createElement('figcaption');
+    caption.textContent = [provenanceName(frame.provenance), captureTime(frame.captured_at)].filter(Boolean).join(' · ');
+    if (frame.evidence_id || frame.sha256) {
+      const details = document.createElement('details');
+      details.className = 'lab-details';
+      const summary = document.createElement('summary');
+      summary.textContent = 'Frame details';
+      details.append(summary);
+      for (const field of [frame.evidence_id && `Evidence ID: ${frame.evidence_id}`, frame.sha256 && `SHA-256: ${frame.sha256}`].filter(Boolean)) {
+        const line = document.createElement('p');
+        line.textContent = field;
+        details.append(line);
+      }
+      caption.append(details);
+    }
+    const status = document.createElement('p');
+    status.textContent = 'Loading image…';
+    figure.append(status, caption);
+    const load = () => { void loadFrame(frame, view, figure, status); };
+    return { figure, load };
+  }
+  const primary = frameFigure(frames[0]);
+  container.append(primary.figure);
+  primary.load();
+  if (frames.length > 1) {
+    const details = document.createElement('details');
+    details.className = 'lab-details';
+    const summary = document.createElement('summary');
+    summary.textContent = 'More camera images';
+    details.append(summary);
+    details.addEventListener('toggle', () => {
+      if (!details.open || details.childElementCount > 1 || sceneView !== view) return;
+      for (const frame of frames.slice(1)) {
+        const secondary = frameFigure(frame);
+        details.append(secondary.figure);
+        secondary.load();
+      }
+    });
+    container.append(details);
+  }
+}
+
+function renderSkills() {
+  const skills = snapshot.active_skills || snapshot.skills?.filter?.(skill => skill.status === 'active' || skill.lifecycle === 'active') || [];
+  $('#active-skills').hidden = !skills.length;
+  $('#skill-labels').replaceChildren(...skills.map(skill => {
+    const item = document.createElement('li');
+    item.textContent = skill.name || skill.label || skill.skill_id;
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); summary.textContent = 'Skill details';
+    const version = document.createElement('p'); version.textContent = `Version: ${skill.version || skill.skill_version}`;
+    details.append(summary, version);
+    for (const example of skill.retrieval_examples || []) {
+      const text = document.createElement('p'); text.textContent = `Try: ${example}`; details.append(text);
+    }
+    item.append(details);
+    return item;
+  }));
+}
+
+const provenanceLabels = {
+  SYNTHETIC: 'Synthetic',
+  SIMULATED: 'Simulated',
+  RECORDED_REAL: 'Recorded physical evidence',
+  UNKNOWN: 'Unknown',
+  'MODEL-PREDICTED': 'Model-predicted reference',
+};
+
+function provenanceName(provenance) {
+  return Object.hasOwn(provenanceLabels, provenance) ? provenanceLabels[provenance] : '';
+}
+
+function observationLabel(observation) {
+  if (observation.status === 'unknown') return 'UNKNOWN · NO VERIFIED OBSERVATION';
+  if (observation.provenance === 'MODEL-PREDICTED') return 'MODEL-PREDICTED · REFERENCE OUTCOME';
+  const provenance = provenanceName(observation.provenance);
+  return observation.status === 'observed' && provenance && observation.provenance !== 'UNKNOWN'
+    ? `OBSERVED · ${provenance.toUpperCase()}` : 'UNKNOWN · NO VERIFIED OBSERVATION';
+}
+
+function renderObservationDetails(observation) {
+  const fields = Object.entries(observation.features || {})
+    .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
+    .map(([name, value]) => `${name.replaceAll('_', ' ')}: ${value}`);
+  const evidenceIds = (observation.evidence || []).filter(id => typeof id === 'string');
+  if (evidenceIds.length) fields.push(`Evidence IDs: ${evidenceIds.join(', ')}`);
+  $('#observation-details').hidden = !fields.length;
+  $('#observation-fields').replaceChildren(...fields.map(field => {
+    const item = document.createElement('li');
+    item.textContent = field;
+    return item;
+  }));
+}
+
+function renderEvidence() {
+  const observation = currentObservation();
+  $('#evidence').hidden = !observation;
+  $('#reflection-panel').hidden = !observation;
+  $('#new-trial').hidden = !observation;
+  if (!observation) return;
+  const reference = observation.status !== 'unknown' && observation.provenance === 'MODEL-PREDICTED';
+  text('#evidence-provenance', observationLabel(observation));
+  text('#evidence-text', observation.text || 'No independent observation is available.');
+  text('#evidence-source', typeof observation.source === 'string' ? `Source: ${observation.source}` : '');
+  text('#evidence-limit', reference ? 'This mock reference gives an expected color.' : '');
+  renderObservationDetails(observation);
+  const color = typeof observation.display_color === 'string' && /^#[0-9a-f]{6}$/i.test(observation.display_color) ? observation.display_color : '';
+  $('.evidence-swatch').hidden = !reference || !color;
+  if (reference && color) $('#evidence').style.setProperty('--result-color', color);
+}
+function renderHistory() {
+  const observations = snapshot?.observations || [];
+  text('#history-count', observations.length ? `${observations.length} ${observations.length === 1 ? 'trial' : 'trials'} recorded` : 'No trials yet');
+  const container = $('#history-list');
+  if (!observations.length) {
+    if (container.querySelector('article')) {
+      const empty = document.createElement('p');
+      empty.textContent = 'Observations and related notes will appear here.';
+      container.replaceChildren(empty);
+    }
+    return;
+  }
+  const fragment = document.createDocumentFragment();
+  for (const [index, observation] of observations.entries()) {
+    const entry = document.createElement('article'); entry.className = 'history-item';
+    const sample = conditionChoices().find(choice => choice.id === observation.condition_id)?.title;
+    const setup = sample || (waterFixture() ? 'Premeasured water' : snapshot.experiment?.title);
+    const title = document.createElement('strong');
+    title.textContent = [`Trial ${index + 1}`, setup].filter(Boolean).join(' · ');
+    const provenance = document.createElement('span'); provenance.className = 'history-label'; provenance.textContent = observationLabel(observation);
+    const result = document.createElement('p'); result.textContent = observation.text || 'No observation recorded.';
+    entry.append(title, provenance, result);
+    // Notebook schemas may add fields; only render explicit student text, never raw events.
+    const records = (snapshot.notebook || []).filter(item => item.trial_id === observation.trial_id);
+    for (const item of records) {
+      const kind = item.type || item.kind;
+      const content = item.text || item.data?.text;
+      if (['prediction','reflection'].includes(kind) && typeof content === 'string') {
+        const line = document.createElement('p'); line.textContent = `${kind === 'prediction' ? 'Prediction' : 'Reflection'}: ${content}`; entry.append(line);
+      }
+    }
+    fragment.prepend(entry);
+  }
+  container.replaceChildren(fragment);
+}
+function audioStatus(status) {
+  const wasConnected = connection === 'connected';
+  connection = status.connection;
+  if (wasConnected && connection !== 'connected') {
+    if (pendingKey) invalidatedProposals.add(pendingKey);
+    acknowledgedKey = ''; proposalGeneration++;
+    releaseScene();
+    developer.release();
+    // Incomplete voice fragments must not be carried into a new connection owner.
+    for (const [key, turn] of liveTurns) if (!turn.final) liveTurns.delete(key);
+    renderMessages();
+    if (snapshot) renderProposal();
+  }
+  text('#connection-label', { connected:'Connected', connecting:'Connecting', reconnecting:'Reconnecting', offline:'Offline' }[connection]);
+  $('#connection-dot').classList.toggle('online', connection === 'connected');
+  text('#mic-state', status.muted && status.voiceOn ? 'Mic muted' : {off:'Mic off',requesting:'Mic permission',ready:'Mic ready',denied:'Mic blocked',error:'Mic unavailable'}[status.mic] || 'Mic off');
+  const provider = { off:'Voice off', unavailable:'Voice unavailable', connecting:'Voice connecting', connected:'Voice ready', listening:'Voice listening', speaking:'Voice responding', reconnecting:'Voice reconnecting', muted:'Voice muted' }[status.provider] || 'Voice waiting';
+  const playback = { idle:'Speaker idle', queued:'Speaker queued', playing:'Speaker playing', error:'Speaker unavailable' }[status.playback];
+  text('#provider-state', provider);
+  text('#playback-state', playback);
+  const voiceStatus = {
+    off:'Ready to talk', unavailable:'Voice unavailable', connecting:'Connecting voice',
+    connected:'Voice ready', listening:'Listening', speaking:'Responding', reconnecting:'Reconnecting voice', muted:'Microphone muted',
+  };
+  const title = connection !== 'connected' ? $('#connection-label').textContent
+    : status.mic === 'requesting' ? 'Allow microphone access'
+    : status.mic === 'denied' ? 'Microphone blocked'
+    : status.mic === 'error' ? 'Microphone unavailable'
+    : status.voiceOn && status.muted ? 'Microphone muted'
+    : status.playback === 'playing' ? 'Speaking'
+    : voiceStatus[status.provider] || 'Voice waiting';
+  text('#voice-title', title);
+  const showDetail = status.detail && (connection !== 'connected' || ['error','denied'].includes(status.mic) || ['unavailable','reconnecting'].includes(status.provider) || status.playback === 'error' || (!status.voiceOn && status.mic === 'off'));
+  text('#voice-detail', showDetail ? status.detail : '');
+  $('#voice-detail').hidden = !showDetail;
+  text('#mute', status.muted ? 'Unmute' : 'Mute');
+  $('#mute').hidden = !status.voiceOn;
+  $('#mute').setAttribute('aria-pressed', String(status.muted));
+  $('#interrupt').hidden = !['queued','playing'].includes(status.playback);
+  $('#voice-options').hidden = !status.voiceOn;
+  $('#voice-toggle').disabled = status.mic === 'requesting' || connection !== 'connected';
+  text('#voice-label', status.voiceOn ? 'End voice' : status.mic === 'denied' ? 'Retry microphone' : 'Talk');
+  $('#voice-toggle').dataset.active = String(status.voiceOn);
+  audio = { status: [provider, playback].join(' · '), model: status.model, provider: status.providerName };
+  if (isDeveloper()) developer.audio(audio, snapshot, currentTask());
+  controls();
+  if (connection === 'connected') {
+    renderScene();
+    if (isDeveloper() && mediaReady()) developer.render(snapshot, audio, currentTask());
+    schedulePresentation();
+  }
+}
+
+function focusComposer() {
+  $('#typing').open = true;
+  $('#message').focus();
+}
+
+$('#view-link').onclick = event => {
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.button !== 0) return;
+  event.preventDefault();
+  history.pushState(null, '', $('#view-link').href);
+  showRoute();
+};
+window.addEventListener('popstate', showRoute);
+$('#history').addEventListener('toggle', renderMessages);
+$('#pairing').addEventListener('submit', event => { event.preventDefault(); boot($('#pairing-code').value.trim()); });
+$('#dismiss-notice').onclick = () => { $('#notice').hidden = true; };
+$('#reconnect').onclick = async () => {
+  if (!api.sessionId) return boot();
+  await resync();
+  client?.reconnect();
+};
+$('#conditions').addEventListener('click', event => {
+  const button = event.target.closest('[data-condition]');
+  if (button && !$('#conditions').disabled && conditionChoices().some(choice => choice.id === button.dataset.condition)) {
+    void act('condition', { condition_id: button.dataset.condition });
+  }
 });
+$('#prediction').oninput = () => { $('#prediction').dataset.dirty = 'true'; };
+$('#prediction-form').onsubmit = async event => {
+  event.preventDefault(); const value = $('#prediction').value.trim(); if (!value) return;
+  await act('prediction', { text: value }, () => { delete $('#prediction').dataset.dirty; });
+};
+$('#message-form').onsubmit = async event => {
+  event.preventDefault(); const value = $('#message').value.trim(); if (!value) return;
+  await act('request', { text: value, client_request_id: crypto.randomUUID() }, () => { $('#message').value = ''; });
+};
+$('#message').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); $('#message-form').requestSubmit(); } };
+$('#answer-clarification').onclick = focusComposer;
+$('#confirm').onclick = () => {
+  if ($('#confirm').disabled) return;
+  const proposal = snapshot.pending;
+  act('confirm', {request_id:proposal.request_id,proposal_version:proposal.proposal_version});
+};
+$('#cancel').onclick = () => act('cancel', {request_id:snapshot.pending?.request_id});
+$('#review-again').onclick = () => { attemptedPresentations.delete(pendingKey); schedulePresentation(true); };
+$('#reflection-form').onsubmit = event => {
+  event.preventDefault(); const value = $('#reflection').value.trim(); if (value) act('reflection', {text:value}, () => { text('#reflection-saved','Reflection saved.'); $('#reflection').value = ''; });
+};
+$('#new-trial').onclick = async () => {
+  const prepared = await act('prepare', {}, () => {
+    $('#prediction').value = '';
+    delete $('#prediction').dataset.dirty;
+    $('#reflection').value = '';
+    text('#reflection-saved', '');
+    $('#reflection-panel').open = false;
+    render();
+  });
+  if (prepared) {
+    focusComposer();
+  }
+};
+async function stop() {
+  if (pendingKey) invalidatedProposals.add(pendingKey);
+  acknowledgedKey = '';
+  proposalGeneration++;
+  if (snapshot) { renderProposal(); controls(); }
+  if (client?.stopTrial()) return;
+  if (!api.sessionId) return;
+  try { client?.acceptState(await api.action('stop')); notify('Stop requested. Your notebook is preserved.'); } catch (error) { fail(error); }
+}
+$('#stop').onclick = stop;
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && !event.isComposing) stop(); });
+function toggleVoice() {
+  if (!client) return;
+  if (client.status.voiceOn) client.stopVoice(); else client.startVoice();
+}
+$('#voice-toggle').onclick = toggleVoice;
+$('#mute').onclick = () => client?.setMuted(!client.status.muted);
+$('#interrupt').onclick = () => client?.interrupt();
+// Scrolling or returning to a foreground tab can make a proposal truly visible.
+window.addEventListener('scroll', () => schedulePresentation(), { passive:true });
+window.addEventListener('resize', () => schedulePresentation(), { passive:true });
+window.visualViewport?.addEventListener('resize', () => schedulePresentation(), { passive: true });
+window.visualViewport?.addEventListener('scroll', () => schedulePresentation(), { passive: true });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) schedulePresentation(); });
+setInterval(() => { controls(); if (snapshot?.pending && expired(snapshot.pending)) text('#proposal-status','This proposal has expired. Send a new request.'); }, 1000);
+window.addEventListener('pagehide', () => { releaseScene(); developer.release(); client?.close(); });
+window.addEventListener('pageshow', event => { if (event.persisted) boot(); });
+showRoute();
+boot();
