@@ -4,7 +4,7 @@ A HackPrinceton project for accessible lab work. A student speaks a command, pre
 
 ## Where to start
 
-Start a task branch from current `main`. The table lists provisional contacts. Agree on the specific paths when a task spans areas.
+Start in your own Git worktree and task branch. The table lists provisional contacts. Agree on the specific paths when a task spans areas.
 
 | Code | First contact | Research |
 | --- | --- | --- |
