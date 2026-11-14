@@ -79,6 +79,13 @@ def public_state(value, sid):
     result = {key: public_state(item, sid) for key, item in value.items() if not (image and key == 'path')}
     if image:
         result['artifact_url'] = f"/api/sessions/{sid}/evidence/{value['evidence_id']}"
+    if value.get('engine') == 'MuJoCo':
+        for field, suffix, route in [('frame_name', '.png', 'evidence'), ('video_name', '.mp4', 'media')]:
+            name = value.get(field)
+            result.pop(field, None)
+            if isinstance(name, str) and re.fullmatch(r'[0-9a-f]{32}'+re.escape(suffix), name):
+                key = 'frame_url' if field == 'frame_name' else 'video_url'
+                result[key] = f"/api/sessions/{sid}/{route}/" + (name[:-4] if route == 'evidence' else name)
     return result
 
 
@@ -113,15 +120,27 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             from .scene import SceneService
             from .simulated_backend import SceneBackend
             from .evaluation import SyntheticSkillEvaluator
-            scene = SceneService(data / 'scene-evidence')
+            execution = os.getenv('OPENARMS_EXECUTION', 'mock').strip().lower()
+            app.state.execution_mode = execution
+            if execution == 'mujoco':
+                from .mujoco_scene import MujocoSceneService
+                from .mujoco_backend import MujocoBackend
+                scene = MujocoSceneService(data / 'scene-evidence')
+                backend_factory = lambda: MujocoBackend(scene)
+            elif execution == 'mock':
+                scene = SceneService(data / 'scene-evidence')
+                backend_factory = lambda: SceneBackend(scene)
+            else:
+                raise ValueError('OPENARMS_EXECUTION must be mock or mujoco; hardware is disabled.')
             expert = CodexExpert(data / 'expert-work', artifact_roots=[scene.artifact_dir],
                                  executable=os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'))
             app.state.lab = Lab(data, expert=expert, perception=scene,
                                 evaluator=SyntheticSkillEvaluator(data/'evaluations'),
                                 auto_evaluate=True,
-                                backend_factory=lambda: SceneBackend(scene), expert_timeout=240)
+                                backend_factory=backend_factory, expert_timeout=240)
         else:
             app.state.lab = lab
+            app.state.execution_mode = next((b.mode for b in lab.backends.values()), 'mock')
         app.state.access = SessionAccess(Path(access_path) if access_path else data / 'access.sqlite3')
         app.state.connections = {}
         try:
@@ -167,7 +186,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.get('/api/health')
     async def health():
         from .live import key
-        return {'backend': 'mock', 'hardware_enabled': False, 'protocol_version': 1,
+        return {'backend': app.state.execution_mode, 'hardware_enabled': False, 'protocol_version': 1,
                 'live_configured': bool(key()), 'live_model': os.getenv('GEMINI_LIVE_MODEL', 'gemini-3.8-live'),
                 'expert_provider': 'openai_codex_cli', 'expert_model': 'gpt-6.1-sol',
                 'expert_reasoning_effort': 'medium',
@@ -196,10 +215,24 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         perception = getattr(service(), 'perception', None)
         if not re.fullmatch(r'[0-9a-f]{32}', evidence_id) or not hasattr(perception, 'artifact_dir'):
             raise HTTPException(404, 'Scene frame is unavailable.')
-        path = perception.artifact_dir / sid / (evidence_id + '.png')
-        if not path.is_file():
+        folder = (perception.artifact_dir / sid).resolve()
+        path = (folder / (evidence_id + '.png')).resolve()
+        if path.parent != folder or not path.is_file():
             raise HTTPException(404, 'Scene frame is unavailable.')
         return FileResponse(path, media_type='image/png')
+
+    @app.get('/api/sessions/{sid}/media/{name}')
+    async def simulation_video(sid: str, name: str, request: Request):
+        authorize(sid, request)
+        service().get(sid)
+        perception = getattr(service(), 'perception', None)
+        if not re.fullmatch(r'[0-9a-f]{32}\.mp4', name) or not hasattr(perception, 'artifact_dir'):
+            raise HTTPException(404, 'Simulation video is unavailable.')
+        folder = (perception.artifact_dir / sid).resolve()
+        path = (folder / name).resolve()
+        if path.parent != folder or not path.is_file():
+            raise HTTPException(404, 'Simulation video is unavailable.')
+        return FileResponse(path, media_type='video/mp4')
 
     @app.post('/api/sessions/{sid}/condition')
     async def condition(sid: str, body: Condition, request: Request):
@@ -406,6 +439,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     static = ROOT / 'ui/lab'
 
     @app.get('/')
+    @app.get('/developer')
     async def index():
         return FileResponse(static / 'index.html')
 

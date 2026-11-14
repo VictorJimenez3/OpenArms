@@ -49,6 +49,31 @@ def test_session_grants_are_isolated_and_absent_from_snapshots(client):
     assert client.get('/api/sessions', headers=ah).status_code in (404, 405)
 
 
+def test_developer_uses_same_app_and_simulation_media_requires_session_grant(client):
+    from agentic.openarms_lab.app import public_state
+    import uuid
+    assert client.get('/developer').content == client.get('/').content
+    session, headers = new_session(client)
+    _, other = new_session(client)
+    sid = session['session_id']
+    name = uuid.uuid4().hex + '.mp4'
+    folder = client.app.state.lab.perception.artifact_dir / sid
+    folder.mkdir(exist_ok=True)
+    (folder/name).write_bytes(b'video-test-fixture')
+    state = public_state({'simulation': {'engine': 'MuJoCo', 'video_name': name,
+                                        'frame_name': name[:-4]+'.png'}}, sid)
+    sim = state['simulation']
+    assert 'video_name' not in sim and 'frame_name' not in sim
+    assert client.get(sim['video_url']).status_code == 401
+    assert client.get(sim['video_url'], headers=other).status_code == 401
+    assert client.get(sim['video_url'], headers=headers).content == b'video-test-fixture'
+    external = folder.parent / 'not-this-session.mp4'
+    external.write_bytes(b'other-session')
+    (folder/name).unlink()
+    (folder/name).symlink_to(external)
+    assert client.get(sim['video_url'], headers=headers).status_code == 404
+
+
 def test_complete_pH_flow_and_presentation_gate_over_http(client):
     session, headers = new_session(client)
     url = '/api/sessions/' + session['session_id']

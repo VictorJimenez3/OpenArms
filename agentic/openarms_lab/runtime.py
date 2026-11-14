@@ -78,8 +78,12 @@ class Lab(TaskLoop):
             if self.backend_factory is None and os.getenv('OPENARMS_BACKEND', 'mock') != 'mock':
                 raise LabError('Physical app execution is unavailable. Use OPENARMS_BACKEND=mock.')
             backend = self.backend_factory() if self.backend_factory else MockBackend()
-            if not isinstance(backend, MockBackend) or backend.mode != 'mock':
-                raise LabError('Only the hardware-free mock backend is supported.')
+            supported = isinstance(backend, MockBackend) and backend.mode == 'mock'
+            if backend.mode == 'mujoco':
+                from .mujoco_backend import MujocoBackend
+                supported = isinstance(backend, MujocoBackend)
+            if not supported or backend.capabilities().get('physical_execution') is not False:
+                raise LabError('Only the hardware-free mock and MuJoCo backends are supported.')
             bind_session = getattr(backend, 'bind_session', None)
             if bind_session is not None:
                 bind_session(sid)
@@ -131,7 +135,8 @@ class Lab(TaskLoop):
             s['generation'] += 1
             s['pending'] = None
             self._cancel_tasks(s, 'Server restarted; tasks are never replayed.')
-            s['history_only'] = ((s.get('experiment') or {}).get('id') != EXPERIMENT['id'] or s.get('backend') != 'mock')
+            s['history_only'] = ((s.get('experiment') or {}).get('id') != EXPERIMENT['id'] or
+                                 s.get('backend') not in ('mock', 'mujoco'))
             for r in s['requests']:
                 if r.get('status') not in TERMINAL:
                     was_active = r.get('status') in ACTIVE
@@ -147,8 +152,14 @@ class Lab(TaskLoop):
                 trial_requests = [r for r in s['requests'] if r.get('trial_id') == s['trial']['trial_id']]
                 if s['trial']['state'] not in ('complete', 'reflecting'):
                     s['trial']['state'] = 'stopped' if any(r.get('result') or r['status'] == 'unknown' for r in trial_requests) else ('predicting' if s['trial']['condition_id'] else 'choosing_condition')
-                s['state'] = MockBackend.home_state()
-                s['capabilities'] = self._capabilities(MockBackend.capabilities())
+                if s.get('backend') == 'mujoco':
+                    s['requires_prepare'] = True
+                    s['state']['armed'] = False
+                    s['state']['simulation'] = {'engine': 'MuJoCo', 'status': 'unavailable',
+                                               'warnings': ['Server restarted. Prepare a fresh simulation.']}
+                else:
+                    s['state'] = MockBackend.home_state()
+                    s['capabilities'] = self._capabilities(MockBackend.capabilities())
                 s['conditions'] = copy.deepcopy(list(CONDITIONS))
             else:
                 # Preserve original backend, observations, sources and evidence verbatim.
@@ -199,6 +210,8 @@ class Lab(TaskLoop):
         async with self._lock(sid):
             s = self.get(sid)
             self._editable(s)
+            if s.get('requires_prepare'):
+                raise LabError('Prepare a fresh simulation after the server restart.')
             if client_request_id is not None:
                 if not isinstance(client_request_id, str) or not client_request_id.strip() or len(client_request_id) > 128:
                     raise LabError('Invalid client_request_id.')
@@ -288,7 +301,7 @@ class Lab(TaskLoop):
         sid = str(uuid.uuid4())
         b = self._backend(sid)
         b.prepare()
-        s = {'session_id': sid, 'backend': 'mock', 'experiment': copy.deepcopy(EXPERIMENT),
+        s = {'session_id': sid, 'backend': b.mode, 'experiment': copy.deepcopy(EXPERIMENT),
              'revision': 0, 'generation': 0, 'connected': True, 'trial': self._trial(),
              'conditions': copy.deepcopy(list(CONDITIONS)), 'prediction': '', 'pending': None,
              'requests': [], 'tasks': [], 'scene': None, 'scene_images': [],
@@ -296,8 +309,16 @@ class Lab(TaskLoop):
              'state': b.state(), 'capabilities': self._capabilities(b.capabilities()), 'dedupe': {},
              'proposal_sequence': 0, 'history_only': False}
         self.sessions[sid] = s
-        self._event(s, 'session_created', backend='mock', experiment_id=EXPERIMENT['id'])
-        self._message(s, 'assistant', 'The mock lab is ready.')
+        s['trial']['mode'] = 'SIMULATED' if b.mode == 'mujoco' else 'MOCK'
+        self._event(s, 'session_created', backend=b.mode, experiment_id=EXPERIMENT['id'])
+        self._message(s, 'assistant', 'The MuJoCo simulation is ready.' if b.mode == 'mujoco' else 'The mock lab is ready.')
+        if b.mode == 'mujoco' and self.perception is not None:
+            try:
+                frame = await asyncio.wait_for(self.perception.inspect_scene(sid), min(15, self.execution_timeout))
+                s.update(scene=frame['scene'], scene_images=frame['images'])
+            except (ValueError, RuntimeError, OSError, TimeoutError) as exc:
+                self._event(s, 'scene_unavailable', code=type(exc).__name__)
+                self._message(s, 'assistant', 'The simulation camera is unavailable. A task will report the problem before proposing an action.')
         return await self.publish(s)
 
     def _editable(self, s):
@@ -437,10 +458,11 @@ class Lab(TaskLoop):
                 stopped_execution = True
                 r.update(status='stopped', reason=reason, presented=False)
                 task = self._task_for_request(s, r)
-                receipt = {'request_id': r['request_id'], 'backend': 'mock', 'status': 'stopped', 'reason': reason}
+                receipt = {'request_id': r['request_id'], 'backend': s['backend'], 'status': 'stopped', 'reason': reason}
                 r['result'] = receipt
                 task['execution'].append(receipt)
-                self._task_event(s, task, 'execution_result', receipt=receipt, provenance='MOCK')
+                self._task_event(s, task, 'execution_result', receipt=receipt,
+                                 provenance='SIMULATED' if s['backend'] == 'mujoco' else 'MOCK')
                 s['trial']['state'] = 'stopped'
         return stopped_execution
 
@@ -498,9 +520,10 @@ class Lab(TaskLoop):
         self._invalidate(s, 'New trial prepared.')
         previous = copy.deepcopy(s['trial'])
         self._backend(s['session_id']).prepare()
-        s.update(trial=self._trial(), prediction='')
+        s.update(trial=self._trial(), prediction='', requires_prepare=False)
+        s['trial']['mode'] = 'SIMULATED' if s['backend'] == 'mujoco' else 'MOCK'
         self._event(s, 'trial_prepared', previous_trial=previous)
-        self._message(s, 'assistant', 'A fresh mock trial is ready.')
+        self._message(s, 'assistant', 'A fresh simulation is ready.' if s['backend'] == 'mujoco' else 'A fresh mock trial is ready.')
 
     async def prepare(self, sid):
         async with self._lock(sid):
@@ -613,6 +636,7 @@ class Lab(TaskLoop):
                    'prepare_next_trial': set(), 'record_reflection': {'text'}, 'stop_lab': set(),
                    '_record_transcript': {'role', 'text', 'turn_id', 'final'},
                    '_record_usage': {'model', 'model_calls', 'tokens', 'usage', 'turn_id'},
+                   '_voice_control_rejected': {'reason', 'turn_id'},
                    '_cancel_tool_request': {'request_id', 'tool_call_id'}}
         if name not in schemas:
             raise LabError('Unknown pH lab tool.')
@@ -628,6 +652,10 @@ class Lab(TaskLoop):
             raise LabError('Required pH tool argument missing.')
         if name == 'get_lab_state':
             return self.snapshot(sid)
+        if name == '_voice_control_rejected':
+            s['voice_control'] = {**clean, 'accepted': False}
+            self._event(s, 'voice_control_rejected', **clean)
+            return await self.publish(s)
         if name == 'improve_skill':
             target = next((task for task in reversed(s['tasks']) if task['status'] in TASK_TERMINAL and
                            any(o['status'] == 'unknown' or (o['checks'] and not all(o['checks'].values()))

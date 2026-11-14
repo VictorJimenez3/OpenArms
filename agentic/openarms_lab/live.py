@@ -56,7 +56,7 @@ def key():
 def compact(context):
     snap = context()
     names = ('session_id', 'backend', 'experiment', 'trial', 'conditions', 'prediction', 'pending', 'generation',
-             'scene')
+             'scene', 'voice_control')
     result = {k: snap.get(k) for k in names}
     def brief(item, keys):
         return {key: item[key] for key in keys if key in item}
@@ -99,6 +99,9 @@ def system_prompt(context):
         'Read a given proposal once; repeat only if the student asks or playback was interrupted. '
         'On a fresh student confirm, call student_confirm using the exact pending request_id and proposal_version. '
         'The server independently consumes valid consent and may already have executed it; use the returned evidence. '
+        'Never say an action started merely because you heard confirm. Only authoritative executing or completed '
+        'task status proves it started. A voice_control rejection means nothing was approved; explain its reason '
+        'and ask for fresh confirmation after the current proposal is fully heard. '
         'Do not repeat a prediction request already satisfied. Do not claim the robot moved. '
         'When the student asks a science question, answer it without changing the trial. For open conversation, be helpful and brief. '
         'Never infer observed color from selected condition or controller completion. Explain what the observer reports '
@@ -208,7 +211,7 @@ class GeminiBridge:
                     try:
                         await self.controls.complete_control()
                     except (ValueError, TimeoutError) as exc:
-                        await self.emit({'type': 'error', 'message': str(exc), 'recoverable': True})
+                        await self._rejected_control(exc)
                     return
         finally:
             if self.input_boundary is asyncio.current_task():
@@ -270,7 +273,11 @@ class GeminiBridge:
         state = compact(self.context)
         meaningful = {name: state.get(name) for name in (
             'pending', 'generation', 'task', 'active_task', 'tasks', 'observations', 'requests', 'scene',
-            'skills', 'skill_decisions')}
+            'skills', 'skill_decisions', 'voice_control')}
+        if meaningful.get('pending'):
+            # Playback acknowledgment is for consent validation, not a new
+            # proposal. Narrating it again can overlap the student's confirm.
+            meaningful['pending'] = {k: v for k, v in meaningful['pending'].items() if k != 'presented'}
         signature = json.dumps(meaningful, sort_keys=True, default=str)
         if signature == self.last_state_signature:
             return
@@ -278,6 +285,12 @@ class GeminiBridge:
         if self.state_updates.full():
             self.state_updates.get_nowait()
         self.state_updates.put_nowait(state)
+
+    async def _rejected_control(self, error):
+        await self.tool_call('_voice_control_rejected', {
+            'turn_id': self.controls.turn_id, 'reason': str(error)[:240]})
+        await self.state_changed()
+        await self.emit({'type': 'error', 'message': str(error), 'recoverable': True})
 
     async def _watch(self, session, cid):
         if self.watcher_id and self.watcher_id != cid:
@@ -371,7 +384,7 @@ class GeminiBridge:
                             try:
                                 await self.controls.complete_control()
                             except Exception as exc:
-                                await self.emit({'type': 'error', 'message': str(exc), 'recoverable': True})
+                                await self._rejected_control(exc)
                     audio_parts = [p.inline_data.data for p in (content.model_turn.parts if content.model_turn else []) if p.inline_data and p.inline_data.data]
                     output = content.output_transcription
                     if not self.suppress_output and (audio_parts or (output and output.text)):

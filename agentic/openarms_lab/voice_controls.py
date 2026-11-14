@@ -31,6 +31,7 @@ class VoiceControls:
         self.generation = context().get('generation', 0)
         self.presented = False
         self.last_confirmation = None
+        self.confirmation_lock = asyncio.Lock()
 
     def begin_input(self):
         if self.finished.is_set() or not self.started:
@@ -81,31 +82,8 @@ class VoiceControls:
         args = {k: v for k, v in arguments.items() if not k.startswith('_')}
         if name == 'student_confirm':
             await asyncio.wait_for(self.finished.wait(), timeout=4)
-            snap = self.context()
-            pending = snap.get('pending') or {}
-            rid = args.get('request_id')
-            version = args.get('proposal_version')
-            # A tool may follow the deterministic completed-input handler; report the result,
-            # never execute a second time. A different turn cannot reuse this receipt.
-            if self.last_confirmation == (self.turn_id, rid, version):
-                return snap
-            if (self.consumed or time.monotonic() - self.started > 30 or
-                    isinstance(version, bool) or
-                    normalized(self.text) not in CONFIRMATIONS or not self.presented or
-                    not rid or rid != self.request_id or rid != pending.get('request_id') or
-                    version != self.proposal_version or version != pending.get('proposal_version') or
-                    self.generation != snap.get('generation', 0)):
-                raise ValueError('Review the current proposal, then say confirm in a new turn.')
-            self.consumed = True
-            # Gemini function arguments travel through a protobuf Struct, where
-            # integral numbers may arrive as floats. Use the already matched,
-            # server-owned version; never forward a provider numeric coercion.
-            args['proposal_version'] = self.proposal_version
-            args['_voice_consent'] = {'request_id': rid, 'proposal_version': version,
-                                      'text': self.text, 'turn_id': self.turn_id}
-            result = await self.callback(name, args)
-            self.last_confirmation = (self.turn_id, rid, version)
-            return result
+            async with self.confirmation_lock:
+                return await self._confirm(args)
         if name in MUTATING_TOOLS:
             await asyncio.wait_for(self.finished.wait(), timeout=4)
             if not self.text.strip():
@@ -123,3 +101,32 @@ class VoiceControls:
             if arguments.get('_tool_call_id'):
                 args['_tool_call_id'] = arguments['_tool_call_id']
         return await self.callback(name, args)
+
+    async def _confirm(self, args):
+        snap = self.context()
+        pending = snap.get('pending') or {}
+        rid = args.get('request_id')
+        version = args.get('proposal_version')
+        # A tool may follow the deterministic completed-input handler; report the result,
+        # never execute a second time. A different turn cannot reuse this receipt.
+        if not isinstance(version, bool) and self.last_confirmation == (self.turn_id, rid, version):
+            return snap
+        if (self.consumed or time.monotonic() - self.started > 30 or
+                isinstance(version, bool) or
+                normalized(self.text) not in CONFIRMATIONS or not self.presented or
+                not rid or rid != self.request_id or rid != pending.get('request_id') or
+                version != self.proposal_version or version != pending.get('proposal_version') or
+                self.generation != snap.get('generation', 0)):
+            raise ValueError('Review the current proposal, then say confirm in a new turn.')
+        self.consumed = True
+        # Gemini function arguments travel through a protobuf Struct, where
+        # integral numbers may arrive as floats. Use the already matched,
+        # server-owned version; never forward a provider numeric coercion.
+        args['proposal_version'] = self.proposal_version
+        turn_id = self.turn_id
+        args['_voice_consent'] = {'request_id': rid, 'proposal_version': self.proposal_version,
+                                  'text': self.text, 'turn_id': self.turn_id}
+        result = await self.callback('student_confirm', args)
+        if self.turn_id == turn_id:
+            self.last_confirmation = (turn_id, rid, version)
+        return result

@@ -157,3 +157,33 @@ async def test_voice_action_waits_for_final_correlated_student_transcript(voice_
         await controls.dispatch('request_action', args)
     assert lab.snapshot(sid)['tasks'] == []
     assert not backend.executions
+
+
+async def test_provider_integral_float_uses_server_version_and_concurrent_confirm_is_once(voice_lab):
+    lab, sid, controls, backend = voice_lab
+    task_id, exact = await propose(voice_lab, presented=True)
+    entered, release = asyncio.Event(), asyncio.Event()
+    original = controls.callback
+    seen = []
+    async def delayed(name, args):
+        if name == 'student_confirm':
+            seen.append(args)
+            entered.set()
+            await release.wait()
+        return await original(name, args)
+    controls.callback = delayed
+    controls.input('Confirm.', finished=True)
+    provider = asyncio.create_task(controls.dispatch('student_confirm', {
+        **exact, 'proposal_version': float(exact['proposal_version'])}))
+    await entered.wait()
+    deterministic = asyncio.create_task(controls.dispatch('student_confirm', exact))
+    await asyncio.sleep(0)
+    assert not deterministic.done()
+    release.set()
+    await asyncio.gather(provider, deterministic)
+    await wait_for_task(lab, task_id)
+    assert len(seen) == backend.executions == 1
+    assert type(seen[0]['proposal_version']) is int
+    assert type(seen[0]['_voice_consent']['proposal_version']) is int
+    with pytest.raises(ValueError):
+        await controls.dispatch('student_confirm', {**exact, 'proposal_version': True})

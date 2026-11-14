@@ -211,6 +211,9 @@ class TaskLoop:
                         'expert_tool_started', 'expert_tool_completed', 'expert_finished'}:
                 await self._emit_task(s, task, kind, adapter=event, provenance='EXPERT_ADAPTER')
 
+        supported_operations = s['capabilities'].get('supported_operations', MOCK_OPERATIONS)
+        primitives = {name: schema for name, schema in PRIMITIVE_SCHEMAS.items()
+                      if name not in MOCK_OPERATIONS or name in supported_operations}
         context = {
             'task_id': task['task_id'], 'session_id': s['session_id'], 'request': task['request'],
             'conversation': [{k: m[k] for k in ('role', 'text')} for m in s['messages'][-20:] if m.get('final')],
@@ -220,9 +223,9 @@ class TaskLoop:
                                         'required': required, 'additionalProperties': False}}
                       for name, (summary, properties, required) in TOOLS.items()],
             'skills': self.registry.list(), 'feedback': task['feedback'],
-            'capability_limits': {**s['capabilities'], 'primitives': list(PRIMITIVE_SCHEMAS),
+            'capability_limits': {**s['capabilities'], 'primitives': list(primitives),
                                   'primitive_arguments': {name: schema.model_json_schema()
-                                                          for name, schema in PRIMITIVE_SCHEMAS.items()},
+                                                          for name, schema in primitives.items()},
                                   'replans_remaining': 2 - task['replans']},
             'instructions': ('Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
                              'or clarification/reject. Use only listed primitives. Never claim expected state as observed. '
@@ -361,7 +364,7 @@ class TaskLoop:
             if task.get('request_id') and task['status'] in ('executing', 'observing'):
                 request = next(r for r in s['requests'] if r['request_id'] == task['request_id'])
                 request.update(status='failed', reason=summary)
-                task['execution'].append({'request_id': task['request_id'], 'backend': 'mock',
+                task['execution'].append({'request_id': task['request_id'], 'backend': s['backend'],
                                           'status': 'failed', 'reason': summary})
                 s['trial']['state'] = 'stopped'
             details = exc.errors(include_input=False, include_url=False) if hasattr(exc, 'errors') else None
@@ -412,7 +415,7 @@ class TaskLoop:
         warm = task['route'] == 'active_skill' and task['replans'] == 0
         receipt = {'request_id': request['request_id'], 'task_id': task['task_id'],
                    'trial_id': task['trial_id'], 'skill_id': plan['skill_id'], 'skill_version': plan['skill_version'],
-                   'plan_hash': request['plan_hash'], 'backend': 'mock', 'status': 'no_operation',
+                   'plan_hash': request['plan_hash'], 'backend': s['backend'], 'status': 'no_operation',
                    'prior_execution': [r for r in task['execution'] if r['status'] == 'completed']}
         try:
             self._guard_task(s, task)
@@ -434,7 +437,7 @@ class TaskLoop:
 
                     async def progress(phase):
                         await self._emit_task(s, task, 'execution_progress', step=index,
-                                              operation=operation, phase=phase, provenance='MOCK')
+                                              operation=operation, phase=phase, provenance='SIMULATED' if s['backend'] == 'mujoco' else 'MOCK')
 
                     # Preserve the existing call signature for prepared-sample backend overrides.
                     options = {} if operation == 'mock_prepared_sample' else {'operation': operation}
@@ -443,11 +446,11 @@ class TaskLoop:
                             request['request_id'], arguments, progress, **options), self.execution_timeout)
                     except (RuntimeError, ValueError, TimeoutError) as exc:
                         result = {'status': 'failed', 'controller_completed': False,
-                                  'reason': f'Mock executor failed ({type(exc).__name__}).'}
+                                  'reason': f'Executor failed ({type(exc).__name__}).'}
                     receipt.update(result)
                     task['execution'].append(copy.deepcopy(receipt))
                     task['feedback'].append({'type': 'execution', 'receipt': copy.deepcopy(receipt)})
-                    await self._emit_task(s, task, 'execution_result', receipt=receipt, provenance='MOCK')
+                    await self._emit_task(s, task, 'execution_result', receipt=receipt, provenance='SIMULATED' if s['backend'] == 'mujoco' else 'MOCK')
                     continue
 
                 await self._set_status(s, task, 'observing')
@@ -465,7 +468,7 @@ class TaskLoop:
                 if operation == 'observe':
                     latest = task['observations'][-1]
                     if receipt['status'] == 'failed':
-                        failure = receipt.get('reason') or 'Mock executor reported failure.'
+                        failure = receipt.get('reason') or 'Executor reported failure.'
                     elif latest['status'] != 'observed' or (is_final and not all(latest['checks'].values())):
                         failure = 'Independent outcome is unknown or an outcome check failed.'
                 elif operation == 'inspect_scene':
@@ -485,7 +488,7 @@ class TaskLoop:
             latest = task['observations'][-1] if task['observations'] else None
             summary = latest['text'] if latest else 'The approved scene inspection is complete.'
             if status == 'failed':
-                summary = f"{receipt.get('reason') or 'Mock executor reported failure.'} {summary}"
+                summary = f"{receipt.get('reason') or 'Executor reported failure.'} {summary}"
             await self._set_status(s, task, status, summary)
             if status == 'completed':
                 await self._evaluate_completed(s, task)

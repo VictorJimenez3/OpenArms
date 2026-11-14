@@ -39,6 +39,8 @@ async def run(base, output, audible=False):
                         replies.setdefault(event['reply_id'], bytearray()).extend(base64.b64decode(event['data']))
                     else:
                         events.append({'at': time.time(), **event})
+                    if kind == 'error':
+                        print(json.dumps({'error': event.get('message')}), flush=True)
                     if kind == 'interrupted': interrupted.add(event.get('reply_id'))
                     if kind == 'reply_end': await playback.put(event['reply_id'])
                     if kind == 'transcript' and event.get('final'):
@@ -106,11 +108,13 @@ async def run(base, output, audible=False):
                 await wait_for(lambda:state['tasks'][-1]['status'] in ('completed','failed','needs_clarification','cancelled'))
                 assert state['tasks'][-1]['status']=='completed', state['tasks'][-1].get('summary')
                 await wait_for(lambda:any(t['role']=='assistant' and 'simulation' in t['text'].lower() and 'pink' in t['text'].lower() for t in transcripts),60)
-                assert state['observations'][-1]['provenance']=='SYNTHETIC'
+                assert state['observations'][-1]['provenance'] in ('SYNTHETIC', 'SIMULATED')
                 await playback.join()
                 result={'passed':True,'session_id':sid,'evidence_type':'generated-speech real-provider integration',
                         'expert_provider':'openai_codex_cli','expert_model':'gpt-6.1-sol','expert_effort':'medium',
                         'voice_model':'gemini-3.8-live','followup_during_expert':start_phase in ('queued','running'),
+                        'execution_backend':state['backend'],
+                        'observation_provenance':state['observations'][-1]['provenance'],
                         'audio_proposal_presented':True,'completed_trials':len(state['observations']),
                         'mac_output_played':audible,'physical_iphone_verified':False,'transcripts':transcripts}
                 (output/'result.json').write_text(json.dumps(result,indent=2))

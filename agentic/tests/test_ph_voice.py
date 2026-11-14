@@ -190,3 +190,18 @@ async def test_background_observations_use_correlated_nonblocking_tool_responses
     task.cancel()
     await asyncio.gather(task, return_exceptions=True)
     assert bridge.watcher_id is None
+
+
+async def test_playback_ack_does_not_trigger_another_proposal_reply(state):
+    async def callback(*args): return state
+    async def emit(*args): pass
+    state['pending']['presented'] = False
+    bridge = GeminiBridge(lambda: state, callback, emit)
+    await bridge.state_changed()
+    bridge.state_updates.get_nowait()
+    state['pending']['presented'] = True
+    await bridge.state_changed()
+    assert bridge.state_updates.empty()
+    state['voice_control'] = {'accepted': False, 'reason': 'Fresh confirmation required.', 'turn_id': 'turn-2'}
+    await bridge.state_changed()
+    assert bridge.state_updates.get_nowait()['voice_control']['accepted'] is False
