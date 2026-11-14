@@ -4,7 +4,7 @@ The consolidation is **merged**: [PR #22](https://github.com/VictorJimenez3/Open
 
 ## Current direction
 
-Joseph selected the Smartivity My First Science Kit and deferred activity selection. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the inventory and Victor's outstanding physical handoff. Simulation is an optional Devpost/presentation extra, outside the core architecture and acceptance requirements. The app still has one shared session, task loop, registry and deterministic execution boundary. Physical actuation is disabled; Gemini is withdrawn and replacement voice remains open.
+Joseph selected the Smartivity My First Science Kit and deferred activity selection. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the inventory and Victor's outstanding physical handoff. Simulation is an optional Devpost/presentation extra, outside the core architecture and acceptance requirements. The app still has one shared session, task loop, registry and deterministic execution boundary. Physical actuation is disabled. Joseph retained Gemini Live speech and withdrew only Gemini thinking; expert profiles remain independent. Actual-device voice acceptance remains open.
 
 Tracking: [#19](https://github.com/VictorJimenez3/OpenArms/issues/19) full system, [#9](https://github.com/VictorJimenez3/OpenArms/issues/9) interfaces, [#10](https://github.com/VictorJimenez3/OpenArms/issues/10) connected loop, [#4](https://github.com/VictorJimenez3/OpenArms/issues/4) actual iPhone acceptance. The user waived audible/device rehearsals as a merge gate; they remain unmet product acceptance checks.
 
@@ -36,3 +36,8 @@ Record D1–D4 / R1–R6 requirements, changed files, dependencies, evidence, re
 The kit/terminology cleanup passed 493 Python tests, 36 browser checks, and 17 portable Swift tests; a subsequent wording-only change passed the seven focused learning tests. No new test files were added. Account 2 independently reviewed the full rename diff, session-history guards and scope hashing. Its three documentation findings were resolved: the mandatory pH delivery tail was replaced, the old demo plan became current design notes, and the native guide now awaits replacement voice. This is software verification, not kit, hardware or live-voice acceptance.
 
 Finished worktree contents were verified against merged main; ignored run evidence was archived locally and reopened for checksum comparison before removal. The main bench environment and local rehearsal records remain intact. New application setup uses `.venv-lab` so it does not overwrite the existing bench `.venv`.
+
+
+## Gemini Live conversation repair
+
+Joseph retained Gemini Live speech and explicitly requested this reviewed conversation merge after coordination with Victor on issue #10. The [November 14 voice receipt](../research/joseph/gemini-conversation-2026-11-14/README.md) records real-provider cold/warm conversations, corrections, exact consent, observation, active mock STOP and barge-in;529 Python,36 browser and5 audio tests passed. Failed attempts and independent review are retained. This delivery does not merge the separate two-vessel/camera/evaluator work or qualify physical/device operation.
