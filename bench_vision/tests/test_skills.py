@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from bench_vision.skills import (CHECKPOINTS, compile_candidate, content_hash, load_candidate,
                                  preview_adaptation, rollback, verify_candidate, write_candidate)
+from bench_vision.keyframes import select_events
 from firmware.openarms_executor.poses import ARM_JOINTS, GRIPPER
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,10 +25,10 @@ def inputs():
                   {"event": "checkpoint", "name": name, "t": 100 + index,
                    "state": state, "command": state}]
     summary = {"schema_version": 1, "episode_id": "synthetic-test", "provenance": "synthetic",
-               "phases": [{"name": name, "t": t, "event_source": "checkpoint", "views": [
-                   {"camera_id": camera, "status": "ok", "image": f"{camera}-{name}.jpg"}
-                   for camera in ("overview", "side")]} for name, t in
-                   (("before", 100), ("grasp", 104), ("after", 107))],
+               "phases": [{**event, "views": [
+                   {"camera_id": camera, "status": "ok", "image": f"{camera}-{event['name']}.jpg"}
+                   for camera in ("overview", "side")]}
+                   for event in select_events(trace) if event["name"] in ("before", "grasp", "after")],
                "outcome": {"status": "unknown", "evidence": []}}
     context = {"calibration_id": "test-cal", "fixture_id": "test-fixture", "cup_id": "test-cup",
                "camera_mount_id": "test-mount", "robot_id": "test-robot", "provenance": "synthetic",
@@ -151,6 +152,59 @@ class SkillTests(unittest.TestCase):
             phase["t"] += 25
         candidate = compile_candidate(*data)
         self.assertEqual(candidate["phases"][0]["t"], 125)
+
+    def test_fabricated_grasp_within_trace_range_is_rejected(self):
+        for changes in ({"t": 103, "raw_trace_t": 103}, {"checkpoint": "TIP_C"},
+                        {"event_source": "inferred_gripper"}, {"name": "lift"}):
+            with self.subTest(changes=changes):
+                data = inputs()
+                data[2]["phases"][1].update(changes)
+                with self.assertRaisesRegex(ValueError, "semantics"):
+                    compile_candidate(*data)
+
+    def test_fabricated_release_without_trace_opening_is_rejected(self):
+        data = inputs()
+        data[2]["phases"].insert(2, {"name": "release", "t": 106, "raw_trace_t": 106,
+                                    "event_source": "inferred_gripper", "checkpoint": None, "views": []})
+        with self.assertRaisesRegex(ValueError, "semantics"):
+            compile_candidate(*data)
+
+    def test_duplicate_claimed_event_is_rejected(self):
+        data = inputs()
+        data[2]["phases"].insert(2, copy.deepcopy(data[2]["phases"][1]))
+        with self.assertRaisesRegex(ValueError, "more than once"):
+            compile_candidate(*data)
+
+    def test_raw_and_aligned_phase_timestamps_must_agree(self):
+        data = inputs()
+        data[2]["phases"][1]["raw_trace_t"] -= 1
+        with self.assertRaisesRegex(ValueError, "aligned timestamp"):
+            compile_candidate(*data)
+
+    def test_semantics_can_use_offset_when_raw_timestamp_omitted(self):
+        data = inputs()
+        data[2]["telemetry_time_offset_s"] = 25.125
+        for phase in data[2]["phases"]:
+            phase.pop("raw_trace_t")
+            phase["t"] += 25.125
+        candidate = compile_candidate(*data)
+        self.assertEqual(candidate["phases"][1]["checkpoint"], "cup")
+
+    def test_optional_trace_aligned_time_cannot_relabel_event(self):
+        data = inputs()
+        for row in data[1]:
+            row["aligned_t"] = row["t"] + 1
+        # Untrusted convenience fields in trace rows do not change original semantics.
+        compile_candidate(*data)
+        data[2]["phases"][1].update(t=105, raw_trace_t=105)
+        with self.assertRaisesRegex(ValueError, "semantics"):
+            compile_candidate(*data)
+
+    def test_explicit_missing_views_are_allowed_for_candidate_evidence(self):
+        data = inputs()
+        data[2]["phases"][1]["views"] = [{"camera_id": "side", "status": "missing", "image": None}]
+        candidate = compile_candidate(*data)
+        self.assertEqual(candidate["phases"][1]["views"][0]["status"], "missing")
 
     def test_nonfinite_command_and_unknown_event_rejected(self):
         data = inputs()

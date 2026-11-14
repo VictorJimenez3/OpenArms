@@ -20,6 +20,8 @@ from firmware.openarms_executor.pose_arm import PoseArm
 from firmware.openarms_executor.poses import ARM_JOINTS, GRIPPER
 from firmware.openarms_executor.pour_once import PLAN, POSE_NAMES, STATIONS, preflight
 
+from .keyframes import select_events
+
 SETUP_IDS = ("calibration_id", "fixture_id", "cup_id", "camera_mount_id", "robot_id")
 CHECKPOINTS = ("HOME", "open", "ABOVE_A", "GRASP_A", "cup", "ABOVE_C", "TIP_C", "finish")
 PROVENANCE = {"synthetic", "recorded", "physical", "fake", "simulated", "predicted", "unknown"}
@@ -131,13 +133,32 @@ def _validate_summary(summary: dict, trace: list[dict]) -> None:
         raise ValueError("episode summary needs selected phases")
     offset = _finite(summary.get("telemetry_time_offset_s", 0), "telemetry_time_offset_s")
     first, last = trace[0]["t"] + offset, trace[-1]["t"] + offset
+    # Derive semantics from original recorder times, never an optional aligned_t
+    # supplied in a trace row or a phase name supplied by the summary author.
+    actual_events = select_events([{**row, "aligned_t": row["t"]} for row in trace])
+    claimed_events = set()
     previous = -math.inf
     for phase in summary["phases"]:
+        if not isinstance(phase, dict):
+            raise ValueError("each phase must be an object")
         _text(phase.get("name"), "phase name")
         t = _finite(phase.get("t"), "phase t")
         if not first <= t <= last or t < previous:
             raise ValueError("phase timestamps must be ordered inside the trace")
         previous = t
+        raw_t = _finite(phase.get("raw_trace_t", t - offset), "phase raw_trace_t")
+        if not math.isclose(raw_t + offset, t, rel_tol=0, abs_tol=1e-9):
+            raise ValueError("phase raw_trace_t does not match its aligned timestamp")
+        matches = [event for event in actual_events
+                   if all(phase.get(key) == event.get(key) for key in ("name", "event_source", "checkpoint"))
+                   and math.isclose(raw_t, event["raw_trace_t"], rel_tol=0, abs_tol=1e-9)]
+        if not matches:
+            raise ValueError("phase semantics do not match an event derived from the original trace")
+        event = matches[0]
+        identity = (event["name"], event["event_source"], event.get("checkpoint"), event["raw_trace_t"])
+        if identity in claimed_events:
+            raise ValueError("summary claims the same trace event more than once")
+        claimed_events.add(identity)
         if not isinstance(phase.get("views"), list):
             raise ValueError("each phase needs views, including explicit missing views")
     _json(summary)
