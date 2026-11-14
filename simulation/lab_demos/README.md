@@ -1,5 +1,7 @@
 # Four tiny MuJoCo laboratory demonstrations
 
+These four standalone presentation recordings are retained research demonstrations. The current student application exposes only red-cabbage pH through `ph/`, using the newer apparatus. These gallery scripts do not define the app’s experiment choices or establish physical readiness.
+
 [Watch the four videos](GALLERY.html) · [Video metadata and hashes](VIDEOS.json)
 
 The selected presentation experiments are color comparison, single-step dilution, stirred-versus-still dissolution, and titration. Each experiment owns its apparatus, policy, scientific model, recording command, tests, and evidence in its subdirectory. Original static Blender design candidates remain in `visual_assets/classic_lab/`; filtration and precipitation are outside this video scope.

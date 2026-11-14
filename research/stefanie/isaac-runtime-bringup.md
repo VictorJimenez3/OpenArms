@@ -1,5 +1,7 @@
 # Can Rutgers execute the OpenArms SO-101 Isaac scene?
 
+Current integration note: this is retained standalone Isaac research. Any earlier statement below that architecture selected Isaac exclusively is historical; Joseph selected the newer MuJoCo apparatus for the current pH application. No Isaac application backend is activated by this archive.
+
 ## Verified outcome — 2026-11-14
 
 Yes. Final clean source `6afba01407b8036a0a22d5d8d6f261ac26424051` ran both

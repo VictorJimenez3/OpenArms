@@ -53,3 +53,7 @@ The original phone/relay branch paths are retained in their newer form. Its one 
 ### Independent branch audit
 
 A separate Account 2 audit reviewed pinned MuJoCo, Isaac, fixture, legacy harness and free-plan branches. The audit verified 12 MuJoCo demo tests, 42 Isaac checks (two optional OpenUSD modules could not import), 47 historical harness tests, the Isaac archive/video hashes and raw simulated force receipts, and four fixture meshes. It found two generic-preview input regressions to repair before inclusion. It rejected activating the old independent skill harness, whose own registry/promotion path does not meet the current contract. Its source will remain inspectable as an archived patch and merged Git history. No new GPU, provider or physical run was performed by that audit.
+
+### Generic preview reconciliation
+
+The `stefanie/free-plans` branch contributes numeric holds, labels, explicit expected endpoints and cache identity to the reusable simulation preview. Integration rejects non-finite, negative, boolean or greater-than-60-second holds and preserves the original first-target gripper fallback. The fixed-pattern application dispatcher, old physical wiring and its tests are superseded; their original source remains in merged Git history. Labeled previews need an explicit expected endpoint to establish simulated delivery.
