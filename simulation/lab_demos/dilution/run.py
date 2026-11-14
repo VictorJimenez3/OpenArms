@@ -135,7 +135,7 @@ def run(output: Path, speed: float, enabled=True):
                 renderer.update_scene(d,cam); im=Image.fromarray(renderer.render()); dr=ImageDraw.Draw(im,"RGBA")
                 dr.rectangle([0,0,W,75],fill=(21,33,45,236)); dr.text((34,13),"ONE-STEP DILUTION",font=big,fill="white")
                 dr.text((W-455,25),f"MuJoCo simulation | simplified science model | {speed:g}×",font=small,fill=(235,241,243,255))
-                labels={"comparison":"Compare matching samples", "home":"Approach fixed dispenser", "approach":"SO-101 approaches plunger", "press":"Press to dispense water", "retract":"Retract and let dose mix"}
+                labels={"comparison":"Compare matching samples", "home":"Home position", "approach":"SO-101 approaches plunger", "press":"Press to dispense water", "retract":"Retract and let dose mix"}
                 dr.rounded_rectangle([32,H-85,690,H-30],radius=14,fill=(21,33,45,224)); dr.text((52,H-74),labels.get(name,name),font=small,fill="white")
                 c0=concentrations[0]; dose=amounts[0]-BASE_ML
                 dr.rounded_rectangle([W-355,H-132,W-30,H-30],radius=14,fill=(21,33,45,224))
