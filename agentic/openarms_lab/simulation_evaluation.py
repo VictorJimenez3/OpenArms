@@ -20,7 +20,14 @@ from .skills import compute_skill_hash
 
 def simulation_scope():
     from .mujoco_scene import CAMERA_SETUP, METHOD, SCENE
-    identity = {'scene': SCENE, 'camera': CAMERA_SETUP, 'observer': METHOD}
+    root = Path(__file__).resolve().parents[2]
+    # Version labels alone cannot carry admission across changed implementation.
+    sources = ['simulation/lab_demos/ph/run.py', 'simulation/lab_demos/ph/__init__.py',
+               'simulation/lab_demos/titration/run.py',
+               'agentic/openarms_lab/mujoco_scene.py', 'agentic/openarms_lab/mujoco_worker.py',
+               'agentic/openarms_lab/mujoco_backend.py']
+    identity = {'scene': SCENE, 'camera': CAMERA_SETUP, 'observer': METHOD,
+                'sources': {name: hashlib.sha256((root/name).read_bytes()).hexdigest() for name in sources}}
     return 'mujoco-' + compute_skill_hash(identity)[:16]
 
 
