@@ -41,7 +41,7 @@ Use the startup command above and a fresh `OPENARMS_DATA_DIR` for this scene. As
 
 Only a complete water pour is supported here. The primary and secondary view names both use one overview camera. Post-action pixels are a fresh render of saved final state; water appearance is not measured volume or proof of physical delivery. Controller HOME is recorded separately. Colored patches are simulation references, not decoded physical fiducials. Vessel heights (70/60 mm) and dock geometry remain provisional and do not yet match the latest vessel/base-plate assets.
 
-`TwoVesselSkillEvaluator` independently replays a supported candidate before reusable admission. Equivalent warm requests may then reuse that version. Admission capability is not D4: a saturated suite cannot prove a substantive improvement. Full integrated tests and the current Gemini-water rehearsal are pending in this documentation snapshot; consult [MAIN_INTEGRATION](MAIN_INTEGRATION.md) for final receipts.
+`TwoVesselSkillEvaluator` independently replays a supported candidate before reusable admission. Equivalent warm requests may then reuse that version. Admission capability is not D4: a saturated suite cannot prove a substantive improvement. The verified real-Codex cold run used 7 expert calls and the admitted warm run reused the same version with zero calls; a separate simulated image passed all four checks. The actual Gemini Live water dialogue also passed using generated audio and headless acknowledgments. See [reconciliation evidence](../research/joseph/reconciliation-2026-11-14/README.md) for the retained admission failure, contract repair, test timeout/rerun and model-identity limits. This is bounded initial D3 evidence, not D4, physical delivery or real-device audibility.
 
 ## Retained MuJoCo indicator regression
 
@@ -85,14 +85,14 @@ For the retained indicator regression, skill admission combines the frozen synth
 
 ```sh
 PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q
-PYTHONPATH=agentic:simulation:. .venv-lab/bin/python agentic/scripts/full_loop_rehearsal.py --execution mujoco --out /absolute/new-evidence-directory
+PYTHONPATH=agentic:simulation:. .venv-lab/bin/python agentic/scripts/full_loop_rehearsal.py --execution mujoco --scene two_vessel --expert-profile sol --reasoning-effort high --out /absolute/new-evidence-directory
 cd ui/lab/tests
 npm ci
 OPENARMS_FIXTURE_PORT=8774 npm test
 npm run test:unit
 ```
 
-The retained indicator full-loop script makes real expert calls and uses an automated test student for explicit presentation/confirmation. It is not a spoken or physical-device rehearsal. Use `agentic/scripts/conversation_rehearsal.py` for generated-speech back-and-forth through the real Gemini Live gateway. The older `ph_voice_rehearsal.py` remains a historical harness. Retain previous results and failed/interrupted attempts. Generated speech, Mac playback, browser tests and a signed iOS simulator build do not establish human audibility or unplugged iPhone connectivity. Live provider and actual-device checks remain separate release acceptance items in [the delivery contract](FULL_SYSTEM_DELIVERY.md).
+The full-loop command selects the integrated two-vessel scene and requests Sol at high reasoning through the real Codex CLI. Use `--scene metered_dropper` for the retained indicator regression. The script makes real expert calls and uses an automated test student for explicit presentation/confirmation. It is not a spoken or physical-device rehearsal. Use `agentic/scripts/conversation_rehearsal.py` for generated-speech back-and-forth through the real Gemini Live gateway. The older `ph_voice_rehearsal.py` remains a historical harness. Retain previous results and failed/interrupted attempts. Generated speech, Mac playback, browser tests and a signed iOS simulator build do not establish human audibility or unplugged iPhone connectivity. Live provider and actual-device checks remain separate release acceptance items in [the delivery contract](FULL_SYSTEM_DELIVERY.md).
 
 
 ### Real Gemini Live conversation rehearsal
@@ -104,4 +104,4 @@ uv pip install --python .venv-lab/bin/python -r agentic/requirements-lab-dev.txt
 PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m agentic.scripts.conversation_rehearsal --url http://127.0.0.1:8010 --confirm-outcome --output /absolute/new-voice-evidence-directory
 ```
 
-This macOS helper uses `say` and `ffmpeg` to send generated student audio through the actual gateway. It checks progress during real expert work, a science question that preserves the proposal, a sample correction requiring a new proposal, fresh spoken confirmation, an independent simulated/synthetic observation, STOP, and the follow-up. It saves reply audio and correlated transcripts/events. `--audible` plays audio on the Mac; successful playback alone is not human verification. The default without `--confirm-outcome` cancels before execution. For the integrated two-vessel server, add `--water-only` to avoid unsupported chemistry corrections. This flag selects the rehearsal dialogue; the server still needs `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`. The current water rehearsal result remains pending until its receipt is reviewed.
+This macOS helper uses `say` and `ffmpeg` to send generated student audio through the actual gateway. It checks progress during real expert work, a science question that preserves the proposal, a sample correction requiring a new proposal, fresh spoken confirmation, an independent simulated/synthetic observation, STOP, and the follow-up. It saves reply audio and correlated transcripts/events. `--audible` plays audio on the Mac; successful playback alone is not human verification. The default without `--confirm-outcome` cancels before execution. For the integrated two-vessel server, add `--water-only` to avoid unsupported chemistry corrections. This flag selects the rehearsal dialogue; the server still needs `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`. The verified water dialogue used actual Gemini Live with generated audio and headless playback acknowledgments; its passing receipt does not prove human audibility or an actual phone. See [reconciliation evidence](../research/joseph/reconciliation-2026-11-14/README.md).
