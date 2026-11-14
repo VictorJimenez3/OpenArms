@@ -1,5 +1,7 @@
 # Shared conversational lab session contract
 
+[Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
+
 > **Architecture correction:** [FULL_SYSTEM_DELIVERY.md](FULL_SYSTEM_DELIVERY.md) is the authoritative R1–R6 responsibility map, domain contract and acceptance checklist. The transport details below are the compatible implementation seam, not the complete product. pH is the demonstration scenario; background expert planning, image/perception tools, two-agent feedback, reusable candidates and evaluated improvement are required. Physical actuation alone is excluded.
 
 The student app has one experiment: qualitative red-cabbage indicator pH. Browser and SwiftUI use the same Python service, notebook, trial rules and server-owned Gemini Live connection. The application selects a synthetic fixture or actual MuJoCo execution; physical dispatch is disabled. Historical mandarin and dilution demonstrations are research evidence, not selectable experiments.

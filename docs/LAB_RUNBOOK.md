@@ -1,5 +1,7 @@
 # Run the conversational lab
 
+[Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
+
 The student app is voice first on Mac and iPhone. Red-cabbage indicator pH is the student demonstration. Gemini Live carries continuous conversation; OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
 
 ## Start

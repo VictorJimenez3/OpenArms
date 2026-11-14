@@ -1,5 +1,7 @@
 # OpenArms
 
+The product gives students control of accessible lab work through responsive conversation, camera-aware expert tools and fast, improving reusable skills. Read [the architecture](docs/ARCHITECTURE.md) before assigning work and [the consolidation ledger](docs/MAIN_INTEGRATION.md) before merging branches.
+
 A conversational, camera-aware lab assistant that learns reusable skills. **Red-cabbage indicator pH is the demonstration scenario.** Choose vinegar, mild baking-soda solution, or water; predict, review and confirm a trial; examine clearly labeled evidence; then explain the result.
 
 The [student app](docs/LAB_RUNBOOK.md) uses one Mac/iPhone session, Gemini Live voice, an image-aware Codex expert, and a persistent notebook. It supports an explicitly selected MuJoCo lab simulator and a separate synthetic regression fixture. The simplified student view centers on camera, Talk and Stop; `/developer` adds actual simulator frames, recording and agent evidence. Hardware execution is disabled. Observed simulation colors are not physical measurements. The [full delivery contract](docs/FULL_SYSTEM_DELIVERY.md) tracks perception, feedback to both agents, skill admission, reuse and evaluated improvement, including remaining device acceptance. The [session contract](docs/INTERFACES.md) describes their shared transport.

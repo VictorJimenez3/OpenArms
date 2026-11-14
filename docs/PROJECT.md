@@ -1,11 +1,17 @@
-# OpenArms: the pH learning loop
+# OpenArms: the judging goal
 
-The only student demo experiment is qualitative pH using red-cabbage indicator. A student chooses a prepared vinegar or mild baking-soda condition, or a water control, predicts the result, reviews an exact proposal, confirms, considers the evidence and explains it.
+A student directs a real robot arm one action at a time through a responsive Gemini conversation. One narrow physical pH experiment demonstrates independence; the student chooses the steps. Optional: one short reflection at the end.
 
-The application overhaul must connect continuous Gemini Live conversation to substantial background expert planning, timestamped scene inspection and perception tools, deterministic mock execution, independent observations, validated reusable skills and an evaluated improvement cycle. Typed input, accessible browser/iPhone controls, persistent trials, correction, cancellation and recovery remain required. See [the full delivery contract](FULL_SYSTEM_DELIVERY.md). Current local components do not yet establish this complete loop. Reference outcomes are visibly labeled MODEL-PREDICTED. They are not measured colors or numeric pH readings. Physical execution remains disabled.
+The technical contribution is a harness that turns expensive successful reasoning into optimized, parameterized, reusable skills and tools. Prove fast reuse, then one meaningful improvement if feasible. Fixed labeled stations, taught trajectories and a hardcoded physical fallback are acceptable. New-position generalization is optional.
 
-One server-owned session connects Mac browser, iPhone Safari and native SwiftUI. No experiment picker, mandarin student lesson, dilution lesson, unrelated trivia or developer dashboard appears in the student flow. Historical research and real mandarin evidence remain available in the repository.
+[Architecture](ARCHITECTURE.md) owns D1–D4 and acceptance. [GitHub issues](https://github.com/VictorJimenez3/OpenArms/issues) own work; [interfaces](INTERFACES.md) record actual connections; [wet-lab runbook](WET_LAB.md) owns supervised bench setup. Preserve the baseline. Simulation is for preparation, not the physical judging claim.
 
-Normal mock completion automatically returns to HOME. A new trial resets mock materials and preserves evidence. Future hardware integration must qualify the actual A→C fixture and observation source separately. Automatic normal return does not imply blind recovery after a stopped or uncertain physical action.
+Smallest judging sequence: student requests a supported physical action -> Gemini acknowledges while it runs -> independent outcome -> another individual student request -> fast reuse of the tested skill -> visible experiment result. Show the cold/warm receipt and, if established, one baseline/candidate improvement. Never slow the baseline artificially to manufacture a speedup.
 
-Start with the [application runbook](LAB_RUNBOOK.md), [architecture](ARCHITECTURE.md), and [shared contract](INTERFACES.md). The authoritative physical preparation is [Notion 07](https://app.notion.com/p/41871c9c107e816fab14f3549f6a8fd6), with [bench procedures](WET_LAB.md). The [overhaul plan](https://app.notion.com/p/41871c9c107e81c9ac41e4eb719967d6) records the original review and device evidence gates.
+## Current software delivery
+
+Red-cabbage indicator pH is the only student demo. Gemini Live, the Codex expert, camera tools, execution feedback and evaluated skill reuse share one session/runtime. Physical actuation is disabled for this software delivery; the selected simulator is the newer MuJoCo metered-dropper apparatus. Its analytical color model and independent rendered-image observation retain SIMULATED provenance. This does not close the physical judging milestone above.
+
+Browser and native iPhone use the same server; prediction/reflection are optional, and no lesson or experiment picker gates requests. The developer view contains simulation diagnostics. New trials preserve history, and normal simulation completion returns home. STOP never authorizes a blind physical reset.
+
+Read [the full software contract](FULL_SYSTEM_DELIVERY.md), [runbook](LAB_RUNBOOK.md), and [main consolidation ledger](MAIN_INTEGRATION.md) for current evidence and remaining gates. [Notion physical demo selection](https://app.notion.com/p/41871c9c107e816fab14f3549f6a8fd6) defines bench scope; [wet-lab procedures](WET_LAB.md) govern supervised hardware work.
