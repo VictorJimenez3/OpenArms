@@ -115,3 +115,18 @@ def test_potions_preparation_progression_and_mix_are_visible():
             "water_ml": 50., "prepared_tea_fraction": 1.,
             "citric_acid_kit_spoons": 1., "baking_soda_kit_spoons": 1.,
         })
+
+
+def test_camera_registration_recovers_shifted_fixture(tmp_path):
+    from openarms_sim.smartivity_trials import trial
+
+    fixed = trial(1, "spout", position_variation_m=.018)
+    corrected = trial(1, "spout", position_variation_m=.018, register=True, evidence_dir=tmp_path)
+    assert fixed["delivered_ml"] == 0
+    assert "missed" in fixed["fault"]
+    assert fixed["evaluator_layout_xy"] == corrected["evaluator_layout_xy"]
+    assert corrected["registration"]["status"] == "registered"
+    assert corrected["success"] and corrected["placed"]
+    assert corrected["delivered_ml"] == pytest.approx(corrected["preloaded"]["beaker"]["water_ml"])
+    assert corrected["spilled_ml"] == corrected["collisions"] == corrected["drops"] == 0
+    assert (tmp_path / corrected["registration"]["image"]).is_file()

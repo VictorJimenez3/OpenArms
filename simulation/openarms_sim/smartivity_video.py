@@ -270,7 +270,8 @@ def main():
             preparation = [(stage, VisualState(**state)) for stage, state in json.load(source)]
     scenario = receipt['scenario']
     titles = {'volcano': 'Erupting Volcano', 'potions': 'Magic Potions 1 & 2'}
-    with closing(World(seed=receipt['seed'], scenario=scenario)) as world:
+    with closing(World(seed=receipt['seed'], scenario=scenario,
+                       position_variation_m=receipt.get('position_variation_m'))) as world:
         video = render_movie(world, frames, args.out, title=titles[scenario], mode=receipt['mode'],
                              episode_id=receipt['episode_id'], preparation=preparation)
     report_path = args.out.with_suffix('.video.json')

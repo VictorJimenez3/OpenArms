@@ -59,6 +59,12 @@ TOOLS = [{
     'name': 'inspect_scene', 'description': 'Read fresh overview and side pixels and current joint readings.',
     'input_schema': {'type': 'object', 'additionalProperties': False},
 }]
+REGISTER_TOOL = {
+    'name': 'register_layout',
+    'description': 'Before moving a vessel, estimate both station locations from a fresh overhead image.',
+    'input_schema': {'type': 'object', 'additionalProperties': False, 'required': ['evidence_id'],
+                     'properties': {'evidence_id': {'type': 'string'}}},
+}
 
 
 @dataclass(frozen=True)
@@ -69,9 +75,9 @@ class Frame:
     monotonic: float
 
 
-def _default_world(seed, scenario='volcano'):
+def _default_world(seed, scenario='volcano', position_variation_m=None):
     from openarms_sim.smartivity_world import World
-    return World(seed=seed, scenario=scenario)
+    return World(seed=seed, scenario=scenario, position_variation_m=position_variation_m)
 
 
 def _skill_definition(action, scenario):
@@ -92,11 +98,12 @@ def _skill_definition(action, scenario):
 class SmartivityRun:
     """One world, one task. All world operations run on the render-context thread."""
 
-    def __init__(self, folder, expert, *, scenario='volcano', world_factory=None):
+    def __init__(self, folder, expert, *, scenario='volcano', world_factory=None, register_layout=False):
         self.folder = Path(folder)
         self.expert = expert
         self.scenario = scenario
         self.objective, self.manifest = EXPERIMENTS[scenario]
+        self.require_registration = register_layout
         self.world_factory = world_factory or partial(_default_world, scenario=scenario)
         self.world = None
         self.frames = {}
@@ -150,6 +157,7 @@ class SmartivityRun:
         self._seen = {}
         self._observed_change = False
         self._observed_pour = False
+        self._layout_registration = None
         self._camera_evidence = {}
         self._preparation = []
         self._actual_result = None
@@ -311,10 +319,12 @@ class SmartivityRun:
         overview = self.frames['overview']
         self._seen = {overview.metadata['evidence_id']: (self.generation, self._phase_index, overview)}
         proprioception = self.world.proprioception()
+        registered = not self.require_registration or (
+            self._layout_registration is not None and self._layout_registration['status'] == 'registered')
         return {'images': images, 'proprioception': proprioception,
                 'completed_actions': list(SEQUENCE[:self._phase_index]),
                 'available_skills': [SEQUENCE[self._phase_index]]
-                if self._phase_index < self._limit and not proprioception.get('fault') else [],
+                if self._phase_index < self._limit and registered and not proprioception.get('fault') else [],
                 'provenance': 'SIMULATED'}
 
     @staticmethod
@@ -342,11 +352,52 @@ class SmartivityRun:
         self.recovery = reason
         return {'error': reason, **self._observe()}
 
+    async def _register_layout(self, arguments):
+        from openarms_sim.smartivity_registration import locate_layout
+
+        if not self.require_registration or self._phase_index or self.world.busy:
+            return self._refuse('Registration is available before motion in the layout experiment.')
+        if self._layout_registration and self._layout_registration['status'] == 'registered':
+            return self._refuse('The current setup is already registered.')
+        evidence_id = arguments.get('evidence_id')
+        observed = self._seen.get(evidence_id) if isinstance(evidence_id, str) else None
+        if set(arguments) != {'evidence_id'} or observed is None or observed[0] != self.generation:
+            return self._refuse('Inspect the current scene before requesting registration.')
+        rgb = self.world.registration_image()
+        calibration = self.world.registration_calibration()
+        frame_id = f'{self.episode_id}-layout-{uuid.uuid4().hex[:8]}'
+        path = self.episode / (frame_id + '.png')
+        Image.fromarray(rgb).save(path)
+        frame = {'frame_id': frame_id, 'evidence_id': frame_id, 'camera_id': 'layout_overhead',
+                 'captured_at': time.time(), 'calibration_id': 'layout-overhead.v1',
+                 'coordinate_frame': 'layout_overhead_image_top_left', 'generation': self.generation,
+                 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'provenance': 'SIMULATED'}
+        self._camera_evidence[frame_id] = frame
+        self._layout_registration = {'evidence_id': frame_id, 'calibration': calibration}
+        try:
+            estimate = locate_layout(rgb, calibration)
+            await asyncio.to_thread(self.world.register_layout, estimate['dock_xy'], estimate['receiver_xy'])
+            if self._stop_event.is_set():
+                raise asyncio.CancelledError
+            self._layout_registration.update(estimate, status='registered')
+        except (RuntimeError, ValueError) as exc:
+            self._layout_registration.update(status='rejected', reason=str(exc))
+            self.recovery = 'The fixture markers could not be registered.'
+        response = self._observe()
+        response['images'].append({'path': str(path.resolve()), **frame})
+        response['layout_registration'] = self._layout_registration
+        return response
+
     async def _tool(self, name, arguments):
         if self._stop_event.is_set():
             raise asyncio.CancelledError
         if name == 'inspect_scene' and not arguments:
             return self._observe()
+        if name == 'register_layout':
+            return await self._register_layout(arguments)
+        if self.require_registration and not (
+            self._layout_registration and self._layout_registration['status'] == 'registered'):
+            return self._refuse('Register the two fixture markers before moving the arm.')
         if name != 'execute_skill' or set(arguments) != {'action', 'evidence_id'}:
             return self._refuse('Inspect the scene or submit one supported skill with an overview evidence ID.')
         action, evidence_id = arguments['action'], arguments['evidence_id']
@@ -481,6 +532,8 @@ class SmartivityRun:
                 'effect_pixel_gain': self._peak_effect_pixels,
                 'effect_frame': self._peak_effect_frame, 'reset_ms': self.reset_ms,
                 'preparation_steps': self._preparation,
+                'layout_registration': self._layout_registration,
+                'position_variation_m': getattr(self.world, 'position_variation_m', None),
                 'policy_calls': sum(event['type'] == 'expert_call_started' for event in self._events),
                 'tool_rejections': self._rejections, 'interventions': int(self.status == 'stopped'),
                 'resets': self.generation - 1, 'timing': self.timing,
@@ -490,6 +543,10 @@ class SmartivityRun:
     async def _policy(self, diagnostic, checkpoint):
         observation = self._observe()
         if diagnostic:
+            if self.require_registration:
+                observation = await self._register_layout({'evidence_id': observation['images'][0]['evidence_id']})
+                if self._layout_registration['status'] != 'registered':
+                    raise ValueError(self._layout_registration['reason'])
             for action in SEQUENCE[:1] if checkpoint else SEQUENCE:
                 observation = await self._tool('execute_skill', {
                     'action': action, 'evidence_id': observation['images'][0]['evidence_id']})
@@ -512,7 +569,8 @@ class SmartivityRun:
                      if checkpoint else self.objective)
         context = {
             'task_id': self.episode_id, 'request': objective, 'phase': 'confirmed_simulation',
-            'manifest': self.manifest, 'tools': TOOLS, **observation,
+            'manifest': self.manifest,
+            'tools': [*TOOLS, REGISTER_TOOL] if self.require_registration else TOOLS, **observation,
             'capability_limits': {'physical_actuation': False, 'station_set': ['A', 'C'],
                                   'skill_order': list(SEQUENCE[:self._limit])},
             'instructions': (
@@ -520,7 +578,9 @@ class SmartivityRun:
                 'If the expected vessel, fixture or grasp is unclear, inspect again or stop with uncertainty. '
                 'On a controller fault, report the recovery status and request a reset. '
                 'Use execute_skill with the current overview evidence_id and one available skill. '
-                'The host returns updated frames after each skill. '
+                'The host returns updated frames after each skill. ' +
+                ('Before the first motion, call register_layout with the current overview evidence ID. '
+                 if self.require_registration else '') +
                 'After the requested sequence, use kind=complete with payload '
                 '{evidence_id: latest overview ID, observed_outcome: string}; cite what you actually see. '
                 'The ledger and exact object poses are evaluator-only. Never infer material identity from pixels.'),
@@ -542,7 +602,11 @@ async def _cli(args):
     folder = args.out.resolve()
     expert = expert_from_arguments(args, folder / 'expert', artifact_roots=[folder],
                                    max_calls=10, task_timeout=360)
-    run = SmartivityRun(folder, expert, scenario=args.scenario)
+    world_factory = partial(_default_world, scenario=args.scenario,
+                            position_variation_m=(args.layout_spread_mm / 1000
+                                                  if args.layout_spread_mm else None))
+    run = SmartivityRun(folder, expert, scenario=args.scenario, world_factory=world_factory,
+                        register_layout=args.register_layout)
     try:
         await run.start(args.seed, diagnostic=args.diagnostic, checkpoint=args.checkpoint, record=True)
         result = await run.wait()
@@ -580,8 +644,15 @@ def main():
     parser.add_argument('--checkpoint', action='store_true', help='Test the first camera-to-policy action only.')
     parser.add_argument('--capture-only', action='store_true',
                         help='Save 30 Hz render states for separate rendering on another host.')
+    parser.add_argument('--layout-spread-mm', type=float, help='Opt into experimentally randomized fixtures (up to 18 mm per axis).')
+    parser.add_argument('--register-layout', action='store_true', help='Use the overhead camera to register the randomized fixtures.')
     add_expert_arguments(parser)
-    raise SystemExit(0 if asyncio.run(_cli(parser.parse_args())) else 1)
+    args = parser.parse_args()
+    if args.layout_spread_mm is not None and not 0 < args.layout_spread_mm <= 18:
+        parser.error('--layout-spread-mm must be greater than zero and at most 18.')
+    if args.register_layout and (not args.layout_spread_mm or args.scenario != 'volcano'):
+        parser.error('--register-layout requires an explicit volcano layout spread.')
+    raise SystemExit(0 if asyncio.run(_cli(args)) else 1)
 
 
 if __name__ == '__main__':
