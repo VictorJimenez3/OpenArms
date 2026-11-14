@@ -321,6 +321,29 @@ final class ProtocolCoreTests: XCTestCase {
         XCTAssertEqual(lab.observations.last?.checks?.failedChecks, true)
     }
 
+    func testSimulationFrameUsesOnlyTheCurrentSessionsEvidenceRoute() throws {
+        let id = "0123456789abcdef0123456789abcdef"
+        let path = "/api/sessions/s/evidence/\(id)"
+        func lab(backend: String = "mujoco", engine: String = "MuJoCo", frame: String) throws -> LabSnapshot {
+            try snapshot(state: """
+            {"simulation":{"engine":"\(engine)","status":"running","frame_url":"\(frame)"}}
+            """, extra: """
+            ,"backend":"\(backend)"
+            """)
+        }
+        let current = try lab(frame: path)
+        XCTAssertEqual(current.simulationFrame?.id, id)
+        XCTAssertEqual(current.simulationFrame?.path, path)
+        XCTAssertEqual(current.simulationStatus, "running")
+        XCTAssertNil(try lab(backend: "mock", frame: path).simulationFrame)
+        XCTAssertNil(try lab(engine: "unknown", frame: path).simulationFrame)
+        for unsafe in ["/api/sessions/other/evidence/\(id)", "https://example.org\(path)",
+                       "\(path)?token=unsafe", "\(path)#preview", "/private/\(id).png",
+                       "/api/sessions/s/media/\(id).mp4"] {
+            XCTAssertNil(try lab(frame: unsafe).simulationFrame)
+        }
+    }
+
     private func proposalSnapshot(version: String) -> Data {
         Data("""
         {"session_id":"s","backend":"mock","revision":2,"generation":0,"connected":true,

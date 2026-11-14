@@ -50,11 +50,18 @@ enum AppEndpoint {
         return parts.url!
     }
 
+    static func evidenceID(in artifactPath: String, sessionID: String) -> String? {
+        let prefix = "/api/sessions/\(sessionID)/evidence/"
+        guard artifactPath.hasPrefix(prefix) else { return nil }
+        let id = artifactPath.dropFirst(prefix.count)
+        guard id.utf8.count == 32,
+              id.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else { return nil }
+        return String(id)
+    }
+
     static func evidenceURL(_ origin: URL, sessionID: String, evidenceID: String, artifactPath: String) throws -> URL {
         let session = try sessionURL(origin, id: sessionID)
-        guard evidenceID.utf8.count == 32,
-              evidenceID.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }),
-              artifactPath == "/api/sessions/\(sessionID)/evidence/\(evidenceID)" else {
+        guard Self.evidenceID(in: artifactPath, sessionID: sessionID) == evidenceID else {
             throw VoiceError.message("The scene image is unavailable.")
         }
         return session.appendingPathComponent("evidence").appendingPathComponent(evidenceID)
@@ -110,6 +117,18 @@ struct LabSnapshot: Decodable, Equatable {
     var imageRecords: [JSONValue] {
         let current = RecordPresentation.records(sceneImages)
         return current.isEmpty ? RecordPresentation.records(taskRecords.last?["images"]) : current
+    }
+    var simulationFrame: (id: String, path: String)? {
+        guard let path = mujocoState?["frame_url"]?.string,
+              let id = AppEndpoint.evidenceID(in: path, sessionID: sessionID) else { return nil }
+        return (id, path)
+    }
+    var simulationStatus: String? { mujocoState?["status"]?.string }
+
+    private var mujocoState: JSONValue? {
+        guard backend == "mujoco" || backend == "simulation",
+              let simulation = state["simulation"], simulation["engine"]?.string == "MuJoCo" else { return nil }
+        return simulation
     }
     var skillRecords: [JSONValue] { RecordPresentation.records(skills) }
     var executionRecords: [JSONValue] {
@@ -191,12 +210,12 @@ struct Proposal: Decodable, Equatable, Identifiable {
                 return labels.isEmpty ? "Locate labeled objects" : "Locate \(labels)"
             case "mock_prepared_sample":
                 let sample = args?["condition_id"]?.string?.replacingOccurrences(of: "_", with: " ") ?? "the sample"
-                return "Simulate moving \(sample) from \(args?["source"]?.string ?? "A") to \(args?["destination"]?.string ?? "C")"
+                return "Test the prepared \(sample) sample from station \(args?["source"]?.string ?? "A") with the indicator at station \(args?["destination"]?.string ?? "C")"
             case "mock_pick_up": return "Simulate picking up the sample cup at \(args?["station"]?.string ?? "its station")"
             case "mock_put_down": return "Simulate putting down the sample cup at \(args?["station"]?.string ?? "its station")"
             case "mock_pour":
                 let portions = args?["portions"]?.scalarText ?? "1"
-                return "Simulate pouring from the sample cup at \(args?["station"]?.string ?? "C") (\(portions) portion)"
+                return "Simulate pouring \(portions) prepared portion into the receiver at station \(args?["station"]?.string ?? "C")"
             case "observe":
                 let view = args?["view"]?.string ?? "primary"
                 let fallback = args?["fallback_view"]?.string

@@ -23,7 +23,7 @@ private enum SessionVault {
             throw VoiceError.message("Unlock this iPhone to restore your private lab session.")
         }
         guard status == errSecSuccess, let data = item as? Data else {
-            throw VoiceError.message("Private session storage is unavailable (\\(status)). Reinstall a signed app build before connecting.")
+            throw VoiceError.message("Private session storage is unavailable (\(status)). Reinstall a signed app build before connecting.")
         }
         return try JSONDecoder().decode(SessionCredential.self, from: data)
     }
@@ -113,22 +113,6 @@ final class VoiceClient: ObservableObject {
         guard canAct, let p = snapshot?.pending else { return false }
         return isCurrent(p) && p.presented && acknowledgedProposal == p.id && visibleProposal == p.id
     }
-    var voiceTitle: String {
-        if voiceWanted {
-            if speakerActive { return "Speaking · tap to pause" }
-            if muted { return "Microphone muted" }
-            return microphoneActive ? "Listening · tap to pause" : "Connecting voice…"
-        }
-        return "Talk with OpenArms"
-    }
-    var voiceDetail: String {
-        if speakerActive { return "You can speak to interrupt, or tap Interrupt below." }
-        if voiceWanted && muted { return "Unmute when you’re ready. Text is always available." }
-        if microphoneActive { return "Ask a question or tell me what you’d like to do." }
-        if voiceStatus == "unavailable" { return "Voice is unavailable. You can keep going with text." }
-        return "Ask a question, describe a task, or explore the pH demonstration."
-    }
-
     init() {
         audio.onPlaybackChanged = { [weak self] playing in self?.speakerActive = playing }
         audio.onPlaybackFinished = { [weak self] id in
@@ -353,7 +337,7 @@ final class VoiceClient: ObservableObject {
     }
 
     private func apply(_ state: LabSnapshot, restoring: Bool = false) throws {
-        guard ["mock", "simulation"].contains(state.backend) else {
+        guard ["mock", "simulation", "mujoco"].contains(state.backend) else {
             throw VoiceError.message("This client supports mock and simulation sessions. Physical execution is unavailable.")
         }
         var privateState = state; privateState.accessToken = nil
@@ -457,7 +441,8 @@ final class VoiceClient: ObservableObject {
             } catch is CancellationError { }
             catch {
                 guard self.connectionID == attempt, self.actionID == actionID else { return }
-                self.notice = self.actionError(error)
+                let detail = self.actionError(error)
+                self.notice = action == "stop" ? "Stop could not be confirmed. \(detail)" : detail
                 // Reconcile ambiguous HTTP outcomes; never replay a command or confirmation.
                 if let state = try? await self.request(url: AppEndpoint.sessionURL(origin, id: credential.sessionID), method: "GET", token: credential.accessToken),
                    self.connectionID == attempt, self.actionID == actionID {
@@ -469,6 +454,10 @@ final class VoiceClient: ObservableObject {
 
     func stopLab() {
         stopVoice()
+        guard origin != nil, credential != nil else {
+            notice = "Connect to the lab to send Stop."
+            return
+        }
         act("stop", emergency: true) // Direct deterministic endpoint; never asks a provider to stop.
     }
 

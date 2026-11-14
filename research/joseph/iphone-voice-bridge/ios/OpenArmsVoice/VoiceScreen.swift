@@ -2,10 +2,19 @@ import SwiftUI
 import UIKit
 
 private enum LabStyle {
-    static let cream = Color(red: 0.97, green: 0.96, blue: 0.92)
-    static let ink = Color(red: 0.17, green: 0.16, blue: 0.22)
-    static let purple = Color(red: 0.39, green: 0.25, blue: 0.49)
-    static let teal = Color(red: 0.17, green: 0.39, blue: 0.36)
+    static let background = color(0xfbfdfc)
+    static let subtle = color(0xf7f9f8)
+    static let line = color(0xdfe4e2)
+    static let ink = color(0x1a211e)
+    static let muted = color(0x5f6563)
+    static let jade = color(0x208368)
+    static let stop = color(0xb42318)
+
+    private static func color(_ rgb: UInt32) -> Color {
+        Color(red: Double((rgb >> 16) & 255) / 255,
+              green: Double((rgb >> 8) & 255) / 255,
+              blue: Double(rgb & 255) / 255)
+    }
 }
 
 struct VoiceScreen: View {
@@ -13,71 +22,59 @@ struct VoiceScreen: View {
     @AppStorage("phServerOrigin") private var address = ""
     @AppStorage("phLocalDevelopment") private var localDevelopment = false
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showConnection = false
+    @State private var sheet: Panel?
+    @State private var sheetIsVisible = false
     @State private var prediction = ""
     @State private var reflection = ""
     @State private var message = ""
-    @State private var showHistory = false
     @FocusState private var focusedField: Field?
+
     private enum Field { case prediction, reflection, message }
+    private enum Panel: String, Identifiable {
+        case type, history, settings
+        var id: Self { self }
+    }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    introduction
-                    voiceControl
-                    if let notice = client.notice { noticeCard(notice) }
-                    if let lab = client.snapshot {
-                        requestComposer
-                        if !lab.taskRecords.isEmpty { taskUpdates(lab) }
-                        if let proposal = lab.pending { proposalCard(proposal) }
-                        if !lab.observations.isEmpty { evidence(lab) }
-                        if !lab.outcomeRecords.isEmpty { outcomes(lab) }
-                        if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
-                        if !lab.executionRecords.isEmpty { execution(lab) }
-                        if !client.messages.isEmpty { conversation }
-                        if lab.experiment.id == "red_cabbage_ph" { trial(lab) }
-                        if !lab.skillRecords.isEmpty || !lab.evaluationRecords.isEmpty { skills(lab) }
-                        history(lab)
-                    } else {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Connect to get started").font(.title2.weight(.semibold))
-                            Text("Talk or type a question, request an experiment, and review the evidence. You can start with the red-cabbage pH demonstration.")
-                                .foregroundStyle(.secondary)
-                            Button(client.connecting ? "Opening your lab…" : "Connect your lab") { showConnection = true }
-                                .buttonStyle(.bordered).frame(minHeight: 48).disabled(client.connecting)
-                        }.padding(22).card()
-                    }
-                    if client.snapshot != nil {
-                        Button(role: .destructive) { focusedField = nil; client.stopLab() } label: {
-                            Label("Stop lab", systemImage: "stop.circle").frame(maxWidth: .infinity, minHeight: 48)
+        VStack(spacing: 0) {
+            header
+            Divider().overlay(LabStyle.line)
+            ScrollViewReader { scroll in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 16) {
+                        camera
+                        voiceControl
+                        if let proposal = client.snapshot?.pending, client.connected {
+                            proposalCard(proposal)
                         }
-                        .buttonStyle(.bordered)
-                        .accessibilityHint("Stops the lab directly, even when voice is unavailable.")
+                        clarification
+                        if let notice = client.notice { noticeCard(notice) }
+                        secondaryActions
                     }
-                    Text("Software demo · physical actuation disabled in this session")
-                        .font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, 20).padding(.vertical, 16)
+                    .frame(maxWidth: 560).frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, 22).padding(.vertical, 24)
-                .frame(maxWidth: 640).frame(maxWidth: .infinity)
-            }
-            .background(LabStyle.cream.ignoresSafeArea())
-            .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("OpenArms")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showConnection = true } label: { Label("Lab connection", systemImage: "antenna.radiowaves.left.and.right") }
-                        .frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("connectionSettings")
+                .onChange(of: reviewableProposalID, initial: true) { _, id in
+                    if let id { scroll.scrollTo(id, anchor: .top) }
                 }
-                ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { focusedField = nil } }
             }
-            .sheet(isPresented: $showConnection) {
+        }
+        .background(LabStyle.background.ignoresSafeArea())
+        .tint(LabStyle.jade).foregroundStyle(LabStyle.ink).preferredColorScheme(.light)
+        .sheet(item: $sheet, onDismiss: { sheetIsVisible = false }) { panel in
+            switch panel {
+            case .type:
+                detailSheet("Type instead") {
+                    clarification
+                    requestComposer
+                    if let notice = client.notice { noticeCard(notice) }
+                }
+            case .history:
+                detailSheet("History") { historyContent }
+            case .settings:
                 ConnectionSettings(client: client, address: $address, localDevelopment: $localDevelopment)
             }
         }
-        .tint(LabStyle.purple).foregroundStyle(LabStyle.ink).preferredColorScheme(.light)
         .task {
             if !address.isEmpty { client.connect(address: address, allowLocalDebug: debugLocalAllowed) }
         }
@@ -85,8 +82,13 @@ struct VoiceScreen: View {
             if phase == .background { client.setForeground(false) }
             if phase == .active { client.setForeground(true) }
         }
-        .onChange(of: client.connectionStatus) { _, status in UIAccessibility.post(notification: .announcement, argument: status) }
+        .onChange(of: client.connectionStatus) { _, status in
+            UIAccessibility.post(notification: .announcement, argument: status)
+        }
         .onChange(of: client.snapshot?.trial.trialID) { _, _ in prediction = ""; reflection = "" }
+        .onChange(of: connectedProposalID) { _, id in
+            if id != nil { sheet = nil }
+        }
     }
 
     private var debugLocalAllowed: Bool {
@@ -97,67 +99,245 @@ struct VoiceScreen: View {
         #endif
     }
 
-    private var introduction: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "bubble.left.and.bubble.right.fill").foregroundStyle(LabStyle.teal)
-                Text("OPENARMS LAB").font(.caption.weight(.bold)).tracking(1.4)
-                Spacer()
-                if let backend = client.snapshot?.backend {
-                    Text(backend.uppercased()).font(.caption2.bold()).padding(.horizontal, 9).padding(.vertical, 6)
-                        .background(LabStyle.purple.opacity(0.10), in: Capsule())
+    private func open(_ panel: Panel) {
+        sheetIsVisible = true
+        sheet = panel
+    }
+
+    private var reviewableProposalID: String? {
+        sheetIsVisible ? nil : connectedProposalID
+    }
+
+    private var connectedProposalID: String? {
+        client.connected ? client.snapshot?.pending?.id : nil
+    }
+
+    private var header: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                appTitle
+                Spacer(minLength: 0)
+                connectionIndicator
+                stopButton(client) { focusedField = nil }
+            }
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    appTitle
+                    Spacer()
+                    stopButton(client) { focusedField = nil }
+                }
+                connectionIndicator
+            }
+        }
+        .padding(.horizontal, 20).padding(.vertical, 4)
+        .frame(maxWidth: 560).frame(maxWidth: .infinity)
+    }
+
+    private var appTitle: some View {
+        Text("OpenArms").font(.title2.weight(.semibold))
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private var connectionIndicator: some View {
+        HStack(spacing: 6) {
+            Image(systemName: client.connected ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(client.connected ? LabStyle.jade : LabStyle.muted)
+                .accessibilityHidden(true)
+            Text(client.connected ? "Connected" : (client.connecting ? "Connecting" : "Offline"))
+                .foregroundStyle(LabStyle.muted)
+        }
+        .font(.subheadline)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(client.connectionStatus)
+        .accessibilityIdentifier("connectionState")
+    }
+
+    private var camera: some View {
+        let lab = client.snapshot
+        let frame = lab?.imageRecords.last
+        let simulationFrame = lab?.simulationFrame
+        let showingSimulation = simulationFrame != nil &&
+            (frame == nil || lab?.simulationStatus == "running")
+
+        return VStack(spacing: 0) {
+            Group {
+                if showingSimulation, let simulationFrame {
+                    EvidenceImage(client: client, id: simulationFrame.id, path: simulationFrame.path,
+                                  scope: client.evidenceScope, maxHeight: 246, label: "MuJoCo simulation frame")
+                } else if let frame {
+                    sceneImage(frame, maxHeight: 246)
+                } else {
+                    Label(client.connected ? "Waiting for a scene image" : "Camera offline",
+                          systemImage: "camera")
+                        .font(.subheadline).foregroundStyle(LabStyle.muted)
                 }
             }
-            Text(client.snapshot?.experiment.title ?? "Talk with OpenArms")
-                .font(.system(.largeTitle, design: .serif, weight: .medium)).accessibilityAddTraits(.isHeader)
-            HStack(alignment: .top, spacing: 8) {
-                Image(systemName: client.connected ? "checkmark.circle.fill" : "circle.dotted")
-                    .foregroundStyle(client.connected ? LabStyle.teal : LabStyle.purple)
-                Text(client.connectionStatus).font(.footnote)
-                if client.connecting { ProgressView().controlSize(.small).accessibilityLabel("Connecting") }
-            }.accessibilityElement(children: .combine).accessibilityIdentifier("connectionState")
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .frame(height: 246)
+            if showingSimulation {
+                cameraCaption("MuJoCo simulation frame")
+            } else if let frame {
+                cameraCaption(RecordPresentation.provenance(frame), time: captureTime(frame))
+            }
+        }
+        .background(LabStyle.subtle, in: RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(LabStyle.line))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Lab camera")
+    }
+
+    private func cameraCaption(_ source: String, time: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(source).font(.caption.weight(.semibold))
+            if let time { Text(time).font(.caption2) }
+        }
+        .foregroundStyle(LabStyle.muted)
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .top) { Divider().overlay(LabStyle.line) }
+    }
+
+    @ViewBuilder
+    private var clarification: some View {
+        if client.connected, let latest = client.snapshot?.taskRecords.last,
+           let question = RecordPresentation.clarification(latest) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("OpenArms asks").font(.subheadline.weight(.semibold))
+                Text(question).textSelection(.enabled)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16).card()
         }
     }
 
+    private var activityStatus: String {
+        guard client.connected else { return address.isEmpty ? "Lab disconnected" : client.connectionStatus }
+        switch client.snapshot?.simulationStatus {
+        case "failed": return "Simulation failed"
+        case "unavailable": return "Simulation unavailable"
+        default: break
+        }
+        if client.speakerActive { return "Speaking" }
+        if client.voiceWanted && client.muted { return "Microphone muted" }
+        if client.voiceWanted && client.voiceStatus == "paused" { return "Voice paused" }
+        switch client.snapshot?.taskRecords.last?["status"]?.string {
+        case "queued": return "Request queued"
+        case "running": return "Preparing your task"
+        case "executing": return "Running the approved plan"
+        case "observing": return "Checking the result"
+        case "needs_clarification": return "Waiting for your answer"
+        case "failed": return "Task failed"
+        case "cancelled" where client.snapshot?.trial.state != "stopped": return "Task cancelled"
+        default: break
+        }
+        if client.snapshot?.pending != nil { return "Review the proposed action" }
+        if client.voiceStatus == "unavailable" { return "Voice unavailable" }
+        if client.microphoneActive { return "Listening" }
+        if client.voiceWanted {
+            return client.voiceStatus == "reconnecting" ? "Reconnecting voice" : "Connecting voice"
+        }
+        if client.snapshot?.trial.state == "stopped", !client.busy { return "Lab stopped" }
+        if client.busy { return "Sending to the lab" }
+        return "Ready"
+    }
+
     private var voiceControl: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 10) {
+            Text(activityStatus).font(.subheadline.weight(.medium))
+                .foregroundStyle(LabStyle.muted).multilineTextAlignment(.center)
+                .accessibilityIdentifier("labActivity")
             Button {
                 focusedField = nil
-                if client.connected { client.toggleVoice() } else { showConnection = true }
+                if client.voiceWanted { client.stopVoice() }
+                else if client.connected { client.toggleVoice() }
+                else { open(.settings) }
             } label: {
-                VStack(spacing: 12) {
-                    Image(systemName: client.speakerActive ? "waveform" : (client.muted ? "mic.slash.fill" : "mic.fill"))
-                        .font(.system(size: 30, weight: .medium)).frame(height: 38).accessibilityHidden(true)
-                    Text(client.voiceTitle).font(.headline).multilineTextAlignment(.center)
-                }
-                .foregroundStyle(.white).padding(24).frame(maxWidth: .infinity, minHeight: 132)
-                .background(LabStyle.purple, in: RoundedRectangle(cornerRadius: 28))
+                Label(voiceAction.title, systemImage: voiceAction.icon)
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16).padding(.vertical, 18)
+                    .frame(maxWidth: .infinity, minHeight: 68)
             }
-            .buttonStyle(.plain).accessibilityIdentifier("primaryVoice")
-            .accessibilityHint(client.voiceWanted ? "Pauses voice. Your text session stays connected." : "Enables a continuous voice conversation after microphone permission.")
-            Text(client.voiceDetail).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            if client.voiceWanted {
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 12) { muteButton; interruptButton }
-                    VStack(spacing: 8) { muteButton; interruptButton }
-                }
-            }
-            HStack(spacing: 18) {
-                Label(client.microphoneActive ? "Mic on" : "Mic off", systemImage: client.microphoneActive ? "mic" : "mic.slash")
-                Label(client.speakerActive ? "Playing" : "Speaker ready", systemImage: client.speakerActive ? "speaker.wave.2" : "speaker")
-            }.font(.caption).foregroundStyle(.secondary).accessibilityElement(children: .combine)
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.roundedRectangle(radius: 16))
+            .disabled(client.connecting && !client.voiceWanted)
+            .accessibilityIdentifier("primaryVoice")
         }
     }
-    private var muteButton: some View {
-        Button { client.toggleMute() } label: {
-            Label(client.muted ? "Unmute" : "Mute", systemImage: client.muted ? "mic.fill" : "mic.slash")
-                .frame(maxWidth: .infinity, minHeight: 44)
-        }.buttonStyle(.bordered).accessibilityIdentifier("toggleMute")
+
+    private var voiceAction: (title: String, icon: String) {
+        if client.voiceWanted { return ("End voice", "mic.slash.fill") }
+        if client.connected || client.connecting { return ("Talk", "mic.fill") }
+        return ("Connect to lab", "link")
     }
-    private var interruptButton: some View {
-        Button { client.interrupt() } label: {
-            Label("Interrupt", systemImage: "hand.raised").frame(maxWidth: .infinity, minHeight: 44)
-        }.buttonStyle(.bordered).disabled(!client.speakerActive)
+
+    private var secondaryActions: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 18) {
+                typeButton
+                historyButton
+                settingsButton
+            }
+            VStack(spacing: 0) {
+                typeButton
+                historyButton
+                settingsButton
+            }
+        }
+        .font(.subheadline.weight(.medium))
+        .foregroundStyle(LabStyle.jade)
+        .frame(maxWidth: .infinity)
+    }
+
+    private var typeButton: some View {
+        Button { open(.type) } label: { Text("Type instead").frame(minHeight: 44) }
+    }
+
+    private var historyButton: some View {
+        Button { open(.history) } label: { Text("History").frame(minHeight: 44) }
+    }
+
+    private var settingsButton: some View {
+        Button { open(.settings) } label: { Text("Settings").frame(minHeight: 44) }
+            .accessibilityIdentifier("connectionSettings")
+    }
+
+    private func detailSheet<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16, content: content)
+                    .padding(20).frame(maxWidth: 560).frame(maxWidth: .infinity)
+            }
+            .background(LabStyle.background.ignoresSafeArea())
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(title).navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Done") { sheet = nil } }
+                ToolbarItem(placement: .topBarTrailing) {
+                    stopButton(client) { focusedField = nil; sheet = nil }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var historyContent: some View {
+        if !client.messages.isEmpty { conversation }
+        if let lab = client.snapshot {
+            if !lab.taskRecords.isEmpty { taskUpdates(lab) }
+            if !lab.observations.isEmpty { evidence(lab) }
+            if !lab.outcomeRecords.isEmpty { outcomes(lab) }
+            if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
+            if !lab.executionRecords.isEmpty { execution(lab) }
+            if lab.experiment.id == "red_cabbage_ph" { trial(lab) }
+            if !lab.skillRecords.isEmpty || !lab.evaluationRecords.isEmpty { skills(lab) }
+            history(lab)
+        } else if client.messages.isEmpty {
+            Text("Your conversation and trial evidence will appear here.")
+                .foregroundStyle(LabStyle.muted)
+        }
     }
 
     private func trial(_ lab: LabSnapshot) -> some View {
@@ -176,8 +356,8 @@ struct VoiceScreen: View {
                                 Spacer(minLength: 0)
                             }
                             .padding(.horizontal, 16).frame(maxWidth: .infinity, minHeight: 52)
-                            .background(selected ? LabStyle.purple.opacity(0.11) : Color.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 16))
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? LabStyle.purple : .clear, lineWidth: 1.5))
+                            .background(selected ? LabStyle.jade.opacity(0.11) : Color.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 16))
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? LabStyle.jade : .clear, lineWidth: 1.5))
                         }
                         .buttonStyle(.plain).disabled(!client.canAct)
                         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -186,7 +366,7 @@ struct VoiceScreen: View {
                 }
                 Text("Prediction").font(.subheadline.weight(.semibold))
                 if !lab.prediction.isEmpty {
-                    Label(lab.prediction, systemImage: "quote.bubble").font(.subheadline).foregroundStyle(LabStyle.purple).textSelection(.enabled)
+                    Label(lab.prediction, systemImage: "quote.bubble").font(.subheadline).foregroundStyle(LabStyle.jade).textSelection(.enabled)
                 }
                 TextField("What color or classification do you expect?", text: $prediction, axis: .vertical)
                     .lineLimit(2...5).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
@@ -206,7 +386,7 @@ struct VoiceScreen: View {
 
     private func proposalCard(_ proposal: Proposal) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Label("Review before we begin", systemImage: "checkmark.shield").font(.headline).accessibilityAddTraits(.isHeader)
+            Text("Proposed action").font(.headline).accessibilityAddTraits(.isHeader)
             let steps = proposal.reviewSteps
             if !steps.isEmpty, steps.count == RecordPresentation.records(proposal.plan?["steps"]).count {
                 ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
@@ -215,21 +395,35 @@ struct VoiceScreen: View {
             } else {
                 Text(proposal.summary).font(.body).textSelection(.enabled)
             }
-            Button { focusedField = nil; client.confirm(proposal) } label: {
-                Text("Confirm this plan").font(.headline).frame(maxWidth: .infinity, minHeight: 50)
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let expired = (proposal.expiresAt ?? .infinity) <= context.date.timeIntervalSince1970
+                VStack(spacing: 8) {
+                    Button { focusedField = nil; client.confirm(proposal) } label: {
+                        Text("Confirm plan").font(.headline).frame(maxWidth: .infinity, minHeight: 50)
+                    }
+                    .buttonStyle(.borderedProminent).disabled(expired || !client.canConfirm)
+                    .accessibilityIdentifier("confirmProposal")
+                    if expired {
+                        Text("Proposal expired. Ask for a new plan.")
+                            .font(.caption).foregroundStyle(LabStyle.muted)
+                    } else if !client.canConfirm && !client.busy {
+                        Text("Waiting for the lab to acknowledge this preview.")
+                            .font(.caption).foregroundStyle(LabStyle.muted)
+                    }
+                }
             }
-            .buttonStyle(.borderedProminent).disabled(!client.canConfirm)
-            .accessibilityIdentifier("confirmProposal")
             Button("Cancel proposal", role: .destructive) { client.cancel(proposal) }
                 .frame(maxWidth: .infinity, minHeight: 44).disabled(!client.canAct)
-            if !client.canConfirm && !client.busy {
-                Text(client.connected ? "Waiting for the lab to acknowledge this preview." : "Reconnect to review a fresh proposal.")
-                    .font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(22).background(LabStyle.jade.opacity(0.08), in: RoundedRectangle(cornerRadius: 24))
+        .id(proposal.id)
+        .task(id: reviewableProposalID) {
+            if reviewableProposalID == proposal.id {
+                client.proposalAppeared(proposal)
+            } else {
+                client.proposalDisappeared(proposal.id)
             }
         }
-        .padding(22).background(LabStyle.purple.opacity(0.08), in: RoundedRectangle(cornerRadius: 24))
-        .id(proposal.id)
-        .task(id: "\(proposal.id):\(client.connected)") { if client.connected { client.proposalAppeared(proposal) } }
         .onDisappear { client.proposalDisappeared(proposal.id) }
         .accessibilityElement(children: .contain)
     }
@@ -293,19 +487,25 @@ struct VoiceScreen: View {
 
     private func evidenceFrame(_ frame: JSONValue) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let id = frame["evidence_id"]?.string, let path = frame["artifact_url"]?.string {
-                EvidenceImage(client: client, id: id, path: path, scope: client.evidenceScope)
-            } else {
-                Text("Scene image unavailable").font(.footnote).foregroundStyle(.secondary)
-            }
+            sceneImage(frame)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             evidenceMetadata(frame)
+        }
+    }
+
+    @ViewBuilder
+    private func sceneImage(_ frame: JSONValue, maxHeight: CGFloat = 260) -> some View {
+        if let id = frame["evidence_id"]?.string, let path = frame["artifact_url"]?.string {
+            EvidenceImage(client: client, id: id, path: path, scope: client.evidenceScope, maxHeight: maxHeight)
+        } else {
+            Text("Scene image unavailable").font(.footnote).foregroundStyle(LabStyle.muted)
         }
     }
 
     private func evidenceMetadata(_ record: JSONValue) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             if let title = RecordPresentation.text(record, "description", "summary", "text") { Text(title) }
-            Text(RecordPresentation.provenance(record)).font(.caption.bold()).foregroundStyle(LabStyle.teal)
+            Text(RecordPresentation.provenance(record)).font(.caption.bold()).foregroundStyle(LabStyle.jade)
             metadata("Captured", captureTime(record))
             metadata("Clock", RecordPresentation.text(record, "capture_clock", "clock"))
             metadata("Camera", RecordPresentation.text(record, "camera_id"))
@@ -389,7 +589,7 @@ struct VoiceScreen: View {
             ForEach(lab.observations.suffix(3)) { observation in
                 VStack(alignment: .leading, spacing: 8) {
                     Text(observation.provenance)
-                        .font(.caption.bold()).foregroundStyle(LabStyle.teal)
+                        .font(.caption.bold()).foregroundStyle(LabStyle.jade)
                     Text(observation.text).textSelection(.enabled)
                     metadata("Source", observation.source)
                     if let status = observation.status { metadata("Observer status", status.capitalized) }
@@ -420,7 +620,7 @@ struct VoiceScreen: View {
                 .lineLimit(2...5).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
                 .focused($focusedField, equals: .message).accessibilityLabel("Message OpenArms")
             Button {
-                if client.sendText(message) { message = ""; focusedField = nil }
+                if client.sendText(message) { message = ""; focusedField = nil; sheet = nil }
             } label: {
                 Label("Send message", systemImage: "arrow.up.circle").frame(minHeight: 44)
             }.buttonStyle(.bordered)
@@ -436,18 +636,18 @@ struct VoiceScreen: View {
             Text("Conversation").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
             ForEach(client.messages.suffix(10)) { entry in
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(entry.role == "user" ? "YOU" : "OPENARMS").font(.caption.bold()).foregroundStyle(.secondary)
+                    Text(entry.role == "user" ? "You" : "OpenArms").font(.caption.bold()).foregroundStyle(.secondary)
                     Text(entry.text).font(.body).textSelection(.enabled)
                 }
                 .padding(16).frame(maxWidth: .infinity, alignment: .leading)
-                .background(entry.role == "user" ? LabStyle.purple.opacity(0.08) : Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 18))
+                .background(entry.role == "user" ? LabStyle.jade.opacity(0.08) : Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 18))
                 .accessibilityElement(children: .combine)
             }
         }
     }
 
     private func history(_ lab: LabSnapshot) -> some View {
-        DisclosureGroup(isExpanded: $showHistory) {
+        DisclosureGroup {
             VStack(alignment: .leading, spacing: 16) {
                 if lab.notebook.isEmpty { Text("Your saved reflections and trials will appear here.").foregroundStyle(.secondary) }
                 ForEach(Array(lab.notebook.enumerated()), id: \.offset) { _, entry in
@@ -459,7 +659,7 @@ struct VoiceScreen: View {
                 ForEach(lab.observations) { observation in
                     VStack(alignment: .leading, spacing: 4) {
                         Text(observation.provenance)
-                            .font(.caption.bold()).foregroundStyle(LabStyle.teal)
+                            .font(.caption.bold()).foregroundStyle(LabStyle.jade)
                         Text(observation.text).font(.subheadline)
                     }
                 }
@@ -470,13 +670,9 @@ struct VoiceScreen: View {
 
     private func noticeCard(_ text: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("A quick note", systemImage: "info.circle").font(.headline)
             Text(text).font(.subheadline)
             if client.needsMicrophoneSettings {
                 Button("Open microphone settings") { openSettings() }.frame(minHeight: 44)
-            }
-            if !client.connected && !client.connecting {
-                Button("Lab connection") { showConnection = true }.frame(minHeight: 44)
             }
         }.padding(18).background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 18))
         .accessibilityElement(children: .contain)
@@ -488,6 +684,8 @@ private struct EvidenceImage: View {
     let id: String
     let path: String
     let scope: VoiceClient.EvidenceScope?
+    let maxHeight: CGFloat
+    var label = "Captured scene image"
 
     private struct LoadKey: Hashable {
         let id: String
@@ -510,9 +708,8 @@ private struct EvidenceImage: View {
                     switch loaded.result {
                     case let .image(image):
                         Image(uiImage: image).resizable().scaledToFit()
-                            .frame(maxWidth: .infinity, maxHeight: 260)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .accessibilityLabel("Captured scene image")
+                            .frame(maxWidth: .infinity, maxHeight: maxHeight)
+                            .accessibilityLabel(label)
                     case .unavailable:
                         Text("Scene image unavailable").font(.footnote).foregroundStyle(.secondary)
                     }
@@ -520,7 +717,7 @@ private struct EvidenceImage: View {
                     ProgressView("Loading scene image").controlSize(.small)
                 }
             } else {
-                Text("Connect to view the scene image").font(.footnote).foregroundStyle(.secondary)
+                Text("Camera offline").font(.footnote).foregroundStyle(.secondary)
             }
         }
         .task(id: key) { [key] in
@@ -540,7 +737,7 @@ private struct EvidenceImage: View {
 }
 
 private extension View {
-    func card() -> some View { background(Color.white.opacity(0.55), in: RoundedRectangle(cornerRadius: 24)) }
+    func card() -> some View { background(LabStyle.subtle, in: RoundedRectangle(cornerRadius: 16)) }
 }
 
 private struct ConnectionSettings: View {
@@ -559,7 +756,10 @@ private struct ConnectionSettings: View {
                     SecureField("Pairing code, if required", text: $pairingCode)
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
                         .accessibilityLabel("Private demo pairing code")
-                    Text("Use the trusted server address from your lab host. Your private session is saved securely on this iPhone. Provider keys stay on the server.")
+                    if let notice = client.notice {
+                        Text(notice).font(.footnote).foregroundStyle(LabStyle.muted)
+                    }
+                    Text(client.connectionStatus).font(.footnote).foregroundStyle(LabStyle.muted)
                     Button(client.connecting ? "Reconnect" : "Connect to lab") {
                         #if DEBUG
                         client.connect(address: address, pairingToken: pairingCode, allowLocalDebug: localDevelopment)
@@ -578,16 +778,44 @@ private struct ConnectionSettings: View {
                     Text("Only localhost, .local and private IPv4 LAN addresses are accepted. Local HTTP is unencrypted. Use trusted HTTPS for a demo. iOS may require a .local hostname for its local networking exception.")
                 }
                 #endif
-                Section("Microphone & recovery") {
-                    Text("Voice asks for microphone access when you tap Talk. Text does not need it. If you leave the app, audio stops; returning restores the same saved lab without replaying commands.")
+                Section("Audio") {
+                    if client.voiceWanted {
+                        Button(client.muted ? "Unmute microphone" : "Mute microphone") { client.toggleMute() }
+                            .frame(minHeight: 44).accessibilityIdentifier("toggleMute")
+                        Button("Interrupt playback") { client.interrupt() }
+                            .frame(minHeight: 44).disabled(!client.speakerActive)
+                    }
                     Button("Open app settings") { openSettings() }.frame(minHeight: 44)
                 }
             }
             .navigationTitle("Lab connection").navigationBarTitleDisplayMode(.inline)
-            .toolbar { Button("Done") { pairingCode = ""; dismiss() } }
-        }.tint(LabStyle.purple)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { pairingCode = ""; dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    stopButton(client) { pairingCode = ""; dismiss() }
+                }
+            }
+        }.tint(LabStyle.jade)
     }
 }
+@MainActor
+private func stopButton(_ client: VoiceClient, dismiss: @escaping () -> Void) -> some View {
+    Button(role: .destructive) {
+        dismiss()
+        client.stopLab()
+    } label: {
+        Label("Stop", systemImage: "stop.fill")
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(LabStyle.stop)
+            .frame(minWidth: 60, minHeight: 44)
+    }
+    .buttonStyle(.plain)
+    .accessibilityIdentifier("stopLab")
+    .accessibilityHint("Sends a stop command directly to the lab.")
+}
+
 @MainActor private func openSettings() {
     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
 }
