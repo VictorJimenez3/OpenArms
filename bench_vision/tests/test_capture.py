@@ -1,4 +1,5 @@
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -55,6 +56,10 @@ class CaptureIntegrationTests(unittest.TestCase):
         for event in summary["phases"]:
             self.assertEqual(len(event["views"]), 2)
             self.assertTrue(all(view["image"] for view in event["views"]))
+            for view in event["views"]:
+                self.assertEqual(view["sha256"], hashlib.sha256((self.root / "summary" / view["image"]).read_bytes()).hexdigest())
+        self.assertEqual(summary["source_assets"]["telemetry"]["sha256"],
+                         hashlib.sha256((manifest.parent / "joint_trace.jsonl").read_bytes()).hexdigest())
         with self.assertRaises(ValueError):
             replay_frame(manifest, "fixture-overview", 9999)
         with self.assertRaises(FileExistsError):

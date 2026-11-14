@@ -2,12 +2,23 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 from pathlib import Path
 
 from .capture import image_dependencies, write_json
-from .episode import align_episode, load_episode, nearest_frame
+from .episode import align_episode, asset_path, load_episode, nearest_frame
+
+
+def file_sha256(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 CHECKPOINT_PHASES = {"HOME": "before", "open": "open", "ABOVE_A": "approach", "GRASP_A": "pregrasp",
@@ -91,6 +102,7 @@ def summarize_episode(episode_path: str | Path, out_dir: str | Path, max_skew_s:
             for camera in episode["cameras"]:
                 view = nearest_frame(camera, event["t"], max_skew_s)
                 view["image"] = None
+                view["sha256"] = None
                 view["calibration_id"] = camera.get("calibration_id")
                 frame = None
                 if view["frame_index"] is not None:
@@ -108,6 +120,7 @@ def summarize_episode(episode_path: str | Path, out_dir: str | Path, max_skew_s:
                     if not cv2.imwrite(str(out / filename), frame):
                         raise RuntimeError("failed writing selected frame")
                     view["image"] = filename
+                    view["sha256"] = file_sha256(out / filename)
                     tile[:240] = cv2.resize(frame, (480, 240))
                 label = f"{event['name']} | {camera['camera_id']} | {view['status']}"
                 timing = f"event {event['t']:.3f}s"
@@ -132,6 +145,14 @@ def summarize_episode(episode_path: str | Path, out_dir: str | Path, max_skew_s:
     summary = {"schema_version": 1, "episode_id": episode["manifest"]["episode_id"],
                "telemetry_time_offset_s": episode["manifest"]["telemetry"].get("offset_s", 0),
                "clock": episode["manifest"]["clock"],
+               "source_assets": {
+                   "episode_manifest": {"path": Path(episode_path).name, "sha256": file_sha256(Path(episode_path))},
+                   "telemetry": {"path": episode["manifest"]["telemetry"]["path"],
+                                 "sha256": file_sha256(asset_path(episode["root"], episode["manifest"]["telemetry"]["path"]))},
+                   "cameras": [{"camera_id": c["camera_id"],
+                                "video": {"path": c["video"], "sha256": file_sha256(c["video_path"])},
+                                "frames": {"path": c["frames"], "sha256": file_sha256(asset_path(episode["root"], c["frames"]))}}
+                               for c in episode["cameras"]]},
                "provenance": episode["manifest"]["provenance"], "phases": events,
                "missing_phase_labels": sorted({"before", "grasp", "lift", "tip", "release", "after"} - present),
                "alignment": alignment, "outcome": {"status": "unknown", "evidence": []},
