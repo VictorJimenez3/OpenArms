@@ -13,6 +13,17 @@
 
 measured: false
 
+# Bench result, 2026-11-14 (python -m openarms_sim.calibrate, 16 table touches on the follower,
+# one discarded as clearly off the table):
+#   - Directions: sign +1 on shoulder_lift, elbow_flex and wrist_flex fits the touches about
+#     5x better (20 mm) than any flipped combination (70 to 130 mm). Treat the signs as verified.
+#   - Offsets: not measured. With the offsets below (all 0) the touches already lie within
+#     about 2 cm of one flat table, and no choice of offsets brings them closer, so the
+#     touches were not consistent enough to say more. 13 of 16 had the wrist near 75 degrees.
+#   - The table sits about 1 cm below the model's base.
+# So the preview is good to roughly 2 cm, and contacts stay notes (measured: false).
+signs_verified: true
+
 joints:
   shoulder_pan:  {sign: 1, offset_deg: 0.0}
   shoulder_lift: {sign: 1, offset_deg: 0.0}

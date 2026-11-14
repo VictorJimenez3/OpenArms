@@ -12,6 +12,15 @@ substances:
   water:             {kind: neutral, name: water}
   bleach:            {kind: base,    strength: 2, name: bleach}
   ammonia:           {kind: base,    strength: 2, name: ammonia}
+  # The Smartivity "My First Science" kit (setup: kit). Powders are used dissolved or wetted,
+  # because the arm pours liquids from the cups; the dry powders sit in the beaker or flask.
+  citric_acid:       {kind: acid,    strength: 1, name: citric acid solution}
+  snow_powder:       {kind: powder,  name: instant snow powder}
+  cornstarch:        {kind: powder,  name: cornstarch}
+  liquid_soap:       {kind: soap,    name: liquid soap}
+  red_colour:        {kind: dye, hue: red,    color: [0.88, 0.10, 0.12], name: red food colour}
+  yellow_colour:     {kind: dye, hue: yellow, color: [0.97, 0.85, 0.10], name: yellow food colour}
+  blue_colour:       {kind: dye, hue: blue,   color: [0.10, 0.30, 0.88], name: blue food colour}
 
 # Colour of the indicator by (acid portions - base portions), weighted by strength.
 indicator_scale:
@@ -26,16 +35,29 @@ plain_colors:
   acid:    [0.93, 0.90, 0.70]
   base:    [0.85, 0.92, 0.95]
   neutral: [0.70, 0.85, 0.95]
+  powder:  [0.96, 0.96, 0.94]
+  soap:    [0.80, 0.93, 0.80]
+
+# Names for mixed food colours (the colour itself is computed from the dyes).
+dye_mixes:
+  - {of: [red, yellow],        label: orange}
+  - {of: [blue, yellow],       label: green}
+  - {of: [blue, red],          label: purple}
+  - {of: [blue, red, yellow],  label: brown}
 
 # Things the student would notice besides colour.
 observations:
   - {when_all: [acid, base], text: fizzing}
+  - {when_all: [acid, base, soap], text: foam rising like a volcano}
+  - {when_all: [snow_powder, water], text: swelling into fluffy instant snow}
+  - {when_all: [cornstarch, water], text: thickening into oobleck}
 
 # SAFETY. This list is deliberately explicit and separate from the colour
 # prediction. Only substances listed under real_bench may ever be poured by
 # the real arm; everything else is simulation-only. Any combination under
 # hazards is blocked from the real arm even if each substance is allowed.
-real_bench: [cabbage_indicator, vinegar, lemon_juice, baking_soda, water]
+real_bench: [cabbage_indicator, vinegar, lemon_juice, baking_soda, water,
+             citric_acid, snow_powder, cornstarch, liquid_soap, red_colour, yellow_colour, blue_colour]
 
 hazards:
   - {mix: [bleach, ammonia], reason: bleach and ammonia release toxic chloramine gas}

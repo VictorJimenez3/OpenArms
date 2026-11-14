@@ -164,6 +164,29 @@ A plan may also contain the arm steps `pick`, `place`, `pour`, `return_cup` and 
 
 Rendering a block move takes about 1.5 seconds on an M2 MacBook, and a pour about 3 seconds, which is at the agent's timeout. Videos are cached by plan, starting state and config, so a repeat request returns instantly. Run `python -m openarms_sim.prerender` before a demo, and again after changing anything in `config/`.
 
+## Science kit setup
+
+`--setup kit` puts the Smartivity "My First Science Experiment Kit" on the bench: the kit's two cups (A and B) are poured by the arm into its beaker (C) and flask (D).
+
+```bash
+python -m openarms_sim --setup kit --from A --into C     # erupting volcano
+python -m openarms_sim --setup kit --from B --into D     # instant snow
+python -m openarms_sim --setup kit --from B --into D --contents '{"D": {"cornstarch": 2}}'    # oobleck
+python -m openarms_sim --setup kit --from A --into C \
+  --contents '{"A": {"yellow_colour": 1}, "C": {"water": 1, "blue_colour": 1}}'              # colour mixing: green
+```
+
+| Experiment | In the cup | In the beaker or flask | Predicted |
+| --- | --- | --- | --- |
+| Erupting volcano | citric acid solution | baking soda, liquid soap, red colour | red with fizzing and foam rising like a volcano |
+| Instant snow | water | snow powder | white, swelling into fluffy instant snow |
+| Oobleck | water | cornstarch | white, thickening into oobleck |
+| Colour mixing | one food colour | water and another colour | orange, green or purple |
+
+The kit's substances, the colour-mixing rule and these reactions are in `config/chemistry.yaml`. The predictions come from that rule table: the simulation draws the liquid and names what the student should see, it does not simulate foam, swelling or thickening. All of the kit's substances are on the `real_bench` list.
+
+Two things are placeholders in `config/setups/kit/bench.yaml`: the sizes of the cups, beaker and flask (the listing gives none, so they are estimates) and their positions (chosen so the simulated arm reaches them). The poses in `poses.json` are solved by the simulation, not recorded on the arm. Measure the pieces and record real poses once the kit is on the bench.
+
 ## Preview inside the student lab app
 
 With `OPENARMS_PREVIEW=mujoco`, the lab app (`agentic/openarms_lab/`) simulates every
@@ -213,7 +236,20 @@ The real arm replays poses that were recorded on the real arm, so reality is the
 3. **Measured joint map.** Run the bench check below and fill in `joint_map.yaml`, then set `measured: true`.
 4. **Measured bench.** Measure each mark's position from the arm's base with a ruler and put it in `bench.yaml`.
 
-### Bench check for the joint map
+### Measuring the joint map without a ruler
+
+```bash
+source env.sh
+python -m openarms_sim.calibrate collect --port /dev/tty.usbmodemXXXX   # motors off, arm moved by hand
+python -m openarms_sim.calibrate fit            # look at the result
+python -m openarms_sim.calibrate fit --write    # save it to config/joint_map.yaml
+```
+
+The table is flat, so every time the gripper's tip touches it the model must put the gripper's lowest point at table height. `collect` records about fourteen touches in different places and postures; `fit` finds the direction and offset of shoulder lift, elbow and wrist flex (and the height of the base above the table) that put all of them on one plane. On synthetic touches with 0.3 degrees of reading noise it recovers the offsets to within about 1 to 2 degrees, and it refuses to save when the touches are too alike or do not fit a plane. Shoulder pan and wrist roll are not measured: they do not change any height.
+
+Once `measured: true` is saved, table and object contacts in the app's preview block a plan; until then they are notes. Re-run after any LeRobot recalibration, which moves every joint's zero.
+
+### Bench check by eye (older method)
 
 Not yet run on the real arm.
 
