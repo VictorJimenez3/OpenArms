@@ -1,5 +1,7 @@
 # agentic/
 
+> **Scope correction — demo-speed-v1:** [Architecture](../docs/ARCHITECTURE.md) defines the target. The lesson/prediction/quiz sequence below describes existing or historical behavior, not a mandatory student workflow. Students choose individual physical actions. Preserve existing authorization and STOP while integrating the corrected flow; mock/simulation success is not physical demo completion.
+
 The agent harness: the LLM "brain" turns a student's words into a short plan, local code checks it, the teacher approves it, and the arm runs it. Design: [research/duc/harness.md](../research/duc/harness.md). Owner: Duc.
 
 ## Setup

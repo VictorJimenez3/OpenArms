@@ -1,9 +1,9 @@
-# Project
+# OpenArms: the judging goal
 
-OpenArms is a HackPrinceton prototype for accessible lab work. The current demo lets a student speak a natural command to transfer a mandarin from station A to B, review the interpreted plan, and confirm it. The bench operator authorizes physical execution.
+A student directs a real robot arm one action at a time through a responsive Gemini conversation. One narrow physical pH experiment demonstrates independence; the student chooses the steps. Optional: one short reflection at the end.
 
-The phone client is installed on Joseph's iPhone. The Mac relay transcribes speech, uses headless AGY Gemini Flash High to call `submit_plan`, and saves transcripts, timings, and audio. That rehearsal used a mock runner; a complete phone-to-physical run is still unverified. Separately, the SO-101 successfully picked up and placed a mandarin during the supervised November 14 C→B bench trial. The [actual poses, motion records and camera evidence](../research/joseph/mandarin-transfer-2026-11-14/README.md) establish that physical result.
+The technical contribution is a harness that turns expensive successful reasoning into optimized, parameterized, reusable skills and tools. Prove fast reuse, then one meaningful improvement if feasible. Fixed labeled stations, taught trajectories and a hardcoded physical fallback are acceptable. New-position generalization is optional.
 
-Simulation is deferred for this demo. A simulator does not require a 3D scan, but building one is outside the current command-to-robot test. Named stations and a readable plan are sufficient for this rehearsal; measured coordinates and local motor limits belong to the physical runner.
+[Architecture](ARCHITECTURE.md) owns D1–D4 and acceptance. [GitHub issues](https://github.com/VictorJimenez3/OpenArms/issues) own work; [interfaces](INTERFACES.md) record actual connections; [wet-lab runbook](WET_LAB.md) owns supervised bench setup. Preserve the baseline. Simulation is for preparation, not the physical judging claim.
 
-See the [demo runbook, next steps, and human to-do](../research/joseph/mandarin-transfer-handoff.md), [interfaces](INTERFACES.md), and [arm setup](../firmware/README.md).
+Smallest judging sequence: student requests a supported physical action -> Gemini acknowledges while it runs -> independent outcome -> another individual student request -> fast reuse of the tested skill -> visible experiment result. Show the cold/warm receipt and, if established, one baseline/candidate improvement. Never slow the baseline artificially to manufacture a speedup.

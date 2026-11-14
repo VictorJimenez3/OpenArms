@@ -1,5 +1,7 @@
 # OpenArms student lab
 
+> **Scope correction — demo-speed-v1:** [Architecture](ARCHITECTURE.md) defines the target. The lesson/prediction/quiz sequence below describes existing or historical behavior, not a mandatory student workflow. Students choose individual physical actions. Preserve existing authorization and STOP while integrating the corrected flow; mock/simulation success is not physical demo completion.
+
 The canonical application is `agentic/openarms_lab/` with the browser UI in `ui/lab/`. It runs locally with a SQLite notebook, deterministic skill routing, Gemini Live conversation, and an optional bridge to the current hardware checkout. The older SwiftUI/Whisper relay remains a separate historical demo.
 
 ## Run

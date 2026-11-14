@@ -1,6 +1,8 @@
 # Demo interfaces
 
-## Canonical student application
+> **Scope correction — demo-speed-v1:** [Architecture](ARCHITECTURE.md) defines the target. The lesson/prediction/quiz sequence below describes existing or historical behavior, not a mandatory student workflow. Students choose individual physical actions. Preserve existing authorization and STOP while integrating the corrected flow; mock/simulation success is not physical demo completion.
+
+## Existing student application baseline — not the target workflow
 
 The primary app is `agentic/openarms_lab/` and `ui/lab/`; see the [runbook](LAB_RUNBOOK.md). Browser REST mutations and `/api/sessions/{sid}/events` share one `Lab` lifecycle with `/api/sessions/{sid}/live`. Gemini audio streams continuously after one microphone gesture. Live tools select experiments, record predictions, propose/correct actions, cancel, prepare the next MOCK trial, answer quizzes, read state/instructions, and request STOP. No tool supplies motor targets.
 
@@ -10,7 +12,7 @@ The current-checkout `TransferRunnerAdapter` maps `request_id` to legacy `plan_i
 
 Notebook events correlate requests, state, transcripts, model usage, controller receipts, observations and quiz feedback. Observations retain `MOCK`, `MODEL-PREDICTED`, `REAL`, `SIMULATED` or `UNKNOWN` provenance. A generated transfer→observe skill remains a candidate until independent mock testing and explicit promotion. Physical approval is a separate scope. Future simulators implement the backend Protocol without changing this lifecycle.
 
-## Legacy phone demo
+## Historical phone demo
 
 The current demo transfers one mandarin from named station A to B. Simulation is deferred. The phone displays the interpreted transfer before confirmation; this is a text proposal, not a motion simulation.
 

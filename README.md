@@ -1,8 +1,8 @@
 # OpenArms
 
-A HackPrinceton project for accessible, student-directed lab work. The [student lab runbook](docs/LAB_RUNBOOK.md) is the primary setup: continuous Gemini Live voice, text controls, experiment lessons, confirmed mock actions, quizzes, and a persistent notebook. Start it with `.venv/bin/python -m agentic.openarms_lab`, then open <http://127.0.0.1:8000>.
+A HackPrinceton project giving students physical independence: speak individual actions and a real arm performs them while Gemini remains responsive. The technical contribution is an improving harness that turns expensive work into fast reusable skills. **Read [the demo architecture](docs/ARCHITECTURE.md) before assigning or implementing work.**
 
-The [mandarin phone demo](research/joseph/mandarin-transfer-handoff.md) documents the older SwiftUI/Whisper path. Physical bench work and its separate operator approval remain in the [wet-lab guide](docs/WET_LAB.md). Simulation is deferred.
+The [lab runbook](docs/LAB_RUNBOOK.md) starts the existing software baseline, whose mock lessons are not the target student experience. [Simulation](simulation/README.md) is backstage testing. [Wet-lab setup](docs/WET_LAB.md) describes supervised physical work. The [older phone demo](research/joseph/mandarin-transfer-handoff.md) is historical evidence.
 
 **Physical result:** On November 14 the SO-101 picked up a mandarin from C and placed it at B on the red card. The [run evidence, actual poses, logs and camera frames](research/joseph/mandarin-transfer-2026-11-14/README.md) document the successful supervised, camera-assisted transfer using local `bench-a.json` checkpoints and staged corrections. Phone-to-physical integration and the packaged replay have separate verification status.
 
