@@ -8,8 +8,8 @@ import time
 import uuid
 from pathlib import Path
 from .backends import MockBackend
-from .learning import (CONDITIONS, EXPERIMENT, condition,
-                       reflection_feedback, science_reply, unknown_observation)
+from .conversation import condition_input, controller_state, conversation_reply, explicit_action, prediction_input, read_only_turn, reset_input, stop_input, words
+from .learning import CONDITIONS, EXPERIMENT, condition, reflection_feedback, unknown_observation
 from .skills import SkillRegistry, compute_skill_hash
 from .store import Store
 from .task_loop import TASK_BUSY, TASK_TERMINAL, TaskLoop
@@ -38,9 +38,6 @@ def _text(value, label='text'):
     if not isinstance(value, str) or not value.strip() or len(value) > 4000:
         raise LabError(f'Enter nonempty {label} of at most 4000 characters.')
     return value.strip()
-
-def _normalized(value):
-    return re.sub(r'[^a-z0-9 ]', '', value.lower()).strip()
 
 def _affirmative(value):
     # A question, quotation, negation or appended instruction is not consent.
@@ -240,11 +237,17 @@ class Lab(TaskLoop):
             await self.publish(s)
             return {'task_id': task['task_id'], 'status': task['status']}
 
-    async def start_improvement(self, sid, task_id, limitation):
+    @staticmethod
+    def _voice_generation(s, expected):
+        if expected is not None and (type(expected) is not int or expected != s['generation']):
+            raise LabError('Stale voice generation; start a fresh turn.')
+
+    async def start_improvement(self, sid, task_id, limitation, *, voice_generation=None):
         """Provide recorded independent failure and a pinned target to the expert."""
         limitation = _text(limitation, 'limitation')
         async with self._lock(sid):
             s = self.get(sid)
+            self._voice_generation(s, voice_generation)
             self._editable(s)
             if s.get('requires_prepare'):
                 raise LabError('Prepare a fresh simulation after the server restart.')
@@ -404,9 +407,21 @@ class Lab(TaskLoop):
         self._event(s, 'condition_selected', condition_id=c['id'])
         self._message(s, 'assistant', f"Selected {c['title']} for this mock trial.")
 
-    async def choose_condition(self, sid, condition_id, *, turn_id=None):
+    async def choose_condition(self, sid, condition_id, *, turn_id=None, voice_generation=None):
         async with self._lock(sid):
             s = self.get(sid)
+            if voice_generation is not None:
+                if voice_generation != s['generation']:
+                    raise LabError('Stale voice generation; start a fresh turn.')
+                message = self._completed_student_turn(s, turn_id)
+                if not message or condition_input(message['text']) != condition_id:
+                    raise LabError('Use the completed student choice verbatim.')
+                key = 'voice:' + turn_id
+                if key not in s['dedupe']:
+                    task = self._conversational_choice(s, condition_id, message['text'], turn_id)
+                    s['dedupe'][key] = {'text': message['text'], 'task_id': task['task_id'] if task else None}
+                    return await self.publish(s)
+                return self.snapshot(sid)
             self._choose(s, condition_id)
             prior = s['tasks'][-1] if s['tasks'] else None
             if prior and prior['status'] == 'needs_clarification':
@@ -429,9 +444,10 @@ class Lab(TaskLoop):
         self._event(s, 'prediction', text=text)
         self._message(s, 'assistant', 'Prediction saved.')
 
-    async def prediction(self, sid, text):
+    async def prediction(self, sid, text, *, voice_generation=None):
         async with self._lock(sid):
             s = self.get(sid)
+            self._voice_generation(s, voice_generation)
             self._predict(s, text)
             return await self.publish(s)
 
@@ -558,6 +574,10 @@ class Lab(TaskLoop):
         async with self._lock(sid):
             s = self.get(sid)
             reason = 'Session disconnected.' if disconnect else 'STOP requested.'
+            pending_task = any(t['status'] not in TASK_TERMINAL - {'needs_clarification'} for t in s['tasks'])
+            controller_active = any(r['status'] in ACTIVE and
+                                    controller_state(s, self._task_for_request(s, r)) == 'in_progress'
+                                    for r in s['requests'])
             self._invalidate(s, reason)
             self._cancel_session_tasks(s, reason)
             evaluations = tuple(self.evaluations.get(sid, ()))
@@ -566,9 +586,10 @@ class Lab(TaskLoop):
             s['generation'] += 1
             if disconnect:
                 s['connected'] = False
-            if not s.get('history_only') and not disconnect:
+            effect = 'execution_stopped' if controller_active else ('task_cancelled' if pending_task else 'idle')
+            if not s.get('history_only') and not disconnect and effect != 'idle':
                 s['trial']['state'] = 'stopped'
-            self._event(s, 'stop_requested', disconnect=disconnect)
+            self._event(s, 'stop_requested', disconnect=disconnect, effect=effect)
             await self._stop_backend(sid)
             snapshot = await self.publish(s)
         await asyncio.gather(*evaluations, return_exceptions=True)
@@ -595,9 +616,10 @@ class Lab(TaskLoop):
         self._event(s, 'trial_prepared', previous_trial=previous)
         self._message(s, 'assistant', 'A fresh simulation is ready.' if s['backend'] == 'mujoco' else 'A fresh mock trial is ready.')
 
-    async def prepare(self, sid):
+    async def prepare(self, sid, *, voice_generation=None):
         async with self._lock(sid):
             s = self.get(sid)
+            self._voice_generation(s, voice_generation)
             self._prepare(s)
             return await self.publish(s)
 
@@ -614,30 +636,41 @@ class Lab(TaskLoop):
         self._event(s, 'reflection', text=text, feedback=feedback)
         self._message(s, 'assistant', feedback['feedback'])
 
-    async def reflection(self, sid, text):
+    async def reflection(self, sid, text, *, voice_generation=None):
         async with self._lock(sid):
             s = self.get(sid)
+            self._voice_generation(s, voice_generation)
             self._reflect(s, text)
             return await self.publish(s)
 
-    @staticmethod
-    def _condition_input(text):
-        """Recognize one complete choice/correction, never execute a supported subset."""
-        norm = text.lower().strip().rstrip('.!')
-        aliases = {'vinegar': 'vinegar', 'baking soda': 'baking_soda', 'baking-soda': 'baking_soda',
-                   'baking_soda': 'baking_soda', 'water': 'water', 'water control': 'water'}
-        pattern = (r'(?:actually[, ]*|instead[, ]*|no[, ]*)?'
-                   r'(?:(?:i (?:choose|pick|want|would like)|choose|pick|select|use|try|switch to|change to|make that|let[’\']s (?:use|try))\s+)?'
-                   r'(?:the\s+)?(?P<condition>vinegar|baking[-_ ]soda|water(?: control)?)(?: solution)?(?:\s+(?:please|instead))?')
-        match = re.fullmatch(pattern, norm)
-        return aliases.get(match['condition']) if match else None
+    def _conversational_choice(self, s, condition_id, text, turn_id):
+        prior = s['tasks'][-1] if s['tasks'] else None
+        pending = s.get('pending')
+        correcting = (pending and self._prepared_sample(pending['plan']) and
+                      condition_id != pending['condition_id'])
+        if (prior and prior['status'] in ('queued', 'running') and
+                (condition_id != prior.get('condition_id') or
+                 re.match(r'^(?:actually|instead|no|switch to|change to|make that)\b', words(text)))):
+            # The student can correct the condition while planning. No action
+            # has started, and the old worker can never publish a proposal.
+            self._cancel_tasks(s, 'Sample changed during planning.', target=prior['task_id'])
+            correcting = True
+        self._choose(s, condition_id)
+        if correcting or (prior and prior['status'] == 'needs_clarification' and
+                          not prior.get('clarification_answered')):
+            task = self._queue_task(s, text, turn_id)
+            if correcting and prior:
+                task['feedback'].append({'type': 'student_correction', 'task_id': prior['task_id'],
+                                         'request': prior['request'], 'sample': condition_id})
+            return task
+        return None
 
     async def converse(self, sid, text, client_request_id=None):
         text = _text(text)
         if client_request_id is not None and (not isinstance(client_request_id, str) or not client_request_id.strip() or len(client_request_id) > 128):
             raise LabError('Invalid client_request_id.')
         # A duplicate must be detected before STOP, correction, reflection, or confirmation.
-        normalized = _normalized(text)
+        normalized = words(text)
         async with self._lock(sid):
             s = self.get(sid)
             self._editable(s)
@@ -648,11 +681,11 @@ class Lab(TaskLoop):
             turn = self._message(s, 'user', text, turn_id=client_request_id)
             if client_request_id:
                 s['dedupe'][client_request_id] = {'text': text, 'trial_id': s['trial']['trial_id']}
-            if normalized in ('stop', 'stop now', 'emergency stop'):
+            if stop_input(text):
                 stop = True
             else:
                 stop = False
-                c = self._condition_input(text)
+                c = condition_input(text)
                 try:
                     if normalized in ('cancel', 'cancel it', 'cancel the request', 'cancel the proposal',
                                       'never mind', 'nevermind'):
@@ -666,25 +699,17 @@ class Lab(TaskLoop):
                     elif re.search(r'\b(confirm|approve|go ahead|run it)\b', normalized):
                         self._message(s, 'assistant', 'Send a separate completed “confirm” after reviewing the current proposal.')
                     elif c:
-                        self._choose(s, c)
-                        prior = s['tasks'][-1] if s['tasks'] else None
-                        if prior and prior['status'] == 'needs_clarification':
-                            task = self._queue_task(s, text, turn['turn_id'])
-                            if client_request_id:
-                                s['dedupe'][client_request_id]['task_id'] = task['task_id']
-                    elif normalized in ('new trial', 'next trial', 'prepare next trial', 'start over', 'try again'):
+                        task = self._conversational_choice(s, c, text, turn['turn_id'])
+                        if task and client_request_id:
+                            s['dedupe'][client_request_id]['task_id'] = task['task_id']
+                    elif reset_input(text):
                         self._prepare(s)
                     elif normalized.startswith('reflection '):
                         self._reflect(s, text.partition(' ')[2])
-                    elif (normalized.startswith('i predict ') or
-                          re.fullmatch(r'(?:it (?:will|might|should) (?:be|turn) )?(?:pink|purple|blue|green|blue green|acidic|basic|neutral|near neutral)', normalized)):
+                    elif prediction_input(text):
                         self._predict(s, text)
-                    elif normalized in ('thanks', 'thank you', 'okay', 'ok', 'hello', 'hi', 'great', 'got it'):
-                        self._message(s, 'assistant', 'I’m here. Tell me what you’d like to test, or ask about the current result.')
-                    elif re.match(r'^(?:what (?:is|are|does|did)|why|how (?:does|did|is|are)|explain|tell me about|can you explain)\b', normalized) and re.search(
-                            r'\b(?:ph|indicator|acidic|basic|alkaline|control|evidence|result)\b', normalized):
-                        current = [o for o in s['observations'] if o.get('trial_id') == s['trial']['trial_id']]
-                        self._message(s, 'assistant', science_reply(text, current))
+                    elif read_only_turn(text):
+                        self._message(s, 'assistant', conversation_reply(text, s))
                     else:
                         if s.get('requires_prepare'):
                             raise LabError('Prepare a fresh simulation after the server restart.')
@@ -701,6 +726,46 @@ class Lab(TaskLoop):
     async def request(self, sid, text, client_request_id=None):
         """The request endpoint is conversation; it cannot accept action parameters."""
         return await self.converse(sid, text, client_request_id)
+
+    @staticmethod
+    def _completed_student_turn(s, turn_id):
+        return next((m for m in reversed(s['messages']) if m['turn_id'] == turn_id
+                     and m['role'] == 'user' and m.get('final')), None)
+
+    async def _start_voice_task(self, sid, text, args):
+        async with self._lock(sid):
+            s = self.get(sid)
+            if args['_voice_generation'] != s['generation']:
+                raise LabError('Stale voice generation; start a fresh turn.')
+            turn_id = args.get('_voice_turn_id')
+            message = self._completed_student_turn(s, turn_id)
+            if not message or message['text'] != _text(text):
+                raise LabError('Voice task requires a completed user turn ID with matching text.')
+            if read_only_turn(text):
+                raise LabError('Answer this conversational turn without starting a task.')
+            key = 'voice:' + turn_id
+            if key in s['dedupe']:
+                previous = s['dedupe'][key]
+                task = next((t for t in s['tasks'] if t['task_id'] == previous['task_id']), None)
+                if task is None:
+                    raise LabError('This student turn already recorded a sample choice.')
+            else:
+                if s.get('requires_prepare'):
+                    raise LabError('Prepare a fresh simulation after the server restart.')
+                choice = condition_input(text)
+                prior = s['tasks'][-1] if s['tasks'] else None
+                if choice and (s.get('pending') or (prior and prior['status'] in ('queued', 'running', 'needs_clarification'))):
+                    task = self._conversational_choice(s, choice, text, turn_id)
+                else:
+                    task = self._queue_task(s, text, turn_id)
+                receipt = {'text': text, 'task_id': task['task_id'] if task else None}
+                s['dedupe'][key] = receipt
+                if args.get('_tool_call_id'):
+                    s['dedupe']['live:' + args['_tool_call_id']] = receipt
+                await self.publish(s)
+                if task is None:
+                    return {'task_id': None, 'status': 'selected'}
+            return {'task_id': task['task_id'], 'status': task['status']}
 
     async def tool(self, sid, name, args):
         if not isinstance(args, dict):
@@ -738,17 +803,17 @@ class Lab(TaskLoop):
                                for o in task['observations'])), None)
             if target is None:
                 raise LabError('No recorded skill limitation is available for improvement.')
-            return await self.start_improvement(sid, target['task_id'], clean['limitation'])
+            return await self.start_improvement(sid, target['task_id'], clean['limitation'],
+                                                voice_generation=args.get('_voice_generation'))
         if name == 'choose_condition':
-            return await self.choose_condition(sid, clean['condition_id'], turn_id=args.get('_voice_turn_id'))
+            return await self.choose_condition(sid, clean['condition_id'], turn_id=args.get('_voice_turn_id'),
+                                               voice_generation=args.get('_voice_generation'))
         if name == 'record_prediction':
-            return await self.prediction(sid, clean['text'])
+            return await self.prediction(sid, clean['text'], voice_generation=args.get('_voice_generation'))
         if name == 'start_task' or (name == 'request_action' and '_voice_generation' in args):
-            turn_id = args.get('_voice_turn_id')
-            if turn_id is not None and not any(m['turn_id'] == turn_id and m['role'] == 'user' and m.get('final')
-                                               for m in s['messages']):
-                raise LabError('Voice task requires a completed user turn ID.')
-            return await self.start_task(sid, clean['text'], turn_id=turn_id, record_turn=False,
+            if '_voice_generation' in args:
+                return await self._start_voice_task(sid, clean['text'], args)
+            return await self.start_task(sid, clean['text'], record_turn=False,
                                          client_request_id='live:' + args['_tool_call_id'] if args.get('_tool_call_id') else None)
         if name == 'request_action':
             return await self.converse(sid, clean['text'], 'live:' + args['_tool_call_id'] if args.get('_tool_call_id') else None)
@@ -761,13 +826,14 @@ class Lab(TaskLoop):
         if name == 'cancel_request':
             return await self.cancel(sid, **clean)
         if name == 'prepare_next_trial':
-            return await self.prepare(sid)
+            return await self.prepare(sid, voice_generation=args.get('_voice_generation'))
         if name == 'record_reflection':
-            return await self.reflection(sid, **clean)
+            return await self.reflection(sid, **clean, voice_generation=args.get('_voice_generation'))
         if name == 'stop_lab':
             return await self.stop(sid)
         async with self._lock(sid):
             s = self.get(sid)
+            self._voice_generation(s, args.get('_voice_generation'))
             if name == '_record_transcript':
                 role, text, turn_id, final = (clean[k] for k in ('role', 'text', 'turn_id', 'final'))
                 if role not in ('user', 'assistant') or type(final) is not bool:
@@ -785,6 +851,26 @@ class Lab(TaskLoop):
                     self._event(s, 'transcript_updated', role=role, text=text, turn_id=turn_id, final=final)
                 else:
                     self._message(s, role, text, turn_id=turn_id, final=final)
+                if role == 'user' and final and '_voice_generation' in args:
+                    # Commit a completed choice/action with its transcript. A
+                    # later confirmation must never see the superseded plan,
+                    # even if provider tools or client transcript delivery lag.
+                    choice = condition_input(text)
+                    key = 'voice:' + turn_id
+                    reset = reset_input(text)
+                    if key not in s['dedupe'] and (choice or reset or explicit_action(text)):
+                        self._editable(s)
+                        if s.get('requires_prepare') and not reset:
+                            raise LabError('Prepare a fresh simulation after the server restart.')
+                        if reset:
+                            self._prepare(s)
+                            task = None
+                        else:
+                            task = (self._conversational_choice(s, choice, text, turn_id) if choice else
+                                    self._queue_task(s, text, turn_id))
+                        s['dedupe'][key] = {'text': text, 'task_id': task['task_id'] if task else None,
+                                           'mutation': 'prepare_next_trial' if reset else
+                                                       ('choose_condition' if choice else 'request_action')}
             elif name == '_record_usage':
                 self._event(s, 'model_usage', **clean)
             elif name == '_cancel_tool_request':

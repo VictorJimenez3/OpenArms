@@ -2,7 +2,7 @@
 
 [Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
 
-The student app targets continuous voice on Mac and iPhone. The Smartivity kit is the new target, with activity selection deferred. The retained indicator-pH simulation is optional Devpost/presentation material, not the main architecture or a required demo. **Voice is currently disabled:** Joseph withdrew Gemini, and its replacement is not qualified yet. Text, the shared session, STOP and simulation remain available. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
+The student app targets continuous voice on Mac and iPhone. The Smartivity kit is the new target, with activity selection deferred. The retained indicator-pH simulation is optional Devpost/presentation material, not the main architecture or a required demo. **Gemini Live provides speech** when configured. Joseph withdrew only Gemini thinking; expert inference remains independently selectable. Text, the shared session and direct STOP remain available if voice is unavailable. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
 
 ## Start
 
@@ -14,7 +14,7 @@ uv pip install --python .venv-lab/bin/python -r agentic/requirements-lab.txt -e 
 OPENARMS_EXECUTION=mock PORT=8010 .venv-lab/bin/python -m agentic.openarms_lab
 ```
 
-Authenticate the chosen expert independently; see [model profiles and switching](EXPERT_MODELS.md). The default needs the `codex` CLI on PATH. Legacy Google keys do not enable voice in the application. Never copy credentials into evidence or Git.
+Authenticate the chosen expert independently; see [model profiles and switching](EXPERT_MODELS.md). The default needs the `codex` CLI on PATH. Configure GEMINI_API_KEY or GOOGLE_API_KEY in an untracked local environment file for Gemini Live speech. Never copy credentials into evidence or Git.
 
 Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same session with the simulator, actual expert/tool trace, observations and skill evaluations. Both views use the same bearer grant and voice connection. A phone needs a reachable configured HTTPS endpoint; localhost refers to the phone itself. Browser microphone access requires localhost or HTTPS.
 
@@ -39,8 +39,8 @@ Stop the application with Ctrl-C. The server cancels active work; reopening a se
 
 This is separate from core product acceptance. To use the retained MuJoCo example, restart the server with `OPENARMS_EXECUTION=mujoco` in the command above. Its fixed-dispenser layout and indicator rules do not describe the new kit.
 
-1. Open **Type instead** and request, “Please test the prepared vinegar sample and check the indicator color.” Talk reports the pending voice replacement.
-2. Follow progress while the expert examines the scene. The session remains connected while planning runs; continuous spoken follow-up remains an unmet acceptance check.
+1. Use **Talk** or **Type instead** and request, “Please test the prepared vinegar sample and check the indicator color.”
+2. Follow progress while the expert examines the scene. Ask a follow-up while planning runs; questions must preserve the task and pending proposal.
 3. Review the exact server proposal and use its confirmation button. Bare typed confirmation does not authorize execution.
 4. Watch the new apparatus execute in `/developer`. The observer reads a fresh rendered image, and the session displays the observed simulated color.
 5. Inspect the versioned candidate and its evaluation. Only a promoted skill becomes reusable. Prepare a new trial and use an equivalent supported request to exercise that version without a new planning call.
@@ -63,7 +63,8 @@ Skill admission combines the frozen synthetic robustness suite with actual MuJoC
 | `OPENARMS_EXECUTION` | `mock` default; `mujoco` selects the actual simulator |
 | `OPENARMS_DATA_DIR` | Persistent notebook, scene artifacts, evaluations and scoped registry |
 | `OPENARMS_ENV_FILE` | Optional explicit local environment file |
-| Legacy `GEMINI_LIVE_MODEL` / Google keys | Ignored by the current default application voice path |
+| `GEMINI_LIVE_MODEL` | Speech model; default `gemini-3.8-live` |
+| `GEMINI_API_KEY` / `GOOGLE_API_KEY` | Local Gemini Live speech credential, independent of expert authentication |
 | `OPENARMS_EXPERT_CONFIG` | Host-owned selection file for model changes between tasks |
 | `OPENARMS_EXPERT_PROFILE`, `OPENARMS_EXPERT_EFFORT` | Defaults without a config file: `sol`, `medium` |
 | `OPENARMS_CODEX_EXECUTABLE`, `OPENARMS_CLAUDE_EXECUTABLE` | Independent CLI paths; default `codex`, `claude` |
@@ -82,4 +83,16 @@ OPENARMS_FIXTURE_PORT=8774 npm test
 npm run test:unit
 ```
 
-The full-loop script makes real expert calls and uses an automated test student for explicit presentation/confirmation. It is not a spoken or physical-device rehearsal. The old `agentic/scripts/ph_voice_rehearsal.py` is a historical Gemini harness; do not run it under the current provider instruction. Retain previous results and failed/interrupted attempts. Generated speech, Mac playback, browser tests and a signed iOS simulator build do not establish human audibility or unplugged iPhone connectivity. Replacement voice and actual-device checks remain separate release acceptance items in [the delivery contract](FULL_SYSTEM_DELIVERY.md).
+The full-loop script makes real expert calls and uses an automated test student for explicit presentation/confirmation. It is not a spoken or physical-device rehearsal. Use `agentic/scripts/conversation_rehearsal.py` for generated-speech back-and-forth through the real Gemini Live gateway. The older `ph_voice_rehearsal.py` remains a historical harness. Retain previous results and failed/interrupted attempts. Generated speech, Mac playback, browser tests and a signed iOS simulator build do not establish human audibility or unplugged iPhone connectivity. Live provider and actual-device checks remain separate release acceptance items in [the delivery contract](FULL_SYSTEM_DELIVERY.md).
+
+
+### Real Gemini Live conversation rehearsal
+
+With the server running and the local Gemini credential configured, use a fresh evidence directory:
+
+```sh
+uv pip install --python .venv-lab/bin/python -r agentic/requirements-lab-dev.txt
+PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m agentic.scripts.conversation_rehearsal --url http://127.0.0.1:8010 --confirm-outcome --output /absolute/new-voice-evidence-directory
+```
+
+This macOS helper uses `say` and `ffmpeg` to send generated student audio through the actual gateway. It checks progress during real expert work, a science question that preserves the proposal, a sample correction requiring a new proposal, fresh spoken confirmation, an independent simulated/synthetic observation, STOP, and the follow-up. It saves reply audio and correlated transcripts/events. `--audible` plays audio on the Mac; successful playback alone is not human verification. The default without `--confirm-outcome` cancels before execution. `--water-only` requires the separate two-vessel integration backend; it does not enable that apparatus on this branch.

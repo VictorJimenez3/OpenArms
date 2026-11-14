@@ -4,7 +4,7 @@ The consolidation is **merged**: [PR #22](https://github.com/VictorJimenez3/Open
 
 ## Current direction
 
-Joseph selected the Smartivity My First Science Kit and deferred activity selection. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the inventory and Victor's outstanding physical handoff. Simulation is an optional Devpost/presentation extra, outside the core architecture and acceptance requirements. The app still has one shared session, task loop, registry and deterministic execution boundary. Physical actuation is disabled; Gemini is withdrawn and replacement voice remains open.
+Joseph selected the Smartivity My First Science Kit and deferred activity selection. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the inventory and Victor's outstanding physical handoff. Simulation is an optional Devpost/presentation extra, outside the core architecture and acceptance requirements. The app still has one shared session, task loop, registry and deterministic execution boundary. Physical actuation is disabled. Joseph retained Gemini Live speech and withdrew only Gemini thinking; expert profiles remain independent. Actual-device voice acceptance remains open.
 
 Tracking: [#19](https://github.com/VictorJimenez3/OpenArms/issues/19) full system, [#9](https://github.com/VictorJimenez3/OpenArms/issues/9) interfaces, [#10](https://github.com/VictorJimenez3/OpenArms/issues/10) connected loop, [#4](https://github.com/VictorJimenez3/OpenArms/issues/4) actual iPhone acceptance. The user waived audible/device rehearsals as a merge gate; they remain unmet product acceptance checks.
 

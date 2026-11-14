@@ -5,7 +5,7 @@ The student chooses each action, reviews what the AI proposes, and decides what 
 ## What we have
 
 - Duc laid the foundation for callable skills so the agent can invoke a validated task without planning it from scratch. The merged app already has a shared expert loop and skill registry. [Current architecture](ARCHITECTURE.md)
-- Joe built the Google Live transcription path. Gemini was later withdrawn, and replacement voice and actual-device checks are open. Start the loop rehearsal with text. [Lab runbook](LAB_RUNBOOK.md)
+- Joe built the Gemini Live speech path. Joseph clarified that Gemini Live remains enabled; only Gemini thinking was withdrawn. Expert inference is independently selectable. Actual-device checks remain open; use the live conversation rehearsal alongside text tests. [Lab runbook](LAB_RUNBOOK.md)
 - Stefanie and Duc have been testing pieces of the simulation. Existing scenes give them a starting point. The Smartivity kit is the physical demo target, and Joe still needs to choose its activity. The simulation is for development feedback and optional presentation use. [Kit and bench handoff](ARCHITECTURE.md#kit-scope-and-bench-handoff)
 
 ## Ownership

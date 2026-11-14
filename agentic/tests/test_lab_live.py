@@ -210,7 +210,7 @@ async def test_duplicate_tool_id_returns_cached_reply_and_cancelled_id_never_ree
         session.incoming.put_nowait(response(tool_call=NS(function_calls=[call])))
         await until(lambda: len(session.tools) == 2)
         assert actions == ['original']
-        assert all(r.id == 'original' and r.response['result']['tasks'] == state['tasks']
+        assert all(r.id == 'original' and r.response['result']['tasks'] == live.compact_snapshot(state)['tasks']
                    for r in session.tools)
         session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['original'])))
         sentinel = tool_call('read', 'get_lab_state')
@@ -525,3 +525,152 @@ async def test_missing_play_ack_expires_without_presenting(monkeypatch):
     assert bridge._playback_idle()
     await bridge.played('old')
     assert not actions
+
+
+async def test_stop_revokes_buffered_playback_and_discards_superseded_stream_tail():
+    state, client, sent = {**context(), 'generation': 0}, Client(), []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(name, args):
+        if name == 'stop_lab':
+            state['generation'] += 1
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(output_reply('The first step is ready.'))
+        await until(lambda: any(m['type'] == 'reply_end' for m in sent))
+        session.incoming.put_nowait(response(server_content=content(
+            output_transcription=NS(text='Starting the next step.'))))
+        await until(lambda: sum(m['type'] == 'reply_start' for m in sent) == 2)
+        session.incoming.put_nowait(transcript('Stop.'))
+        session.incoming.put_nowait(output_reply('Still executing the old step.'))
+        session.incoming.put_nowait(function_calls(tool_call('read', 'get_lab_state')))
+        await until(lambda: any(r.id == 'read' for r in session.tools))
+        assert state['generation'] == 1
+        assert not bridge.replies
+        assert any(m['type'] == 'interrupted' and m['reply_id'] is None for m in sent)
+        assert not any('Still executing' in m.get('text', '') for m in sent)
+        session.incoming.put_nowait(transcript('What happened?'))
+        session.incoming.put_nowait(output_reply('The task stopped.'))
+        await until(lambda: any(m.get('text') == 'The task stopped.' and m['final'] for m in sent))
+    finally:
+        await finish(bridge, runner)
+
+
+async def test_barging_in_does_not_cancel_a_student_task_already_accepted_by_the_server(tmp_path):
+    from agentic.openarms_lab.runtime import Lab
+    from agentic.tests.test_task_loop import TestExpert, TestPerception
+
+    lab = Lab(tmp_path, expert=TestExpert(), perception=TestPerception())
+    sid = (await lab.create())['session_id']
+    client = Client()
+
+    async def emit(_):
+        pass
+
+    bridge = live.GeminiBridge(lambda: lab.snapshot(sid), lambda name, args: lab.tool(sid, name, args),
+                               emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        text = 'Test the prepared vinegar sample.'
+        session.incoming.put_nowait(transcript(text))
+        session.incoming.put_nowait(function_calls(tool_call('accepted', 'request_action', text=text)))
+        await until(lambda: lab.snapshot(sid)['pending'])
+        pending = lab.snapshot(sid)['pending']
+        session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['accepted'])))
+        session.incoming.put_nowait(transcript('How is it going?'))
+        session.incoming.put_nowait(function_calls(tool_call('status', 'get_lab_state')))
+        await until(lambda: any(reply.id == 'status' for reply in session.tools))
+        status = next(reply for reply in session.tools if reply.id == 'status').response['result']
+        assert status['pending']['request_id'] == pending['request_id']
+        assert len(status['tasks']) == 1
+        assert lab.backends[sid].executions == 0
+    finally:
+        await finish(bridge, runner)
+        await lab.shutdown()
+
+
+async def test_initial_subscription_can_prompt_voice_greeting_without_task_events():
+    client = Client()
+
+    async def noop(*_):
+        pass
+
+    bridge = live.GeminiBridge(context, noop, noop, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(function_calls(tool_call('watch', 'watch_lab_events')))
+        await until(lambda: bool(session.tools))
+        subscription, = session.tools
+        assert subscription.response['events'] == []
+        assert subscription.scheduling.value == 'WHEN_IDLE'
+        assert 'greet' in subscription.response['instruction'].lower()
+    finally:
+        await finish(bridge, runner)
+
+
+def test_voice_context_distinguishes_task_activity_from_controller_progress():
+    state = {**context(), 'tasks': [{'task_id': 'task', 'request_id': 'request', 'status': 'observing'}]}
+    add_event(state, 'execution_progress', request_id='request', operation='inspect_scene')
+    task, = live.compact_snapshot(state)['tasks']
+    assert task['status'] == 'observing' and task['controller_state'] is None
+    assert 'pre-action scene check' in live.system_prompt(lambda: state)
+
+    add_event(state, 'execution_progress', request_id='request', operation='mock_prepared_sample', phase='mock_dose')
+    task, = live.compact_snapshot(state)['tasks']
+    assert task['controller_state'] == 'in_progress'
+
+    add_event(state, 'execution_result', request_id='request', receipt={'status': 'completed'})
+    task, = live.compact_snapshot(state)['tasks']
+    assert task['controller_state'] == 'completed'
+    assert not live.compact_snapshot(state)['observations']
+
+
+def test_voice_uses_the_selected_water_fixture_capabilities():
+    state = {**context(), 'experiment': {'id': 'two_vessel_water', 'title': 'Two-vessel water pour — simulation'},
+             'conditions': [{'id': 'water', 'title': 'Premeasured water'}],
+             'capabilities': {'supported_operations': ['mock_prepared_sample'],
+                              'action_description': 'pour one premeasured water portion from A into C, return donor to A and return HOME'}}
+    prompt = live.system_prompt(lambda: state)
+    assert 'water-only' in prompt.lower()
+    assert 'Use this specific supported action' in prompt
+    assert 'qualitative reference for acid' not in prompt
+    assert live.compact_snapshot(state)['capabilities']['action_description'] == state['capabilities']['action_description']
+
+
+async def test_watch_does_not_speak_pre_action_checkpoint_as_controller_progress():
+    state = {**context(), 'tasks': [{'task_id': 'task', 'request_id': 'request', 'status': 'observing'}]}
+    client = Client()
+
+    async def noop(*_):
+        pass
+
+    bridge = live.GeminiBridge(lambda: state, noop, noop, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(function_calls(tool_call('watch', 'watch_lab_events')))
+        await until(lambda: len(session.tools) == 1)
+        add_event(state, 'student_confirmed', request_id='request')
+        add_event(state, 'task_status', status='executing', request_id='request')
+        add_event(state, 'execution_progress', operation='inspect_scene', request_id='request')
+        await bridge.state_changed()
+        await until(lambda: len(session.tools) == 2)
+        assert session.tools[-1].scheduling.value == 'SILENT'
+
+        add_event(state, 'execution_progress', operation='mock_prepared_sample', phase='started', request_id='request')
+        await bridge.state_changed()
+        await until(lambda: len(session.tools) == 3)
+        assert session.tools[-1].scheduling.value == 'WHEN_IDLE'
+    finally:
+        await finish(bridge, runner)
