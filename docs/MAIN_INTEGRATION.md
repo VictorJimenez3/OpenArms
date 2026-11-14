@@ -49,3 +49,7 @@ This document is an execution ledger; statuses are updated as merges and verific
 ### Phone prototype reconciliation
 
 The original phone/relay branch paths are retained in their newer form. Its one absent file, `ios/Checks/CoreChecks.swift`, targets the obsolete `/voice` state protocol and is superseded by the current streaming XCTest suite invoked by `Checks/check.sh`. It is retained in Git history, not restored as an invalid current test. This history merge does not replace the shared-session client.
+
+### Independent branch audit
+
+A separate Account 2 audit reviewed pinned MuJoCo, Isaac, fixture, legacy harness and free-plan branches. The audit verified 12 MuJoCo demo tests, 42 Isaac checks (two optional OpenUSD modules could not import), 47 historical harness tests, the Isaac archive/video hashes and raw simulated force receipts, and four fixture meshes. It found two generic-preview input regressions to repair before inclusion. It rejected activating the old independent skill harness, whose own registry/promotion path does not meet the current contract. Its source will remain inspectable as an archived patch and merged Git history. No new GPU, provider or physical run was performed by that audit.
