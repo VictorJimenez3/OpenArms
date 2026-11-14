@@ -749,6 +749,7 @@ class TaskLoop:
                     try:
                         await self._verify_dispatch(s, task, request, step)
                     except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
+                        self._guard_task(s, task)
                         reason = self._perception_error(exc)
                         if self.expert is not None and await self._execution_feedback(s, task, request, receipt, reason):
                             return
@@ -832,6 +833,7 @@ class TaskLoop:
         try:
             frame = await self._capture(s, task, 'inspect_scene', {'view': presented['view']})
         except (ValueError, OSError, RuntimeError, TimeoutError):
+            self._guard_task(s, task)
             task.update(images=[], scene=None)
             s.update(scene_images=[], scene=None)
             raise
