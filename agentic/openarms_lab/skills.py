@@ -67,7 +67,7 @@ def _substitute(arguments, bindings):
 def _normalize(text):
     # ASR may insert sentence breaks into one spoken request. Preserve decimal
     # points and all words, including negation, while ignoring polite padding.
-    text = re.sub(r'(?<!\d)[.,;:!?]|[.,;:!?](?!\d)', ' ', text.lower())
+    text = re.sub(r'[;:!?]|[.,](?!\d)', ' ', text.lower())
     text = re.sub(r'\s+', ' ', text).strip()
     return re.sub(r'^please | please$', '', text)
 

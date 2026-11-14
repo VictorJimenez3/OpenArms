@@ -117,6 +117,25 @@ def test_websocket_host_origin_and_hello_guards(client):
     assert client.get(url, headers=headers).json()['generation'] == session['generation']
 
 
+def test_default_voice_stays_disabled_even_with_legacy_keys(client, monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY', 'not-a-real-key')
+    monkeypatch.setenv('GOOGLE_API_KEY', 'not-a-real-key')
+    health = client.get('/api/health').json()
+    assert health['live_configured'] is False
+    assert health['live_model'] is None
+    assert health['voice_status'] == 'disabled_pending_replacement'
+    session, url, headers = new_session(client)
+    with client.websocket_connect(url + '/live') as ws:
+        hello(ws, session, 'voice-disabled')
+        ws.send_json({'type': 'start_voice'})
+        error = ws.receive_json()
+        assert error['type'] == 'status' and error['status'] == 'unavailable'
+        assert 'Voice is disabled' in error['message']
+        ws.send_json({'type': 'ping', 'seq': 1})
+        assert ws.receive_json() == {'type': 'pong', 'seq': 1}
+        assert client.post(url + '/stop', headers=headers).status_code == 200
+
+
 def test_new_owner_revokes_approval_and_old_socket_cannot_stop_new_owner(client):
     session, url, headers = new_session(client)
     _, _, other_headers = new_session(client)

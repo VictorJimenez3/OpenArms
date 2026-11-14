@@ -4,7 +4,7 @@ Integrator: this overhaul lane. Tracking: [#19](https://github.com/VictorJimenez
 
 ## Baseline and merge policy
 
-Remote main was `171a21a393a12e37a2ad5e3e075ce5949b262bd4` when this consolidation began. Keep it as the rollback point. `codex/ph-agent-overhaul` is the sole integration branch; the app continues to use one session service, Gemini Live for conversation, and Codex gpt-6.1-sol medium for the expert. The chosen application simulator is the newer MuJoCo metered-dropper pH apparatus. Isaac and the other laboratory videos remain separate research/demonstration tools. Only pH is exposed as a student experiment.
+Remote main was `171a21a393a12e37a2ad5e3e075ce5949b262bd4` when this consolidation began. Keep it as the rollback point. `codex/ph-agent-overhaul` is the sole integration branch; the app continues to use one session service and Codex gpt-6.1-sol medium for the expert. Joseph has withdrawn Gemini; default voice is disabled pending replacement. The chosen application simulator is the newer MuJoCo metered-dropper pH apparatus. Isaac and the other laboratory videos remain separate research/demonstration tools. Only pH is exposed as a student experiment.
 
 Merge useful work, reconcile overlapping implementations, and record superseded branches rather than restore old dispatchers or lesson defaults. Git ancestry and patch-equivalence checks distinguish already incorporated worker changes from genuinely missing work. Keep active worktrees intact; remove branches only after their disposition is verified on main. No force-push or blanket branch deletion.
 
@@ -24,25 +24,31 @@ Every merge below is local until independent review and the combined checks pass
 | Old skill harness `6d3fbc7` | Inspect useful unique work; reconcile or mark explicitly superseded by the sole current task/registry/evaluator path. Do not introduce a second active dispatcher. | Independent audit maps any retained gaps before disposition is final. |
 | Old free-plans `c305f27` | Preserve useful generic simulation preview changes after review; supersede app regex dispatcher with camera-aware expert and deterministic validation. | Regression checks for affected preview behavior; no unvalidated direct motion path. |
 | `duc` `bc33e99` | Merge-only history with empty three-dot content diff from main; no application changes to restore. | Verify ancestry/content. |
-| Voice repair worker | Sole owner of live bridge/voice controls and targeted tests; integrate after handoff. R1/R4 consent and feedback. | Resume/progress/outcome delivery, one mutation per student turn, interrupted playback rejection. |
-| Task/evidence repair worker | Sole owner of task loop, skill validation and new evidence tests; integrate after handoff. R2–R6. | Immutable improvement baseline, final-plan preflight, frame identity/freshness. |
-| User-owned design chat | Sole owner of browser/native design; integrate final committed handoff. R1/R3/R4/R5 presentation. | Computer-use screenshots, browser tests, Swift build; preserve audio/session/STOP. |
+| Voice repair worker, `57b0a6a` | Completed and integrated. R1/R4 consent and feedback. Provider-independent controls are retained; Gemini transport is disabled pending replacement. | Historical provider tests cannot qualify replacement voice. |
+| Task/evidence repair worker, `0aa2741` | Completed and integrated. R2–R6. | Immutable baseline, preflight, cancellation of promotion, registry routing, frame identity/freshness checked. |
+| User-owned design chat, `76bf691` | Paused with clean worktree and no additional design commit. Existing simplified browser/native UI is already integrated. R1/R3/R4/R5 presentation. | Browser checks, screenshots, portable Swift tests and signed Simulator build passed. Actual phone remains unverified. |
 | Other remote/local branches already ancestors of main or reviewed integration commits | Account for them in the final generated ref ledger. Archive only finished owned worktrees after main verification. | No unique patch may be silently dropped. |
 
 ## Release sequence
 
 1. Finish this inventory, integrate isolated assets/research, reconcile shared documentation, and retain branch-specific merge receipts.
 2. Integrate voice/task fixes and design handoff. Fix review findings; rerun relevant checks on their combined result.
-3. Run the complete natural request → real expert/image tools → exact proposal/confirmation → new MuJoCo execution → independent pixel observation → Gemini result → registration/reuse → evaluated improvement. Preserve failed attempts and actual provider/scene hashes.
+3. Run the complete natural request → real expert/image tools → exact proposal/confirmation → new MuJoCo execution → independent pixel observation → spoken result → registration/reuse → evaluated improvement. Preserve failed attempts and actual provider/scene hashes.
 4. Review the final combined diff against R1–R6 and D1–D4. Record scope, dependencies, evidence, and gaps in the integration PR before any push.
 5. Move main through one reviewed integration PR, verify the remote commit and a clean checkout, then close/resolve the old PRs and archive finished branches/worktrees. Keep the rollback commit and an evidence index.
 
 ## Current release blockers
 
-- Voice/task review repairs and user-directed design handoff are still active.
-- The newest apparatus has a successful actual-Codex cold/warm software run; the final combined build still needs its audible Gemini rehearsal and evaluated improvement receipts.
-- The physical iPhone is unavailable to this Mac. Simulator builds and generated audible desktop speech do not satisfy the previously requested actual unplugged iPhone acceptance. This gate must be fulfilled or explicitly changed before declaring that acceptance complete.
-- No physical pH actuation or physical reset is enabled or newly verified by this software consolidation. The broader product's D1 physical milestone remains open.
+- Gemini was explicitly withdrawn. Its default application path is disabled even if old credentials remain. Replacement voice is not implemented/qualified; no OpenAI voice API key is configured. Preserve the Codex expert and common session instead of introducing another runtime.
+- Joseph explicitly removed the device/voice rehearsal merge gate on November 14: merge the reviewed software baseline now and finish those checks later. The unplugged physical iPhone remains unavailable, and replacement voice remains unfinished. This authorization permits consolidation; it does not establish voice or device acceptance.
+- Remote main advanced from `171a21a` to `19a37ae`, adding `0b90e36` to the older free-plan path. Its new Claude fallback is under reconciliation with the existing Codex expert. Do not restore a competing dispatcher.
+- No physical pH actuation or physical reset is enabled or newly verified. The broader product's D1 milestone remains open.
+
+## Current evidence
+
+Before the provider withdrawal guard, the combined suite passed 464 tests; desktop/mobile browser checks passed 36, audio checks passed 5, and portable native checks passed 17. A signed iOS Simulator build and fresh screenshots passed. The guard plus leading-decimal routing correction passed 13 focused tests, then 466 combined tests. The initial combined attempt found an unavailable-status protocol mismatch; the guard now emits the clients’ existing unavailable status, and the unchanged integration test passes. These are software evidence, not actual-phone acceptance.
+
+The actual Codex expert completed an updated-apparatus cold/warm simulation run (7 cold calls, 0 warm). A later actual-provider voice run reached observed simulated output; the extended registration/reuse voice rehearsal was interrupted at Joseph's instruction to stop Gemini and is not a completed acceptance trace. The latest actual-Codex improvement retained an unchanged baseline and promoted a secondary-view recovery change: 9 to 12 recovered outcomes across 24 frozen SYNTHETIC cases, with all routing/observation/consent/STOP gates passing. No physical qualification is claimed.
 
 This document is an execution ledger; statuses are updated as merges and verification complete.
 

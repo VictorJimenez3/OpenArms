@@ -204,9 +204,9 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
 
     @app.get('/api/health')
     async def health():
-        from .live import key
         return {'backend': app.state.execution_mode, 'hardware_enabled': False, 'protocol_version': 1,
-                'live_configured': bool(key()), 'live_model': os.getenv('GEMINI_LIVE_MODEL', 'gemini-3.8-live'),
+                'live_configured': voice_factory is not None, 'live_model': None,
+                'voice_status': 'injected' if voice_factory is not None else 'disabled_pending_replacement',
                 'expert_provider': 'openai_codex_cli', 'expert_model': 'gpt-6.1-sol',
                 'expert_reasoning_effort': 'medium',
                 'pairing_required': bool(os.getenv('OPENARMS_DEMO_TOKEN'))}
@@ -375,7 +375,6 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
 
         async def receive():
             nonlocal voice, voice_task, last_ping
-            from .live import GeminiBridge
             while True:
                 msg = await ws.receive_json()
                 kind = msg.get('type')
@@ -388,7 +387,11 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                     elif kind == 'start_voice':
                         if voice_task and not voice_task.done():
                             continue
-                        factory = voice_factory or GeminiBridge
+                        if voice_factory is None:
+                            await emit({'type': 'status', 'status': 'unavailable',
+                                        'message': 'Voice is disabled while its replacement is being prepared. Text and STOP remain available.'})
+                            continue
+                        factory = voice_factory
                         async def voice_tool(name, args):
                             if app.state.connections.get(sid) is not ws:
                                 raise ValueError('This connection has been replaced.')

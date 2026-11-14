@@ -2,11 +2,12 @@
 
 Vision revision: **demo-speed-v2**, Joseph's correction of November 14, 2026.
 This is the required direction, not a claim that the implementation is complete.
+Provider correction, November 14: Joseph has withdrawn Gemini. Continuous voice remains required, but the default voice connection is disabled pending a reviewed replacement and new live/device evidence. The Codex expert remains unchanged. Earlier Gemini recordings are historical evidence, not acceptance of the replacement.
 [Notion product vision](https://app.notion.com/p/41871c9c107e8133aa70cf1588e620e4) owns product intent; this document translates it into the lean build contract. If they diverge, surface the conflict before changing scope.
 
 ## The demo we are building
 
-OpenArms gives a student physical independence at a lab bench. The student speaks individual actions: “pick up cup A”, “put it down”, or a supported pour into the receiver. The student chooses the sequence. Gemini stays responsive while the arm works and reports what actually happened. Clarify ambiguous references; gently reject inappropriate actions and suggest an alternative. No experiment wizard or mandatory prediction/quiz gates. One brief optional reflection at the end is enough.
+OpenArms gives a student physical independence at a lab bench. The student speaks individual actions: “pick up cup A”, “put it down”, or a supported pour into the receiver. The student chooses the sequence. The voice agent stays responsive while the arm works and reports what actually happened. Clarify ambiguous references; gently reject inappropriate actions and suggest an alternative. No experiment wizard or mandatory prediction/quiz gates. One brief optional reflection at the end is enough.
 
 The judging proof is one narrow physical experiment: red-cabbage indicator pH. Labeled fixed stations, calibrated geometry, taught trajectories, a few specialized skills and a hardcoded physical fallback are valid choices. Simulation is backstage testing, not a replacement for the physical student experience. New-position generalization is optional if it threatens reliability.
 
@@ -15,7 +16,7 @@ The judging proof is one narrow physical experiment: red-cabbage indicator pH. L
 | ID | Priority | Required behavior | Evidence of delivery |
 | --- | --- | --- | --- |
 | D1 | P0 | Student-directed physical actions on the actual fixture | Spoken individual commands produce the requested real actions; repeat/reset and failed attempts recorded |
-| D2 | P0 | Responsive Gemini conversation during work | Actual-device audio with acknowledgment, progress, clarification, cancellation and observed result; no blocking expert call in the conversation path |
+| D2 | P0 | Responsive voice conversation during work | Actual-device audio with acknowledgment, progress, clarification, cancellation and observed result; no blocking expert call in the conversation path |
 | D3 | P1 | Expensive successful work becomes a reusable capability | Real expert task -> parameterized tested skill/tool -> equivalent warm request uses it without repeating unnecessary reasoning |
 | D4 | P1 | One substantive measured harness improvement | Same task/setup, unchanged baseline, candidate, timings and success/failure evidence; retain or reject based on results |
 
@@ -25,7 +26,7 @@ Every substantial change must advance D1–D4. All other work must justify its h
 
 ```mermaid
 flowchart LR
-  S[Student] <--> G[Gemini Live]
+  S[Student] <--> G[Continuous voice agent]
   G --> R[Task and current scene]
   R --> K[Known skill fast path]
   R --> E[Expert when needed]
@@ -42,7 +43,7 @@ flowchart LR
   I --> V
 ```
 
-Gemini owns the conversation. The background expert gets the relevant instruction/context, timestamped scene evidence and available capabilities; it reports progress and results back. Use one working capable provider, not a provider-selection framework. Familiar operations use valid skills directly. Camera tools may be simple markers, calibrated transforms or fresh known-station checks; all-frame remote visual reasoning is not required.
+The voice agent owns the conversation. The background expert gets the relevant instruction/context, timestamped scene evidence and available capabilities; it reports progress and results back. Use one working capable provider, not a provider-selection framework. Familiar operations use valid skills directly. Camera tools may be simple markers, calibrated transforms or fresh known-station checks; all-frame remote visual reasoning is not required.
 
 The executor owns motion, bounded parameters and STOP. Existing approval/bench supervision remains in force; changing consent semantics requires an explicit interface decision. Removing educational gates does not remove physical authorization. Reject stale scene/cache assumptions and unsupported actions; controller completion alone does not prove success. The harness can propose and test new algorithms/tools offline, but that does not automatically authorize novel physical motion.
 
@@ -60,7 +61,7 @@ For the same request record: completed student input, first acknowledgment, disp
 
 The product's physical target above remains open. Joseph separately authorized the full software loop with physical actuation disabled and chose the newer MuJoCo lab apparatus for its demonstration. [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) maps R1–R6; [MAIN_INTEGRATION](MAIN_INTEGRATION.md) tracks branches, evidence and release gates. Software and simulation evidence do not establish D1 physical completion.
 
-- `agentic/openarms_lab` is the sole application task/session/registry runtime. Gemini Live owns responsive conversation; Codex gpt-6.1-sol medium performs the image-aware expert's planning and tool decisions. Known skills reuse their validated versions.
+- `agentic/openarms_lab` is the sole application task/session/registry runtime. The replacement voice agent must own responsive conversation; Codex gpt-6.1-sol medium performs the image-aware expert's planning and tool decisions. Known skills reuse their validated versions.
 - `ui/lab` and the native SwiftUI client share authenticated sessions, exact proposals, playback acknowledgments, STOP and provenance. Prediction/reflection are optional. `/developer` shows authenticated simulation and diagnostics.
 - The selected MuJoCo backend uses `simulation/lab_demos/ph`, derived from the newer titration apparatus. Position actuators drive the robot; geometric paddle engagement drives a qualitative dosing model. A separate observer reads rendered pixels. This is not contact-qualified manipulation, fluid dynamics, calibrated pH or physical success. Standalone pick/put/pour is unsupported by this backend.
 - The full loop has actual Codex cold/warm evidence on this apparatus. Final integrated voice/recovery/improvement and real-device acceptance remain explicit release checks; see the evidence ledger rather than inferring completion from test counts.

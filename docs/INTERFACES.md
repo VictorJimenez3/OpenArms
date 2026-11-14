@@ -4,7 +4,7 @@
 
 > **Architecture correction:** [FULL_SYSTEM_DELIVERY.md](FULL_SYSTEM_DELIVERY.md) is the authoritative R1–R6 responsibility map, domain contract and acceptance checklist. The transport details below are the compatible implementation seam, not the complete product. pH is the demonstration scenario; background expert planning, image/perception tools, two-agent feedback, reusable candidates and evaluated improvement are required. Physical actuation alone is excluded.
 
-The student app has one experiment: qualitative red-cabbage indicator pH. Browser and SwiftUI use the same Python service, notebook, trial rules and server-owned Gemini Live connection. The application selects a synthetic fixture or actual MuJoCo execution; physical dispatch is disabled. Historical mandarin and dilution demonstrations are research evidence, not selectable experiments.
+The student app has one experiment: qualitative red-cabbage indicator pH. Browser and SwiftUI use the same Python service, notebook, trial rules and server-owned voice connection. Joseph withdrew Gemini on November 14; the default voice connection is disabled pending replacement. This does not remove the required continuous conversation or feedback to both agents. The application selects a synthetic fixture or actual MuJoCo execution; physical dispatch is disabled. Historical mandarin and dilution demonstrations are research evidence, not selectable experiments.
 
 ## Trial authority
 
@@ -50,11 +50,11 @@ The socket remains useful for state and text when voice is off or the provider i
 
 Server frames include `hello`, `state`, `pong`, `status`, `transcript`, `reply_start`, `audio`, `reply_end`, `interrupted`, and `error`. Transcript fragments share a turn ID and a final marker. Reply audio is PCM16 mono 24 kHz with a reply ID. `reply_start` may bind a proposal ID/version. Model generation finishing is not proof of playback: only matching completed playback of an exact canonical preview may acknowledge audio presentation. Interrupted or stale replies cannot do so.
 
-Microphone permission, provider readiness, and active speaker playback are separate states. Muted speech cannot become consent. Spoken STOP depends on speech recognition; the direct STOP control bypasses Gemini. A lost provider connection does not remove text controls.
+Microphone permission, provider readiness, and active speaker playback are separate states. Muted speech cannot become consent. Spoken STOP depends on speech recognition; the direct STOP control bypasses the voice provider. A lost provider connection does not remove text controls.
 
 ## Voice and intent
 
-Gemini may interpret a condition, record a prediction, explain reference evidence and guide reflection. It never supplies motor targets, operator authorization or trusted consent. The server independently handles completed confirmation/cancel/STOP input; a delayed model tool call cannot execute again. Updates reach Gemini through correlated tool outcomes, not fabricated student turns.
+The voice agent may interpret a condition, record a prediction, explain reference evidence and guide reflection. It never supplies motor targets, operator authorization or trusted consent. The server independently handles completed confirmation/cancel/STOP input; a delayed model tool call cannot execute again. Updates reach the voice agent through correlated tool outcomes, not fabricated student turns.
 
 The positive integration fixture is: natural vinegar request → expert scene inspection → exact proposal → presentation → new explicit confirmation → one confirmed simulated execution → automatic HOME → independently observed rendered color → reflection → fresh trial. The correction fixture changes water to baking soda, rejects the old proposal, disconnects before confirming the replacement, restores the notebook and requires a fresh proposal.
 

@@ -67,3 +67,18 @@ def test_asr_punctuation_and_politeness_reuse_without_losing_negation(tmp_path):
     assert registry.match('test prepared water, please.').skill_version == version
     assert registry.match('Please do not test. Prepared vinegar!') is None
     assert _normalize('Use 1.5 mL, please.') == 'use 1.5 ml'
+
+
+def test_fractional_quantity_cannot_reuse_an_integer_portion_skill(tmp_path):
+    registry = SkillRegistry(tmp_path/'skills.json')
+    definition = copy.deepcopy(DEFINITION)
+    definition['retrieval_examples'] = ['pour {portions} portions']
+    definition['parameter_schema'] = {'portions': {'type': 'integer', 'enum': [1]}}
+    definition['steps'][1] = {'operation': 'mock_pour', 'arguments': {
+        'fixture': 'sample_cup', 'station': 'C', 'portions': '$portions'}}
+    version, result = evaluate(registry, definition)
+    assert result['status'] == 'promoted'
+    assert registry.match('Pour 1 portions, please.').skill_version == version
+    for request in ('pour .1 portions', 'pour 1.5 portions', 'pour ,1 portions',
+                    'pour -.1 portions', 'pour 0.1 portions'):
+        assert registry.match(request) is None, request
