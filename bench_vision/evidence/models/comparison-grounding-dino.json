@@ -1,0 +1,3929 @@
+{
+  "schema_version": 1,
+  "backend": "offline_recorded_image_inference",
+  "physical_outcome": "not_evaluated",
+  "dataset": {
+    "name": "mandarin-four-still-stress-v1",
+    "annotation_provenance": "agent visually drew boxes at 480x640 before running either detector; provisional, human review pending",
+    "negative_definition": "No visually identifiable orange in frame; not proof object physically absent",
+    "cases": [
+      {
+        "id": "A-after-identity",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": [
+          187,
+          205,
+          245,
+          303
+        ]
+      },
+      {
+        "id": "A-after-dark",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": [
+          187,
+          205,
+          245,
+          303
+        ]
+      },
+      {
+        "id": "A-after-gray",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": [
+          187,
+          205,
+          245,
+          303
+        ]
+      },
+      {
+        "id": "A-after-occlude",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "occlude_right",
+        "original_box": [
+          187,
+          205,
+          245,
+          303
+        ],
+        "expected_box": [
+          187,
+          205,
+          216,
+          303
+        ]
+      },
+      {
+        "id": "A-before-identity",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": [
+          284,
+          173,
+          349,
+          286
+        ]
+      },
+      {
+        "id": "A-before-dark",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": [
+          284,
+          173,
+          349,
+          286
+        ]
+      },
+      {
+        "id": "A-before-gray",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": [
+          284,
+          173,
+          349,
+          286
+        ]
+      },
+      {
+        "id": "A-before-occlude",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "occlude_right",
+        "original_box": [
+          284,
+          173,
+          349,
+          286
+        ],
+        "expected_box": [
+          284,
+          173,
+          316,
+          286
+        ]
+      },
+      {
+        "id": "C-before-identity",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": [
+          123,
+          195,
+          198,
+          275
+        ]
+      },
+      {
+        "id": "C-before-dark",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": [
+          123,
+          195,
+          198,
+          275
+        ]
+      },
+      {
+        "id": "C-before-gray",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": [
+          123,
+          195,
+          198,
+          275
+        ]
+      },
+      {
+        "id": "C-before-occlude",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "occlude_right",
+        "original_box": [
+          123,
+          195,
+          198,
+          275
+        ],
+        "expected_box": [
+          123,
+          195,
+          160,
+          275
+        ]
+      },
+      {
+        "id": "C-hover-identity",
+        "image": "C-hover.jpg",
+        "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": null
+      },
+      {
+        "id": "C-hover-dark",
+        "image": "C-hover.jpg",
+        "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": null
+      },
+      {
+        "id": "C-hover-gray",
+        "image": "C-hover.jpg",
+        "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": null
+      },
+      {
+        "id": "synthetic-blank",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "blank",
+        "expected_box": null
+      }
+    ]
+  },
+  "device": "mps",
+  "gpu_postprocessing": "mps",
+  "environment": {
+    "python": "3.12.15",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "torch": "2.8.0",
+    "opencv": "4.12.0"
+  },
+  "model_load_ms_including_download_if_uncached": 17362.625333014876,
+  "repeats": 3,
+  "methods": {
+    "hsv-orange-v1": {
+      "cold_first_frame_ms": 203.61462514847517,
+      "summary_all": {
+        "count": 48,
+        "correct_at_iou_0_5_or_negative_unknown": 12,
+        "positive_count": 36,
+        "positive_localized_iou_0_5": 3,
+        "negative_false_positives": 3,
+        "median_end_to_end_ms": 74.02310450561345,
+        "p95_end_to_end_ms": 81.4657541224733,
+        "median_detector_ms": 0.4829789977520704
+      },
+      "warm_summary": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 8,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 2,
+        "negative_false_positives": 2,
+        "median_end_to_end_ms": 74.1517087444663,
+        "p95_end_to_end_ms": 81.38313752133399,
+        "median_detector_ms": 0.4840204492211342
+      },
+      "rows": [
+        {
+          "case_id": "A-after-identity",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 172.52612486481667,
+          "detector_ms": 31.088500283658504,
+          "end_to_end_ms": 203.61462514847517
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.3544999063015,
+          "detector_ms": 0.48070913180708885,
+          "end_to_end_ms": 76.83520903810859
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.71320775523782,
+          "detector_ms": 0.4710420034825802,
+          "end_to_end_ms": 72.1842497587204
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.69475017488003,
+          "detector_ms": 0.5034999921917915,
+          "end_to_end_ms": 71.19825016707182
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              285.0,
+              174.0,
+              348.0,
+              285.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  315.8522449746384,
+                  228.46728035568913
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.952076242341729,
+          "image_load_ms": 77.74320803582668,
+          "detector_ms": 1.3579996302723885,
+          "end_to_end_ms": 79.10120766609907
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 79.00983421131968,
+          "detector_ms": 0.465374905616045,
+          "end_to_end_ms": 79.47520911693573
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.86000007763505,
+          "detector_ms": 0.4669581539928913,
+          "end_to_end_ms": 78.32695823162794
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.8617081232369,
+          "detector_ms": 0.5314582958817482,
+          "end_to_end_ms": 78.39316641911864
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 75.3850000910461,
+          "detector_ms": 0.5641249008476734,
+          "end_to_end_ms": 75.94912499189377
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.79954105615616,
+          "detector_ms": 0.43854163959622383,
+          "end_to_end_ms": 73.23808269575238
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.53879106044769,
+          "detector_ms": 0.42408425360918045,
+          "end_to_end_ms": 71.96287531405687
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              411.0,
+              0.0,
+              464.0,
+              169.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  438.3825588518421,
+                  84.14566377876957
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.98604196310043,
+          "detector_ms": 0.5293330177664757,
+          "end_to_end_ms": 72.51537498086691
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              353.0,
+              572.0,
+              480.0,
+              640.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  423.1783575213084,
+                  611.5983068417415
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 63.60349990427494,
+          "detector_ms": 0.5118749104440212,
+          "end_to_end_ms": 64.11537481471896
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 62.121208757162094,
+          "detector_ms": 0.43679121881723404,
+          "end_to_end_ms": 62.55799997597933
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 63.69483284652233,
+          "detector_ms": 0.4320419393479824,
+          "end_to_end_ms": 64.12687478587031
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.78775004670024,
+          "detector_ms": 0.4687500186264515,
+          "end_to_end_ms": 73.25650006532669
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 69.57262475043535,
+          "detector_ms": 0.4926249384880066,
+          "end_to_end_ms": 70.06524968892336
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.17112509533763,
+          "detector_ms": 0.46787504106760025,
+          "end_to_end_ms": 72.63900013640523
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.59858383238316,
+          "detector_ms": 0.4503331147134304,
+          "end_to_end_ms": 72.04891694709659
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.95683322101831,
+          "detector_ms": 0.5886671133339405,
+          "end_to_end_ms": 74.54550033435225
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              285.0,
+              174.0,
+              348.0,
+              285.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  315.8522449746384,
+                  228.46728035568913
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.952076242341729,
+          "image_load_ms": 81.06224983930588,
+          "detector_ms": 0.5480833351612091,
+          "end_to_end_ms": 81.61033317446709
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.82429207488894,
+          "detector_ms": 0.45004114508628845,
+          "end_to_end_ms": 77.27433321997523
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.69504219666123,
+          "detector_ms": 0.4320829175412655,
+          "end_to_end_ms": 77.1271251142025
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.31175000965595,
+          "detector_ms": 0.4840828478336334,
+          "end_to_end_ms": 74.79583285748959
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.91679100692272,
+          "detector_ms": 0.6066667847335339,
+          "end_to_end_ms": 74.52345779165626
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.14862499758601,
+          "detector_ms": 0.46679098159074783,
+          "end_to_end_ms": 76.61541597917676
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.58912518247962,
+          "detector_ms": 0.4466669633984566,
+          "end_to_end_ms": 74.03579214587808
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              411.0,
+              0.0,
+              464.0,
+              169.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  438.3825588518421,
+                  84.14566377876957
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.42245802283287,
+          "detector_ms": 0.5879588425159454,
+          "end_to_end_ms": 74.01041686534882
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              353.0,
+              572.0,
+              480.0,
+              640.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  423.1783575213084,
+                  611.5983068417415
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 63.275708351284266,
+          "detector_ms": 0.5128746852278709,
+          "end_to_end_ms": 63.78858303651214
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 63.79975005984306,
+          "detector_ms": 0.47512492164969444,
+          "end_to_end_ms": 64.27487498149276
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 63.13737528398633,
+          "detector_ms": 0.46233274042606354,
+          "end_to_end_ms": 63.599708024412394
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.31595819070935,
+          "detector_ms": 0.48466678708791733,
+          "end_to_end_ms": 74.80062497779727
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 69.82929119840264,
+          "detector_ms": 0.5093337967991829,
+          "end_to_end_ms": 70.33862499520183
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 69.43487515673041,
+          "detector_ms": 0.4408750683069229,
+          "end_to_end_ms": 69.87575022503734
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 68.70108330622315,
+          "detector_ms": 0.4407917149364948,
+          "end_to_end_ms": 69.14187502115965
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.11745870113373,
+          "detector_ms": 0.5225413478910923,
+          "end_to_end_ms": 70.64000004902482
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              285.0,
+              174.0,
+              348.0,
+              285.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  315.8522449746384,
+                  228.46728035568913
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.952076242341729,
+          "image_load_ms": 77.85262493416667,
+          "detector_ms": 0.5400837399065495,
+          "end_to_end_ms": 78.39270867407322
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 81.56995801255107,
+          "detector_ms": 0.47170836478471756,
+          "end_to_end_ms": 82.04166637733579
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 79.98420810326934,
+          "detector_ms": 0.48395805060863495,
+          "end_to_end_ms": 80.46816615387797
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 80.66795906051993,
+          "detector_ms": 0.529291108250618,
+          "end_to_end_ms": 81.19725016877055
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.26962519437075,
+          "detector_ms": 0.54537458345294,
+          "end_to_end_ms": 73.81499977782369
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 78.11862509697676,
+          "detector_ms": 0.4420410841703415,
+          "end_to_end_ms": 78.5606661811471
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.79208318889141,
+          "detector_ms": 0.4755421541631222,
+          "end_to_end_ms": 74.26762534305453
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              411.0,
+              0.0,
+              464.0,
+              169.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  438.3825588518421,
+                  84.14566377876957
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.28462510183454,
+          "detector_ms": 0.548332929611206,
+          "end_to_end_ms": 76.83295803144574
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              353.0,
+              572.0,
+              480.0,
+              640.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  423.1783575213084,
+                  611.5983068417415
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 62.98041669651866,
+          "detector_ms": 0.6547919474542141,
+          "end_to_end_ms": 63.635208643972874
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 63.57212504372001,
+          "detector_ms": 0.5064168944954872,
+          "end_to_end_ms": 64.0785419382155
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 62.74495832622051,
+          "detector_ms": 0.44737476855516434,
+          "end_to_end_ms": 63.19233309477568
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.8272909335792,
+          "detector_ms": 0.4819999448955059,
+          "end_to_end_ms": 77.30929087847471
+        }
+      ]
+    },
+    "grounding-dino-tiny-a2bb814": {
+      "cold_first_frame_ms": 17726.569666992873,
+      "summary_all": {
+        "count": 48,
+        "correct_at_iou_0_5_or_negative_unknown": 42,
+        "positive_count": 36,
+        "positive_localized_iou_0_5": 30,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 1593.4184375219047,
+        "p95_end_to_end_ms": 1836.971080978401,
+        "median_detector_ms": 1481.6447915509343
+      },
+      "warm_summary": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 28,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 20,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 1602.079791482538,
+        "p95_end_to_end_ms": 1802.0568311214447,
+        "median_detector_ms": 1502.628979505971
+      },
+      "rows": [
+        {
+          "case_id": "A-after-identity",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.0679931640625,
+              204.05136108398438,
+              240.53604125976562,
+              302.1632385253906
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.80201721191406,
+                  253.1072998046875
+                ]
+              }
+            ],
+            "confidence": 0.8792126178741455,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9059077017687289,
+          "image_load_ms": 72.86937534809113,
+          "detector_ms": 17653.700291644782,
+          "end_to_end_ms": 17726.569666992873
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.14236450195312,
+              204.17990112304688,
+              240.65731811523438,
+              302.2238464355469
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.89984130859375,
+                  253.20187377929688
+                ]
+              }
+            ],
+            "confidence": 0.8793858885765076,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9083505190412512,
+          "image_load_ms": 130.47362491488457,
+          "detector_ms": 1500.6275419145823,
+          "end_to_end_ms": 1631.1011668294668
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              186.89862060546875,
+              203.99758911132812,
+              240.54820251464844,
+              302.35723876953125
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.7234115600586,
+                  253.1774139404297
+                ]
+              }
+            ],
+            "confidence": 0.8274422883987427,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9070326301415386,
+          "image_load_ms": 81.82412525638938,
+          "detector_ms": 1374.5923340320587,
+          "end_to_end_ms": 1456.416459288448
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.2096710205078,
+              204.18655395507812,
+              217.16346740722656,
+              301.9283447265625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  202.1865692138672,
+                  253.0574493408203
+                ]
+              }
+            ],
+            "confidence": 0.6419511437416077,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9367133088622748,
+          "image_load_ms": 101.42325004562736,
+          "detector_ms": 1373.7522922456264,
+          "end_to_end_ms": 1475.1755422912538
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.6522216796875,
+              173.0746612548828,
+              348.06536865234375,
+              286.0954895019531
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.8587951660156,
+                  229.58507537841797
+                ]
+              }
+            ],
+            "confidence": 0.9006466269493103,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9789159171336785,
+          "image_load_ms": 104.73629087209702,
+          "detector_ms": 1379.6466253697872,
+          "end_to_end_ms": 1484.3829162418842
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.7077941894531,
+              172.92926025390625,
+              347.91204833984375,
+              285.87310791015625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.80992126464844,
+                  229.40118408203125
+                ]
+              }
+            ],
+            "confidence": 0.8813512921333313,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9771660150009581,
+          "image_load_ms": 105.93283316120505,
+          "detector_ms": 1665.259416680783,
+          "end_to_end_ms": 1771.192249841988
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.45025634765625,
+              172.9652099609375,
+              348.0113525390625,
+              286.1041259765625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.7308044433594,
+                  229.53466796875
+                ]
+              }
+            ],
+            "confidence": 0.8605155944824219,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9753499787846337,
+          "image_load_ms": 108.4721670486033,
+          "detector_ms": 1438.5758331045508,
+          "end_to_end_ms": 1547.0480001531541
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.8093566894531,
+              172.2608184814453,
+              349.8575439453125,
+              287.08514404296875
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  316.8334503173828,
+                  229.67298126220703
+                ]
+              }
+            ],
+            "confidence": 0.5681281089782715,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.47679711184323637,
+          "image_load_ms": 108.66920789703727,
+          "detector_ms": 1388.5364583693445,
+          "end_to_end_ms": 1497.2056662663817
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.63487243652344,
+              195.82115173339844,
+              196.848876953125,
+              274.22943115234375
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.24187469482422,
+                  235.0252914428711
+                ]
+              }
+            ],
+            "confidence": 0.8867260813713074,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9567640205862699,
+          "image_load_ms": 79.6164171770215,
+          "detector_ms": 1374.325416982174,
+          "end_to_end_ms": 1453.9418341591954
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.85415649414062,
+              195.85670471191406,
+              196.97879028320312,
+              273.94683837890625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.41647338867188,
+                  234.90177154541016
+                ]
+              }
+            ],
+            "confidence": 0.8816450238227844,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9517187378229574,
+          "image_load_ms": 105.34533392637968,
+          "detector_ms": 1547.3641250282526,
+          "end_to_end_ms": 1652.7094589546323
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.7148208618164,
+              195.7837677001953,
+              197.16030883789062,
+              274.3028564453125
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.43756484985352,
+                  235.0433120727539
+                ]
+              }
+            ],
+            "confidence": 0.8018298149108887,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9611454647203015,
+          "image_load_ms": 96.1614171974361,
+          "detector_ms": 1451.2530001811683,
+          "end_to_end_ms": 1547.4144173786044
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple target instances; identity unresolved",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 79.49154172092676,
+          "detector_ms": 1587.5185411423445,
+          "end_to_end_ms": 1667.0100828632712
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 344.5567088201642,
+          "detector_ms": 1463.419415988028,
+          "end_to_end_ms": 1807.9761248081923
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 91.50000009685755,
+          "detector_ms": 1490.2630830183625,
+          "end_to_end_ms": 1581.76308311522
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 128.64104192703962,
+          "detector_ms": 1465.9372079186141,
+          "end_to_end_ms": 1594.5782498456538
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 87.47608307749033,
+          "detector_ms": 1383.721041958779,
+          "end_to_end_ms": 1471.1971250362694
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.0679931640625,
+              204.05136108398438,
+              240.53604125976562,
+              302.1632385253906
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.80201721191406,
+                  253.1072998046875
+                ]
+              }
+            ],
+            "confidence": 0.8792126178741455,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9059077017687289,
+          "image_load_ms": 100.67754192277789,
+          "detector_ms": 1303.6219580098987,
+          "end_to_end_ms": 1404.2994999326766
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.14236450195312,
+              204.17990112304688,
+              240.65731811523438,
+              302.2238464355469
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.89984130859375,
+                  253.20187377929688
+                ]
+              }
+            ],
+            "confidence": 0.8793858885765076,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9083505190412512,
+          "image_load_ms": 99.90212507545948,
+          "detector_ms": 1297.1993330866098,
+          "end_to_end_ms": 1397.1014581620693
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              186.89862060546875,
+              203.99758911132812,
+              240.54820251464844,
+              302.35723876953125
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.7234115600586,
+                  253.1774139404297
+                ]
+              }
+            ],
+            "confidence": 0.8274422883987427,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9070326301415386,
+          "image_load_ms": 100.10495781898499,
+          "detector_ms": 1294.867250137031,
+          "end_to_end_ms": 1394.972207956016
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.2096710205078,
+              204.18655395507812,
+              217.16346740722656,
+              301.9283447265625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  202.1865692138672,
+                  253.0574493408203
+                ]
+              }
+            ],
+            "confidence": 0.6419511437416077,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9367133088622748,
+          "image_load_ms": 83.99925008416176,
+          "detector_ms": 1311.5740418434143,
+          "end_to_end_ms": 1395.573291927576
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.6522216796875,
+              173.0746612548828,
+              348.06536865234375,
+              286.0954895019531
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.8587951660156,
+                  229.58507537841797
+                ]
+              }
+            ],
+            "confidence": 0.9006466269493103,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9789159171336785,
+          "image_load_ms": 103.97995775565505,
+          "detector_ms": 1310.2715839631855,
+          "end_to_end_ms": 1414.2515417188406
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.7077941894531,
+              172.92926025390625,
+              347.91204833984375,
+              285.87310791015625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.80992126464844,
+                  229.40118408203125
+                ]
+              }
+            ],
+            "confidence": 0.8813512921333313,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9771660150009581,
+          "image_load_ms": 106.1511249281466,
+          "detector_ms": 1328.7499588914216,
+          "end_to_end_ms": 1434.9010838195682
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.45025634765625,
+              172.9652099609375,
+              348.0113525390625,
+              286.1041259765625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.7308044433594,
+                  229.53466796875
+                ]
+              }
+            ],
+            "confidence": 0.8605155944824219,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9753499787846337,
+          "image_load_ms": 79.91545787081122,
+          "detector_ms": 1425.7494579069316,
+          "end_to_end_ms": 1505.6649157777429
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.8093566894531,
+              172.2608184814453,
+              349.8575439453125,
+              287.08514404296875
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  316.8334503173828,
+                  229.67298126220703
+                ]
+              }
+            ],
+            "confidence": 0.5681281089782715,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.47679711184323637,
+          "image_load_ms": 90.5349999666214,
+          "detector_ms": 1417.1551251783967,
+          "end_to_end_ms": 1507.690125145018
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.63487243652344,
+              195.82115173339844,
+              196.848876953125,
+              274.22943115234375
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.24187469482422,
+                  235.0252914428711
+                ]
+              }
+            ],
+            "confidence": 0.8867260813713074,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9567640205862699,
+          "image_load_ms": 80.20366728305817,
+          "detector_ms": 1446.2484577670693,
+          "end_to_end_ms": 1526.4521250501275
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.85415649414062,
+              195.85670471191406,
+              196.97879028320312,
+              273.94683837890625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.41647338867188,
+                  234.90177154541016
+                ]
+              }
+            ],
+            "confidence": 0.8816450238227844,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9517187378229574,
+          "image_load_ms": 106.83570802211761,
+          "detector_ms": 1384.732584003359,
+          "end_to_end_ms": 1491.5682920254767
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.7148208618164,
+              195.7837677001953,
+              197.16030883789062,
+              274.3028564453125
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.43756484985352,
+                  235.0433120727539
+                ]
+              }
+            ],
+            "confidence": 0.8018298149108887,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9611454647203015,
+          "image_load_ms": 89.66670790687203,
+          "detector_ms": 1456.2794170342386,
+          "end_to_end_ms": 1545.9461249411106
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple target instances; identity unresolved",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 85.72100009769201,
+          "detector_ms": 1506.5376251004636,
+          "end_to_end_ms": 1592.2586251981556
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 68.76029213890433,
+          "detector_ms": 1438.2786247879267,
+          "end_to_end_ms": 1507.038916926831
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 94.90691684186459,
+          "detector_ms": 1594.8844160884619,
+          "end_to_end_ms": 1689.7913329303265
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 187.2834162786603,
+          "detector_ms": 1672.7426666766405,
+          "end_to_end_ms": 1860.0260829553008
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 133.27495893463492,
+          "detector_ms": 1618.255291134119,
+          "end_to_end_ms": 1751.530250068754
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.0679931640625,
+              204.05136108398438,
+              240.53604125976562,
+              302.1632385253906
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.80201721191406,
+                  253.1072998046875
+                ]
+              }
+            ],
+            "confidence": 0.8792126178741455,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9059077017687289,
+          "image_load_ms": 106.2272503040731,
+          "detector_ms": 1497.1469999291003,
+          "end_to_end_ms": 1603.3742502331734
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.14236450195312,
+              204.17990112304688,
+              240.65731811523438,
+              302.2238464355469
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.89984130859375,
+                  253.20187377929688
+                ]
+              }
+            ],
+            "confidence": 0.8793858885765076,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9083505190412512,
+          "image_load_ms": 141.16008300334215,
+          "detector_ms": 1498.7203339114785,
+          "end_to_end_ms": 1639.8804169148207
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              186.89862060546875,
+              203.99758911132812,
+              240.54820251464844,
+              302.35723876953125
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  213.7234115600586,
+                  253.1774139404297
+                ]
+              }
+            ],
+            "confidence": 0.8274422883987427,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9070326301415386,
+          "image_load_ms": 94.22141686081886,
+          "detector_ms": 1472.5736249238253,
+          "end_to_end_ms": 1566.7950417846441
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              187.2096710205078,
+              204.18655395507812,
+              217.16346740722656,
+              301.9283447265625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  202.1865692138672,
+                  253.0574493408203
+                ]
+              }
+            ],
+            "confidence": 0.6419511437416077,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9367133088622748,
+          "image_load_ms": 94.35095824301243,
+          "detector_ms": 1473.026500083506,
+          "end_to_end_ms": 1567.3774583265185
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.6522216796875,
+              173.0746612548828,
+              348.06536865234375,
+              286.0954895019531
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.8587951660156,
+                  229.58507537841797
+                ]
+              }
+            ],
+            "confidence": 0.9006466269493103,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9789159171336785,
+          "image_load_ms": 93.85475004091859,
+          "detector_ms": 1564.20520786196,
+          "end_to_end_ms": 1658.0599579028785
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.7077941894531,
+              172.92926025390625,
+              347.91204833984375,
+              285.87310791015625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.80992126464844,
+                  229.40118408203125
+                ]
+              }
+            ],
+            "confidence": 0.8813512921333313,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9771660150009581,
+          "image_load_ms": 94.63916718959808,
+          "detector_ms": 1567.027083132416,
+          "end_to_end_ms": 1661.666250322014
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.45025634765625,
+              172.9652099609375,
+              348.0113525390625,
+              286.1041259765625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  315.7308044433594,
+                  229.53466796875
+                ]
+              }
+            ],
+            "confidence": 0.8605155944824219,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9753499787846337,
+          "image_load_ms": 101.62300011143088,
+          "detector_ms": 1513.6107080616057,
+          "end_to_end_ms": 1615.2337081730366
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              283.8093566894531,
+              172.2608184814453,
+              349.8575439453125,
+              287.08514404296875
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  316.8334503173828,
+                  229.67298126220703
+                ]
+              }
+            ],
+            "confidence": 0.5681281089782715,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.47679711184323637,
+          "image_load_ms": 92.0609999448061,
+          "detector_ms": 1508.7243327870965,
+          "end_to_end_ms": 1600.7853327319026
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.63487243652344,
+              195.82115173339844,
+              196.848876953125,
+              274.22943115234375
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.24187469482422,
+                  235.0252914428711
+                ]
+              }
+            ],
+            "confidence": 0.8867260813713074,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.9567640205862699,
+          "image_load_ms": 99.91470770910382,
+          "detector_ms": 1547.0661669969559,
+          "end_to_end_ms": 1646.9808747060597
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.85415649414062,
+              195.85670471191406,
+              196.97879028320312,
+              273.94683837890625
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.41647338867188,
+                  234.90177154541016
+                ]
+              }
+            ],
+            "confidence": 0.8816450238227844,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9517187378229574,
+          "image_load_ms": 98.43495907261968,
+          "detector_ms": 1632.0526655763388,
+          "end_to_end_ms": 1730.4876246489584
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              123.7148208618164,
+              195.7837677001953,
+              197.16030883789062,
+              274.3028564453125
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  160.43756484985352,
+                  235.0433120727539
+                ]
+              }
+            ],
+            "confidence": 0.8018298149108887,
+            "unknown_reason": null,
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.9611454647203015,
+          "image_load_ms": 90.5395420268178,
+          "detector_ms": 1566.1794999614358,
+          "end_to_end_ms": 1656.7190419882536
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple target instances; identity unresolved",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 87.17541582882404,
+          "detector_ms": 1616.4423748850822,
+          "end_to_end_ms": 1703.6177907139063
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 83.97337514907122,
+          "detector_ms": 1670.1303338631988,
+          "end_to_end_ms": 1754.10370901227
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 117.1642909757793,
+          "detector_ms": 1735.4194587096572,
+          "end_to_end_ms": 1852.5837496854365
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 64.77975007146597,
+          "detector_ms": 1695.9368749521673,
+          "end_to_end_ms": 1760.7166250236332
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "grounding-dino-tiny-a2bb814",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.86345879361033,
+          "detector_ms": 1644.4477080367506,
+          "end_to_end_ms": 1715.311166830361
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Provisional agent-drawn image boxes, not measured metric truth.",
+    "Transforms of four stills are correlated stress tests, not independent trials.",
+    "No training or threshold fitting; fixed HSV bounds and COCO score 0.35.",
+    "Legacy still timestamps/camera IDs not established; no joint alignment claim.",
+    "No cup footage, liquid outcomes, grasp-point accuracy or robot test."
+  ]
+}

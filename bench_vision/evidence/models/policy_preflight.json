@@ -1,0 +1,28 @@
+{
+  "compatibility": {
+    "status": "blocked",
+    "blockers": [
+      "joint_names mismatch or unknown",
+      "joint_units mismatch or unknown",
+      "camera_keys mismatch or unknown",
+      "joint units missing",
+      "target joint limits missing",
+      "no reviewed embodiment/unit/sign/offset mapping receipt"
+    ],
+    "physical_execution_allowed": false,
+    "policy_id": "allenai/MolmoAct2-SO100_101",
+    "qualification": "metadata_and_array_checks_only; held-out policy evaluation still required"
+  },
+  "training": {
+    "status": "blocked",
+    "blockers": [
+      "insufficient aligned task episodes",
+      "need held-out position groups with no split leakage"
+    ],
+    "episode_count": 0,
+    "training_started": false,
+    "physical_execution_allowed": false
+  },
+  "weights_loaded": false,
+  "policy_inference_run": false
+}

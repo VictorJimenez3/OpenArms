@@ -1,0 +1,261 @@
+{
+  "name": "mandarin-four-still-stress-v1",
+  "annotation_provenance": "agent visually drew boxes at 480x640 before running either detector; provisional, human review pending",
+  "negative_definition": "No visually identifiable orange in frame; not proof object physically absent",
+  "cases": [
+    {
+      "id": "A-after-identity",
+      "image": "A-after.jpg",
+      "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "identity",
+      "expected_box": [
+        187,
+        205,
+        245,
+        303
+      ]
+    },
+    {
+      "id": "A-after-dark",
+      "image": "A-after.jpg",
+      "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "dark",
+      "expected_box": [
+        187,
+        205,
+        245,
+        303
+      ]
+    },
+    {
+      "id": "A-after-gray",
+      "image": "A-after.jpg",
+      "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "gray",
+      "expected_box": [
+        187,
+        205,
+        245,
+        303
+      ]
+    },
+    {
+      "id": "A-after-occlude",
+      "image": "A-after.jpg",
+      "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "occlude_right",
+      "original_box": [
+        187,
+        205,
+        245,
+        303
+      ],
+      "expected_box": [
+        187,
+        205,
+        216,
+        303
+      ]
+    },
+    {
+      "id": "A-before-identity",
+      "image": "A-before.jpg",
+      "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "identity",
+      "expected_box": [
+        284,
+        173,
+        349,
+        286
+      ]
+    },
+    {
+      "id": "A-before-dark",
+      "image": "A-before.jpg",
+      "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "dark",
+      "expected_box": [
+        284,
+        173,
+        349,
+        286
+      ]
+    },
+    {
+      "id": "A-before-gray",
+      "image": "A-before.jpg",
+      "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "gray",
+      "expected_box": [
+        284,
+        173,
+        349,
+        286
+      ]
+    },
+    {
+      "id": "A-before-occlude",
+      "image": "A-before.jpg",
+      "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "occlude_right",
+      "original_box": [
+        284,
+        173,
+        349,
+        286
+      ],
+      "expected_box": [
+        284,
+        173,
+        316,
+        286
+      ]
+    },
+    {
+      "id": "C-before-identity",
+      "image": "C-before.jpg",
+      "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "identity",
+      "expected_box": [
+        123,
+        195,
+        198,
+        275
+      ]
+    },
+    {
+      "id": "C-before-dark",
+      "image": "C-before.jpg",
+      "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "dark",
+      "expected_box": [
+        123,
+        195,
+        198,
+        275
+      ]
+    },
+    {
+      "id": "C-before-gray",
+      "image": "C-before.jpg",
+      "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "gray",
+      "expected_box": [
+        123,
+        195,
+        198,
+        275
+      ]
+    },
+    {
+      "id": "C-before-occlude",
+      "image": "C-before.jpg",
+      "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "occlude_right",
+      "original_box": [
+        123,
+        195,
+        198,
+        275
+      ],
+      "expected_box": [
+        123,
+        195,
+        160,
+        275
+      ]
+    },
+    {
+      "id": "C-hover-identity",
+      "image": "C-hover.jpg",
+      "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "identity",
+      "expected_box": null
+    },
+    {
+      "id": "C-hover-dark",
+      "image": "C-hover.jpg",
+      "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "dark",
+      "expected_box": null
+    },
+    {
+      "id": "C-hover-gray",
+      "image": "C-hover.jpg",
+      "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "gray",
+      "expected_box": null
+    },
+    {
+      "id": "synthetic-blank",
+      "image": "C-before.jpg",
+      "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+      "size_wh": [
+        480,
+        640
+      ],
+      "transform": "blank",
+      "expected_box": null
+    }
+  ]
+}

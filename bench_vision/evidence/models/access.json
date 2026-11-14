@@ -1,0 +1,46 @@
+{
+  "sam3_config": {
+    "url": "https://huggingface.co/facebook/sam3/resolve/main/config.json",
+    "http_status": 401,
+    "authentication": "anonymous_no_credentials"
+  },
+  "sam3_weights": {
+    "url": "https://huggingface.co/facebook/sam3/resolve/main/sam3.pt",
+    "http_status": 401,
+    "authentication": "anonymous_no_credentials"
+  },
+  "molmoact2_config": {
+    "url": "https://huggingface.co/allenai/MolmoAct2-SO100_101/resolve/main/config.json",
+    "http_status": 200,
+    "bytes": 4271,
+    "authentication": "anonymous_no_credentials"
+  },
+  "molmoact2_norm": {
+    "url": "https://huggingface.co/allenai/MolmoAct2-SO100_101/resolve/main/norm_stats.json",
+    "http_status": 200,
+    "bytes": 4763,
+    "authentication": "anonymous_no_credentials"
+  },
+  "sam3_metadata": {
+    "url": "https://huggingface.co/api/models/facebook/sam3",
+    "http_status": 200,
+    "revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "gated": "manual",
+    "license": "other",
+    "authentication": "anonymous_no_credentials"
+  },
+  "grounding_dino_metadata": {
+    "url": "https://huggingface.co/api/models/IDEA-Research/grounding-dino-tiny",
+    "http_status": 200,
+    "revision": "a2bb814dd30d776dcf7e30523b00659f4f141c71",
+    "gated": false,
+    "license": "apache-2.0",
+    "authentication": "anonymous_no_credentials"
+  },
+  "runtime": {
+    "device": "Apple MPS GPU",
+    "cuda_available": false,
+    "remote_gpu": "No host supplied for this project; unrelated SSH aliases not used",
+    "sam3_authorized_local_cache": "not established; anonymous download denied; no token inspection"
+  }
+}
