@@ -4,17 +4,18 @@ A HackPrinceton project for accessible lab work. A student speaks a command, pre
 
 ## Where to start
 
-Pull `main`, create a branch for your work, and start in your area. Ownership is provisional.
+Start a task branch from current `main`. The table lists provisional contacts. Agree on the specific paths when a task spans areas.
 
-| Code | Owner | Research |
+| Code | First contact | Research |
 | --- | --- | --- |
 | [`firmware/`](firmware/) | Joseph | [`research/joseph/`](research/joseph/) |
 | [`simulation/`](simulation/) | Stefanie | [`research/stefanie/`](research/stefanie/) |
 | [`agentic/`](agentic/) | Duc | [`research/duc/`](research/duc/) |
 | [`ui/`](ui/) | Victor | [`research/victor/`](research/victor/) |
 
-Put research notes and source links in your folder. Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
+Save findings and evidence using the [research guide](research/README.md). Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
 
+- [Agent instructions](AGENTS.md) cover edit scope, working in parallel, and handoffs.
 - [Project](docs/PROJECT.md) has the demo goal and open decisions.
 - [Interfaces](docs/INTERFACES.md) is where we record examples shared between areas.
 - [Arm setup and teleoperation](firmware/README.md) covers LeRobot, calibration, and the physical arms.
