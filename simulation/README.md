@@ -1,12 +1,13 @@
 # Simulation
 
-MuJoCo is the active OpenArms simulator. Isaac work is parked and remains in [isaac/](isaac/) as historical research.
+A MuJoCo model of the SO-101 arm and the bench. Given a plan, it plays the arm's motion, reports what would go wrong, and says whether the plan is safe to run on the real arm.
 
-- **`block`** (default preview): move one block between A, B and C.
-- **`liquid`** (alias **`two_vessel`**): kinematic water-pour rehearsal with donor A, receiver C and an overview camera. The former four-vessel scene remains available as **`liquid_legacy`**.
-- **[Smartivity Erupting Volcano](SMARTIVITY.md)**: a separate simulation-only experiment with live cameras and the OpenArms expert. It does not select the physical lab experiment.
+There are two bench setups:
 
-The block and water previews use placeholder bench positions and poses. The joint map remains unmeasured. An accepted preview is development evidence and does not qualify a motion on the real bench. See [Matching the real arm](#matching-the-real-arm).
+- **`block`** (the default): one block, moved between three marked points A, B and C.
+- **`liquid`**: mini-cups at A and B poured into receivers at C and D, with a predicted colour change.
+
+**Status:** both setups run end to end, but neither has been matched to the real arm yet. The poses and the bench positions are placeholders, and the joint mapping is unmeasured. Every result says so in its `warnings` until that is done. See [Matching the real arm](#matching-the-real-arm).
 
 ## Setup
 
@@ -229,7 +230,7 @@ The simulated arm follows the real one, and the terminal prints the real joint r
 
 A starting point worth knowing: both LeRobot and this model put each joint's zero at the middle of its range, which is why sign +1 and offset 0 is the first guess. Our follower's calibrated ranges are 5 to 30 degrees wider than the model's, so expect offsets of a few degrees.
 
-### Limits of the block and liquid previews
+### What the simulation cannot show
 
 - It moves the arm to exactly the commanded angles. The real arm sags a little under load and can lag behind.
 - Collisions use simplified hulls around each part, so near misses can be reported as hits.
@@ -242,8 +243,9 @@ The colour prediction is swappable. `RuleTableChemistry` in `chemistry.py` looks
 
 Safety is separate from the prediction and stays a list: only substances under `real_bench` may reach the real arm, and combinations under `hazards` are blocked. Anything not listed is simulation-only.
 
-## Open questions for the preview
+## Open questions for the team
 
+- **Block or liquid for the demo** is still undecided in `docs/PROJECT.md`. Both work here; block is the default because it is simpler to get reliable on the real arm.
 - **Action names.** `move_block(from, to)` follows the name suggested in `research/duc/harness.md`; the agent's catalog needs the same one.
 - **Who tracks where the block is.** The simulation takes the block's position as an input each time. The firmware's `state()` is the natural owner.
 - **Serving the video.** `video_url` is a `file://` link, which only works on the bench laptop. The UI needs it served over HTTP.
