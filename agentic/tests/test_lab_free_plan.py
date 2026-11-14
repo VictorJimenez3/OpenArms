@@ -27,12 +27,14 @@ def move(a,b):return {'action':'move_block','args':{'from':a,'to':b}}
      [go('ABOVE_A'),grip('open'),go('GRASP_A'),grip('close'),go('ABOVE_A'),go('HOME')]),
     ('go to B then go down and release and lift and go home',[go('ABOVE_B'),go('GRASP_B'),grip('open'),go('ABOVE_B'),go('HOME')]),
     ('move the mandarin from A to B, then move it from B to A',[move('A','B'),move('B','A')]),
+    ('go to A and then B and then home after that',[go('ABOVE_A'),go('ABOVE_B'),go('HOME')]),
+    ('Go to B, then to A, then back to B, then home.',[go('ABOVE_B'),go('ABOVE_A'),go('ABOVE_B'),go('HOME')]),
     ('go over B, wait 2 seconds, return home',[go('ABOVE_B'),{'action':'wait','args':{'seconds':2}},go('HOME')]),
 ])
 def test_commands_become_plan_actions(text,steps):
     assert FreePlans(POSES).parse(text,backend())==steps
 
-@pytest.mark.parametrize('text',['what is density?','test sample at A in B','go above A and juggle','add water from A into B',''])
+@pytest.mark.parametrize('text',['B','open the gripper and then B','what is density?','test sample at A in B','go above A and juggle','add water from A into B',''])
 def test_a_command_that_is_not_fully_understood_makes_no_plan(text):
     assert FreePlans(POSES).parse(text,backend()) is None
 
@@ -190,3 +192,67 @@ def test_real_mujoco_preview_of_a_composed_plan():
     out=MujocoPreview()(b,{'request_id':'r','skill_id':SKILL,'parameters':{},'sim':free.sim_request(b,hover,'mandarin')})
     assert out['status']=='ready' and out['objects'][0]['at']=='B' and not out['objects'][0]['moved']
     assert out['motion_seconds']==3.0
+
+# ---- Claude as the planner for what the patterns do not cover --------------------------------
+
+class Block:
+    def __init__(self,name,input):self.type,self.name,self.input,self.id='tool_use',name,input,'tu_1'
+class FakeClaude:
+    """Returns scripted tool calls and records what it was sent."""
+    def __init__(self,*replies):
+        self.replies,self.calls=list(replies),[]
+        self.messages=self
+    def create(self,**kw):
+        self.calls.append(kw)
+        name,inp=self.replies.pop(0)
+        return type('Resp',(),{'content':[Block(name,inp)],'usage':None})()
+
+def agent_lab(tmp_path,*replies):
+    from agentic.openarms_lab.free_plan import ClaudePlanner
+    claude=FakeClaude(*replies)
+    lab=Lab(tmp_path,backend_factory=lambda:MockBackend(delay=.001),free_plans=FreePlans(POSES,planner=ClaudePlanner(client=claude)))
+    return lab,claude
+
+@pytest.mark.asyncio
+async def test_claude_plans_what_the_patterns_miss_and_the_validator_still_decides(tmp_path):
+    lab,claude=agent_lab(tmp_path,
+        ('propose_plan',{'steps':[go('ABOVE_B')]}),                                     # rejected: does not end at HOME
+        ('propose_plan',{'steps':[go('ABOVE_B'),go('HOME')],'added':'I added the return to HOME.'}))
+    sid=await session(lab)
+    s=await lab.request(sid,'hover over the far mark for me','c1')
+    assert s['pending']['parameters']['steps']==[go('ABOVE_B'),go('HOME')]
+    assert s['pending']['summary']=='Go to ABOVE_B; then return to HOME (I added the return to HOME.)'
+    assert s['pending']['metrics']=={'model_calls':2,'planner':'claude'}
+    first,second=claude.calls
+    assert 'tool_choice' not in first and 'station A: the mandarin' in first['system'] and 'ABOVE_B' in first['system']
+    assert 'end at HOME' in second['messages'][-1]['content'][0]['content']
+    await lab.confirm(sid,s['pending']['request_id']);s=await settle(lab,sid)
+    assert s['requests'][-1]['status']=='completed'
+
+@pytest.mark.asyncio
+async def test_claude_is_not_called_when_the_patterns_or_the_registry_understand(tmp_path):
+    lab,claude=agent_lab(tmp_path)
+    sid=await session(lab)
+    assert (await lab.request(sid,'go to A and then B and then home','c1'))['pending']['metrics']['planner']=='patterns'
+    assert (await lab.request(sid,'move the mandarin from A to B','c2'))['pending']['skill_id']!=SKILL
+    assert claude.calls==[]
+
+@pytest.mark.asyncio
+async def test_claude_can_decline_and_cannot_get_a_bad_plan_through(tmp_path):
+    lab,claude=agent_lab(tmp_path,('cannot_do',{'reason':'That is a question, not a motion. Ask me to move something.'}),
+        *[('propose_plan',{'steps':[move('B','A')]})]*3)
+    sid=await session(lab)
+    s=await lab.request(sid,'tell me a joke about oranges','c1')
+    assert s['pending'] is None and 'not a motion' in s['messages'][-1]['text']
+    s=await lab.request(sid,'shuffle the fruit around somehow','c2')
+    assert s['pending'] is None and 'nothing at B' in s['messages'][-1]['text'] and len(claude.calls)==4
+    s=await lab.request(sid,'please do the thing','c3')          # the model call itself fails: explained, no plan
+    assert s['pending'] is None and 'planning model is unavailable' in s['messages'][-1]['text']
+
+@pytest.mark.asyncio
+async def test_the_previous_command_is_given_to_claude_as_context(tmp_path):
+    lab,claude=agent_lab(tmp_path,('propose_plan',{'steps':[go('ABOVE_A'),go('HOME')]}))
+    sid=await session(lab)
+    await lab.request(sid,'go to B then home','c1')
+    await lab.request(sid,'now the same but for the other mark','c2')
+    assert 'The previous command was: "go to B then home"' in claude.calls[0]['system']

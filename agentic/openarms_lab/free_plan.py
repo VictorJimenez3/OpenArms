@@ -34,6 +34,7 @@ _MOVE = re.compile(r'\b(?:move|transfer|bring|take|carry|put|place|shift|return)
 _POSE = re.compile(r'\b(above|over|grasp|tip)\s+' + _ST)
 _DOWN = re.compile(r'\b(?:down|lower|descend)\b.*?\b(?:to|at|on|onto)\s+' + _ST)
 _GOTO = re.compile(r'\b(?:go|move|head|come|travel|reach)\s+(?:back\s+|over\s+)?to\s+' + _ST)
+_BARE = re.compile(r'(?:(?:on\s+|back\s+|over\s+)?to\s+)?' + _ST)
 _HOME = re.compile(r'\bhome\b|\brest position\b')
 _UP = re.compile(r'\b(?:go|move|come|lift|raise)\s+(?:back\s+)?up\b|\blift\b|\braise\b')
 _OPEN = re.compile(r'\b(?:open|release|let go|drop)\b')
@@ -46,7 +47,7 @@ _AGAIN = re.compile(r"^(?:(?:please\s+)?(?:do|run|try|execute|repeat)\s+)?(?:(?:
 def from_env():
     if os.getenv('OPENARMS_FREE_PLANS', '').strip().lower() in ('', '0', 'off', 'false', 'no'):
         return None
-    return FreePlans()
+    return FreePlans(planner=ClaudePlanner() if ClaudePlanner.available() else None)
 
 
 def repeat_requested(text):
@@ -60,8 +61,10 @@ class PlanProblem(ValueError):
 
 
 class FreePlans:
-    def __init__(self, poses_path=None, seconds=None, ask=input):
+    def __init__(self, poses_path=None, seconds=None, ask=input, planner=None):
         self.poses_path = poses_path
+        # Claude plans what the fixed patterns do not cover; None means patterns only.
+        self.planner = planner
         self.seconds = seconds
         self.ask = ask
         self._poses = None
@@ -144,6 +147,8 @@ class FreePlans:
                 go('ABOVE_' + station(m[1]))
             elif _UP.search(clause) and at.startswith('GRASP_'):
                 go('ABOVE_' + at[len('GRASP_'):])
+            elif (m := _BARE.fullmatch(clause)) and steps and steps[-1]['action'] == 'go_to':
+                go('ABOVE_' + station(m[1]))  # "go to A and then B": the second stop borrows the verb
             elif _OPEN.search(clause):
                 steps.append({'action': 'gripper', 'args': {'state': 'open'}})
             elif _CLOSE.search(clause):
@@ -151,6 +156,22 @@ class FreePlans:
             else:
                 return None  # one clause we do not understand: no partial plan
         return steps or None
+
+    def plan_with_agent(self, text, backend, previous=None):
+        """Blocking model call. (steps, added, calls), or None if no planner is configured."""
+        if self.planner is None:
+            return None
+        from agentic.openarms_agent.budget import BudgetExceeded
+        try:
+            return self.planner.plan(text, self.state(backend), self.stations(backend),
+                                     lambda steps: self.validate(backend, steps), previous)
+        except BudgetExceeded as exc:
+            raise PlanProblem(f"The planning budget is used up ({exc}). Use a command like 'move the mandarin from A to B'.") from exc
+        except PlanProblem:
+            raise
+        except Exception as exc:
+            raise PlanProblem(f'The planning model is unavailable ({type(exc).__name__}). Use a command like '
+                              "'move the mandarin from A to B' or 'go to above B, then return home'.") from exc
 
     def summary(self, steps, obj):
         said = []
@@ -297,3 +318,119 @@ class FreePlans:
     def _where(state):
         held = [f"the {h} at {k}" for k, h in state['point_holds'].items() if h]
         return (', '.join(held) if held else 'nothing on the marks') + f"; arm at {state['at']}"
+
+
+# ---- Claude as the planner for commands the fixed patterns do not cover ---------------------
+
+PLAN_TOOLS = [
+    {'name': 'propose_plan',
+     'description': 'The arm steps that carry out the student command. Checked by a validator; never moves the arm.',
+     'input_schema': {'type': 'object', 'additionalProperties': False, 'required': ['steps'], 'properties': {
+         'steps': {'type': 'array', 'minItems': 1, 'maxItems': 12, 'items': {
+             'type': 'object', 'required': ['action', 'args'], 'properties': {
+                 'action': {'type': 'string', 'enum': ['move_block', 'go_to', 'gripper', 'wait']},
+                 'args': {'type': 'object', 'description': 'move_block: {"from","to"} station names; go_to: {"pose"}; '
+                                                           'gripper: {"state": "open" or "close"}; wait: {"seconds": 1-30}'}}}},
+         'added': {'type': 'string', 'description': 'One short sentence naming any step you added that the student did not say '
+                                                    '(for example the return to HOME). Empty if none.'}}}},
+    {'name': 'cannot_do',
+     'description': 'Use when the command is not an arm motion, is unclear, or cannot be done with the saved positions.',
+     'input_schema': {'type': 'object', 'additionalProperties': False, 'required': ['reason'], 'properties': {
+         'reason': {'type': 'string', 'description': 'One or two plain sentences for the student, saying what to ask instead.'}}}},
+]
+
+PLAN_SYSTEM = """You turn one command from a student into steps for a small robot arm on a lab bench. \
+You only translate; a separate validator, a simulation and a human approve anything before the arm moves.
+
+Bench right now:
+{bench}
+Saved positions (the only places the arm can go): {poses}
+The arm is at {at}; the gripper is {gripper} and holds {holding}.
+{previous}
+Actions:
+- move_block {{"from": X, "to": Y}}: pick the object up at station X, set it down at station Y, return to HOME.
+- go_to {{"pose": NAME}}: one straight move to a saved position.
+- gripper {{"state": "open" | "close"}}
+- wait {{"seconds": N}}
+
+Rules the validator enforces:
+- The plan must end at HOME with an empty gripper. If the student did not say so, add the return to HOME and say so in "added".
+- A GRASP_x position is reached only from ABOVE_x, and left only to ABOVE_x.
+- Open the gripper before going down onto an object. Closing at GRASP_x picks up what is there; opening at GRASP_x sets it down.
+- "Go to A" means ABOVE_A unless the student says down, grasp, pick or place.
+- move_block needs an object at the from-station and an empty to-station.
+
+Do what the student asked, in their order, and nothing extra beyond what the rules require. If they say what to leave out, \
+leave it out. Always answer with exactly one tool call and no other text: propose_plan, or cannot_do if this is not a motion you can express. If the validator rejects a plan, \
+fix it once if the fix is clearly what the student meant; otherwise call cannot_do and pass on the validator's reason in plain words."""
+
+
+class ClaudePlanner:
+    """One short tool-use exchange per command. Spending goes through the shared agent budget."""
+
+    def __init__(self, client=None, budget=None, model=None, attempts=3):
+        from agentic.openarms_agent.brain import MODEL
+        self._client, self.budget, self.model, self.attempts = client, budget, model or MODEL, attempts
+
+    @staticmethod
+    def available():
+        if os.getenv('OPENARMS_PLAN_AGENT', '').strip().lower() in ('0', 'off', 'false', 'no'):
+            return False
+        try:
+            from agentic.openarms_agent.brain import _load_key
+            return bool(_load_key())
+        except Exception:
+            return False
+
+    @property
+    def client(self):
+        if self._client is None:
+            import anthropic
+            from agentic.openarms_agent.brain import _load_key
+            from agentic.openarms_agent.budget import Budget
+            self._client = anthropic.Anthropic(api_key=_load_key())
+            if self.budget is None:
+                self.budget = Budget()
+        return self._client
+
+    def _create(self, **kw):
+        client = self.client
+        if self.budget is not None:
+            self.budget.check()
+        resp = client.messages.create(**kw)
+        if self.budget is not None:
+            self.budget.record(kw['model'], getattr(resp, 'usage', None))
+        return resp
+
+    def plan(self, text, state, stations, check, previous=None):
+        """(steps, added) for a command. Raises PlanProblem with a message for the student."""
+        bench = '\n'.join(f"- station {k}: {'the ' + v['holds'] if v.get('holds') else 'empty'}" for k, v in stations.items())
+        system = PLAN_SYSTEM.format(
+            bench=bench, poses=', '.join(state['poses']), at=state['at'], gripper=state.get('gripper') or 'in an unknown state',
+            holding=state['holding'] or 'nothing',
+            previous=f'The previous command was: "{previous}"\n' if previous else '')
+        messages = [{'role': 'user', 'content': text}]
+        calls, reason = 0, None
+        for _ in range(self.attempts):
+            # This model does not accept a forced tool choice, so the prompt asks for a tool call
+            # and a plain-text answer is passed on to the student as the reason there is no plan.
+            resp = self._create(model=self.model, max_tokens=1500, system=system, tools=PLAN_TOOLS, messages=messages)
+            calls += 1
+            use = next((b for b in resp.content if b.type == 'tool_use'), None)
+            if use is None:
+                said = ' '.join(b.text for b in resp.content if b.type == 'text').strip()
+                raise PlanProblem(said or reason or 'I could not turn that into arm steps.')
+            if use.name == 'cannot_do':
+                raise PlanProblem(str(use.input.get('reason') or 'I could not turn that into arm steps.'))
+            steps = use.input.get('steps')
+            try:
+                if not isinstance(steps, list):
+                    raise PlanProblem('steps must be a list')
+                check(steps)
+                return steps, str(use.input.get('added') or '').strip(), calls
+            except PlanProblem as exc:
+                reason = str(exc)
+                messages += [{'role': 'assistant', 'content': resp.content},
+                             {'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': use.id, 'is_error': True,
+                                                           'content': f'The validator rejected this plan: {reason}'}]}]
+        raise PlanProblem(reason or 'I could not turn that into arm steps. Try naming the stations and positions.')

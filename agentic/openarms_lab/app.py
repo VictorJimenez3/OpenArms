@@ -83,7 +83,7 @@ def create_app(lab=None):
     @app.get('/api/health')
     async def health():
         key=bool(os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'))
-        return {'backend':os.getenv('OPENARMS_BACKEND','mock'),'preview':'mujoco' if service().previewer else None,'free_plans':bool(service().free),'live_configured':key,
+        return {'backend':os.getenv('OPENARMS_BACKEND','mock'),'preview':'mujoco' if service().previewer else None,'free_plans':bool(service().free),'plan_agent':bool(service().free and service().free.planner),'live_configured':key,
                 'live_model':os.getenv('GEMINI_LIVE_MODEL','gemini-3.8-live'),
                 'expert_configured':key,'expert_model':os.getenv('OPENARMS_EXPERT_MODEL','gemini-3.8-flash')}
     @app.get('/api/experiments')

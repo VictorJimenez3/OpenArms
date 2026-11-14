@@ -259,8 +259,16 @@ class Lab:
             # Anything composed from the saved positions; on the real arm this is also how A to B runs,
             # so one executor tracks where the arm and the object are from one command to the next.
             obj='mandarin' if 'transfer' in s['experiment']['id'] else 'sample'
+            added,calls='',0
             try:
                 steps=self.free.parse(text,b)
+                if not steps and routed['status']!='resolved':
+                    # Fixed patterns did not cover it: Claude proposes steps, the same validator decides.
+                    generation=s.get('generation',0)
+                    planned=await asyncio.to_thread(self.free.plan_with_agent,text,b,s.get('last_instruction'))
+                    if s.get('generation',0)!=generation or s['pending'] is not None or self._busy(s):
+                        return await self.publish(s)  # stopped or superseded while the model was thinking
+                    if planned: steps,added,calls=planned
                 v=self.free.validate(b,steps) if steps else None
             except PlanProblem as exc:
                 self._event(s,'validation_rejected',reason=str(exc))
@@ -269,8 +277,8 @@ class Lab:
             if steps:
                 r={'request_id':str(uuid.uuid4()),'session_id':sid,'skill_id':FREE_SKILL,'parameters':{'steps':steps},
                    'client_request_id':cid,'status':'requested','expires_at':time.time()+self.confirmation_ttl,
-                   'summary':self.free.summary(steps,obj),'student_confirmed':False,'operator_authorized':False,
-                   'validation':v,'metrics':{'model_calls':0,'tokens':0}}
+                   'summary':self.free.summary(steps,obj)+(f' ({added})' if added else ''),'student_confirmed':False,'operator_authorized':False,
+                   'validation':v,'metrics':{'model_calls':calls,'planner':'claude' if calls else 'patterns'}}
                 s['last_instruction']=text
                 return await self._propose(s,r)
         if routed['status']!='resolved':
