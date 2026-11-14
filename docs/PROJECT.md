@@ -1,15 +1,9 @@
 # Project
 
-OpenArms is a HackPrinceton prototype for accessible lab work. A student gives a voice command, previews the action in simulation, and confirms before it can run on the physical arm.
+OpenArms is a HackPrinceton prototype for accessible lab work. The current demo lets a student speak a natural command to transfer a mandarin from station A to B, review the interpreted plan, and confirm it. The bench operator authorizes physical execution.
 
-The SO-101 arms are calibrated and the repository has [teleoperation instructions](../firmware/README.md). See the [working project outline](../voice-lab-arm-outline.md) for background and ideas.
+The phone client is installed on Joseph's iPhone. The Mac relay transcribes speech, uses headless AGY Gemini Flash High to call `submit_plan`, and saves transcripts, timings, and audio. The included runner is mocked; physical robotics integration is pending.
 
-## First integration
+Simulation is deferred for this demo. A simulator does not require a 3D scan, but building one is outside the current command-to-robot test. Named stations and a readable plan are sufficient for this rehearsal; measured coordinates and local motor limits belong to the physical runner.
 
-Pick one lab action and use the same example across all four areas. Start by showing the command, preview, confirmation and mocked execution status. Bring in the physical arm when the firmware owner is ready to test the motion at the bench.
-
-## Open decisions
-
-- Which lab action should we demo first?
-- What data does each area need for that action? Capture an example in [INTERFACES.md](INTERFACES.md).
-- What can we show reliably at the bench, and what should the demo simulate?
+See the [demo runbook, next steps, and human to-do](../research/joseph/mandarin-transfer-handoff.md), [interfaces](INTERFACES.md), and [arm setup](../firmware/README.md).
