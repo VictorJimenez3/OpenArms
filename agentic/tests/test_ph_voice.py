@@ -163,6 +163,7 @@ async def test_speech_captured_during_assistant_playback_cannot_be_consent(state
 
 @pytest.mark.asyncio
 async def test_background_observations_use_correlated_nonblocking_tool_responses(state):
+    state['pending'] = None
     responses = []
     received = asyncio.Event()
     async def tool_response(**kwargs):
