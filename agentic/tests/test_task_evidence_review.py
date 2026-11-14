@@ -498,7 +498,8 @@ async def test_unchanged_warm_dispatch_binds_one_motion_and_later_observation(ma
     assert observation['features']['color'] == 'pink'
 
 
-async def test_stop_during_dispatch_capture_discards_result_without_motion(make_lab):
+@pytest.mark.parametrize('late_failure', [False, True])
+async def test_stop_during_dispatch_capture_discards_result_without_motion(make_lab, late_failure):
     class PausedDispatchCapture(SceneService):
         def __init__(self, folder):
             super().__init__(folder)
@@ -517,9 +518,12 @@ async def test_stop_during_dispatch_capture_discards_result_without_motion(make_
             except asyncio.CancelledError:
                 # A capture adapter may deliver late after cancelled I/O.
                 await self.release.wait()
-            result = await super().inspect_scene(sid, view)
-            self.returned.set()
-            return result
+            try:
+                if late_failure:
+                    raise OSError('Camera failed after STOP')
+                return await super().inspect_scene(sid, view)
+            finally:
+                self.returned.set()
 
     async def transport(*_):
         pytest.fail('Warm skill called the expert.')
@@ -536,6 +540,7 @@ async def test_stop_during_dispatch_capture_discards_result_without_motion(make_
     await asyncio.wait_for(scene.returned.wait(), 2)
     snapshot, task = await settle(lab, sid, handle)
     assert snapshot['generation'] == stopped['generation'] > proposal['generation']
+    assert snapshot['scene'] == stopped['scene']
     assert task['status'] == 'cancelled' and not task['dispatched_action']
     assert len(task['evidence']) == 2
     assert lab.backends[sid].executions == 0
