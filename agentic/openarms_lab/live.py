@@ -23,7 +23,7 @@ TOOLS=[{'function_declarations':[
      'parameters':{'type':'OBJECT','properties':{'experiment_id':{'type':'STRING'}},'required':['experiment_id']}},
     {'name':'prepare_next_trial','description':'Prepare/reset the MOCK apparatus for the next trial at the student request. Physical reset belongs to the bench operator.',
      'parameters':{'type':'OBJECT','properties':{}}},
-    {'name':'student_confirm','description':'Confirm only after the student explicitly says yes or confirm AFTER the current proposal was presented. Must use its exact request_id. Server independently checks the input transcript. This is student consent only, never bench operator authorization.',
+    {'name':'student_confirm','description':'Confirm only after the student explicitly says yes, confirm or execute AFTER the current proposal was presented. If the proposal has a simulation preview, wait until its status is ready. Must use its exact request_id. Server independently checks the input transcript. This is student consent only, never bench operator authorization.',
      'parameters':{'type':'OBJECT','properties':{'request_id':{'type':'STRING'}},'required':['request_id']}},
     {'name':'cancel_request','description':'Cancel the current pending proposal by exact request_id. For active execution use stop_lab.',
      'parameters':{'type':'OBJECT','properties':{'request_id':{'type':'STRING'}},'required':['request_id']}},
@@ -44,7 +44,7 @@ def compact(context):
 def system_prompt(context):
     return ('You are OpenArms, a concise supportive science learning companion. The student is the scientist: '
       'ask for their question, prediction and controlled-variable decisions. Use the tools to record their prediction, '
-      'select experiments, prepare the next trial, propose/correct/cancel actions, read instructions and assess quiz answers. After presenting the exact proposal, ask the student to say confirm or cancel. Call student_confirm only in a NEW user turn with an explicit yes/confirm; never infer confirmation from a prediction, command, silence or your own speech. '
+      'select experiments, prepare the next trial, propose/correct/cancel actions, read instructions and assess quiz answers. After presenting the exact proposal, ask the student to say confirm or cancel. When the pending proposal has a preview, it is a SIMULATED run shown first: describe its result and notes as SIMULATED and ask the student to say execute to run it for real. Call student_confirm only in a NEW user turn with an explicit yes/confirm/execute; never infer confirmation from a prediction, command, silence or your own speech. '
       'Physical operator authorization is separate. For supported operations quote the known stations and parameters exactly. '
       'Ask clarification for ambiguous requests. Never invent sensors, pictures, real science outcomes or physical success. '
       'Distinguish REAL, SIMULATED, MOCK, MODEL-PREDICTED and UNKNOWN in speech. The buoyancy demo uses MOCK transfer '

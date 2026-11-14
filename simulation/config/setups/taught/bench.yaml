@@ -1,0 +1,38 @@
+# Taught from recordings/block_A_B by `python -m openarms_sim.teach`. Do not edit by hand; re-run teach.
+# Positions are where the simulation places the real arm's gripper at the pick (A) and the
+# place (B). They were not measured with a ruler, and they shift if joint_map.yaml changes.
+# The block's size is a guess. Pass --block-size WIDTH_CM HEIGHT_CM to teach.
+table:
+  size:
+  - 0.828
+  - 0.749
+  center:
+  - 0.214
+  - 0.075
+stations:
+  A:
+    kind: point
+    pos:
+    - 0.4275
+    - 0.0557
+  B:
+    kind: point
+    pos:
+    - 0.41
+    - 0.1494
+objects:
+  block:
+    size:
+    - 0.019
+    - 0.019
+    - 0.1201
+    at: A
+    color:
+    - 0.9
+    - 0.3
+    - 0.15
+grasp:
+  height: 0.1001
+  lift: 0.07
+  release_tolerance: 0.03
+  grasp_tolerance: 0.03

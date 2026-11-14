@@ -102,6 +102,16 @@
           </tbody>
         </table>
 
+        <!-- Simulation preview (only when the server runs with OPENARMS_PREVIEW=mujoco) -->
+        <div id="proposal-preview" class="proposal-preview" style="display: none;" aria-live="polite">
+          <div class="preview-head">
+            <span class="preview-badge">SIMULATED</span>
+            <span id="proposal-preview-status" class="preview-status">Simulating…</span>
+          </div>
+          <video id="proposal-preview-video" class="preview-video" controls muted playsinline loop style="display: none;" aria-label="Simulated preview of the proposed robot motion"></video>
+          <ul id="proposal-preview-notes" class="preview-notes"></ul>
+        </div>
+
         <!-- Confirmation Actions -->
         <div class="proposal-actions">
           <button type="button" id="btn-confirm-proposal" class="btn-confirm" aria-label="Confirm and execute proposed robot action">

@@ -48,4 +48,6 @@ The bench Mac already has a working environment. A clean checkout can reuse an e
 
 Controller status and physical observations are separate. After a failed lift or stop, retain the current grip, inspect the bench, and recover under operator control. Avoid repeating a wet movement until the cup, receiver, and source quantity are known.
 
+The November 14 physical result, exact `bench-a.json` snapshot, original `poses.json` baseline, raw stage outputs, teaching trace and before/carry/after images are in the [committed mandarin evidence bundle](../research/joseph/mandarin-transfer-2026-11-14/README.md). The final run physically picked up the mandarin and placed it on the red card.
+
 For the fruit bench, the supervised C→B run used a +5° pickup swivel, higher carry, and the original B release. The new runner option can preview or rehearse that path with `openarms transfer C --bench --offset 5 --high-carry --dry`. Use `--preview` for an offline inspection. A loaded run pauses for visible lift confirmation. The staged physical trial succeeded, and the packaged path has software tests. The packaged path needs its own supervised bench run.

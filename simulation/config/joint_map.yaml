@@ -1,0 +1,36 @@
+# How the real arm's joint readings map onto the MuJoCo model's joints.
+#
+#   model_angle_deg = sign * lerobot_deg + offset_deg
+#
+# LeRobot reports each arm joint in degrees from the middle of that joint's
+# calibrated range (calibration/robots/so_follower/*.json). The model
+# (so101_new_calib.xml) also puts zero at the middle of each joint's range, so
+# sign +1 and offset 0 is the starting guess, not a measurement.
+#
+# STATUS: UNMEASURED. Run the bench check in simulation/README.md and fill in
+# the real signs and offsets. Until then the preview can be a few centimetres
+# off from the real arm.
+
+measured: false
+
+joints:
+  shoulder_pan:  {sign: 1, offset_deg: 0.0}
+  shoulder_lift: {sign: 1, offset_deg: 0.0}
+  elbow_flex:    {sign: 1, offset_deg: 0.0}
+  wrist_flex:    {sign: 1, offset_deg: 0.0}
+  wrist_roll:    {sign: 1, offset_deg: 0.0}
+
+# LeRobot reports the gripper as 0 (closed) to 100 (open). These are the model
+# jaw angles, in degrees, at those two ends.
+gripper:
+  closed_deg: -10.0
+  open_deg: 100.0
+  open_value: 80             # LeRobot value used for gripper(open)
+  closed_value: 42           # LeRobot value used for gripper(close) on a mini-cup
+
+# Shared by the simulation and the firmware's go_to(): how the arm moves
+# between two poses.
+motion:
+  max_speed_deg_s: 60       # fastest any joint is allowed to turn
+  min_duration_s: 0.6
+  gripper_duration_s: 0.6

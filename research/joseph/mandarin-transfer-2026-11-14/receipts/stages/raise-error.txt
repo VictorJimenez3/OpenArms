@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Users/joeroche/Documents/Codex/2026-11-14/read-these-four-openarms-notion-documents/work/bench-position.py", line 79, in <module>
+    checked_move(target,seconds)
+  File "/Users/joeroche/Documents/Codex/2026-11-14/read-these-four-openarms-notion-documents/work/bench-position.py", line 39, in checked_move
+    move_to(arm,target,seconds=seconds,nudges=0)
+  File "/Users/joeroche/Developer/OpenArms/firmware/openarms_executor/motion.py", line 82, in move_to
+    raise RuntimeError(f"did not reach target, off by {off} after {nudges} nudges")
+RuntimeError: did not reach target, off by {'shoulder_lift.pos': 3.1} after 0 nudges

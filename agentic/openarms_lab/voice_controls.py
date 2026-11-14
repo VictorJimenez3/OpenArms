@@ -7,7 +7,9 @@ import time
 MUTATING_TOOLS = {'request_action', 'record_prediction', 'answer_question',
                   'select_experiment', 'prepare_next_trial', 'student_confirm', 'cancel_request'}
 CONFIRMATIONS = {'yes', 'yes please', 'confirm', 'yes confirm', 'yes i confirm',
-                 'confirm it', 'confirm the request', 'confirm this request', 'confirm that request'}
+                 'confirm it', 'confirm the request', 'confirm this request', 'confirm that request',
+                 # With a simulation preview on, "execute" is how the student runs the previewed plan.
+                 'execute', 'execute it', 'yes execute', 'execute the plan', 'run it'}
 
 
 def normalized(text):

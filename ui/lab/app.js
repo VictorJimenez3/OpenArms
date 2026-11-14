@@ -85,6 +85,10 @@ class OpenArmsApp {
       proposalExpiresRow: document.getElementById('proposal-expires-row'),
       proposalExpiresVal: document.getElementById('proposal-expires-val'),
       btnConfirmProposal: document.getElementById('btn-confirm-proposal'),
+      proposalPreview: document.getElementById('proposal-preview'),
+      proposalPreviewStatus: document.getElementById('proposal-preview-status'),
+      proposalPreviewVideo: document.getElementById('proposal-preview-video'),
+      proposalPreviewNotes: document.getElementById('proposal-preview-notes'),
       btnCancelProposal: document.getElementById('btn-cancel-proposal'),
       proposalCorrectForm: document.getElementById('proposal-correct-form'),
       proposalCorrectInput: document.getElementById('proposal-correct-input'),
@@ -748,7 +752,7 @@ class OpenArmsApp {
     this.dom.proposalSkillId.textContent = pending.skill_id || 'unknown';
     this.dom.proposalParameters.textContent = JSON.stringify(pending.parameters || {}, null, 2);
     this.dom.proposalRequestId.textContent = pending.request_id || 'none';
-    this.dom.btnConfirmProposal.disabled = false;
+    this.dom.btnConfirmProposal.disabled = !this._renderPreview(pending);
 
     // Handle expiration countdown if present
     if (pending.expires_at) {
@@ -772,6 +776,66 @@ class OpenArmsApp {
     } else {
       this.dom.proposalExpiresRow.style.display = 'none';
     }
+  }
+
+  // Shows the simulation preview attached to a proposal. Returns whether it may be executed.
+  _renderPreview(pending) {
+    const preview = pending.preview;
+    const button = this.dom.btnConfirmProposal;
+    if (this._confirmLabel === undefined) this._confirmLabel = button.innerHTML;
+    const video = this.dom.proposalPreviewVideo;
+    if (!preview) {
+      this.dom.proposalPreview.style.display = 'none';
+      video.style.display = 'none';
+      button.innerHTML = this._confirmLabel;
+      return true;
+    }
+    this.dom.proposalPreview.style.display = 'block';
+    const target = this.snapshot?.backend === 'physical' ? 'the real arm' : `the ${this.snapshot?.backend || 'mock'} controller`;
+    const status = {
+      running: 'Simulating this plan in MuJoCo…',
+      ready: `Simulation finished. Say or type "execute" to run it on ${target}.`,
+      blocked: 'The simulation stopped this plan. It will not be executed.',
+      unavailable: `No simulation for this action: ${preview.reason || 'not modelled'}`,
+      error: `The simulation did not run: ${preview.reason || 'unknown error'}`
+    }[preview.status] || preview.status;
+    this.dom.proposalPreviewStatus.textContent = status;
+    this.dom.proposalPreview.dataset.status = preview.status;
+
+    // Only touch the video when its source changes, so state updates do not restart playback.
+    if (preview.video) {
+      if (video.dataset.src !== preview.video) {
+        video.dataset.src = preview.video;
+        video.src = preview.video;
+        video.play?.().catch(() => {});
+      }
+      video.style.display = 'block';
+    } else {
+      video.removeAttribute('src');
+      delete video.dataset.src;
+      video.style.display = 'none';
+    }
+
+    const notes = this.dom.proposalPreviewNotes;
+    notes.replaceChildren();
+    for (const [kind, items] of [['block', preview.blocks || []], ['note', preview.warnings || []]]) {
+      for (const text of items) {
+        const li = document.createElement('li');
+        li.className = `preview-${kind}`;
+        li.textContent = (kind === 'block' ? 'Blocked: ' : 'Note: ') + text;
+        notes.appendChild(li);
+      }
+    }
+    if (preview.status === 'ready' && preview.poses_file) {
+      const li = document.createElement('li');
+      li.className = 'preview-note';
+      li.textContent = `Same waypoints the arm will follow: ${preview.poses_file}, ${preview.seconds_per_move}s per move.`;
+      notes.appendChild(li);
+    }
+
+    const allowed = preview.status === 'ready' || preview.status === 'unavailable';
+    button.textContent = allowed ? `▶ Execute on ${target}` : (preview.status === 'running' ? 'Simulating…' : 'Cannot execute');
+    return allowed;
   }
 
   _renderExperiment(exp) {
