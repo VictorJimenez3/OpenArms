@@ -118,8 +118,9 @@ def main() -> None:
     pour.add_argument("mode", choices=("dry", "water", "preview"))
     pour.add_argument("--poses", type=Path, default=PHOTOS / "bench-water.json")
     compare = commands.add_parser("compare-pours", help="evaluate captured pour combinations on a fake arm")
-    compare.add_argument("takes", nargs="+", type=Path)
+    compare.add_argument("takes", nargs="*", type=Path)
     compare.add_argument("--out", type=Path)
+    compare.add_argument("--watch", nargs="?", type=Path, const=PHOTOS, metavar="CAPTURE_DIR")
     args = parser.parse_args()
 
     if args.command == "photo":
@@ -162,6 +163,8 @@ def main() -> None:
         command = ["compare_pour_takes", *(str(path) for path in args.takes)]
         if args.out:
             command.extend(["--out", str(args.out)])
+        if args.watch is not None:
+            command.extend(["--watch", str(args.watch)])
     elif args.command == "pour":
         if not args.poses.is_file():
             raise SystemExit("Capture the cup and receiver first with `openarms capture water`.")

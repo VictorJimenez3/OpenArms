@@ -2,6 +2,7 @@
 import argparse
 import json
 import math
+import os
 import threading
 import time
 from pathlib import Path
@@ -159,9 +160,14 @@ def record(follower, leader, path: str, hz: float, *, capture: Path | None = Non
                             continue
                         print("Saved with the original HOME. Restore it before replay.")
                     break
-            with capture.open("x") as out:
+            with NamedTemporaryFile(mode="w", dir=capture.parent, delete=False) as out:
+                temporary = Path(out.name)
                 json.dump(data, out, indent=2)
                 out.write("\n")
+            try:
+                os.link(temporary, capture)
+            finally:
+                temporary.unlink()
             print(f"Saved checkpoints to {capture}", flush=True)
             return
         print("Move the leader; the follower copies it. Type a pose name to save, or press Enter to finish.")
