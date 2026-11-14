@@ -54,7 +54,12 @@ final class AudioPipeline: NSObject, AVAudioPlayerDelegate {
             }
             guard output.frameLength > 0, let channel = output.int16ChannelData?[0] else { return }
             let samples = UnsafeBufferPointer(start: channel, count: Int(output.frameLength))
-            fifo.enqueueAudio(PCMBytes.littleEndian(samples), token: token)
+            // The relay accepts at most 200 ms of PCM in one WebSocket message.
+            for start in stride(from: 0, to: samples.count, by: 3_200) {
+                let count = min(3_200, samples.count - start)
+                let frame = UnsafeBufferPointer(start: channel.advanced(by: start), count: count)
+                fifo.enqueueAudio(PCMBytes.littleEndian(frame), token: token)
+            }
         }
         self.engine = engine
         hasTap = true

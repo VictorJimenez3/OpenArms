@@ -19,6 +19,11 @@ struct VoiceScreen: View {
                     Label(client.microphoneActive ? "Microphone on" : "Microphone off",
                           systemImage: client.microphoneActive ? "mic.fill" : "mic.slash.fill")
                         .font(.headline)
+                    if client.connected, client.serverLogging == true {
+                        Label(client.serverRawAudio == true ? "Mac is logging transcripts and audio" : "Mac is logging transcripts",
+                              systemImage: "doc.text")
+                            .font(.subheadline)
+                    }
 
                     if let message = client.errorMessage {
                         VStack(alignment: .leading, spacing: 12) {
