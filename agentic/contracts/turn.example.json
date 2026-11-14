@@ -1,0 +1,4 @@
+{
+  "request": { "session_id": "s-01", "turn_id": "t-03", "text": "add one portion of A to C" },
+  "reply": { "turn_id": "t-03", "text": "I'll add one portion of A to C. Send it to your teacher?", "status": "reply", "plan": null, "lab_stage": "experiment" }
+}

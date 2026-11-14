@@ -1,0 +1,8 @@
+[
+  { "action": "pick", "args": { "station": "A" } },
+  { "action": "pour", "args": { "into": "C" } },
+  { "action": "return_cup", "args": { "station": "A" } },
+  { "action": "home", "args": {} },
+  { "action": "wait", "args": { "seconds": 10 } },
+  { "action": "look", "args": { "station": "C" } }
+]

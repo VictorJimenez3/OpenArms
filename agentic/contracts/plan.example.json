@@ -1,0 +1,9 @@
+{
+  "plan_id": "p-0007",
+  "student_instruction": "add some of A to C",
+  "steps": [
+    { "action": "add_sample", "args": { "source": "A", "into": "C", "portions": 1 } },
+    { "action": "wait", "args": { "seconds": 10 } },
+    { "action": "look", "args": { "station": "C" } }
+  ]
+}
