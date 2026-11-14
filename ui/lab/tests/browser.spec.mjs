@@ -31,6 +31,15 @@ async function propose(page, request, condition='vinegar') {
   await reviewProposal(page);
 }
 
+test('an expired local grant starts a fresh session without inventing a pairing requirement', async ({page}) => {
+  await page.addInitScript(() => sessionStorage.setItem('openarms.ph.session', JSON.stringify({
+    session_id: 'expired-test-session', access_token: 'expired-test-grant',
+  })));
+  await ready(page);
+  await expect(page.locator('#pairing')).toBeHidden();
+  expect(await session(page)).not.toBe('expired-test-session');
+});
+
 test('a direct request queues without a sample or prediction while typing and voice stay available', async ({page, request}) => {
   await ready(page);
   await expect(page.locator('#trial-context')).not.toHaveAttribute('open');

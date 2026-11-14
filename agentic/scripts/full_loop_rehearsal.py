@@ -43,13 +43,23 @@ async def settle(lab, sid, *, approve=False):
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--execution', choices=['mock', 'mujoco'], default='mock')
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     scene = SceneService(args.out/'scene')
     expert = CodexExpert(args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
+    factory = lambda: SceneBackend(scene, delay=.02)
+    if args.execution == 'mujoco':
+        from openarms_lab.mujoco_scene import MujocoSceneService
+        from openarms_lab.mujoco_backend import MujocoBackend
+        from openarms_lab.simulation_evaluation import SimulationSkillEvaluator
+        scene = MujocoSceneService(args.out/'scene')
+        expert = CodexExpert(args.out/'expert', artifact_roots=[scene.artifact_dir])
+        evaluator = SimulationSkillEvaluator(args.out/'evaluations')
+        factory = lambda: MujocoBackend(scene)
     lab = Lab(args.out/'sessions', expert=expert, perception=scene, evaluator=evaluator,
-              backend_factory=lambda: SceneBackend(scene, delay=.02), expert_timeout=240)
+              backend_factory=factory, expert_timeout=240)
     sid = (await lab.create())['session_id']
     try:
         began = time.perf_counter()
@@ -76,7 +86,9 @@ async def main():
         assert task2['status'] == 'completed' and task2['route'] == 'active_skill'
         assert not task2['expert_runs'], 'Warm successful skill invoked the expert'
         summary = {'provider': expert.provider, 'model': expert.model,
-                   'reasoning_effort': expert.reasoning_effort, 'provenance': 'SYNTHETIC',
+                   'reasoning_effort': expert.reasoning_effort,
+                   'provenance': 'SIMULATED' if args.execution == 'mujoco' else 'SYNTHETIC',
+                   'execution_backend': args.execution,
                    'actual_expert': True, 'audible_voice_verified': False,
                    'cold_model_calls': sum(run['calls'] for run in task['expert_runs']),
                    'warm_model_calls': 0, 'warm_request': request, 'promotion': decision,

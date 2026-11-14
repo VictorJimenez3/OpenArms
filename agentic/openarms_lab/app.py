@@ -120,22 +120,27 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             from .scene import SceneService
             from .simulated_backend import SceneBackend
             from .evaluation import SyntheticSkillEvaluator
+            from .skills import SkillRegistry
             execution = os.getenv('OPENARMS_EXECUTION', 'mock').strip().lower()
             app.state.execution_mode = execution
             if execution == 'mujoco':
                 from .mujoco_scene import MujocoSceneService
                 from .mujoco_backend import MujocoBackend
+                from .simulation_evaluation import SimulationSkillEvaluator
                 scene = MujocoSceneService(data / 'scene-evidence')
                 backend_factory = lambda: MujocoBackend(scene)
+                evaluator = SimulationSkillEvaluator(data / 'evaluations')
             elif execution == 'mock':
                 scene = SceneService(data / 'scene-evidence')
                 backend_factory = lambda: SceneBackend(scene)
+                evaluator = SyntheticSkillEvaluator(data / 'evaluations')
             else:
                 raise ValueError('OPENARMS_EXECUTION must be mock or mujoco; hardware is disabled.')
             expert = CodexExpert(data / 'expert-work', artifact_roots=[scene.artifact_dir],
                                  executable=os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'))
             app.state.lab = Lab(data, expert=expert, perception=scene,
-                                evaluator=SyntheticSkillEvaluator(data/'evaluations'),
+                                registry=SkillRegistry(data / f'task-skills-{execution}.json'),
+                                evaluator=evaluator,
                                 auto_evaluate=True,
                                 backend_factory=backend_factory, expert_timeout=240)
         else:

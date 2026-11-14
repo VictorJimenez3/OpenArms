@@ -74,7 +74,17 @@ function credentialsNeeded() {
 }
 async function boot(pairingCode) {
   try {
-    const state = api.sessionId && !pairingCode ? await api.snapshot() : await api.create(pairingCode);
+    let state;
+    if (api.sessionId && !pairingCode) {
+      try { state = await api.snapshot(); }
+      catch (error) {
+        if (![401,403,404].includes(error.status)) throw error;
+        // A retired local grant is not proof that the server requires pairing.
+        // Start a fresh session; its own response decides whether a code is needed.
+        api.forget();
+        state = await api.create();
+      }
+    } else state = await api.create(pairingCode);
     $('#pairing').hidden = true;
     $('#pairing-code').value = '';
     client?.close();
