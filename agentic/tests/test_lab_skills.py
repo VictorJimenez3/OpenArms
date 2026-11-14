@@ -47,6 +47,23 @@ def test_unsupported_route_and_no_observation_fail_closed(tmp_path):
         registry.compile(PlanDraft.model_validate(data))
 
 
+@pytest.mark.parametrize('op,args', [
+    ('mock_pick_up', {'fixture': 'pipette', 'station': 'A'}),
+    ('mock_put_down', {'fixture': 'sample_cup', 'station': 'C'}),
+    ('mock_pour', {'fixture': 'sample_cup', 'station': 'C', 'portions': 2}),
+    ('mock_pour', {'fixture': 'sample_cup', 'station': 'C', 'portions': True}),
+    ('mock_pour', {'fixture': 'sample_cup', 'station': 'B'}),
+])
+def test_individual_action_arguments_are_bounded(tmp_path, op, args):
+    registry = SkillRegistry(tmp_path / 'skills.json')
+    proposal = PlanDraft.model_validate({
+        'steps': [{'operation': 'inspect_scene'}, {'operation': op, 'arguments': args}, {'operation': 'observe'}],
+        'outcome_checks': [{'feature': 'readable', 'expected': True}],
+    })
+    with pytest.raises(ValueError):
+        registry.compile(proposal)
+
+
 @pytest.mark.asyncio
 async def test_evaluation_reject_preserves_exact_baseline(tmp_path):
     path = tmp_path / 'task-skills.json'

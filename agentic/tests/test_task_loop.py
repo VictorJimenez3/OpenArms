@@ -12,7 +12,7 @@ DEFINITION = {
     'intent': 'Run a mock sample and observe its qualitative color',
     'retrieval_examples': ['test prepared {condition}', 'run prepared {condition}'],
     'parameter_schema': {'condition': {'type': 'string', 'enum': ['vinegar', 'water']}},
-    'preconditions': {'fresh_scene': True},
+    'preconditions': {'fresh_scene': True, 'labels': ['receiver']},
     'steps': [{'operation': 'inspect_scene'},
               {'operation': 'mock_prepared_sample', 'arguments': {'condition_id': '$condition'}},
               {'operation': 'observe'}],
@@ -37,6 +37,8 @@ class TestPerception:
         self.unknown, self.fresh = unknown, fresh
         self.captures = 0
         self.receipts = []
+        self.localized = []
+        self.labels_visible = True
 
     async def inspect_scene(self, sid, view='primary'):
         self.captures += 1
@@ -47,7 +49,9 @@ class TestPerception:
                             'captured_at': 123, 'sha256': HASH, 'provenance': 'SYNTHETIC'}]}
 
     async def localize_objects(self, sid, evidence_id, labels):
-        return {'evidence_id': evidence_id, 'verified_labels': labels, 'method': 'synthetic-test'}
+        self.localized.append(evidence_id)
+        return {'evidence_id': evidence_id, 'verified_labels': labels if self.labels_visible else [],
+                'method': 'synthetic-test'}
 
     async def observe(self, sid, execution_receipt):
         self.receipts.append(execution_receipt)
@@ -67,6 +71,8 @@ class TestExpert:
         if context['phase'] in ('planning', 'improvement'):
             if context['request'].lower().startswith(('do not', 'which')):
                 return decision('clarification', {})
+            if any(item['type'] == 'precondition_failed' for item in context['feedback']):
+                return decision('clarification', {})
             await tool_handler('localize_objects',
                                {'evidence_id': context['images'][0]['evidence_id'], 'labels': ['receiver']})
             payload = draft()
@@ -74,7 +80,13 @@ class TestExpert:
                 payload['bindings']['condition'] = context['task_context']['condition_id']
             return decision(payload=payload)
         if self.revise:
-            return decision('revision', {'steps': [{'operation': 'observe', 'arguments': {'view': 'secondary'}}]})
+            return decision('revision', {
+                'steps': [{'operation': 'observe', 'arguments': {'view': 'secondary'}}],
+                'outcome_checks': [{'feature': 'readable', 'expected': True}],
+            })
+        if context['feedback'][-1]['type'] == 'perception':
+            await tool_handler('localize_objects',
+                               {'evidence_id': context['images'][0]['evidence_id'], 'labels': ['receiver']})
         return decision('complete', {'continue': True})
 
 
@@ -147,7 +159,7 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(snap['observations'][0]['value'])
         self.assertEqual([c['phase'] for c in self.expert.contexts], ['planning', 'execution_feedback', 'execution_feedback'])
         self.assertEqual([f['type'] for f in self.expert.contexts[-1]['feedback'] if f['type'] != 'execution_progress'],
-                         ['perception', 'execution', 'observation'])
+                         ['perception', 'execution', 'observation', 'checkpoint_failed'])
         self.assertNotEqual(self.expert.contexts[0]['images'][0]['evidence_id'],
                             self.expert.contexts[-1]['images'][0]['evidence_id'])
         frames = [queue.get_nowait() for _ in range(queue.qsize())]
@@ -157,14 +169,63 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         promotion = await self.lab.evaluate_candidate(self.sid, 'sample_color', version)
         self.assertEqual(promotion['status'], 'promoted')
         await self.lab.prepare(self.sid)
+        self.perception.unknown = False
+        self.perception.labels_visible = False
+        await self.lab.start_task(self.sid, 'Run prepared water')
+        _, blocked = await self.wait_status('needs_clarification')
+        self.assertEqual(blocked['route'], 'expert')
+        self.assertEqual(blocked['feedback'][-1]['type'], 'precondition_failed')
+        self.assertTrue(self.expert.contexts[-1]['images'])
+        self.assertEqual(self.lab.backends[self.sid].executions, 1)
+        self.perception.labels_visible = True
         await self.lab.converse(self.sid, 'Run prepared water', 'two')
         snap, warm = await self.wait_status('awaiting_confirmation')
         self.assertEqual(warm['route'], 'active_skill')
         self.assertEqual(snap['pending']['skill_version'], version)
         self.assertEqual(snap['pending']['metrics']['model_calls'], 0)
         self.assertEqual(snap['pending']['plan']['steps'][1]['arguments']['condition_id'], 'water')
-        self.assertEqual(len(self.expert.contexts), 3)
+        self.assertEqual(len(self.expert.contexts), 4)
         self.assertGreaterEqual(snap['pending']['metrics']['planning_ms'], 0)
+        planning_frame = warm['images'][0]['evidence_id']
+        self.lab.expert = None
+        await self.approve(snap)
+        snap, warm = await self.wait_status('completed', warm['task_id'])
+        self.assertEqual(warm['expert_runs'], [])
+        self.assertEqual(warm['observations'][0]['checks'], {'readable': True})
+        self.assertNotEqual(warm['observations'][0]['evidence'], [planning_frame])
+        execution_frame = next(f['receipt']['evidence_id'] for f in warm['feedback'] if f['type'] == 'perception')
+        self.assertIn(execution_frame, self.perception.localized)
+        self.assertEqual(self.lab.backends[self.sid].executions, 2)
+        self.assertIsNone(snap['trial']['condition_id'])
+        self.assertEqual(snap['prediction'], '')
+
+        # Same registered skill, fresh failed outcome. The expert revises the
+        # remaining observation from the image while the dispatched action stays consumed.
+        self.lab.expert = self.expert
+        self.expert.revise = True
+        self.perception.unknown = True
+        await self.lab.start_task(self.sid, 'Run prepared water')
+        snap, failed = await self.wait_status('awaiting_confirmation')
+        first = await self.approve(snap)
+        snap, revised = await self.wait_status('awaiting_confirmation', failed['task_id'])
+        feedback = self.expert.contexts[-1]
+        self.assertEqual(len(self.expert.contexts), 5)
+        self.assertEqual(feedback['phase'], 'execution_feedback')
+        self.assertEqual(feedback['images'][0]['evidence_id'], revised['observations'][0]['evidence'][0])
+        self.assertTrue(feedback['task_context']['dispatched_action'])
+        self.assertEqual(revised['replans'], 1)
+        self.assertEqual(snap['pending']['plan']['steps'],
+                         [{'operation': 'observe', 'arguments': {'view': 'secondary'}}])
+        self.assertEqual(self.lab.backends[self.sid].executions, 3)
+        for proposal in (first, snap['pending']):
+            with self.assertRaises(LabError):
+                await self.lab.confirm(self.sid, proposal['request_id'], proposal['proposal_version'])
+        self.expert.revise = False
+        self.perception.unknown = False
+        await self.approve(snap)
+        _, revised = await self.wait_status('completed', failed['task_id'])
+        self.assertEqual(revised['observations'][-1]['checks'], {'readable': True})
+        self.assertEqual(self.lab.backends[self.sid].executions, 3)
 
     async def test_image_revisions_require_fresh_consent_and_stop_at_two(self):
         self.expert.revise = True
@@ -193,6 +254,23 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(task['replans'], 2)
         self.assertIn('Replan limit', task['summary'])
 
+    async def test_repeated_image_cannot_authorize_mock_action(self):
+        capture = self.perception.inspect_scene
+        old_frame = await capture(self.sid)
+
+        async def replay(sid, view='primary'):
+            return old_frame
+
+        self.perception.inspect_scene = replay
+        await self.lab.start_task(self.sid, 'A new sample request')
+        snap, task = await self.wait_status('awaiting_confirmation')
+        await self.approve(snap)
+        await self.lab.workers[task['task_id']]
+        final = self.lab.snapshot(self.sid)['tasks'][-1]
+        self.assertEqual(final['status'], 'failed')
+        self.assertIn('fresh image', final['summary'])
+        self.assertEqual(self.lab.backends[self.sid].executions, 0)
+
     async def test_negative_clarification_and_stale_confirmation(self):
         await self.lab.converse(self.sid, 'Do not run prepared water')
         snap, task = await self.wait_status('needs_clarification')
@@ -205,6 +283,8 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         await self.lab.converse(self.sid, 'Do not confirm')
         self.assertEqual(self.lab.backends[self.sid].executions, 0)
         await self.lab.prediction(self.sid, 'purple')
+        self.assertEqual(self.lab.snapshot(self.sid)['pending']['request_id'], p['request_id'])
+        await self.lab.choose_condition(self.sid, 'water')
         with self.assertRaises(LabError):
             await self.lab.confirm(self.sid, p['request_id'], p['proposal_version'])
 

@@ -4,9 +4,16 @@ import asyncio
 import copy
 import uuid
 import time
-from .contracts import ExecutionResult, MockSampleArguments, SkillRequest
+from .contracts import ExecutionResult, SkillRequest
 from .recipes import PH_SKILL
-from .skills import compute_skill_hash
+from .skills import PRIMITIVE_SCHEMAS, compute_skill_hash
+
+MOCK_PHASES = {
+    'mock_prepared_sample': ('check_prepared_condition', 'mock_dose', 'return_home'),
+    'mock_pick_up': ('mock_pick_up',),
+    'mock_put_down': ('mock_put_down',),
+    'mock_pour': ('mock_pour',),
+}
 
 class MockStopped(RuntimeError):
     pass
@@ -30,6 +37,7 @@ class MockBackend:
     @staticmethod
     def home_state():
         return {'at': 'HOME', 'holding': None, 'armed': True, 'phase': 'ready',
+                'cup_station': 'A', 'cup_portions': 1, 'receiver_portions': 0,
                 'state_provenance': 'MOCK', 'physical_execution': False}
 
     @staticmethod
@@ -70,9 +78,26 @@ class MockBackend:
                                    status='stopped', reason='Mock STOP requested.',
                                    evidence_id='mock-' + uuid.uuid4().hex)
 
-    async def execute_step(self, request_id, arguments, progress):
-        """Run one validated prepared-sample operation in the mock fixture."""
-        MockSampleArguments.model_validate(arguments)
+    def check_step(self, operation, arguments):
+        if operation not in MOCK_PHASES:
+            raise ValueError('Unsupported mock action.')
+        PRIMITIVE_SCHEMAS[operation].model_validate(arguments)
+        state = self._state
+        if operation == 'mock_pick_up':
+            if state['holding'] or state['cup_station'] != arguments['station']:
+                raise ValueError('Pick up requires the sample cup at the requested station and an empty gripper.')
+        elif operation == 'mock_put_down':
+            if not state['holding']:
+                raise ValueError('Put down requires a held sample cup.')
+        elif operation == 'mock_pour':
+            if not state['holding'] or state['cup_portions'] != 1 or state['receiver_portions'] != 0:
+                raise ValueError('Pour requires a held full cup and an empty receiver.')
+        elif state['holding']:
+            raise ValueError('Prepared sample execution requires an empty gripper.')
+
+    async def execute_step(self, request_id, arguments, progress, *, operation='mock_prepared_sample'):
+        """Run a bounded mock action once and commit its state after successful execution."""
+        self.check_step(operation, arguments)
         if request_id in self._consumed or self._running or self._state['at'] != 'HOME':
             raise ValueError('Mock execution already consumed or not ready.')
         self._consumed.add(request_id)
@@ -82,7 +107,7 @@ class MockBackend:
         self._stopped.clear()
         started = time.perf_counter()
         try:
-            for phase in ('check_prepared_condition', 'mock_dose', 'return_home'):
+            for phase in MOCK_PHASES[operation]:
                 self._state.update(phase=phase, at='HOME' if phase == 'return_home' else 'MOCK_FIXTURE')
                 await progress(phase)
                 if self.fault == 'timeout':
@@ -96,13 +121,20 @@ class MockBackend:
                     raise MockStopped('Mock STOP requested.')
                 if self.fault in ('disconnect', 'failure'):
                     raise RuntimeError('Mock executor reported failure.')
+            if operation == 'mock_pick_up':
+                self._state.update(holding='sample_cup', cup_station=None)
+            elif operation == 'mock_put_down':
+                self._state.update(holding=None, cup_station=arguments['station'])
+            elif operation == 'mock_pour':
+                self._state.update(cup_portions=0, receiver_portions=1)
             return {'receipt_id': 'mock-' + uuid.uuid4().hex, 'backend': self.mode,
-                    'request_id': request_id, 'status': 'completed', 'controller_completed': True,
+                    'request_id': request_id, 'operation': operation,
+                    'status': 'completed', 'controller_completed': True,
                     'elapsed_ms': (time.perf_counter() - started) * 1000,
                     'physical_execution': False}
         finally:
             self._running = False
-            self._state = self.home_state()
+            self._state.update(at='HOME', phase='ready')
             self._idle.set()
 
     def reference_available(self):

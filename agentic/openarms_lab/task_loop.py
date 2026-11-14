@@ -6,7 +6,7 @@ import copy
 import time
 import uuid
 
-from .contracts import ImageReference, PlanDraft
+from .contracts import MOCK_OPERATIONS, ImageReference, PlanDraft
 from .skills import PRIMITIVE_SCHEMAS, compute_skill_hash
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
@@ -56,7 +56,7 @@ class TaskLoop:
                 'prediction': s['prediction'], 'condition_id': s['trial']['condition_id'],
                 'route': None, 'plan': None, 'execution': [], 'observations': [],
                 'feedback': [], 'expert_runs': [], 'evidence': {}, 'scene': None, 'images': [],
-                'started_at': time.time(), 'consumed_sample': False,
+                'started_at': time.time(), 'dispatched_action': False,
                 'improvement': copy.deepcopy(improvement)}
         s['tasks'].append(task)
         self._task_event(s, task, 'task_queued', status='queued')
@@ -193,15 +193,21 @@ class TaskLoop:
                       for name, (summary, properties, required) in TOOLS.items()],
             'skills': self.registry.list(), 'feedback': task['feedback'],
             'capability_limits': {**s['capabilities'], 'primitives': list(PRIMITIVE_SCHEMAS),
+                                  'primitive_arguments': {name: schema.model_json_schema()
+                                                          for name, schema in PRIMITIVE_SCHEMAS.items()},
                                   'replans_remaining': 2 - task['replans']},
             'instructions': ('Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
                              'or clarification/reject. Use only listed primitives. Never claim expected state as observed. '
+                             'A prepared sample requires an explicit condition in its arguments. Use the requested sample '
+                             'or the selected condition. Ask which sample when neither is specified. '
+                             'Prediction is optional notebook context. '
                              'At execution checkpoints return complete with payload {"continue": true} to continue '
                              'the exact existing steps, or revision for a fresh proposal and consent. '
-                             'Do not repeat a mock sample operation after it has run.'),
+                             'If a mock action has been dispatched, revise only the remaining observation steps.'),
             'task_context': {'started_at': task['started_at'], 'expert_timeout_s': self.expert_timeout,
                              'prediction': task['prediction'], 'condition_id': task['condition_id'],
-                             'approved_plan': task['plan'], 'improvement': task['improvement']},
+                             'approved_plan': task['plan'], 'improvement': task['improvement'],
+                             'dispatched_action': task['dispatched_action']},
         }
         result = await asyncio.wait_for(self.expert.run(copy.deepcopy(context), tool_handler=tool_handler,
                                                         emit=emit, cancel_event=self.cancel_signals[task['task_id']]),
@@ -225,7 +231,10 @@ class TaskLoop:
                (type(expiry) in (int, float) and expiry > time.time()))
 
     @staticmethod
-    def _check_context(task, plan):
+    def _prepared_sample(plan):
+        return next((step for step in plan['steps'] if step['operation'] == 'mock_prepared_sample'), None)
+
+    def _check_context(self, task, plan):
         scene = task['scene'] or {}
         known_labels = set()
         for receipt in task['evidence'].values():
@@ -240,14 +249,16 @@ class TaskLoop:
                 raise ValueError('Required scene labels have not been verified.')
         if set(plan['evidence_ids']) - set(task['evidence']):
             raise ValueError('Plan references evidence unavailable to this task.')
-        sample = next((step for step in plan['steps'] if step['operation'] == 'mock_prepared_sample'), None)
-        if sample:
-            if task['condition_id'] and sample['arguments']['condition_id'] != task['condition_id']:
-                raise ValueError('The proposed mock sample differs from the selected condition.')
-            if task['consumed_sample']:
-                raise ValueError('This task already ran its single prepared-sample operation.')
+        sample = self._prepared_sample(plan)
+        if sample and task['condition_id'] and sample['arguments']['condition_id'] != task['condition_id']:
+            raise ValueError('The proposed mock sample differs from the selected condition.')
+        action = next((step for step in plan['steps'] if step['operation'] in MOCK_OPERATIONS), None)
+        if action:
+            if task['dispatched_action']:
+                raise ValueError('This task already dispatched its single mock action.')
             if not task['images'] or not TaskLoop._fresh(scene):
-                raise ValueError('Mock sample execution requires fresh timestamped scene images.')
+                raise ValueError('Mock execution requires fresh timestamped scene images.')
+            self._backend(task['session_id']).check_step(action['operation'], action['arguments'])
         if any(step['operation'] == 'localize_objects' and step['arguments']['evidence_id'] not in task['evidence']
                for step in plan['steps']):
             raise ValueError('Localization steps require evidence available to this task.')
@@ -265,9 +276,10 @@ class TaskLoop:
             if route:
                 try:
                     plan = self.registry.compile(route, task_id=task['task_id'])
+                    await self._verify_labels(s, task, plan)
                     self._check_context(task, plan)
-                except (ValueError, KeyError):
-                    route = None
+                except (ValueError, OSError, RuntimeError, TimeoutError, KeyError) as exc:
+                    task['feedback'].append({'type': 'precondition_failed', 'reason': str(exc)})
                 else:
                     task['route'] = 'active_skill'
                     await self._propose_task(s, task, route, plan, began)
@@ -302,7 +314,7 @@ class TaskLoop:
                 s['trial']['state'] = 'stopped'
             await self._set_status(s, task, 'failed', summary, code=code)
 
-    async def _propose_task(self, s, task, draft, plan, began):
+    async def _propose_task(self, s, task, draft, plan, began, *, prior_request=None, prior_receipt=None):
         self._guard_task(s, task)
         self._check_context(task, plan)
         if draft.skill_definition:
@@ -328,6 +340,8 @@ class TaskLoop:
                                              sum((run['usage'] or {}).get(k, 0) for k in ('input_tokens', 'output_tokens')))
                                              for run in task['expert_runs'])},
                    'result': None}
+        if prior_request is not None:
+            prior_request.update(status='completed', result={**prior_receipt, 'status': 'superseded'})
         task.update(plan=copy.deepcopy(bound_plan), request_id=request_id, status='awaiting_confirmation')
         s['requests'].append(request)
         s['pending'] = request
@@ -343,6 +357,7 @@ class TaskLoop:
 
     async def _execute_task(self, s, task, request):
         plan = request['plan']
+        warm = task['route'] == 'active_skill' and task['replans'] == 0
         receipt = {'request_id': request['request_id'], 'task_id': task['task_id'],
                    'trial_id': task['trial_id'], 'skill_id': plan['skill_id'], 'skill_version': plan['skill_version'],
                    'plan_hash': request['plan_hash'], 'backend': 'mock', 'status': 'no_operation',
@@ -357,16 +372,26 @@ class TaskLoop:
                 progress_data = {'step': index, 'operation': operation, 'request_id': request['request_id']}
                 task['feedback'].append({'type': 'execution_progress', **progress_data})
                 await self._emit_task(s, task, 'execution_progress', step=index, operation=operation)
-                if operation == 'mock_prepared_sample':
-                    self._check_context(task, plan)
-                    task['consumed_sample'] = True
+                if operation in MOCK_OPERATIONS:
+                    try:
+                        self._check_context(task, plan)
+                    except ValueError as exc:
+                        if await self._execution_feedback(s, task, request, receipt, str(exc)):
+                            return
+                    task['dispatched_action'] = True
 
                     async def progress(phase):
                         await self._emit_task(s, task, 'execution_progress', step=index,
                                               operation=operation, phase=phase, provenance='MOCK')
 
-                    result = await asyncio.wait_for(self._backend(s['session_id']).execute_step(
-                        request['request_id'], arguments, progress), self.execution_timeout)
+                    # Preserve the existing call signature for prepared-sample backend overrides.
+                    options = {} if operation == 'mock_prepared_sample' else {'operation': operation}
+                    try:
+                        result = await asyncio.wait_for(self._backend(s['session_id']).execute_step(
+                            request['request_id'], arguments, progress, **options), self.execution_timeout)
+                    except (RuntimeError, ValueError, TimeoutError) as exc:
+                        result = {'status': 'failed', 'controller_completed': False,
+                                  'reason': f'Mock executor failed ({type(exc).__name__}).'}
                     receipt.update(result)
                     task['execution'].append(copy.deepcopy(receipt))
                     task['feedback'].append({'type': 'execution', 'receipt': copy.deepcopy(receipt)})
@@ -374,52 +399,95 @@ class TaskLoop:
                     continue
 
                 await self._set_status(s, task, 'observing')
-                observation = await self._observe_step(s, task, request, operation, arguments, receipt, index)
+                previous_evidence = set(task['evidence'])
+                observed = await self._observe_step(s, task, request, operation, arguments, receipt, index,
+                                                    previous_evidence)
+                fresh = self._fresh_checkpoint(observed, previous_evidence)
+                if warm and operation in ('inspect_scene', 'observe') and fresh:
+                    try:
+                        await self._verify_labels(s, task, plan)
+                    except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
+                        task['feedback'].append({'type': 'precondition_failed', 'reason': str(exc)})
                 is_final = index == len(plan['steps']) - 1
-                if operation in ('inspect_scene', 'observe') or observation.get('images'):
-                    decision = await self._run_expert(s, task, 'execution_feedback')
-                    kind, payload = decision['kind'], decision['payload']
-                    if kind in ('revision', 'plan'):
-                        if task['replans'] >= 2:
-                            raise ValueError('Replan limit reached; the changed plan was not approved.')
-                        task['replans'] += 1
-                        proposed_at = time.perf_counter()
-                        draft = PlanDraft.model_validate(payload)
-                        revised = self.registry.compile(draft, task_id=task['task_id'])
-                        self._check_context(task, revised)
-                        request.update(status='completed', result={**receipt, 'status': 'superseded'})
-                        await self._propose_task(s, task, draft, revised, proposed_at)
+                failure = None
+                if operation == 'observe':
+                    latest = task['observations'][-1]
+                    if receipt['status'] == 'failed':
+                        failure = receipt.get('reason') or 'Mock executor reported failure.'
+                    elif latest['status'] != 'observed' or (is_final and not all(latest['checks'].values())):
+                        failure = 'Independent outcome is unknown or an outcome check failed.'
+                elif operation == 'inspect_scene':
+                    if not fresh:
+                        failure = 'Checkpoint did not return a fresh image.'
+                elif not set(arguments['labels']).issubset(observed.get('verified_labels') or []):
+                    failure = 'Checkpoint did not verify the requested labels.'
+                if failure or (not warm and (operation in ('inspect_scene', 'observe') or observed.get('images'))):
+                    if await self._execution_feedback(s, task, request, receipt, failure, is_final=is_final):
                         return
-                    if kind in ('clarification', 'reject'):
-                        status = 'needs_clarification' if kind == 'clarification' else 'failed'
-                        request.update(status='cancelled' if kind == 'clarification' else 'failed', result=receipt)
-                        s['trial']['state'] = 'stopped'
-                        await self._set_status(s, task, status, decision['summary'])
-                        return
-                    if kind != 'complete' or (not is_final and payload.get('continue') is not True):
-                        raise ValueError('Expert did not authorize continuing the exact approved plan.')
                 if not is_final:
                     await self._set_status(s, task, 'executing')
 
-            request.update(status='completed', result=copy.deepcopy(receipt))
+            status = 'failed' if receipt['status'] == 'failed' else 'completed'
+            request.update(status=status, result=copy.deepcopy(receipt))
             s['trial']['state'] = 'reflecting' if task['observations'] else 'predicting'
             latest = task['observations'][-1] if task['observations'] else None
             summary = latest['text'] if latest else 'The approved scene inspection is complete.'
-            await self._set_status(s, task, 'completed', summary)
+            if status == 'failed':
+                summary = f"{receipt.get('reason') or 'Mock executor reported failure.'} {summary}"
+            await self._set_status(s, task, status, summary)
         except asyncio.CancelledError:
             if task['status'] not in TASK_TERMINAL and task['generation'] == s['generation']:
                 await self._fail_task(s, task, RuntimeError('Adapter cancelled unexpectedly.'))
         except Exception as exc:
             await self._fail_task(s, task, exc)
 
-    async def _observe_step(self, s, task, request, operation, arguments, receipt, index):
+    async def _verify_labels(self, s, task, plan):
+        labels = sorted({label for rule in plan['preconditions'] for label in rule['labels']})
+        if labels and task['images'] and self._fresh(task['scene'] or {}):
+            await self._capture(s, task, 'localize_objects',
+                                {'evidence_id': task['images'][0]['evidence_id'], 'labels': labels})
+
+    async def _execution_feedback(self, s, task, request, receipt, failure, *, is_final=False):
+        if failure:
+            task['feedback'].append({'type': 'checkpoint_failed', 'reason': failure})
+        decision = await self._run_expert(s, task, 'execution_feedback')
+        kind, payload = decision['kind'], decision['payload']
+        if kind in ('revision', 'plan'):
+            if task['replans'] >= 2:
+                raise ValueError('Replan limit reached; the changed plan was not approved.')
+            proposed_at = time.perf_counter()
+            draft = PlanDraft.model_validate(payload)
+            revised = self.registry.compile(draft, task_id=task['task_id'])
+            self._check_context(task, revised)
+            task['replans'] += 1
+            await self._propose_task(s, task, draft, revised, proposed_at,
+                                     prior_request=request, prior_receipt=receipt)
+            return True
+        if kind in ('clarification', 'reject'):
+            status = 'needs_clarification' if kind == 'clarification' else 'failed'
+            request.update(status='cancelled' if kind == 'clarification' else 'failed', result=receipt)
+            s['trial']['state'] = 'stopped'
+            await self._set_status(s, task, status, decision['summary'])
+            return True
+        if not is_final and failure:
+            raise ValueError(failure)
+        if kind != 'complete' or (not is_final and payload.get('continue') is not True):
+            raise ValueError('Expert did not authorize continuing the exact approved plan.')
+        return False
+
+    @classmethod
+    def _fresh_checkpoint(cls, observed, previous_evidence):
+        return (cls._fresh(observed.get('scene') or observed) and
+                any(image['evidence_id'] not in previous_evidence for image in observed['images']))
+
+    async def _observe_step(self, s, task, request, operation, arguments, receipt, index, previous_evidence):
         try:
             observed = await self._capture(s, task, operation, arguments, receipt)
         except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
-            if operation != 'observe':
-                raise
             observed = {'status': 'unknown', 'provenance': 'UNKNOWN', 'images': [],
                         'reason': f'Independent observation unavailable ({type(exc).__name__}).'}
+            if operation != 'localize_objects':
+                task.update(images=[], scene=None)
         if operation == 'observe':
             plan = request['plan']
             features = observed.get('features') or {}
@@ -429,7 +497,7 @@ class TaskLoop:
             known = (observed.get('status') == 'observed' and bool(evidence_ids) and
                      observed.get('provenance') not in (None, 'UNKNOWN', 'MODEL-PREDICTED', 'MOCK') and
                      bool(observed.get('observer_version')) and
-                     self._fresh(observed.get('scene') or observed))
+                     self._fresh_checkpoint(observed, previous_evidence))
             observation = {
                 'observation_id': str(uuid.uuid4()), 'task_id': task['task_id'],
                 'request_id': request['request_id'], 'trial_id': task['trial_id'],
