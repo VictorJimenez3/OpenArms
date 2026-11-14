@@ -1,0 +1,65 @@
+{
+  "source": "taught",
+  "note": "The poses listed under 'taught' are real joint readings from recordings/block_A_B. The others were worked out by the simulation and have not been run on the real arm. GRASP_B was lowered 1.7 cm from the recorded release, because the simulation shows the object being let go that far above the table.",
+  "units": "degrees per arm joint, as LeRobot reports them (use_degrees=true)",
+  "taught": [
+    "HOME",
+    "GRASP_A"
+  ],
+  "gripper": {
+    "open_value": 39.3,
+    "closed_value": 21.9,
+    "closed_command": 3.3
+  },
+  "poses": {
+    "HOME": {
+      "shoulder_pan": -21.58,
+      "shoulder_lift": -103.03,
+      "elbow_flex": 97.67,
+      "wrist_flex": 76.31,
+      "wrist_roll": -82.51
+    },
+    "GRASP_A": {
+      "shoulder_pan": -11.38,
+      "shoulder_lift": 48.62,
+      "elbow_flex": -17.93,
+      "wrist_flex": -27.69,
+      "wrist_roll": -82.51
+    },
+    "GRASP_B": {
+      "shoulder_pan": -25.1,
+      "shoulder_lift": 51.48,
+      "elbow_flex": -25.93,
+      "wrist_flex": -20.01,
+      "wrist_roll": -82.51
+    },
+    "ABOVE_A": {
+      "shoulder_pan": -11.38,
+      "shoulder_lift": 35.15,
+      "elbow_flex": -25.76,
+      "wrist_flex": -6.4,
+      "wrist_roll": -82.51
+    },
+    "LIFT_A": {
+      "shoulder_pan": -11.38,
+      "shoulder_lift": 35.15,
+      "elbow_flex": -25.76,
+      "wrist_flex": -6.4,
+      "wrist_roll": -82.51
+    },
+    "ABOVE_B": {
+      "shoulder_pan": -25.1,
+      "shoulder_lift": 40.57,
+      "elbow_flex": -37.27,
+      "wrist_flex": 2.23,
+      "wrist_roll": -82.51
+    },
+    "LIFT_B": {
+      "shoulder_pan": -25.1,
+      "shoulder_lift": 40.57,
+      "elbow_flex": -37.27,
+      "wrist_flex": 2.23,
+      "wrist_roll": -82.51
+    }
+  }
+}

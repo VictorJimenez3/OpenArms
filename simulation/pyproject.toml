@@ -1,0 +1,27 @@
+[project]
+name = "openarms-sim"
+version = "0.1.0"
+description = "MuJoCo preview simulation for the OpenArms lab arm"
+requires-python = ">=3.10"
+dependencies = [
+    "mujoco>=3.2",
+    "numpy",
+    "scipy",
+    "pyyaml",
+    "pillow",
+    "imageio",
+    "imageio-ffmpeg",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["openarms_sim"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
