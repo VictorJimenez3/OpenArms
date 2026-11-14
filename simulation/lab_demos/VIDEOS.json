@@ -1,0 +1,76 @@
+{
+  "status": "four executed MuJoCo demonstrations",
+  "tests": "57 passed: existing simulation and four experiment suites",
+  "limitations": [
+    "Scripted policies, not learned policies.",
+    "Geometric action gates and simplified grasp attachment; contact mechanics are not qualified.",
+    "Scientific responses are analytical models; optical proxy is based on material RGB, not camera pixels.",
+    "No real robot or physical chemistry results."
+  ],
+  "videos": [
+    {
+      "experiment": "colorimetry",
+      "title": "Color comparison",
+      "video": "colorimetry/evidence/colorimetry.mp4",
+      "sha256": "841a565aec09c197c244f065884c64e19da0ff955c02c86eec247092c74d4bd6",
+      "source_sha256": "1d115f4de984c71682e76fecd5e690afcb43f4fe10c2640f19259da4a561de69",
+      "duration_seconds": 36.0,
+      "frames": 1080,
+      "fps": 30.0,
+      "width": 1280,
+      "height": 720,
+      "bytes": 1173925,
+      "negative_control": "reference pickup withheld; no two-sample comparison",
+      "controller": "MuJoCo position actuators with scripted policy; geometric engagement",
+      "science": "Simplified analytical model; no physical laboratory result"
+    },
+    {
+      "experiment": "dilution",
+      "title": "Single-step dilution",
+      "video": "dilution/evidence/final/dilution.mp4",
+      "sha256": "fe254ca216eae54029d5c8470f92e6938161713e017a0fb1d7686a679b727f3b",
+      "source_sha256": "e6b80d96c5d010f8c7b8ddbbb4b30ea02c9c41808087d9a50f77e95ed6ffa920",
+      "duration_seconds": 19.633333,
+      "frames": 589,
+      "fps": 30.0,
+      "width": 1280,
+      "height": 720,
+      "bytes": 541198,
+      "negative_control": "zero added water; both samples remain at initial concentration",
+      "controller": "MuJoCo position actuators with scripted policy; geometric engagement",
+      "science": "Simplified analytical model; no physical laboratory result"
+    },
+    {
+      "experiment": "dissolution",
+      "title": "Stirred versus still",
+      "video": "dissolution/evidence/final/dissolution.mp4",
+      "sha256": "1f624c066678ad0a12782257c80a9c790e6b2f31aaf6f294b0d8983f4c5e11b1",
+      "source_sha256": "9eaa9210fff5c0af6b2cea7a940c25f3662c58a99cf03d877ba1a60f0289d83b",
+      "duration_seconds": 45.541667,
+      "frames": 1093,
+      "fps": 24.0,
+      "width": 1280,
+      "height": 720,
+      "bytes": 580610,
+      "negative_control": "both samples retain the same modeled solid fraction",
+      "controller": "MuJoCo position actuators with scripted policy; geometric engagement",
+      "science": "Simplified analytical model; no physical laboratory result"
+    },
+    {
+      "experiment": "titration",
+      "title": "Tiny titration",
+      "video": "titration/evidence/titration.mp4",
+      "sha256": "4eb6859fc940b83a6c98ed848468a21c9eca7f72d461c9ac1e0f61c596faff4c",
+      "source_sha256": "0f349e34ceb4c367df2d591607dd0892ea1bba43db960743d843ec54d3ce7a89",
+      "duration_seconds": 34.066016,
+      "frames": 1022,
+      "fps": 30.0,
+      "width": 1280,
+      "height": 720,
+      "bytes": 1218135,
+      "negative_control": "zero doses; no endpoint in either sample",
+      "controller": "MuJoCo position actuators with scripted policy; geometric engagement",
+      "science": "Simplified analytical model; no physical laboratory result"
+    }
+  ]
+}
