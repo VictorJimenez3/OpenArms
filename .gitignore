@@ -1,0 +1,9 @@
+# LeRobot is cloned by each person (see README), not checked in
+LeRobot/
+
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.venv/
+outputs/
