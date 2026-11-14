@@ -16,6 +16,8 @@ from .skills import PRIMITIVE_SCHEMAS, compute_skill_hash
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
 FRAME_MAX_AGE = 180
+CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_frame', 'units', 'clock')
+VESSEL_LABELS = ('source', 'receiver')
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -197,14 +199,21 @@ class TaskLoop:
                         not isinstance(d, dict) or d.get('object_id') not in arguments['labels'] or
                         d.get('frame_id') != evidence_id or
                         not self._same_timestamp(d.get('timestamp_s'), image['captured_at']) or
-                        d.get('provenance') != image['provenance'] for d in detections) or
+                        d.get('provenance') != image['provenance'] or
+                        any(field in (prior.get('scene') or {}) and
+                            d.get(field) != prior['scene'][field] for field in CAMERA_FIELDS)
+                        for d in detections) or
                         set(labels) != {d['object_id'] for d in detections if d.get('status') == 'ok'}):
                     raise ValueError('Localization detections do not match the requested frame and labels.')
             elif getattr(self.perception, 'artifact_dir', None) is not None:
                 raise ValueError('Localization did not return frame-bound detections.')
             # Localization may enrich an immutable frame, but cannot replace its
             # scene, observer receipt, image metadata, or a sibling fallback frame.
-            merged = {**prior, 'localization': result,
+            by_label = {label: ds for label, ds in prior.get('detections_by_label', {}).items()
+                        if label not in arguments['labels']}
+            for detection in detections or []:
+                by_label.setdefault(detection['object_id'], []).append(detection)
+            merged = {**prior, 'localization': result, 'detections_by_label': by_label,
                       'verified_labels': sorted((set(prior.get('verified_labels', [])) -
                                                  set(arguments['labels'])) | set(labels))}
             return {evidence_id: merged}
@@ -444,9 +453,58 @@ class TaskLoop:
             return set(task['evidence'][fid].get('verified_labels', []))
         return set()
 
+    @staticmethod
+    def _action(plan):
+        return next((step for step in plan['steps'] if step['operation'] in MOCK_OPERATIONS), None)
+
+    def _requires_fixture_perception(self, task):
+        backend = self.backends.get(task['session_id'])
+        return (getattr(backend, 'scene_service', None) is not None or
+                getattr(self.perception, 'artifact_dir', None) is not None)
+
+    def _fixture_state(self, task, frame_id, action):
+        # The fixture checks use image coordinates. The plain mock backend
+        # can still run with a minimal software test adapter.
+        if not self._requires_fixture_perception(task):
+            return None
+        record = task['evidence'].get(frame_id) or {}
+        scene = record.get('scene') or {}
+        if (scene.get('fixture_registration_valid') is not True or
+                scene.get('provenance') not in ('SYNTHETIC', 'SIMULATED') or
+                getattr(self.perception, 'artifact_dir', None) is None or
+                scene.get('physical_execution') is not False or
+                scene.get('geometry_valid') is not False or scene.get('base_registration_id') is not None or
+                scene.get('coordinate_frame') != 'image_pixels' or scene.get('units') != 'px' or
+                any(not isinstance(scene.get(field), str) or not scene[field] for field in CAMERA_FIELDS)):
+            raise ValueError('Camera and base fixture registration could not be verified.')
+        detections = record.get('detections_by_label', {})
+        vessels = {}
+        for label in VESSEL_LABELS:
+            matches = [d for d in detections.get(label, []) if d['status'] == 'ok' and
+                       d.get('vessel_id') == label and d.get('fixture_registration_valid') is True and
+                       d.get('geometry_valid') is False and d.get('grasp_pose') is None]
+            if len(matches) != 1 or not matches[0].get('box_xyxy'):
+                raise ValueError('The '+label+' vessel is missing, obscured, or ambiguous in the current frame.')
+            vessels[label] = matches[0]
+        source, receiver = vessels['source'], vessels['receiver']
+        if receiver['dock_id'] != 'C' or receiver['held'] is not False:
+            raise ValueError('The receiver vessel is out of dock C.')
+        operation = action['operation']
+        if operation in ('mock_put_down', 'mock_pour'):
+            if source['held'] is not True or source['dock_id'] is not None:
+                raise ValueError('The current frame does not show the sample cup held by the arm.')
+        else:
+            station = action['arguments'].get('station', 'A')
+            if source['held'] is not False or source['dock_id'] != station:
+                raise ValueError('The sample cup is out of dock '+station+'.')
+        return {'camera': {field: scene[field] for field in CAMERA_FIELDS},
+                'vessels': {label: {field: detection[field] for field in ('dock_id', 'held', 'box_xyxy')}
+                            for label, detection in vessels.items()}}
+
     def _check_context(self, task, plan):
         scene = task['scene'] or {}
-        if any(step['operation'] in MOCK_OPERATIONS for step in plan['steps']):
+        action = self._action(plan)
+        if action:
             # These capabilities have no executor/observer in this software
             # delivery. A model may not silently execute a supported subset of
             # a request that also asks for one of them.
@@ -475,7 +533,6 @@ class TaskLoop:
         sample = self._prepared_sample(plan)
         if sample and task['condition_id'] and sample['arguments']['condition_id'] != task['condition_id']:
             raise ValueError('The proposed mock sample differs from the selected condition.')
-        action = next((step for step in plan['steps'] if step['operation'] in MOCK_OPERATIONS), None)
         if action:
             if task['dispatched_action']:
                 raise ValueError('This task already dispatched its single mock action.')
@@ -485,6 +542,7 @@ class TaskLoop:
             if backend is None:
                 raise ValueError('Prepare a fresh simulation before proposing an action.')
             backend.check_step(action['operation'], action['arguments'])
+            self._fixture_state(task, scene['frame_id'], action)
         if any(step['operation'] == 'localize_objects' and step['arguments']['evidence_id'] not in task['evidence']
                for step in plan['steps']):
             raise ValueError('Localization steps require evidence available to this task.')
@@ -636,6 +694,11 @@ class TaskLoop:
         request_id = str(uuid.uuid4())
         bound_plan = {**plan, 'scene_hash': self._scene_hash(s), 'generation': s['generation'],
                       'trial_id': task['trial_id'], 'task_id': task['task_id']}
+        action = self._action(plan)
+        if action:
+            presented_id = task['scene']['frame_id']
+            bound_plan.update(scene_frame_id=presented_id,
+                              fixture=self._fixture_state(task, presented_id, action))
         request = {'request_id': request_id, 'task_id': task['task_id'], 'session_id': s['session_id'],
                    'trial_id': task['trial_id'], 'turn_id': task['turn_id'], 'generation': s['generation'],
                    'proposal_version': s['proposal_sequence'], 'plan_hash': compute_skill_hash(bound_plan),
@@ -684,11 +747,13 @@ class TaskLoop:
                 await self._emit_task(s, task, 'execution_progress', step=index, operation=operation)
                 if operation in MOCK_OPERATIONS:
                     try:
-                        self._check_context(task, plan)
-                    except ValueError as exc:
-                        if await self._execution_feedback(s, task, request, receipt, str(exc)):
+                        await self._verify_dispatch(s, task, request, step)
+                    except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
+                        reason = self._perception_error(exc)
+                        if self.expert is not None and await self._execution_feedback(s, task, request, receipt, reason):
                             return
-                    task['dispatched_action'] = True
+                        raise ValueError(reason) from exc
+                    receipt['dispatch_evidence_id'] = task['scene']['frame_id']
 
                     async def progress(phase):
                         await self._emit_task(s, task, 'execution_progress', step=index,
@@ -696,9 +761,15 @@ class TaskLoop:
 
                     # Preserve the existing call signature for prepared-sample backend overrides.
                     options = {} if operation == 'mock_prepared_sample' else {'operation': operation}
+
+                    async def dispatch():
+                        self._guard_task(s, task)
+                        task['dispatched_action'] = True
+                        return await self._backend(s['session_id']).execute_step(
+                            request['request_id'], arguments, progress, **options)
+
                     try:
-                        result = await asyncio.wait_for(self._backend(s['session_id']).execute_step(
-                            request['request_id'], arguments, progress, **options), self.execution_timeout)
+                        result = await asyncio.wait_for(dispatch(), self.execution_timeout)
                     except (RuntimeError, ValueError, TimeoutError) as exc:
                         result = {'status': 'failed', 'controller_completed': False,
                                   'reason': f'Executor failed ({type(exc).__name__}).'}
@@ -754,11 +825,34 @@ class TaskLoop:
         except Exception as exc:
             await self._fail_task(s, task, exc)
 
-    async def _verify_labels(self, s, task, plan, *, refresh=False):
-        labels = sorted({label for rule in plan['preconditions'] for label in rule['labels']})
+    async def _verify_dispatch(self, s, task, request, action):
+        plan = request['plan']
+        presented_id = plan['scene_frame_id']
+        presented = task['evidence'][presented_id]['scene']
+        try:
+            frame = await self._capture(s, task, 'inspect_scene', {'view': presented['view']})
+        except (ValueError, OSError, RuntimeError, TimeoutError):
+            task.update(images=[], scene=None)
+            s.update(scene_images=[], scene=None)
+            raise
+        if frame['scene']['captured_at'] <= request['confirmed_at']:
+            raise ValueError('Dispatch requires a frame captured after confirmation.')
+        await self._verify_labels(s, task, plan, allow_alternate=False)
+        self._guard_task(s, task)
+        self._check_context(task, plan)
+        current_id = frame['evidence_id']
+        current = self._fixture_state(task, current_id, action)
+        if current != plan['fixture']:
+            raise ValueError('Vessel position or camera registration changed since the proposal was presented.')
+
+    async def _verify_labels(self, s, task, plan, *, refresh=False, allow_alternate=True):
+        labels = {label for rule in plan['preconditions'] for label in rule['labels']}
+        action = self._action(plan)
+        if action and self._requires_fixture_perception(task):
+            labels.update(VESSEL_LABELS)
+        labels = sorted(labels)
         fresh = self._fresh(task['scene'] or {})
-        needs_live_frame = (any(step['operation'] in MOCK_OPERATIONS for step in plan['steps']) or
-                            any(rule['fresh_scene'] for rule in plan['preconditions']))
+        needs_live_frame = action is not None or any(rule['fresh_scene'] for rule in plan['preconditions'])
         if refresh and needs_live_frame and (not task['images'] or not fresh):
             await self._capture(s, task, 'inspect_scene', {'view': 'primary'})
             fresh = self._fresh(task['scene'] or {})
@@ -769,7 +863,7 @@ class TaskLoop:
                                         {'evidence_id': evidence_id, 'labels': labels})
             alternate = next((step['arguments'].get('fallback_view') for step in plan['steps']
                               if step['operation'] == 'observe' and step['arguments'].get('fallback_view')), None)
-            if not set(labels).issubset(found.get('verified_labels') or []) and alternate:
+            if allow_alternate and not set(labels).issubset(found.get('verified_labels') or []) and alternate:
                 frame = await self._capture(s, task, 'inspect_scene', {'view': alternate})
                 await self._capture(s, task, 'localize_objects',
                                     {'evidence_id': frame['evidence_id'], 'labels': labels})

@@ -45,3 +45,32 @@ async def test_localization_reports_pixel_evidence_without_grasp_coordinates(tmp
     Path(frame['images'][0]['path']).write_bytes(b'changed')
     with pytest.raises(ValueError, match='changed after capture'):
         await service.localize_objects('a', frame['evidence_id'], ['source'])
+
+
+@pytest.mark.asyncio
+async def test_camera_metadata_binds_localization_to_the_original_vessels_and_docks(tmp_path):
+    service = SceneService(tmp_path)
+    before = await service.inspect_scene('session', 'secondary')
+    frame = before['scene']
+    world = service.world('session')
+    world.vessels_swapped = True
+    after = await service.inspect_scene('session', 'secondary')
+    assert frame['captured_at'] == before['images'][0]['captured_at']
+    assert frame['frame_id'] == before['images'][0]['evidence_id']
+    assert frame['camera_id'] == 'synthetic-secondary'
+    assert frame['fixture_registration_valid'] is True
+    assert frame['base_registration_id'] is None
+    assert (frame['clock'], frame['coordinate_frame'], frame['units']) == ('unix_seconds', 'image_pixels', 'px')
+    labels = ['source', 'receiver', 'A', 'C']
+    original = await service.localize_objects('session', frame['frame_id'], labels)
+    assert original['verified_labels'] == labels
+    for d in original['detections']:
+        assert d['frame_id'] == frame['frame_id']
+        assert d['timestamp_s'] == frame['captured_at']
+        for field in ('camera_id', 'camera_config_id', 'calibration_id', 'provenance', 'units', 'coordinate_frame'):
+            assert d[field] == frame[field]
+    moved = await service.localize_objects('session', after['evidence_id'], labels)
+    assert moved['verified_labels'] == ['source', 'receiver']
+    assert [(d['vessel_id'], d['dock_id']) for d in moved['detections'][:2]] == [
+        ('source', 'C'), ('receiver', 'A')]
+    assert (await service.observe('session', {'view': 'secondary'}))['status'] == 'unknown'
