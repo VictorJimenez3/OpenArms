@@ -1,4 +1,4 @@
-"""Persistent simulation of Smartivity's Erupting Volcano, pp. 26–27."""
+"""Persistent simulation of Smartivity scenes with a separate carrier-volume model."""
 from __future__ import annotations
 
 import math
@@ -24,7 +24,14 @@ FLASK = "flask"
 RGBA_WATER = (.4, .81, .97, .81)
 RGBA_RED = (.74, .06, .17, .95)
 RGBA_FROTH = (.98, .27, .38, 1)
-CONFIG_PATH = CONFIG_DIR / "setups" / "smartivity" / "volcano.yaml"
+RGBA_TEA = (.12, .21, .86, .94)
+RGBA_PINK = (.87, .08, .45, .94)
+RGBA_GREEN = (.14, .72, .22, .94)
+RGBA_MIXED = (.52, .21, .81, .94)
+RGBA_FIZZ = (.68, .46, .98, 1.)
+SETUPS = CONFIG_DIR / "setups" / "smartivity"
+POTION_STEPS = ("acidify_flask", "basify_cup")
+POTION_STAGES = ("blue_tea_divided", "flask_pink", "cup_green")
 
 
 def _geom(body, name, kind, size, pos, rgba, **kwargs):
@@ -56,9 +63,7 @@ def _vessel(spec, body, profile, rgba):
             _mesh_geom(spec, body, f"{body.name}_wall_{level}_{side}", points, rgba, collision=True)
 
 
-def _profile(config):
-    inner = config["flask_internal_profile_mm"]
-    thickness = config["flask_wall_mm"]
+def _profile(inner, thickness):
     return {
         "inner_profile": inner,
         "outer_profile": [[0, inner[0][1] + thickness], *[[z, r + thickness] for z, r in inner[1:]]],
@@ -73,16 +78,27 @@ def _vessel_radius(profile):
 class World:
     """Bounded joint goals and a separate carrier-volume model."""
 
-    def __init__(self, seed: int = 0, *, aim: str = "spout"):
+    def __init__(self, seed: int = 0, *, aim: str = "spout", scenario: str = "volcano"):
         if aim not in ("spout", "mouth_center"):
             raise ValueError("Unknown pour aim.")
+        if scenario not in ("volcano", "potions"):
+            raise ValueError("Unknown Smartivity experiment.")
         self.aim = aim
-        source = yaml.safe_load(CONFIG_PATH.read_text())
-        self.config = config = source["model"]
+        self.scenario = scenario
+        base = yaml.safe_load((SETUPS / "volcano.yaml").read_text())
+        source = base if scenario == "volcano" else yaml.safe_load((SETUPS / "potions.yaml").read_text())
+        self.config = config = base["model"] | source["model"]
+        self.manifest = {"source": source["source"], "preparation": source["preparation"]}
+        self.preparation_history = []
+        self._additions = source["preparation"].get("additions", {})
         self.seed = int(seed)
         self.joint_map = JointMap(load_joint_map())
-        self.beaker_profile = load_parameters(VESSELS / "parameters.json")["vessels"]["donor_A"]
-        self.flask_profile = _profile(config)
+        if scenario == "volcano":
+            self.beaker_profile = load_parameters(VESSELS / "parameters.json")["vessels"]["donor_A"]
+        else:
+            self.beaker_profile = _profile(config["source_internal_profile_mm"], config["source_wall_mm"])
+        self.flask_profile = _profile(config["flask_internal_profile_mm"], config["flask_wall_mm"])
+        self.foam_color = RGBA_FROTH if scenario == "volcano" else RGBA_FIZZ
         self.capacity = {BEAKER: cavity_volume_ml(self.beaker_profile), FLASK: cavity_volume_ml(self.flask_profile)}
         self.beaker_height = self.beaker_profile["inner_profile"][-1][0] / 1000
         self.flask_height = self.flask_profile["inner_profile"][-1][0] / 1000
@@ -147,7 +163,7 @@ class World:
 
     def _build(self):
         spec = mujoco.MjSpec.from_file(str(ARM_XML))
-        spec.modelname = "openarms_smartivity_volcano"
+        spec.modelname = "openarms_smartivity_" + self.scenario
         spec.option.timestep = .004
         spec.visual.global_.offwidth = 640
         spec.visual.global_.offheight = 480
@@ -186,9 +202,9 @@ class World:
             spec.add_exclude(bodyname1=BEAKER, bodyname2=jaw)
         for index in range(24):
             _geom(w, f"foam_{index}", "SPHERE", [.004, 0, 0], [0, 0, -.1],
-                  [*RGBA_FROTH[:3], 0], contype=0, conaffinity=0)
+                  [*self.foam_color[:3], 0], contype=0, conaffinity=0)
         _geom(w, "foam_residue", "ELLIPSOID", [.027, .022, .001], self.receiver + [.026, -.009, .001],
-              [*RGBA_FROTH[:3], 0], contype=0, conaffinity=0)
+              [*self.foam_color[:3], 0], contype=0, conaffinity=0)
         _geom(w, "stream", "CYLINDER", [.0018, .01, 0], [0, 0, -.1], [*RGBA_WATER[:3], 0],
               contype=0, conaffinity=0)
         return spec.compile()
@@ -265,7 +281,30 @@ class World:
         g = self.joint_map.cfg["gripper"]
         return (math.degrees(rad) - g["closed_deg"]) / (g["open_deg"] - g["closed_deg"]) * 100
 
+    @property
+    def preparation_stage(self):
+        if self.scenario == "volcano":
+            return "preloaded"
+        return POTION_STAGES[len(self.preparation_history)]
+
+    def prepare(self, step):
+        """Apply a declared scene-preparation addition, with no robot motion."""
+        index = len(self.preparation_history)
+        if (self.scenario != "potions" or index >= len(POTION_STEPS) or step != POTION_STEPS[index]
+                or self.busy or self._held is not None or self._fault or self.phase != "ready"):
+            raise ValueError("That preparation step is unavailable in the current scene.")
+        addition = self._additions[step]
+        vessel, component, quantity = (addition[k] for k in ("vessel", "component", "quantity"))
+        self.contents[vessel][component] = self.initial[vessel][component] = float(quantity)
+        if vessel == BEAKER:
+            self.spill[component] = 0.
+        self.preparation_history.append({"step": step, "sim_seconds": self.sim_time,
+                                         "performed_by": "scene_preparation", **addition})
+        return self.preparation_stage
+
     def start(self, action):
+        if self.scenario == "potions" and self.preparation_stage != "cup_green":
+            raise ValueError("Complete scene preparation before commanding the robot.")
         if action not in self._scripts:
             raise ValueError("Unsupported simulated action.")
         if self.busy or self._fault:
@@ -407,10 +446,28 @@ class World:
         self.delivered_ml += delivered
         if captured:
             self.overflow_ml += amount - delivered
-        if delivered > 0 and receiver["baking_soda_kit_spoons"] and receiver["citric_acid_kit_spoons"] and receiver["liquid_soap_drops"]:
-            self._foam = min(1., self._foam + delivered * .14)
-            self._max_foam = max(self._max_foam, self._foam)
+        acid_and_base = (receiver.get("baking_soda_kit_spoons", 0.) > 0 and
+                         receiver.get("citric_acid_kit_spoons", 0.) > 0)
+        if delivered > 0 and acid_and_base:
+            if self.scenario == "potions" or receiver.get("liquid_soap_drops", 0.) > 0:
+                self._foam = min(1., self._foam + delivered * .14)
+                self._max_foam = max(self._max_foam, self._foam)
         self._flow, self._lip, self._stream_bottom = amount > 0, lip, opening[2] if captured else .005
+
+    def _liquid_color(self, vessel):
+        if self.scenario == "volcano":
+            return RGBA_WATER if vessel == BEAKER else RGBA_RED
+        contents = self.contents[vessel]
+        acid = contents.get("citric_acid_kit_spoons", 0.) > 0
+        base = contents.get("baking_soda_kit_spoons", 0.) > 0
+        if acid and base:
+            # Lavender is an illustrative interpretation of the booklet image.
+            return RGBA_MIXED
+        if acid:
+            return RGBA_PINK
+        if base:
+            return RGBA_GREEN
+        return RGBA_TEA
 
     def _render_liquid(self):
         for vessel, profile in ((BEAKER, self.beaker_profile), (FLASK, self.flask_profile)):
@@ -422,7 +479,9 @@ class World:
                                np.array(profile["inner_profile"])[:, 1] / 1000)
             geom.pos[2] = bottom + height * fill * .5
             geom.size[:2] = [radius * .93, max(.0002, height * fill * .5)]
-            geom.rgba[3] = (.83 if vessel == BEAKER else .95) if fill > .001 else 0.
+            geom.rgba[:] = self._liquid_color(vessel)
+            if fill <= .001:
+                geom.rgba[3] = 0.
         for i in range(24):
             bubble = self.model.geom(f"foam_{i}")
             alpha = (self.sim_time * (.37 + .025 * (i % 7)) + i * .173) % 1
@@ -432,10 +491,10 @@ class World:
             bubble.pos[:] = self.receiver + [spread * math.cos(angle), spread * math.sin(angle),
                                              self.flask_height + (alpha * .064 - .009) * scale]
             bubble.size[0] = (.004 + .002 * (i % 4)) * max(.22, min(scale*2, 1.))
-            bubble.rgba[:] = [*RGBA_FROTH[:3], min(scale * 3, 1.) if self._foam > .04 else 0.]
+            bubble.rgba[:] = [*self.foam_color[:3], min(scale * 3, 1.) if self._foam > .04 else 0.]
         self.model.geom("foam_residue").rgba[3] = min(.94, self._max_foam) if self._max_foam > .22 else 0.
         stream = self.model.geom("stream")
-        stream.rgba[3] = .86 if self._flow else 0.
+        stream.rgba[:] = [*self._liquid_color(BEAKER)[:3], .86 if self._flow else 0.]
         if self._flow:
             stream.pos[:] = [*self._lip[:2], (self._lip[2] + self._stream_bottom) / 2]
             stream.size[1] = max(.0005, (self._lip[2] - self._stream_bottom) / 2)
@@ -463,7 +522,9 @@ class World:
         return {"success": bool(success), "delivered_ml": self.delivered_ml, "spilled_ml": self.spill["water_ml"],
                 "overflow_ml": self.overflow_ml, "collisions": self.collisions, "drops": self.drops,
                 "placed": bool(self._placed), "foam_peak": self._max_foam, "elapsed_sim_s": self.sim_time,
-                "aim": self.aim, "seed": self.seed, "preloaded": deepcopy(self.initial),
+                "aim": self.aim, "scenario": self.scenario, "seed": self.seed,
+                "preparation_stage": self.preparation_stage, "preparation_history": deepcopy(self.preparation_history),
+                "preloaded": deepcopy(self.initial),
                 "remaining": deepcopy(self.contents), "spill": self.spill.copy(), "fault": self._fault}
 
     def close(self):

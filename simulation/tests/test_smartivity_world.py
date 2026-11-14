@@ -1,3 +1,5 @@
+from contextlib import closing
+
 import json
 
 import mujoco
@@ -74,3 +76,42 @@ def test_halt_aborts_skill_but_physics_keeps_stepping():
     assert not world.busy
     assert world.evaluate()["delivered_ml"] == 0.
     assert world.phase == "halted"
+
+
+def test_potions_preparation_progression_and_mix_are_visible():
+    with closing(World(scenario="potions")) as world:
+        blue = world.rgb("overview").astype(int)
+        with pytest.raises(ValueError, match="preparation"):
+            world.start("pick")
+        with pytest.raises(ValueError, match="preparation"):
+            world.prepare("basify_cup")
+        assert world.prepare("acidify_flask") == "flask_pink"
+        pink = world.rgb("overview").astype(int)
+        assert world.prepare("basify_cup") == "cup_green"
+        green = world.rgb("overview").astype(int)
+        assert world.evaluate()["foam_peak"] == 0.
+        assert world.sim_time == 0.
+
+        def pink_count(image):
+            r, g, b = image[250:355, 195:277].transpose(2, 0, 1)
+            return np.count_nonzero((r >= 225) & (b - g >= 30) & (r - b >= 6))
+
+        def green_count(image):
+            r, g, b = image[266:335, 391:468].transpose(2, 0, 1)
+            return np.count_nonzero((g >= 130) & (g - r >= 40) & (g - b >= 10))
+
+        assert pink_count(pink) - pink_count(blue) > 300
+        assert green_count(green) - green_count(pink) > 300
+        for action in ("pick", "pour", "return_cup", "home"):
+            run(world, action)
+
+        final = world.rgb("side").astype(int)
+        r, g, b = final.transpose(2, 0, 1)
+        assert np.count_nonzero((r >= 200) & (b >= 231) & (b - r >= 5) & (b - g >= 32)) > 300
+        state = world.evaluate()
+        assert state["success"]
+        assert state["delivered_ml"] == pytest.approx(25.)
+        assert state["remaining"]["flask"] == pytest.approx({
+            "water_ml": 50., "prepared_tea_fraction": 1.,
+            "citric_acid_kit_spoons": 1., "baking_soda_kit_spoons": 1.,
+        })
