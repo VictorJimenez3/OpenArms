@@ -20,3 +20,27 @@ def connect(fake: bool = True, port: str | None = None, robot_id: str = FOLLOWER
         robot.disconnect()
         raise SystemExit(f"{robot_id} not calibrated: `source env.sh`, check the id, or run lerobot-teleoperate once and press ENTER")
     return robot
+
+
+LEADER_ID = "my_awesome_leader_arm"  # picks calibration/teleoperators/so_leader/<id>.json via env.sh
+
+
+class FakeLeader(FakeRobot):
+    def get_action(self) -> dict:
+        return self.get_observation()
+
+
+def connect_leader(fake: bool = True, port: str | None = None, leader_id: str = LEADER_ID):
+    if fake:
+        return FakeLeader({"shoulder_pan.pos": 10.0, "gripper.pos": 50.0})
+    if not port:
+        raise SystemExit("--leader-port is required (find it with lerobot-find-port)")
+    # shortcut: checked against LeRobot e0d50211 source, not run here; check at the bench
+    from lerobot.teleoperators.so_leader import SO101Leader, SO101LeaderConfig
+
+    leader = SO101Leader(SO101LeaderConfig(port=port, id=leader_id))
+    leader.connect(calibrate=False)  # the leader never enables torque, so it stays free to move by hand
+    if not leader.is_calibrated:
+        leader.disconnect()
+        raise SystemExit(f"{leader_id} not calibrated: `source env.sh` and check the id")
+    return leader
