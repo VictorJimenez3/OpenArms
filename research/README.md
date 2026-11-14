@@ -8,6 +8,7 @@ rg -ni -g '*.md' 'follower|teach.*pose|waypoint|teleop' research/
 
 | Question | Current answer | Evidence |
 | --- | --- | --- |
+| Can the SO-101 run in Isaac 5.1 on Rutgers RTX? | Isolated installation and headless recorder prepared; GPU allocation, actual launch and manipulation remain unverified. | [Runtime bring-up evidence](stefanie/isaac-runtime-bringup.md) |
 | How do two cameras and a teaching trace become an inspectable skill? | Offline capture/replay, checkpoint evidence, versioned candidates, guarded geometry and measured GPU comparisons are runnable; actual-cup qualification remains pending. | [Bench tooling and measured handoff](../bench_vision/START_HERE.md) |
 | What is the current demo, and what is verified? | Mandarin A-to-B transfer. Phone installed; intent-based AGY/MCP and mock confirm/cancel rehearsed. Physical runner integration pending; simulator deferred. | [Runbook, next steps, and human to-do](joseph/mandarin-transfer-handoff.md) |
 | How do we teach poses or record waypoints on the follower? | Two-arm teleoperation is documented. Harness v3 proposes teaching poses with the leader and running the demo on the follower. The demo motion still needs bench trials. | [Firmware setup](../firmware/README.md#3-teleoperate) · [Pose teaching](duc/harness.md#layer-4-preprogrammed-scripts-joseph-firmware) |
