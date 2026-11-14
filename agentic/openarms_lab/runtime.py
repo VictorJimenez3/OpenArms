@@ -198,8 +198,16 @@ class Lab:
             route_text=re.sub(r'\b(?:add|pour|dilute)\b','transfer',route_text,flags=re.I)
         routed=self.registry.resolve(route_text)
         if s['experiment']['id']=='color_dilution' and routed['status']=='resolved':
-            routed['skill_id']='premeasured_dilution.v1'
-            # Keep the recognized object: an orange request cannot silently become a water dose.
+            # Only a single transfer maps to this dose-only recipe. A composite
+            # request must not lose its observation or any other requested step.
+            if routed['skill_id']=='known_station_transfer.v1':
+                routed['skill_id']='premeasured_dilution.v1'
+                # Keep the recognized object: an orange request cannot silently become a water dose.
+            else:
+                routed={**routed,'status':'unsupported','message':(
+                    'This dilution recipe can add one premeasured water portion only. '
+                    'It cannot carry out the additional steps in your request. '
+                    'Please revise your request; nothing has started.')}
         self._event(s,'routing',instruction=text,result=routed)
         if routed['status']!='resolved':
             self._message(s,'assistant',routed.get('message','Please name the source A or C and destination B.'))
