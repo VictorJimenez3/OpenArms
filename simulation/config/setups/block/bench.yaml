@@ -1,0 +1,26 @@
+# The physical bench for the block demo: one block, moved between marked points.
+# Units: metres. Origin is the arm's base frame; +x points away from the arm
+# along its zero pose, +y to the arm's left, +z up. The table top is z = 0.
+#
+# STATUS: PLACEHOLDER. These positions were chosen so the simulated arm can
+# reach them. Measure the real bench with a ruler and replace them.
+
+table:
+  size: [0.70, 0.90]        # x, y extent
+  center: [0.20, 0.0]
+
+stations:
+  A: {kind: point, pos: [0.299,  0.150]}
+  B: {kind: point, pos: [0.339,  0.000]}
+  C: {kind: point, pos: [0.299, -0.150]}
+
+objects:
+  block:
+    size: [0.036, 0.036, 0.070]   # width, depth, height
+    at: A                         # where it starts
+    color: [0.90, 0.30, 0.15]
+
+# Where on the object the gripper holds it.
+grasp:
+  height: 0.040             # above the table, when the object stands on it
+  lift: 0.090               # extra height for ABOVE_x / LIFT_x
