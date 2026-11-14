@@ -1,0 +1,8 @@
+{
+  "package_name_sets_equal": true,
+  "added": [],
+  "removed": [],
+  "before_count": 3095,
+  "after_count": 3095,
+  "note": "Normalized optional architecture suffixes; no package-version changes were requested. Apt installation and removal logs preserve exact transactions."
+}

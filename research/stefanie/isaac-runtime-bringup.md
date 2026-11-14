@@ -1,5 +1,29 @@
 # Can Rutgers execute the OpenArms SO-101 Isaac scene?
 
+## Verified outcome — 2026-11-14
+
+Yes. Final clean source `6afba01407b8036a0a22d5d8d6f261ac26424051` ran both
+simulation-only science skills in Rutgers Slurm step **1273420.2**, host rlab7,
+RTX A6000 / driver 580.178.04 / Isaac 5.1.0.0. Each recorded 720 frames (24 s),
+passed contact-driven grasp/lift/carry/release/settling and exited zero. Repeated
+fresh invocations reset the scene. The robot is white and has no onboard camera.
+
+At fixed geometry, motion, friction and gravity, 10 g and 40 g conditions produced
+measured settled support forces 0.098099999 N and 0.392399992 N. These are raw
+simulator contact measurements, with analytic predictions separately labelled.
+One final pair establishes a bounded demonstration, not physical performance or
+statistical reliability. Earlier corrected trials at `002e9a7` also passed.
+
+[Videos, full receipts, raw evidence bundle and reproduction](../../simulation/isaac/evidence/README.md)
+include allocation identity, configuration, source, independent audit and logs.
+The temporary passthrough VM was removed and the dedicated host restored without
+replacing its installed driver. The canonical simulation skill interface is tested;
+application backend registration remains separate integration work.
+
+## Preserved earlier bring-up history
+
+The following records the state before the qualified manipulation runs above.
+
 On 2026-11-14, job `1273056` actually launched Isaac 5.1.0.0 on rlab7's RTX A6000
 (driver 580.178.04), rendered the workshop SO-101 and recorded 240 H264 frames
 at 960x720 / 30 fps. Rotation moved through 0.3613 rad. Commit:

@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/freespace/local/jdr317/openarms-isaac-5.1.0/venv/bin/python",
+    "/common/users/jdr317/openarms-isaac/code-skill-6afba01/simulation/isaac/smoke.py",
+    "--output",
+    "/common/users/jdr317/openarms-isaac/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording",
+    "--workshop",
+    "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop",
+    "--request-id",
+    "d81ef174-ea5c-46ad-bc47-9058d6f7034c",
+    "--task",
+    "cube",
+    "--condition",
+    "heavy",
+    "--cleanup",
+    "sensors"
+  ],
+  "returncode": 0,
+  "stopped": false,
+  "wall_seconds": 74.35813069343567,
+  "observation_status": "passed",
+  "cleanup_failed": false,
+  "status": "passed"
+}

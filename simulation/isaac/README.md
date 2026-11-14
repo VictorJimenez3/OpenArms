@@ -2,15 +2,14 @@
 
 **Actual grasp-and-place and both science conditions passed on Rutgers RTX A6000
 Slurm job 1273420**, using Isaac 5.1.0.0, driver 580.178.04, and source commit
-`002e9a7cbd7f60f7cbd763369881dd0c34922d29`. Each trial recorded 720 frames / 24 seconds
+`6afba01407b8036a0a22d5d8d6f261ac26424051`. Each trial recorded 720 frames / 24 seconds
 at 960×720, satisfied live contact/lift/release/settling checks, and exited zero.
 The white SO-101 uses NVIDIA's original NO-CAMERA articulation. An external camera
 records evidence; the robot has no onboard camera. See [evidence](evidence/README.md).
 
 A temporary RTX 3060 passthrough VM also ran the same simulation. This separate
 dedicated-host route must not be confused with a Slurm allocation. The host's
-installed 595 driver was retained; only the guest used 580. Host restoration is
-tracked in the execution receipt. Native host 595 attempts failed and are preserved.
+installed 595 driver was retained; only the guest used 580. The temporary VM has been removed and host restoration verified in the execution receipt. Native host 595 attempts failed and are preserved.
 
 ## Student experiment
 

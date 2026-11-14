@@ -1,0 +1,21 @@
+removed task artifact: guest.qcow2
+removed task artifact: image/noble-server-cloudimg-amd64.img
+removed task artifact: seed.img
+removed task artifact: OVMF_VARS.fd
+removed task artifact: vm_access
+removed task artifact: vm_access.pub
+removed task artifact: known_hosts
+removed task artifact: qemu.pid
+removed task artifact: qmp.sock
+removed temporary controller: /usr/local/sbin/openarms-vm-control
+removed temporary controller: /usr/local/sbin/openarms-vm-start
+removed temporary controller: /run/openarms-vm-control.py
+removed temporary controller: /run/openarms-vm-state.json
+removed temporary controller: /run/openarms-vm-restore.lock
+VM_ARTIFACT_CLEANUP_COMPLETE
+uuid, name, driver_version, memory.total [MiB]
+GPU-64f6e52e-032d-2bca-3d10-d0ab27aad946, NVIDIA GeForce RTX 3060, 595.99.02, 12288 MiB
+active
+active
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2  937G   50G  840G   6% /
