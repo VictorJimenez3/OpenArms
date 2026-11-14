@@ -4,7 +4,6 @@ import base64
 from types import SimpleNamespace as NS
 
 import pytest
-from starlette.websockets import WebSocketDisconnect
 
 from agentic.openarms_lab import live
 
@@ -17,25 +16,6 @@ def response(**fields):
 def content(**fields):
     return NS(**dict(dict(interrupted=False, input_transcription=None, output_transcription=None,
                          model_turn=None, turn_complete=False), **fields))
-
-
-class Browser:
-    def __init__(self):
-        self.incoming = asyncio.Queue()
-        self.sent = []
-        self.closed = False
-
-    async def receive_json(self):
-        message = await self.incoming.get()
-        if isinstance(message, Exception):
-            raise message
-        return message
-
-    async def send_json(self, message):
-        self.sent.append(message)
-
-    async def close(self):
-        self.closed = True
 
 
 class Session:
@@ -94,7 +74,7 @@ class Client:
 
 
 def context():
-    return {'experiment': {'id': 'transfer'}, 'requests': [], 'observations': [], 'messages': []}
+    return {'requests': [], 'tasks': [], 'observations': [], 'messages': []}
 
 
 async def until(predicate):
@@ -103,198 +83,239 @@ async def until(predicate):
             await asyncio.sleep(.001)
 
 
-def assert_no_live_tasks():
-    assert not [task for task in asyncio.all_tasks() if task is not asyncio.current_task()
-                and 'serve_live.<locals>' in task.get_coro().__qualname__]
+async def assert_clean(bridge, client):
+    assert not bridge.ready and not bridge.pending_tools and bridge.watcher_id is None
+    assert client.closed and all(session.exited for session in client.sessions)
+    handlers = (live.GeminiBridge._upstream.__qualname__, live.GeminiBridge._downstream.__qualname__,
+                live.GeminiBridge._tool.__qualname__)
+    assert not [task for task in asyncio.all_tasks() if task.get_coro().__qualname__ in handlers]
 
 
-@pytest.mark.asyncio
-async def test_missing_credentials_keeps_fallback_and_disconnect_cleanup(monkeypatch):
-    monkeypatch.delenv('GEMINI_API_KEY', raising=False)
-    monkeypatch.delenv('GOOGLE_API_KEY', raising=False)
-    monkeypatch.setattr(live.genai, 'Client', lambda **_: pytest.fail('credential-free path built a client'))
-    browser = Browser()
-    calls = []
-
-    async def tool(name, args):
-        pytest.fail(f'unexpected tool {name}')
-
-    async def stop():
-        calls.append('stop')
-
-    await live.serve_live(browser, context, tool, stop)
-    assert any(message['type'] == 'error' and 'Text controls' in message['message'] for message in browser.sent)
-    assert calls == ['stop']
-    assert browser.closed
-    assert_no_live_tasks()
+async def finish(bridge, runner):
+    await bridge.close()
+    runner.cancel()
+    await asyncio.wait_for(asyncio.gather(runner, return_exceptions=True), 2)
 
 
-@pytest.mark.asyncio
-async def test_pcm_transcripts_usage_text_and_stop_protocol_without_provider():
-    browser, client = Browser(), Client()
-    calls = []
+def transcript(text, *, finished=True):
+    return response(server_content=content(input_transcription=NS(text=text, finished=finished)))
+
+
+def tool_call(cid, name, **args):
+    return NS(id=cid, name=name, args=args)
+
+
+async def test_missing_credentials_keeps_text_fallback_without_constructing_client(monkeypatch):
+    for name in ('GEMINI_API_KEY', 'GOOGLE_API_KEY'):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(live.genai, 'Client', lambda **_: pytest.fail('Unexpected provider client'))
+    sent = []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(*_):
+        pytest.fail('Starting unavailable voice must not execute a control')
+
+    bridge = live.GeminiBridge(context, tool, emit)
+    await bridge.run()
+    assert sent[-1]['status'] == 'unavailable' and 'text' in sent[-1]['message'].lower()
+    assert not bridge.ready
+    await bridge.close()
+    assert bridge.closed
+
+
+async def test_pcm_turn_records_usage_and_exact_stop_without_a_model_tool():
+    client, sent, calls = Client(), [], []
+
+    async def emit(message):
+        sent.append(message)
 
     async def tool(name, args):
         calls.append((name, args))
-        return {}
 
-    async def stop():
-        calls.append(('disconnect', {}))
-
-    task = asyncio.create_task(live.serve_live(browser, context, tool, stop, client_factory=lambda: client))
+    bridge = live.GeminiBridge(context, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
     try:
-        await until(lambda: bool(client.sessions))
+        await until(lambda: bridge.ready)
         session = client.sessions[0]
         pcm = b'\x00\x01\x02\x03'
-        browser.incoming.put_nowait({'type': 'audio', 'data': base64.b64encode(pcm).decode()})
-        browser.incoming.put_nowait({'type': 'audio', 'data': base64.b64encode(b'x').decode()})
-        browser.incoming.put_nowait({'type': 'audio_end'})
-        browser.incoming.put_nowait({'type': 'text', 'text': 'What do I observe?'})
-        browser.incoming.put_nowait({'type': 'text', 'text': 'STOP'})
+        await bridge.audio(base64.b64encode(pcm).decode())
+        with pytest.raises(ValueError, match='PCM'):
+            await bridge.audio(base64.b64encode(b'x').decode())
+        await bridge.end_audio()
+        session.incoming.put_nowait(transcript('ST', finished=False))
+        await until(lambda: any(m.get('text') == 'ST' for m in sent))
+        assert calls == []
+        session.incoming.put_nowait(transcript('OP'))
         session.incoming.put_nowait(response(server_content=content(
-            input_transcription=NS(text='my prediction'), output_transcription=NS(text='check the evidence'),
+            output_transcription=NS(text='Check the evidence.'),
             model_turn=NS(parts=[NS(inline_data=NS(data=pcm))]), turn_complete=True),
             usage_metadata=NS(model_dump=lambda **_: {'total_token_count': 17})))
-        await until(lambda: any(name == '_record_usage' for name, _ in calls)
-                    and any(name == 'stop_lab' for name, _ in calls))
+        await until(lambda: len(session.realtime) == 2 and len(calls) == 4)
         assert session.realtime[0]['audio'].data == pcm
         assert session.realtime[0]['audio'].mime_type == 'audio/pcm;rate=16000'
         assert session.realtime[1] == {'audio_stream_end': True}
-        assert len(session.realtime) == 2  # odd-length PCM was rejected
-        assert len(session.turns) == 2  # greeting + question; STOP never reaches model reasoning
-        assert session.turns[1]['turns'].parts[0].text == 'What do I observe?'
-        assert {'type': 'audio', 'data': base64.b64encode(pcm).decode()} in browser.sent
-        assert {'type': 'transcript', 'role': 'user', 'text': 'my prediction'} in browser.sent
-        assert {'type': 'transcript', 'role': 'assistant', 'text': 'check the evidence'} in browser.sent
+        assert [turn['turns'].parts[0].text for turn in session.turns] == ['Start voice.']
+        user_partial, user_final = [m for m in sent if m.get('role') == 'user']
+        assert user_final['text'] == 'STOP' and user_final['final'] and not user_partial['final']
+        assert user_final['turn_id'] == user_partial['turn_id']
+        audio, = [m for m in sent if m['type'] == 'audio']
+        assert base64.b64decode(audio['data']) == pcm
+        assert ('_record_transcript', {'role': 'assistant', 'text': 'Check the evidence.',
+                                       'turn_id': audio['reply_id'], 'final': True}) in calls
+        assert calls.count(('stop_lab', {})) == 1 and not session.tools
         assert ('_record_usage', {'usage': {'total_token_count': 17}}) in calls
-        assert any(message['type'] == 'error' and 'PCM' in message['message'] for message in browser.sent)
-        browser.incoming.put_nowait(WebSocketDisconnect())
-        await asyncio.wait_for(task, timeout=2)
     finally:
-        if not task.done():
-            browser.incoming.put_nowait({'type': 'close'})
-            await asyncio.wait_for(task, timeout=2)
-    assert ('disconnect', {}) in calls
-    assert browser.closed and client.closed and session.exited
-    assert_no_live_tasks()
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
 
 
-@pytest.mark.asyncio
-async def test_tool_ids_duplicate_prevention_and_cancelled_proposal_cleanup():
-    browser, client = Browser(), Client()
-    calls, pending = [], {}
+async def test_duplicate_tool_id_returns_cached_reply_and_cancelled_id_never_reenters():
+    client, state, actions = Client(), context(), []
 
-    async def tool(name, args):
-        calls.append((name, args))
-        if name == 'request_action':
-            pending['request_id'] = 'proposal-1'
-            return {'pending': dict(pending)}
-        if name == '_cancel_tool_request':
-            assert args['request_id'] == 'proposal-1'
-            pending.clear()
-        return {}
-
-    async def stop():
+    async def emit(_):
         pass
 
-    task = asyncio.create_task(live.serve_live(browser, context, tool, stop, client_factory=lambda: client))
+    async def tool(name, args):
+        if name == 'request_action':
+            actions.append(args['_tool_call_id'])
+            state['tasks'].append({'task_id': 'queued-task', 'status': 'queued'})
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
     try:
-        await until(lambda: bool(client.sessions))
+        await until(lambda: bridge.ready)
         session = client.sessions[0]
-        call = NS(id='provider-call-1', name='request_action', args={'text': 'move mandarin A to B'})
+        call = tool_call('original', 'request_action', text='Test the prepared vinegar sample.')
+        session.incoming.put_nowait(transcript(call.args['text']))
         session.incoming.put_nowait(response(tool_call=NS(function_calls=[call, call])))
         await until(lambda: len(session.tools) == 1)
         session.incoming.put_nowait(response(tool_call=NS(function_calls=[call])))
         await until(lambda: len(session.tools) == 2)
-        assert sum(name == 'request_action' for name, _ in calls) == 1
-        assert [result.id for result in session.tools] == ['provider-call-1'] * 2
-        assert all(result.name == 'request_action' for result in session.tools)
-        assert all(result.response['result']['pending']['request_id'] == 'proposal-1' for result in session.tools)
-        session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['provider-call-1'])))
-        await until(lambda: not pending)
-        assert any(name == '_cancel_tool_request' for name, _ in calls)
-        session.incoming.put_nowait(response(tool_call=NS(function_calls=[call])))
-        browser.incoming.put_nowait({'type': 'close'})
-        await asyncio.wait_for(task, timeout=2)
-        assert len(session.tools) == 2
+        assert actions == ['original']
+        assert all(r.id == 'original' and r.response['result']['tasks'] == state['tasks']
+                   for r in session.tools)
+        session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['original'])))
+        sentinel = tool_call('read', 'get_lab_state')
+        session.incoming.put_nowait(response(tool_call=NS(function_calls=[call, sentinel])))
+        await until(lambda: any(r.id == 'read' for r in session.tools))
+        assert [r.id for r in session.tools] == ['original', 'original', 'read']
+        assert actions == ['original']
     finally:
-        if not task.done():
-            browser.incoming.put_nowait({'type': 'close'})
-            await asyncio.wait_for(task, timeout=2)
-    assert_no_live_tasks()
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
 
 
-@pytest.mark.asyncio
-async def test_cancelled_inflight_tool_clears_partially_published_proposal():
-    browser, client = Browser(), Client()
-    published, cancelled = asyncio.Event(), asyncio.Event()
-    pending, cleanup = {}, []
+async def test_provider_cancels_only_matching_pending_callback():
+    client, entered, cancelled = Client(), asyncio.Event(), asyncio.Event()
+    other_entered, release = asyncio.Event(), asyncio.Event()
 
-    async def tool(name, args):
-        if name == 'request_action':
-            pending.update(request_id='partial-proposal', client_request_id='live:' + args['_tool_call_id'])
-            published.set()
-            try:
-                await asyncio.Event().wait()  # publication yielded before callback returned
-            finally:
-                cancelled.set()
-        elif name == '_cancel_tool_request':
-            cleanup.append(args)
-            if pending.get('client_request_id') == 'live:' + args['tool_call_id']:
-                pending.clear()
-        return {}
-
-    async def stop():
+    async def emit(_):
         pass
 
-    task = asyncio.create_task(live.serve_live(browser, context, tool, stop, client_factory=lambda: client))
+    async def tool(name, args):
+        if name != 'request_action':
+            return
+        if args['_tool_call_id'] == 'cancel-me':
+            entered.set()
+            try:
+                await asyncio.Future()
+            finally:
+                cancelled.set()
+        else:
+            other_entered.set()
+            await release.wait()
+
+    bridge = live.GeminiBridge(context, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
     try:
-        await until(lambda: bool(client.sessions))
+        await until(lambda: bridge.ready)
         session = client.sessions[0]
+        text = 'Test the prepared vinegar sample.'
+        session.incoming.put_nowait(transcript(text))
         session.incoming.put_nowait(response(tool_call=NS(function_calls=[
-            NS(id='partial-call', name='request_action', args={'text': 'move mandarin A to B'})])))
-        await asyncio.wait_for(published.wait(), timeout=2)
-        session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['partial-call'])))
-        await until(lambda: not pending and cancelled.is_set())
-        assert cleanup == [{'tool_call_id': 'partial-call', 'request_id': None}]
-        assert session.tools == []
+            tool_call('cancel-me', 'request_action', text=text),
+            tool_call('leave-alone', 'request_action', text=text)])))
+        await asyncio.wait_for(asyncio.gather(entered.wait(), other_entered.wait()), 2)
+        session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['cancel-me'])))
+        await asyncio.wait_for(cancelled.wait(), 2)
+        assert 'leave-alone' in bridge.pending_tools and not bridge.pending_tools['leave-alone'].done()
+        release.set()
+        await until(lambda: len(session.tools) == 1)
+        assert [r.id for r in session.tools] == ['leave-alone']
     finally:
-        browser.incoming.put_nowait({'type': 'close'})
-        await asyncio.wait_for(task, timeout=2)
-    assert_no_live_tasks()
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize('failure', [ConnectionError, RuntimeError])
-async def test_upstream_reconnects_are_bounded_resume_and_leave_no_tasks(failure):
-    browser = Browser()
-    sessions = []
+async def test_upstream_reconnects_are_bounded_and_resume_without_replaying_student_turn(failure):
+    client = Client()
+    sent, controls = [], []
 
     def make_session():
-        if not sessions:
+        if not client.sessions:
             session = Session(response(session_resumption_update=NS(resumable=True, new_handle='resume-1')))
             session.incoming.put_nowait(response(go_away=NS()))
-        else:
-            session = Session(failure('stand-in upstream unavailable'))
-        sessions.append(session)
-        return session
+            return session
+        return Session(failure('stand-in upstream unavailable'))
 
-    client = Client(make_session)
-    stops = []
+    client.factory = make_session
+
+    async def emit(message):
+        sent.append(message)
 
     async def tool(name, args):
-        return {}
+        controls.append((name, args))
 
-    async def stop():
-        stops.append('stop')
-
-    await asyncio.wait_for(live.serve_live(browser, context, tool, stop,
-                                         client_factory=lambda: client, reconnect_delay=0), timeout=2)
+    bridge = live.GeminiBridge(context, tool, emit, client_factory=lambda: client, reconnect_delay=0)
+    await asyncio.wait_for(bridge.run(), 2)
     assert len(client.sessions) == 4
     assert client.configs[0]['config'].session_resumption.handle is None
-    assert all(config['config'].session_resumption.handle == 'resume-1' for config in client.configs[1:])
-    assert len(stops) >= 4
-    assert all(session.exited for session in sessions)
-    assert client.closed and browser.closed
-    assert any(message['type'] == 'error' and failure.__name__ in message['message'] for message in browser.sent)
-    assert_no_live_tasks()
+    assert all(c['config'].session_resumption.handle == 'resume-1' for c in client.configs[1:])
+    assert controls == [('stop_lab', {})] * 4
+    assert [len(s.turns) for s in client.sessions] == [1, 0, 0, 0]
+    assert bridge.last_error == failure.__name__
+    assert sent[-1]['status'] == 'unavailable'
+    await assert_clean(bridge, client)
+
+
+async def test_spoken_preview_is_only_presented_after_matching_playback():
+    state = {**context(), 'pending': {'request_id': 'proposal', 'proposal_version': 1,
+                                     'summary': 'Inspect the prepared sample.'}}
+    client, sent, presented = Client(), [], []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(name, args):
+        if name == '_present_audio':
+            presented.append(args)
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+
+        async def reply(text, index):
+            session.incoming.put_nowait(response(server_content=content(
+                output_transcription=NS(text=text), turn_complete=True)))
+            await until(lambda: sum(m['type'] == 'reply_end' for m in sent) == index)
+            return [m['reply_id'] for m in sent if m['type'] == 'reply_end'][-1]
+
+        wrong = await reply('It is ready to run.', 1)
+        await bridge.played(wrong)
+        stale = await reply(state['pending']['summary'], 2)
+        state['pending']['proposal_version'] = 2
+        await bridge.played(stale)
+        assert presented == []
+        exact = await reply(state['pending']['summary'], 3)
+        assert presented == []  # Provider turn completion is not student playback.
+        await bridge.played(exact)
+        await bridge.played(exact)
+        assert presented == [{'request_id': 'proposal', 'proposal_version': 2, 'reply_id': exact}]
+    finally:
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
