@@ -116,12 +116,13 @@ def controller_state(state, task):
     if not request_id:
         return None
     for event in reversed(state.get('notebook', [])):
-        if event.get('request_id') != request_id:
-            continue
         data = event.get('data') or {}
+        same_request = event.get('request_id') == request_id
+        if not same_request and data.get('task_id') != task['task_id']:
+            continue
         if event['kind'] == 'execution_result' and data.get('receipt'):
             return data['receipt'].get('status')
-        if event['kind'] == 'execution_progress' and data.get('phase'):
+        if event['kind'] == 'execution_progress' and data.get('phase') and same_request:
             return 'in_progress'
     return None
 

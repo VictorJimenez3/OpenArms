@@ -8,6 +8,7 @@ import time
 import uuid
 from pathlib import Path
 from .backends import MockBackend
+from .contracts import LabExecutor
 from .conversation import condition_input, controller_state, conversation_reply, explicit_action, prediction_input, read_only_turn, reset_input, stop_input, words
 from .learning import CONDITIONS, EXPERIMENT, reflection_feedback, unknown_observation
 from .skills import SkillRegistry, compute_skill_hash
@@ -74,7 +75,7 @@ class Lab(TaskLoop):
         _id(sid, 'session ID')
         return self.locks.setdefault(sid, asyncio.Lock())
 
-    def _backend(self, sid):
+    def _backend(self, sid) -> LabExecutor:
         """Called only when starting or preparing an authorized mock trial, never for history."""
         if sid not in self.backends:
             if self.backend_factory is None and os.getenv('OPENARMS_BACKEND', 'mock') != 'mock':
@@ -488,6 +489,7 @@ class Lab(TaskLoop):
         task = self._task_for_request(s, r)
         sample = self._prepared_sample(r['plan'])
         if (r['generation'] != s['generation'] or r['trial_id'] != s['trial']['trial_id'] or
+                r['plan'].get('execution_scope') != self.execution_scope or
                 (sample and r['condition_id'] != s['trial']['condition_id']) or
                 r['plan']['scene_hash'] != self._scene_hash(s) or
                 r['plan_hash'] != compute_skill_hash(r['plan']) or r['plan'] != task['plan'] or task['status'] != 'awaiting_confirmation'):
@@ -663,8 +665,8 @@ class Lab(TaskLoop):
     def _conversational_choice(self, s, condition_id, text, turn_id):
         prior = s['tasks'][-1] if s['tasks'] else None
         pending = s.get('pending')
-        correcting = (pending and self._prepared_sample(pending['plan']) and
-                      condition_id != pending['condition_id'])
+        sample = self._prepared_sample(pending['plan']) if pending else None
+        correcting = bool(sample and condition_id != sample['arguments']['condition_id'])
         supported = any(item['id'] == condition_id for item in self.conditions)
         explicit_correction = bool(re.match(r'^(?:actually|instead|no|switch to|change to|make that)\b', words(text)))
         if not supported and prior and prior['status'] in ('queued', 'running') and not explicit_correction:
@@ -677,13 +679,17 @@ class Lab(TaskLoop):
             self._cancel_tasks(s, 'Sample changed during planning.', target=prior['task_id'])
             correcting = True
         self._choose(s, condition_id)
+        if correcting and pending and s.get('pending') is pending:
+            self._invalidate(s, 'Condition corrected.')
         if correcting or (prior and prior['status'] == 'needs_clarification' and
                           not prior.get('clarification_answered')):
-            task = self._queue_task(s, text, turn_id)
+            intent = text
+            correction = None
             if correcting and prior:
-                task['feedback'].append({'type': 'student_correction', 'task_id': prior['task_id'],
-                                         'request': prior['request'], 'sample': condition_id})
-            return task
+                intent = (prior.get('clarification') or {}).get('request', prior['request'])
+                correction = {'task_id': prior['task_id'], 'request': intent,
+                              'text': text, 'sample': condition_id}
+            return self._queue_task(s, intent, turn_id, correction=correction)
         return None
 
     async def converse(self, sid, text, client_request_id=None):

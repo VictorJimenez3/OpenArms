@@ -27,6 +27,9 @@ async def main():
     parser.add_argument('--out', type=Path, required=True)
     add_expert_arguments(parser)
     args = parser.parse_args()
+    source = json.loads((args.baseline/'summary.json').read_text())
+    if source.get('execution_backend') != 'mock':
+        parser.error('Use a mock full-loop baseline for synthetic skill improvement.')
     args.out.mkdir(parents=True, exist_ok=False)
     data = args.out/'sessions'
     data.mkdir()
@@ -35,7 +38,8 @@ async def main():
     expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
     lab = Lab(data, expert=expert, perception=scene, evaluator=evaluator,
-              backend_factory=lambda: ObscuredAfterAction(scene, delay=.02), expert_timeout=240)
+              backend_factory=lambda: ObscuredAfterAction(scene, delay=.02),
+              execution_scope='mock', expert_timeout=240)
     sid = (await lab.create())['session_id']
     baseline = copy.deepcopy(lab.registry.list()[0])
     (args.out/'unchanged-baseline.json').write_text(json.dumps(baseline, indent=2))

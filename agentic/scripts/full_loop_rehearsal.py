@@ -40,6 +40,35 @@ async def settle(lab, sid, *, approve=False):
             await asyncio.sleep(.1)
 
 
+def timing(state, started_at, acknowledged_at):
+    task = state['tasks'][-1]
+    controller, = task['execution']
+    approved = next(r for r in state['requests'] if r['request_id'] == controller['request_id'])
+    events = [e for e in state['notebook'] if e['request_id'] == approved['request_id']]
+    proposed = next(e['time'] for e in events if e['kind'] == 'request_proposed')
+    first_progress = next(e['time'] for e in events
+                          if e['kind'] == 'execution_progress' and e['data'].get('phase'))
+    finished = next(e['time'] for e in events if e['kind'] == 'execution_result')
+    outcome = task['observations'][-1]
+    observed = next(e['time'] for e in state['notebook'] if e['kind'] == 'observation'
+                    and e['data']['observation']['observation_id'] == outcome['observation_id'])
+    confirmed = approved['confirmed_at']
+    assert controller['plan_hash'] == approved['plan_hash']
+    assert controller['task_id'] == approved['task_id'] == outcome['task_id'] == task['task_id']
+    assert controller['trial_id'] == approved['trial_id'] == outcome['trial_id'] == task['trial_id']
+    assert started_at <= proposed <= confirmed <= first_progress <= finished <= observed
+    return {
+        'request_acknowledgment_ms': (acknowledged_at-started_at)*1000,
+        'request_to_proposal_ms': (proposed-started_at)*1000,
+        'proposal_to_confirmation_ms': (confirmed-proposed)*1000,
+        'confirmation_to_controller_progress_ms': (first_progress-confirmed)*1000,
+        'controller_elapsed_ms': controller['elapsed_ms'],
+        'controller_receipt_to_observation_ms': (observed-finished)*1000,
+        'request_to_observation_ms': (observed-started_at)*1000,
+        'planning_metrics': approved['metrics'],
+    }
+
+
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
@@ -52,7 +81,7 @@ async def main():
     expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
     factory = lambda: SceneBackend(scene, delay=.02)
-    options = {}
+    options = {'execution_scope': 'mock'}
     request_text = 'Please test the prepared vinegar sample and check the indicator color.'
     if args.scene == 'two_vessel':
         if args.execution != 'mujoco':
@@ -66,26 +95,38 @@ async def main():
         evaluator = TwoVesselSkillEvaluator(args.out/'evaluations')
         factory = lambda: TwoVesselBackend(scene)
         options = {'experiment': EXPERIMENT, 'conditions': CONDITIONS, 'execution_scope': execution_scope()}
-        request_text = 'Please pour one premeasured portion of water from A into C, return the donor and check the result.'
+        request_text = ('Please pour one premeasured portion of water from A into C, '
+                        'return the donor to A and go HOME, then check the result.')
     elif args.execution == 'mujoco':
         from openarms_lab.mujoco_scene import MujocoSceneService
         from openarms_lab.mujoco_backend import MujocoBackend
-        from openarms_lab.simulation_evaluation import SimulationSkillEvaluator
+        from openarms_lab.simulation_evaluation import SimulationSkillEvaluator, simulation_scope
         scene = MujocoSceneService(args.out/'scene')
         expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
         evaluator = SimulationSkillEvaluator(args.out/'evaluations')
         factory = lambda: MujocoBackend(scene)
+        options['execution_scope'] = simulation_scope()
     lab = Lab(args.out/'sessions', expert=expert, perception=scene, evaluator=evaluator,
               backend_factory=factory, expert_timeout=240, **options)
     sid = (await lab.create())['session_id']
     try:
         began = time.perf_counter()
-        await lab.converse(sid, request_text, 'cold-request')
+        cold_started = time.time()
+        queued = await lab.converse(sid, request_text, 'cold-request')
+        cold_ack = time.time()
+        progress = await lab.converse(sid, 'What are you doing?', 'cold-follow-up')
+        assert [t['task_id'] for t in progress['tasks']] == [queued['tasks'][-1]['task_id']]
         cold = await settle(lab, sid, approve=True)
         (args.out/'cold.json').write_text(json.dumps(cold, indent=2))
         task = cold['tasks'][-1]
         assert task['status'] == 'completed', task.get('summary')
         assert task['observations'] and task['observations'][-1]['status'] == 'observed'
+        answered = await lab.converse(sid, 'What happened?', 'cold-result-question')
+        assert answered['messages'][-1]['text'] == task['observations'][-1]['text']
+        assert len(answered['tasks']) == len(cold['tasks'])
+        (args.out/'student-follow-ups.json').write_text(json.dumps({
+            'in_progress': progress['messages'][-2:], 'result': answered['messages'][-2:],
+        }, indent=2))
         plan = task['plan']
         assert plan['skill_id'], 'Expert did not author a reusable candidate'
         decision = await lab.evaluate_candidate(sid, plan['skill_id'], plan['skill_version'])
@@ -95,14 +136,19 @@ async def main():
         request = skill['retrieval_examples'][-1]
         for key, value in plan['bindings'].items():
             request = request.replace('{'+key+'}', str(value).replace('_', ' '))
-        await lab.prepare(sid)
+        prepared = await lab.converse(sid, 'Prepare a new trial', 'prepare-repeat')
+        assert prepared['trial']['trial_id'] != cold['trial']['trial_id']
+        warm_started = time.time()
         await lab.converse(sid, request, 'warm-request')
+        warm_ack = time.time()
         warm = await settle(lab, sid, approve=True)
         (args.out/'warm.json').write_text(json.dumps(warm, indent=2))
         task2 = warm['tasks'][-1]
         assert task2['status'] == 'completed' and task2['route'] == 'active_skill'
         assert task2['plan']['skill_version'] == skill['version'], 'Warm request changed the admitted version'
         assert not task2['expert_runs'], 'Warm successful skill invoked the expert'
+        assert task2['plan']['bindings'] == plan['bindings']
+        assert warm['pending'] is None and task2['observations'][-1]['status'] == 'observed'
         if args.scene == 'two_vessel':
             observed = task2['observations'][-1]
             assert observed['status'] == 'observed' and observed['provenance'] == 'SIMULATED'
@@ -110,13 +156,17 @@ async def main():
             assert all(observed['checks'].values()), observed
         summary = {'expert_configuration': expert.describe(), 'expert_runs': task['expert_runs'],
                    'provider': task['expert_runs'][0]['provider'], 'model': task['expert_runs'][0]['model'],
+                   'requested_model': task['expert_runs'][0].get('requested_model'),
+                   'actual_model': task['expert_runs'][0].get('actual_model'),
                    'reasoning_effort': task['expert_runs'][0]['reasoning_effort'],
                    'provenance': 'SIMULATED' if args.execution == 'mujoco' else 'SYNTHETIC',
-                   'execution_backend': args.execution,
+                   'execution_backend': args.execution, 'execution_scope': options['execution_scope'],
                    'scene': args.scene,
                    'actual_expert': True, 'audible_voice_verified': False,
                    'cold_model_calls': sum(run['calls'] for run in task['expert_runs']),
                    'warm_model_calls': 0, 'warm_request': request, 'promotion': decision,
+                   'cold_timing': timing(cold, cold_started, cold_ack),
+                   'warm_timing': timing(warm, warm_started, warm_ack),
                    'elapsed_seconds': time.perf_counter()-began}
         (args.out/'summary.json').write_text(json.dumps(summary, indent=2))
         print(json.dumps(summary, indent=2), flush=True)

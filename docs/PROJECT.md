@@ -4,6 +4,8 @@ A student directs a real robot arm one supported action at a time through respon
 
 ## Decided experiment and remaining verification
 
+Victor’s presentation plan is one live robot activity and several simulation examples. Aim to carry the same student interaction into an additional validated scene. Label standalone runs and asset previews according to what they show. [Project objective](../PROJECT_OBJECTIVE.md) · [Victor’s implementation handoff](../research/victor/student-and-agent-flow.md)
+
 Use exactly **two active vessels**: a smaller moving donor at A and a stationary, preferably wider clear receiver at C. Pick up A, pour one premeasured portion into C, return the donor to A and finish at HOME. Fixed stations, taught trajectories and a retained supervised fallback are acceptable.
 
 The preferred Smartivity My First Science Kit experiment is prepared magic-tea indicator plus citric-acid solution; fallback is a small contained citric-acid/baking-soda reaction. The kit manual has been reviewed in the [shared physical experiment page](https://app.notion.com/p/41871c9c107e816fab14f3549f6a8fd6); actual packet inventory, the two-vessel adaptation, preparation and visible response still need bench verification. This is a selected direction, not a validated recipe. Water is the calibration/integration medium. Food color is only a motion/visibility test; grape juice is not required. A second physical experiment is optional after this one works.

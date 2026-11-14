@@ -352,10 +352,105 @@ async def test_tampered_outcome_is_unknown_even_after_successful_execution(make_
     _, task = await settle(lab, sid, handle)
     assert task['execution'][0]['controller_completed']
     observation = task['observations'][-1]
+    assert task['status'] == 'failed'
+    assert 'UNKNOWN' in task['summary']
     assert observation['status'] == 'unknown'
     assert observation['provenance'] == 'UNKNOWN'
     assert not observation['features'] and not observation['evidence']
     assert error in observation['reason']
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('text', [
+    'Test prepared vinegar and then test prepared water.',
+    'Test prepared vinegar and measure the temperature.',
+    'Do not test prepared vinegar.',
+])
+async def test_expert_cannot_propose_only_the_first_action(make_lab, text):
+    async def transport(prompt, *_):
+        if 'Ask for each action separately.' in prompt or 'no partial action was approved' in prompt:
+            response = json.loads(reply('reject', {})['raw'])
+            response['summary'] = 'Ask for each supported action separately.'
+            return {'raw': json.dumps(response)}
+        return reply(payload=draft())
+
+    lab, sid, _ = await make_lab(transport)
+    handle = await lab.start_task(sid, text)
+    state, task = await settle(lab, sid, handle)
+    assert task['status'] == 'failed'
+    assert 'separately' in task['summary']
+    assert state['pending'] is None and lab.backends[sid].executions == 0
+
+
+@pytest.mark.asyncio
+async def test_expert_cannot_substitute_an_explicitly_requested_sample(make_lab):
+    async def transport(prompt, *_):
+        if 'differs from the requested sample' in prompt:
+            water = draft()
+            water['bindings']['condition'] = 'water'
+            return reply(payload=water)
+        return reply(payload=draft())
+
+    lab, sid, _ = await make_lab(transport)
+    handle = await lab.start_task(sid, 'Test the prepared water sample.')
+    state, task = await settle(lab, sid, handle)
+    assert task['status'] == 'awaiting_confirmation'
+    assert state['pending']['plan']['bindings'] == {'condition': 'water'}
+    assert lab.backends[sid].executions == 0
+
+
+@pytest.mark.asyncio
+async def test_post_dispatch_revision_cannot_drop_the_approved_outcome_check(make_lab):
+    async def transport(prompt, *_):
+        if '"phase": "execution_feedback"' in prompt:
+            if 'must preserve the approved outcome checks' in prompt:
+                return reply('complete', {'continue': True})
+            if 'checkpoint_failed' not in prompt:
+                return reply('complete', {'continue': True})
+            return reply('revision', {'steps': [{'operation': 'observe', 'arguments': {'view': 'secondary'}}],
+                                      'outcome_checks': [{'feature': 'readable', 'expected': True}]})
+        payload = draft()
+        payload['skill_definition']['outcome_checks'].append({'feature': 'color', 'expected': 'purple'})
+        return reply(payload=payload)
+
+    lab, sid, _ = await make_lab(transport)
+    handle = await lab.start_task(sid, 'Run a prepared sample with a checked outcome.')
+    state, _ = await settle(lab, sid, handle)
+    await confirm(lab, sid, state['pending'])
+    state, task = await settle(lab, sid, handle)
+    assert task['status'] == 'failed'
+    assert 'outcome check failed' in task['summary']
+    assert task['observations'][-1]['checks'] == {'readable': True, 'color': False}
+    assert state['pending'] is None and lab.backends[sid].executions == 1
+
+
+@pytest.mark.asyncio
+async def test_observation_revision_does_not_clear_controller_failure(make_lab):
+    class FailedAction(SceneBackend):
+        async def execute_step(self, request_id, arguments, progress, **options):
+            receipt = await super().execute_step(request_id, arguments, progress, **options)
+            return {**receipt, 'status': 'failed', 'controller_completed': False,
+                    'reason': 'The controller did not verify its return to HOME.'}
+
+    async def transport(prompt, *_):
+        if '"phase": "execution_feedback"' not in prompt:
+            return reply(payload=draft())
+        if 'did not verify its return' in prompt and '"view": "secondary"' not in prompt:
+            return reply('revision', {'steps': [{'operation': 'observe', 'arguments': {'view': 'secondary'}}],
+                                      'outcome_checks': [{'feature': 'readable', 'expected': True}]})
+        return reply('complete', {'continue': True})
+
+    lab, sid, _ = await make_lab(transport, backend_class=FailedAction)
+    handle = await lab.start_task(sid, 'Run a prepared sample and inspect its result.')
+    state, _ = await settle(lab, sid, handle)
+    await confirm(lab, sid, state['pending'])
+    state, _ = await settle(lab, sid, handle)
+    await confirm(lab, sid, state['pending'])
+    state, task = await settle(lab, sid, handle)
+    assert task['status'] == 'failed'
+    assert 'did not verify its return' in task['summary']
+    assert task['observations'][-1]['status'] == 'observed'
+    assert lab.backends[sid].executions == 1
 
 
 async def test_recorded_still_can_be_localized_without_inventing_live_freshness(make_lab):

@@ -10,14 +10,35 @@ import time
 import uuid
 from pathlib import Path
 
-from .contracts import MOCK_OPERATIONS, ImageReference, PlanDraft, SkillDefinition
-from .skills import PRIMITIVE_SCHEMAS, compute_skill_hash
+from .contracts import MOCK_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
+from .skills import compute_skill_hash
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
 FRAME_MAX_AGE = 180
+ADDITIONAL_ACTION = re.compile(
+    r'\b(?:and(?:\s+then)?|then|after that|followed by)\s+(?:please\s+)?'
+    r'(?:test|run|pour|pick up|put down|set down|move|add|mix|heat|dispense)\b', re.I)
+NEGATED_ACTION = re.compile(r"^\s*(?:please\s+)?(?:do not|don['’]t|never)\b", re.I)
+REQUESTED_SAMPLE = re.compile(r'\bprepared\s+(vinegar|water|baking[ _-]soda)\b', re.I)
+UNSUPPORTED_FIXTURE_REQUEST = re.compile(
+    r'\b(?:dilut(?:e|ion)|concentration|buoyancy|mandarin|'
+    r'numeric(?:al)? ph|exact ph|measure (?:the )?ph|heat(?:ing)?|'
+    r'(?:measure|read|check) (?:the )?temperature|temperature measurement)\b', re.I)
 CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_frame', 'units', 'clock')
 VESSEL_LABELS = ('source', 'receiver')
+WATER_ROUTE = re.compile(
+    r'\b(?P<direction>from|into|to)\s+'
+    r'(?:(?:the\s+)?(?:station|dock|cup|donor|receiver|vessel)\s+(?:at\s+)?(?P<label>[a-z])\b|'
+    r'(?P<short>[a-z])(?=\s+(?:into|to|then|and)\b|\s*[,.;!?]|\s*$))', re.I)
+WATER_DONOR_RETURN = re.compile(
+    r'\breturn\s+(?:the\s+)?(?:donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
+    r'\s+(?:back\s+)?to\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
+WATER_PORTION = re.compile(
+    r'\b(\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|multiple)'
+    r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?portions?\b', re.I)
+WATER_VOLUME = re.compile(r'\b\d+(?:\.\d+)?\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b', re.I)
+OTHER_LIQUID = re.compile(r'\b(?:vinegar|baking[- ]soda|citric[- ]acid|magic[- ]tea|indicator)\b', re.I)
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -77,11 +98,13 @@ class TaskLoop:
                 not s['connected']):
             raise asyncio.CancelledError()
 
-    def _queue_task(self, s, text, turn_id, *, improvement=None):
+    def _queue_task(self, s, text, turn_id, *, improvement=None, correction=None):
         self._idle(s)
+        if s.get('execution_scope') != self.execution_scope:
+            raise ValueError('This setup changed. Start a new session before requesting an action.')
         previous = s['tasks'][-1] if s.get('tasks') else None
         clarification = None
-        if (not improvement and previous and previous['status'] == 'needs_clarification' and
+        if (not improvement and not correction and previous and previous['status'] == 'needs_clarification' and
                 previous['trial_id'] == s['trial']['trial_id'] and previous['generation'] == s['generation'] and
                 not previous.get('clarification_answered')):
             clarification = {'task_id': previous['task_id'], 'request': previous['request'],
@@ -96,7 +119,8 @@ class TaskLoop:
                 'route': None, 'plan': None, 'execution': [], 'observations': [],
                 'feedback': [], 'expert_runs': [], 'evidence': {}, 'scene': None, 'images': [],
                 'started_at': time.time(), 'dispatched_action': False,
-                'improvement': copy.deepcopy(improvement), 'clarification': clarification}
+                'improvement': copy.deepcopy(improvement), 'clarification': clarification,
+                'correction': correction}
         if hasattr(self.expert, 'snapshot'):
             try:
                 task['expert_configuration'] = self.expert.snapshot()
@@ -104,6 +128,8 @@ class TaskLoop:
                 task['expert_configuration'] = {'error_code': getattr(exc, 'code', 'configuration')}
         if clarification:
             task['feedback'].append({'type': 'student_clarification', **copy.deepcopy(clarification)})
+        if correction:
+            task['feedback'].append({'type': 'student_correction', **correction})
         s['tasks'].append(task)
         self._task_event(s, task, 'task_queued', status='queued')
         self._spawn(s, task, self._plan_task(s, task))
@@ -379,19 +405,24 @@ class TaskLoop:
             'conversation': [{k: m[k] for k in ('role', 'text')} for m in s['messages'][-20:] if m.get('final')],
             'phase': phase, 'scene': task['scene'], 'images': task['images'],
             'clarification': task.get('clarification'),
+            'correction': task.get('correction'),
             'tools': [{'name': name, 'description': summary,
                        'input_schema': {'type': 'object', 'properties': properties,
                                         'required': required, 'additionalProperties': False}}
                       for name, (summary, properties, required) in TOOLS.items()],
             'skills': self.registry.list(), 'feedback': task['feedback'],
-            'capability_limits': {**s['capabilities'], 'primitives': list(primitives),
+            'capability_limits': {**s['capabilities'], 'execution_scope': s.get('execution_scope'),
+                                  'primitives': list(primitives),
                                   'primitive_arguments': {name: schema.model_json_schema()
                                                           for name, schema in primitives.items()},
+                                  'observer_features': getattr(self.perception, 'feature_schema', None),
                                   'replans_remaining': 2 - task['replans']},
             'instructions': ('Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
                              'or clarification/reject. Use only listed primitives. Never claim expected state as observed. '
                              'A prepared sample requires an explicit condition in its arguments. Use the requested sample '
                              'or the selected condition. Ask which sample when neither is specified. '
+                             'If correction is present, use its sample selection while retaining the rest of the request. '
+                             'If the request requires multiple actions or an unsupported result, clarify before proposing any action. '
                              'Prediction is optional notebook context. '
                              'If clarification is present, interpret the answer with its original request and question; '
                              'a changed goal replaces the old goal, and all executable proposals require fresh consent. '
@@ -510,12 +541,15 @@ class TaskLoop:
             # These capabilities have no executor/observer in this software
             # delivery. A model may not silently execute a supported subset of
             # a request that also asks for one of them.
-            unsupported = re.search(r'\b(?:dilut(?:e|ion)|concentration|buoyancy|mandarin|'
-                                    r'numeric(?:al)? ph|exact ph|measure (?:the )?ph|'
-                                    r'heat(?:ing)?|temperature measurement)\b', task['request'], re.I)
+            intent = (task.get('clarification') or {}).get('request', task['request'])
+            if NEGATED_ACTION.search(task['request']):
+                raise ValueError('Ask for a supported action explicitly; no partial action was approved.')
+            unsupported = UNSUPPORTED_FIXTURE_REQUEST.search(intent)
             if unsupported:
                 raise ValueError('This request includes an unsupported capability: '+unsupported.group(0)+
                                  '. Ask for the supported action separately; no partial action was approved.')
+            if ADDITIONAL_ACTION.search(intent):
+                raise ValueError('This request includes multiple actions. Ask for each action separately.')
         feature_schema = getattr(self.perception, 'feature_schema', None)
         if feature_schema is not None and any(rule['feature'] not in feature_schema for rule in plan['outcome_checks']):
             raise ValueError('Use supported observer features: '+', '.join(feature_schema))
@@ -533,8 +567,13 @@ class TaskLoop:
         if set(plan['evidence_ids']) - set(task['evidence']):
             raise ValueError('Plan references evidence unavailable to this task.')
         sample = self._prepared_sample(plan)
-        if sample and task['condition_id'] and sample['arguments']['condition_id'] != task['condition_id']:
-            raise ValueError('The proposed mock sample differs from the selected condition.')
+        if sample:
+            requested = REQUESTED_SAMPLE.search(task['request'])
+            condition_id = task['condition_id']
+            if requested and not task.get('correction'):
+                condition_id = re.sub(r'[ -]', '_', requested.group(1).lower())
+            if condition_id and sample['arguments']['condition_id'] != condition_id:
+                raise ValueError('The proposed sample differs from the requested sample or selected condition.')
         if action:
             if task['dispatched_action']:
                 raise ValueError('This task already dispatched its single mock action.')
@@ -543,6 +582,12 @@ class TaskLoop:
             backend = self.backends.get(task['session_id'])
             if backend is None:
                 raise ValueError('Prepare a fresh simulation before proposing an action.')
+            capabilities = backend.capabilities()
+            if action['operation'] not in capabilities.get('supported_operations', MOCK_OPERATIONS):
+                raise ValueError('The current setup does not support this operation.')
+            if capabilities.get('experiment_id') == 'two_vessel_water':
+                for text in dict.fromkeys((intent, task['request'])):
+                    self._check_water_request(text)
             backend.check_step(action['operation'], action['arguments'])
             self._fixture_state(task, scene['frame_id'], action)
         if any(step['operation'] == 'localize_objects' and step['arguments']['evidence_id'] not in task['evidence']
@@ -558,6 +603,23 @@ class TaskLoop:
                 self._check_image(task['session_id'], image)
         except OSError as exc:
             raise ValueError(self._perception_error(exc)) from exc
+
+    @staticmethod
+    def _check_water_request(text):
+        if OTHER_LIQUID.search(text):
+            raise ValueError('This two-vessel setup supports water only. No pour was approved.')
+        if WATER_VOLUME.search(text) or any(match[1].lower() not in ('one', '1', '1.0')
+                                            for match in WATER_PORTION.finditer(text)):
+            raise ValueError('This setup supports one premeasured portion with no specified volume.')
+        if any(match['label'].upper() != 'A' for match in WATER_DONOR_RETURN.finditer(text)):
+            raise ValueError('This setup can only return the donor to A. No pour was approved.')
+        for match in WATER_ROUTE.finditer(WATER_DONOR_RETURN.sub('', text)):
+            label = (match['label'] or match['short']).upper()
+            source = match['direction'].lower() == 'from'
+            if source and label != 'A':
+                raise ValueError('This setup can only pour from A. No pour was approved.')
+            if not source and label != 'C':
+                raise ValueError('This setup can only pour into C. No pour was approved.')
 
     def _check_improvement(self, task, draft, plan):
         pinned = task['improvement']['baseline_plan'] or {}
@@ -607,6 +669,19 @@ class TaskLoop:
         elif phase not in ('planning', 'improvement') or task['status'] != 'running':
             raise ValueError('A proposal requires an active planning phase.')
         plan = self.registry.compile(draft, task_id=task['task_id'])
+        if phase == 'execution_feedback' and task['dispatched_action']:
+            approved = task['plan']
+            if (plan['steps'][-1]['operation'] != 'observe' or
+                    not {compute_skill_hash(check) for check in approved['outcome_checks']}.issubset(
+                        compute_skill_hash(check) for check in plan['outcome_checks'])):
+                raise ValueError('A post-action revision must preserve the approved outcome checks.')
+            if any(key not in approved['expected_state'] or
+                   compute_skill_hash(value) != compute_skill_hash(approved['expected_state'][key])
+                   for key, value in plan['expected_state'].items()):
+                raise ValueError('An observation revision cannot change the expected controller state.')
+            plan['expected_state'] = copy.deepcopy(approved['expected_state'])
+            if draft.skill_id or draft.skill_definition:
+                raise ValueError('An observation revision cannot replace the dispatched skill.')
         if task['improvement']:
             if phase == 'execution_feedback' and task['dispatched_action']:
                 if plan['skill_id']:
@@ -643,7 +718,7 @@ class TaskLoop:
                     task['feedback'].append({'type': 'scene_unavailable', 'reason': self._perception_error(exc)})
                     await self._emit_task(s, task, 'scene_unavailable', code=type(exc).__name__)
             phase = 'improvement' if task['improvement'] else 'planning'
-            route = None if task['improvement'] else self.registry.match(task['request'])
+            route = None if task['improvement'] or task.get('correction') else self.registry.match(task['request'])
             if route:
                 try:
                     await self._prepare_proposal(s, task, route, phase)
@@ -695,7 +770,8 @@ class TaskLoop:
         s['proposal_sequence'] += 1
         request_id = str(uuid.uuid4())
         bound_plan = {**plan, 'scene_hash': self._scene_hash(s), 'generation': s['generation'],
-                      'trial_id': task['trial_id'], 'task_id': task['task_id']}
+                      'trial_id': task['trial_id'], 'task_id': task['task_id'],
+                      'execution_scope': s.get('execution_scope')}
         action = self._action(plan)
         if action:
             presented_id = task['scene']['frame_id']
@@ -733,16 +809,19 @@ class TaskLoop:
     async def _execute_task(self, s, task, request):
         plan = request['plan']
         warm = task['route'] == 'active_skill' and task['replans'] == 0
+        prior_actions = [r for r in task['execution'] if 'execution_finished_at' in r]
         receipt = {'request_id': request['request_id'], 'task_id': task['task_id'],
                    'trial_id': task['trial_id'], 'skill_id': plan['skill_id'], 'skill_version': plan['skill_version'],
                    'plan_hash': request['plan_hash'], 'backend': s['backend'], 'status': 'no_operation',
-                   'prior_execution': [r for r in task['execution'] if r['status'] == 'completed']}
+                   'prior_execution': prior_actions}
         try:
             self._guard_task(s, task)
             request['status'] = 'executing'
             await self._set_status(s, task, 'executing')
             for index, step in enumerate(plan['steps']):
                 self._guard_task(s, task)
+                if plan.get('execution_scope') != self.execution_scope:
+                    raise ValueError('The execution setup changed. Start a new session.')
                 operation, arguments = step['operation'], step['arguments']
                 progress_data = {'step': index, 'operation': operation, 'request_id': request['request_id']}
                 task['feedback'].append({'type': 'execution_progress', **progress_data})
@@ -797,8 +876,9 @@ class TaskLoop:
                 failure = None
                 if operation == 'observe':
                     latest = task['observations'][-1]
-                    if receipt['status'] == 'failed':
-                        failure = receipt.get('reason') or 'Executor reported failure.'
+                    action_receipt = prior_actions[-1] if prior_actions else receipt
+                    if task['dispatched_action'] and not action_receipt.get('controller_completed'):
+                        failure = action_receipt.get('reason') or 'Executor did not confirm completion.'
                     elif latest['status'] != 'observed' or (is_final and not all(latest['checks'].values())):
                         failure = 'Independent outcome is unknown or an outcome check failed.'
                 elif operation == 'inspect_scene':
@@ -891,8 +971,15 @@ class TaskLoop:
             s['trial']['state'] = 'stopped'
             await self._set_status(s, task, status, decision['summary'])
             return True
-        if not is_final and failure:
-            raise ValueError(failure)
+        if failure:
+            if not is_final:
+                raise ValueError(failure)
+            latest = task['observations'][-1] if task['observations'] else None
+            summary = f"{failure} {latest['text']}" if latest else failure
+            request.update(status='failed', result=copy.deepcopy(receipt), reason=failure)
+            s['trial']['state'] = 'reflecting' if latest else 'stopped'
+            await self._set_status(s, task, 'failed', summary)
+            return True
         if kind != 'complete' or (not is_final and payload.get('continue') is not True):
             raise ValueError('Expert did not authorize continuing the exact approved plan.')
         return False

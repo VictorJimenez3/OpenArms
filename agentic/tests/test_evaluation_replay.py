@@ -1,7 +1,9 @@
 import copy
+import json
 import pytest
 
 from openarms_lab.contracts import SkillDefinition
+from openarms_lab import evaluation
 from openarms_lab.evaluation import SyntheticSkillEvaluator
 from openarms_lab.skills import compute_skill_hash
 
@@ -62,3 +64,23 @@ async def test_improvement_must_preserve_existing_conversational_invocations(tmp
     evaluator = SyntheticSkillEvaluator(tmp_path)
     receipt = await evaluator.evaluate_candidate('test-session', candidate, baseline)
     assert not receipt['passed'] and not receipt['regression_gates']['routing']
+
+
+@pytest.mark.asyncio
+async def test_readable_outcome_during_controller_failure_does_not_count_as_recovered(tmp_path, monkeypatch):
+    class FailedController(evaluation.SceneBackend):
+        async def execute_step(self, *args, **kwargs):
+            receipt = await super().execute_step(*args, **kwargs)
+            return {**receipt, 'status': 'failed', 'controller_completed': False,
+                    'reason': 'Return to HOME failed.'}
+
+    monkeypatch.setattr(evaluation, 'SceneBackend', FailedController)
+    receipt = await SyntheticSkillEvaluator(tmp_path).evaluate_candidate('test-session', definition(), None)
+    comparison = json.loads((tmp_path / receipt['metrics']['artifact']).read_text())
+    clear = next(case for case in comparison['cases']['candidate'] if case['case'] == 'clear')
+    assert clear['observed']['status'] == 'observed'
+    assert clear['executions'] == 1
+    assert not clear['recovered']
+    assert receipt['candidate_recovered'] == 0
+    assert not receipt['regression_gates']['outcome']
+    assert not receipt['passed']

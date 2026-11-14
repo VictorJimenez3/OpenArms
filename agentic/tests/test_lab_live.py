@@ -687,6 +687,11 @@ def test_voice_context_distinguishes_task_activity_from_controller_progress():
     assert task['controller_state'] == 'completed'
     assert not live.compact_snapshot(state)['observations']
 
+    state['notebook'][-1]['data']['task_id'] = 'task'
+    state['tasks'][0]['request_id'] = 'observation-revision'
+    task, = live.compact_snapshot(state)['tasks']
+    assert task['controller_state'] == 'completed'
+
 
 def test_voice_uses_the_selected_water_fixture_capabilities():
     state = {**context(), 'experiment': {'id': 'two_vessel_water', 'title': 'Two-vessel water pour — simulation'},

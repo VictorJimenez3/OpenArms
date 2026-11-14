@@ -31,6 +31,7 @@ def simulation_scope():
                'agentic/openarms_lab/mujoco_backend.py',
                'agentic/openarms_lab/skills.py', 'agentic/openarms_lab/evaluation.py',
                'agentic/openarms_lab/simulation_evaluation.py', 'agentic/openarms_lab/contracts.py',
+               'agentic/openarms_lab/runtime.py', 'agentic/openarms_lab/task_loop.py',
                'simulation/config/setups/block/poses.json']
     sources += [str(path.relative_to(root)) for path in sorted((root / 'simulation/models/so101').rglob('*'))
                 if path.is_file() and path.suffix.lower() in {'.xml', '.stl', '.obj', '.mtl', '.png', '.jpg'}]

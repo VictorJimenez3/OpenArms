@@ -162,7 +162,8 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         p = await self.approve(snap)
         with self.assertRaises(LabError):
             await self.lab.confirm(self.sid, p['request_id'], p['proposal_version'])
-        snap, task = await self.wait_status('completed')
+        snap, task = await self.wait_status('failed')
+        self.assertIn('UNKNOWN', task['summary'])
         self.assertEqual(self.perception.observation_inputs, [{'view': 'primary'}])
         self.assertIs(task['execution'][0]['controller_completed'], True)
         self.assertEqual(task['observations'][0]['status'], 'unknown')
@@ -254,6 +255,22 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         _, revised = await self.wait_status('completed', failed['task_id'])
         self.assertEqual(revised['observations'][-1]['checks'], {'readable': True})
         self.assertEqual(self.lab.backends[self.sid].executions, 4)
+
+    async def test_host_preflight_failure_cannot_be_overruled_by_expert(self):
+        handle = await self.lab.start_task(self.sid, 'Test the prepared vinegar sample')
+        state, _ = await self.wait_status('awaiting_confirmation', handle['task_id'])
+
+        def backend_check(*_):
+            raise ValueError('Executor is no longer ready.')
+
+        backend = self.lab.backends[self.sid]
+        backend.check_step = backend_check
+        await self.approve(state)
+        state, task = await self.wait_status('failed', handle['task_id'])
+        self.assertEqual(backend.executions, 0)
+        self.assertFalse(task['dispatched_action'])
+        self.assertIn('no longer ready', task['summary'])
+        self.assertIsNone(state['pending'])
 
     async def test_image_revisions_require_fresh_consent_and_stop_at_two(self):
         self.expert.revise = True

@@ -22,7 +22,7 @@ from .simulated_backend import SceneBackend
 from .skills import SkillRegistry, compute_skill_hash
 
 SUITE = {
-    'version': 'synthetic-ph-replay-v1',
+    'version': 'synthetic-ph-replay-v2',
     'scope': 'Qualitative prepared-sample skills; no chemistry or physical qualification.',
     'recoverable': [
         {'name': 'clear', 'world': {}},
@@ -132,7 +132,11 @@ class SyntheticSkillEvaluator:
             task = state['tasks'][-1]
             observed = task['observations'][-1] if task['observations'] else None
             checks = observed.get('checks', {}) if observed else {}
-            recovered = bool(observed and observed['status'] == 'observed' and checks and all(checks.values()))
+            controller_completed = any(
+                receipt.get('status') == 'completed' and receipt.get('controller_completed') is True
+                for receipt in task['execution'])
+            recovered = bool(task['status'] == 'completed' and controller_completed and observed and
+                             observed['status'] == 'observed' and checks and all(checks.values()))
             summary = {'case': case['name'], 'bindings': bindings, 'control': control,
                        'control_passed': control_passed, 'recovered': recovered,
                        'observed': observed, 'task_status': task['status'],
@@ -224,7 +228,7 @@ class SyntheticSkillEvaluator:
             hashes = [hashlib.sha256((folder/'frozen-inputs.json').read_bytes()).hexdigest(),
                       hashlib.sha256(metrics_path.read_bytes()).hexdigest()]
             gain = score(candidate_rows)-score(baseline_rows)
-            reasons = [f'Independent readable outcomes: baseline {score(baseline_rows)}, candidate {score(candidate_rows)}.',
+            reasons = [f'Completed actions with passing independent outcomes: baseline {score(baseline_rows)}, candidate {score(candidate_rows)}.',
                        f'Recovered-case change: {gain}; unchanged-baseline non-regression required.']
             reasons += [f'Failed {name} gate.' for name, passed in gates.items() if not passed]
             receipt = {'evaluation_id': eid, 'suite_hash': compute_skill_hash(SUITE),
