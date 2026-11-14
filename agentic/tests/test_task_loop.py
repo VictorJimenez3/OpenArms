@@ -1,7 +1,12 @@
 import asyncio
 import copy
+import hashlib
 import tempfile
+import time
 import unittest
+from pathlib import Path
+
+from PIL import Image
 
 from agentic.openarms_lab.backends import MockBackend
 from agentic.openarms_lab.runtime import Lab, LabError
@@ -35,27 +40,32 @@ def decision(kind='plan', payload=None):
 class TestPerception:
     def __init__(self, *, unknown=True, fresh=True):
         self.unknown, self.fresh = unknown, fresh
+        self._frames = tempfile.TemporaryDirectory()
         self.captures = 0
-        self.receipts = []
+        self.observation_inputs = []
         self.localized = []
         self.labels_visible = True
 
     async def inspect_scene(self, sid, view='primary'):
+        captured_at = time.time()
         self.captures += 1
         fid = str(self.captures)
-        return {'evidence_id': fid, 'provenance': 'SYNTHETIC',
-                'scene': {'frame_id': fid, 'fresh': self.fresh, 'view': view},
-                'images': [{'evidence_id': fid, 'path': '/synthetic-fixture.png',
-                            'captured_at': 123, 'sha256': HASH, 'provenance': 'SYNTHETIC'}]}
+        path = Path(self._frames.name) / f'{fid}.png'
+        Image.new('RGB', (8, 8), 'purple').save(path)
+        return {'evidence_id': fid, 'captured_at': captured_at, 'provenance': 'SYNTHETIC',
+                'scene': {'frame_id': fid, 'captured_at': captured_at, 'clock': 'unix_seconds',
+                          'fresh': self.fresh, 'view': view},
+                'images': [{'evidence_id': fid, 'path': str(path), 'captured_at': captured_at,
+                            'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'provenance': 'SYNTHETIC'}]}
 
     async def localize_objects(self, sid, evidence_id, labels):
         self.localized.append(evidence_id)
         return {'evidence_id': evidence_id, 'verified_labels': labels if self.labels_visible else [],
                 'method': 'synthetic-test'}
 
-    async def observe(self, sid, execution_receipt):
-        self.receipts.append(execution_receipt)
-        frame = await self.inspect_scene(sid, execution_receipt['view'])
+    async def observe(self, sid, camera):
+        self.observation_inputs.append(camera)
+        frame = await self.inspect_scene(sid, camera['view'])
         return {**frame, 'status': 'unknown' if self.unknown else 'observed',
                 'observer_version': 'synthetic-test', 'features': {'readable': not self.unknown}}
 
@@ -153,8 +163,11 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(LabError):
             await self.lab.confirm(self.sid, p['request_id'], p['proposal_version'])
         snap, task = await self.wait_status('completed')
-        self.assertTrue(self.perception.receipts[0]['controller_completed'])
+        self.assertEqual(self.perception.observation_inputs, [{'view': 'primary'}])
+        self.assertIs(task['execution'][0]['controller_completed'], True)
         self.assertEqual(task['observations'][0]['status'], 'unknown')
+        self.assertEqual(task['observations'][0]['source'], 'synthetic-test')
+        self.assertTrue(task['observations'][0]['evidence'])
         self.assertEqual(snap['observations'][0]['provenance'], 'UNKNOWN')
         self.assertIsNone(snap['observations'][0]['value'])
         self.assertEqual([c['phase'] for c in self.expert.contexts], ['planning', 'execution_feedback', 'execution_feedback'])
@@ -166,16 +179,20 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         events = frames[-1]['state']['notebook']
         self.assertTrue(any(e['kind'] == 'observation' and e['data']['task_id'] == task['task_id'] for e in events))
         self.assertTrue(any(e['kind'] == 'execution_result' and e['data']['task_id'] == task['task_id'] for e in events))
-        with self.assertRaises(LabError):
+        with self.assertRaisesRegex(LabError, 'independently observed passing outcome'):
             await self.lab.evaluate_candidate(self.sid, 'sample_color', version)
         # UNKNOWN stays available for improvement; activation needs a separately
         # consented trial whose controller and independent outcome both passed.
         await self.lab.prepare(self.sid)
         self.perception.unknown = False
-        await self.lab.start_task(self.sid, 'Test the prepared sample with a clear camera')
-        snap, _ = await self.wait_status('awaiting_confirmation')
-        await self.approve(snap)
-        await self.wait_status('completed')
+        clear = await self.lab.start_task(self.sid, 'Test the prepared sample with a clear camera')
+        snap, _ = await self.wait_status('awaiting_confirmation', clear['task_id'])
+        clear_proposal = await self.approve(snap)
+        _, clear_task = await self.wait_status('completed', clear['task_id'])
+        self.assertNotEqual(clear_proposal['request_id'], p['request_id'])
+        self.assertEqual(clear_proposal['skill_version'], version)
+        self.assertIs(clear_task['execution'][0]['controller_completed'], True)
+        self.assertEqual(clear_task['observations'][0]['checks'], {'readable': True})
         promotion = await self.lab.evaluate_candidate(self.sid, 'sample_color', version)
         contexts_after_admission = len(self.expert.contexts)
         self.assertEqual(promotion['status'], 'promoted')
@@ -267,19 +284,29 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_repeated_image_cannot_authorize_mock_action(self):
         capture = self.perception.inspect_scene
-        old_frame = await capture(self.sid)
+        planning_frames = []
+
+        async def capture_planning(sid, view='primary'):
+            frame = await capture(sid, view)
+            planning_frames.append(frame)
+            return frame
 
         async def replay(sid, view='primary'):
-            return old_frame
+            return planning_frames[0]
 
-        self.perception.inspect_scene = replay
+        self.perception.inspect_scene = capture_planning
         await self.lab.start_task(self.sid, 'A new sample request')
         snap, task = await self.wait_status('awaiting_confirmation')
+        self.assertEqual(len(planning_frames), 1)
+        self.assertEqual(task['images'][0]['evidence_id'], planning_frames[0]['evidence_id'])
+        self.perception.inspect_scene = replay
         await self.approve(snap)
         await self.lab.workers[task['task_id']]
         final = self.lab.snapshot(self.sid)['tasks'][-1]
         self.assertEqual(final['status'], 'failed')
         self.assertIn('fresh image', final['summary'])
+        checkpoint = next(f['receipt'] for f in final['feedback'] if f['type'] == 'perception')
+        self.assertIn('evidence ID was already used', checkpoint['reason'])
         self.assertEqual(self.lab.backends[self.sid].executions, 0)
 
     async def test_negative_clarification_and_stale_confirmation(self):
