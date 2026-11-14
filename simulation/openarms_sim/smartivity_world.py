@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import math
-from copy import copy, deepcopy
+from copy import deepcopy
 from dataclasses import dataclass, replace
 from types import SimpleNamespace
 
@@ -20,6 +20,8 @@ JOINTS = (*ARM_JOINTS, "gripper")
 CAMERAS = ("overview", "side")
 REPLAY_CAMERAS = ("wide", "reaction")
 REPLAY_WIDTH, REPLAY_HEIGHT = 1280, 720
+PLUME_LOBES, RUNOFF_LOBES, TRAY_LOBES = 104, 72, 62
+GOLDEN_ANGLE = 2.39996323
 UP = np.array([0., 0., 1.])
 BEAKER = "beaker"
 FLASK = "flask"
@@ -201,7 +203,7 @@ class World:
         self._render_liquid(m, self.sim_time, self._visual_effects())
         mujoco.mj_forward(m, d)
 
-    def _build(self):
+    def _build(self, *, presentation=False):
         spec = mujoco.MjSpec.from_file(str(ARM_XML))
         spec.modelname = "openarms_smartivity_" + self.scenario
         spec.option.timestep = .004
@@ -247,7 +249,56 @@ class World:
               [*self.foam_color[:3], 0], contype=0, conaffinity=0)
         _geom(w, "stream", "CYLINDER", [.0018, .01, 0], [0, 0, -.1], [*RGBA_WATER[:3], 0],
               contype=0, conaffinity=0)
+        if presentation:
+            self._dress_presentation(spec)
         return spec.compile()
+
+    def _dress_presentation(self, spec):
+        """Add geometry to the spectator copy only. No new bodies or collision geoms."""
+        world = spec.worldbody
+        spec.visual.global_.offwidth = REPLAY_WIDTH
+        spec.visual.global_.offheight = REPLAY_HEIGHT
+        spec.visual.headlight.ambient = [.32, .34, .40]
+        spec.visual.headlight.diffuse = [.47, .45, .43]
+        spec.visual.headlight.specular = [.26, .26, .28]
+        for light in world.lights:
+            light.diffuse = [.46, .48, .54]
+            light.specular = [.44, .45, .47]
+        world.lights[0].castshadow = True
+        spec.visual.quality.shadowsize = 2048
+        spec.add_texture(name="studio_sky", type=mujoco.mjtTexture.mjTEXTURE_SKYBOX,
+                         builtin=mujoco.mjtBuiltin.mjBUILTIN_GRADIENT, rgb1=[.17, .24, .31],
+                         rgb2=[.035, .049, .082], width=256, height=1536)
+        spec.geom("table").rgba = [.096, .143, .178, 1.]
+        spec.geom("tray_c").rgba = [.19, .24, .25, 1.]
+        spec.geom("dock_a").rgba = [.075, .29, .38, 1.]
+        for material in spec.materials:
+            if material.rgba[0] > .9 and material.rgba[1] > .7:
+                material.rgba = [.86, .61, .19, 1.]
+                material.shininess = .28
+        for name in (BEAKER, FLASK):
+            body = spec.body(name)
+            # Draw understated glass graduations at regular heights; labels are
+            # omitted because only the donor geometry is photo-derived.
+            profile = self.beaker_profile if name == BEAKER else self.flask_profile
+            heights, radii = np.asarray(profile["outer_profile"]).T / 1000
+            for index, z in enumerate(np.arange(.010, heights[-1] - .001, .006)):
+                radius = float(np.interp(z, heights, radii)) + .0006
+                _geom(body, f"graduation_{name}_{index}", "BOX", [.00027, .0034 if index % 2 == 0 else .0018, .00023],
+                      [radius, 0, z], [.78, .90, .92, .82], contype=0, conaffinity=0)
+        # Thin inlays maintain a readable tray and dock silhouette in the close-up.
+        for index, (x, y) in enumerate(((.073, .051), (.073, -.051), (-.073, .051), (-.073, -.051))):
+            _geom(world, f"tray_rivet_{index}", "CYLINDER", [.0024, .0004, 0],
+                  self.receiver + [x, y, .001], [.56, .64, .66, 1], contype=0, conaffinity=0)
+        _geom(world, "dock_outer", "CYLINDER", [.035, .00065, 0], self.dock - UP * .0025,
+              [.38, .61, .64, 1.], contype=0, conaffinity=0)
+        palette = ((.96, .48, .63), (.97, .64, .74), (.91, .29, .47), (.99, .76, .80))
+        if self.scenario == "potions":
+            palette = ((.73, .58, .93), (.82, .70, .98), (.63, .43, .95), (.88, .81, .98))
+        for name, count in (("plume", PLUME_LOBES), ("runoff", RUNOFF_LOBES), ("tray", TRAY_LOBES)):
+            for index in range(count):
+                _geom(world, f"detail_{name}_{index}", "SPHERE", [.002, 0, 0], [0, 0, -.2],
+                      [*palette[index % len(palette)], 0.], contype=0, conaffinity=0)
 
     def _site_pose(self):
         return self.data.site_xpos[self._site].copy(), self.data.site_xmat[self._site].reshape(3, 3).copy()
@@ -563,6 +614,49 @@ class World:
                            tuple(data.mocap_pos.ravel().tolist()), tuple(data.mocap_quat.ravel().tolist()),
                            self._visual_effects())
 
+    def _presentation_foam(self, model, groups, state):
+        """Resolve the modeled foam level into illustrative plumes, drips and froth."""
+        model.geom_rgba[groups["coarse"], 3] = 0.
+        activity = state.effects.foam
+        peak = state.effects.foam_peak
+        lip = self.receiver + UP * self.flask_height
+        time = state.sim_time
+
+        indices = groups["plume"]
+        pattern = np.arange(len(indices))
+        age = (time * (.71 + (pattern % 9) * .036) + pattern * .117) % 1.
+        angle = pattern * GOLDEN_ANGLE + time * .75
+        strength = np.sqrt(activity)
+        radius = (.002 + .014 * age) * strength
+        height = (-.005 + .070 * age - .023 * age**3) * strength
+        model.geom_pos[indices] = lip + np.column_stack((radius * np.cos(angle), radius * np.sin(angle), height))
+        model.geom_size[indices, 0] = (.0011 + (pattern % 7) * .00055) * max(.15, strength)
+        model.geom_rgba[indices, 3] = min(1., 3.5 * activity)
+
+        indices = groups["runoff"]
+        pattern = np.arange(len(indices))
+        # Foam trails branch near the neck and follow the flask wall into the tray.
+        age = (time * (.41 + (pattern % 5) * .063) + pattern * .083) % 1.
+        angle = (pattern % 5) * math.tau / 5. + (pattern % 3 - 1) * .18 + .22 * age
+        height = self.flask_height * (1. - age)
+        radius = np.interp(height, [.0, .012, .049, self.flask_height], [.034, .035, .015, .0135])
+        model.geom_pos[indices] = self.receiver + np.column_stack((radius * np.cos(angle), radius * np.sin(angle), height))
+        model.geom_size[indices, 0] = (.001 + (pattern % 5) * .00046) * max(.15, strength)
+        model.geom_rgba[indices, 3] = min(.97, max(0., activity - .2) * 2.1)
+
+        indices = groups["tray"]
+        pattern = np.arange(len(indices))
+        angle = pattern * GOLDEN_ANGLE
+        radius = (.027 + .0041 * np.sqrt(pattern)) * np.sqrt(peak)
+        height = .0011 + (pattern % 5) * .00037
+        model.geom_pos[indices] = self.receiver + np.column_stack((radius * np.cos(angle), .82 * radius * np.sin(angle), height))
+        model.geom_size[indices, 0] = (.0013 + (pattern % 7) * .00038) * max(.15, np.sqrt(peak))
+        model.geom_rgba[indices, 3] = min(.9, (peak - .22) * 1.4) if peak > .22 else 0.
+        residue = model.geom("foam_residue")
+        residue.rgba[:] = [*self.foam_color[:3], min(.62, peak * .66) if peak > .22 else 0.]
+        residue.size[:2] = [.037, .029]
+        residue.pos[:] = self.receiver + [.011, -.006, .0003]
+
     def replay_rgb(self, state, camera):
         """Render a recorded sample without stepping or mutating the live world."""
         if camera not in REPLAY_CAMERAS:
@@ -570,12 +664,13 @@ class World:
         if not isinstance(state, VisualState) or (state.seed, state.scenario) != (self.seed, self.scenario):
             raise ValueError("Visual sample belongs to a different Smartivity scene.")
         if self._replay is None:
-            model = copy(self.model)
-            model.vis.global_.offwidth = REPLAY_WIDTH
-            model.vis.global_.offheight = REPLAY_HEIGHT
+            model = self._build(presentation=True)
+            groups = {name: np.array([model.geom(f"detail_{name}_{i}").id for i in range(count)])
+                      for name, count in (("plume", PLUME_LOBES), ("runoff", RUNOFF_LOBES), ("tray", TRAY_LOBES))}
+            groups["coarse"] = np.array([model.geom(f"foam_{i}").id for i in range(24)])
             cameras = {}
             for name, centre, distance, azimuth, elevation in (
-                ("wide", [.208, .025, .116], .54, 155, -30),
+                ("wide", [.208, .025, .094], .57, 155, -30),
                 ("reaction", self.receiver + [-.013, .005, .081], .29, 175, -23),
             ):
                 cam = mujoco.MjvCamera()
@@ -584,13 +679,14 @@ class World:
                 cameras[name] = cam
             data = mujoco.MjData(model)
             mujoco.mj_forward(model, data)
-            self._replay = (model, data, mujoco.Renderer(model, REPLAY_HEIGHT, REPLAY_WIDTH), cameras)
-        model, data, renderer, cameras = self._replay
+            self._replay = (model, data, mujoco.Renderer(model, REPLAY_HEIGHT, REPLAY_WIDTH), cameras, groups)
+        model, data, renderer, cameras, groups = self._replay
         data.time = state.sim_time
         data.qpos[:] = state.qpos
         data.mocap_pos.flat = state.mocap_pos
         data.mocap_quat.flat = state.mocap_quat
         self._render_liquid(model, state.sim_time, state.effects)
+        self._presentation_foam(model, groups, state)
         mujoco.mj_kinematics(model, data)
         renderer.update_scene(data, cameras[camera], scene_option=self._camera_options)
         return renderer.render()
