@@ -129,6 +129,9 @@ export class DeveloperView {
   #showSimulationMetrics(sim) {
     const metrics = $('#simulation-metrics');
     const value = words([
+      sim?.scene_id,
+      sim?.source_revision ? `source ${sim.source_revision}` : '',
+      sim?.control_mode,
       count(sim?.frame_count, 'frames'),
       Number.isFinite(sim?.motion_seconds) ? `${sim.motion_seconds.toFixed(2)} s of motion` : '',
     ]);

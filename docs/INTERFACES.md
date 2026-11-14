@@ -2,13 +2,13 @@
 
 > **Architecture correction:** [FULL_SYSTEM_DELIVERY.md](FULL_SYSTEM_DELIVERY.md) is the authoritative R1–R6 responsibility map, domain contract and acceptance checklist. The transport details below are the compatible implementation seam, not the complete product. pH is the demonstration scenario; background expert planning, image/perception tools, two-agent feedback, reusable candidates and evaluated improvement are required. Physical actuation alone is excluded.
 
-The student app has one experiment: qualitative red-cabbage indicator pH. Browser and SwiftUI use the same Python service, notebook, trial rules and server-owned Gemini Live connection. The current product runs mock trials; physical dispatch is disabled. Historical mandarin and dilution demonstrations are research evidence, not selectable experiments.
+The student app has one experiment: qualitative red-cabbage indicator pH. Browser and SwiftUI use the same Python service, notebook, trial rules and server-owned Gemini Live connection. The application selects a synthetic fixture or actual MuJoCo execution; physical dispatch is disabled. Historical mandarin and dilution demonstrations are research evidence, not selectable experiments.
 
 ## Trial authority
 
-The student chooses vinegar, mild baking-soda solution, or the water control and records a prediction. The server freezes one exact proposal, binding session, trial, request, proposal version, immutable skill version, condition, source fixture A and receiver C. Only a fresh confirmation after presentation consumes that proposal. Changing the condition or prediction revokes the previous proposal. Cancellation, STOP, reconnect, expiry and reuse cannot grant approval.
+A natural request supplies the prepared vinegar, mild baking-soda solution, or water condition; prediction and reflection are optional. The server freezes one exact proposal, binding session, trial, request, proposal version, immutable skill version, condition, source fixture A and receiver C. Only a fresh confirmation after presentation consumes that proposal. Changing the condition or prediction revokes the previous proposal. Cancellation, STOP, reconnect, expiry and reuse cannot grant approval.
 
-The mock controller returns to HOME automatically on successful completion. Controller completion and the separately labeled reference observation are distinct records. A reference color is MODEL-PREDICTED, never measured pH or physical camera evidence. Missing evidence remains UNKNOWN. Reflection and preparation of another trial preserve the notebook. No operator acknowledgment is needed for mock preparation. Future physical readiness must distinguish automatic normal return, replenished materials, and recovery after faults.
+The controller returns to HOME automatically on successful completion. Controller completion and independent image observations are distinct records. MuJoCo images and their pixel observations are SIMULATED; synthetic fixture images are SYNTHETIC; reference expectations remain MODEL-PREDICTED. None is measured pH or physical camera evidence. Missing evidence remains UNKNOWN. Reflection and preparation of another trial preserve the notebook. No operator acknowledgment is needed for mock preparation. Future physical readiness must distinguish automatic normal return, replenished materials, and recovery after faults.
 
 ## HTTP
 
@@ -54,7 +54,13 @@ Microphone permission, provider readiness, and active speaker playback are separ
 
 Gemini may interpret a condition, record a prediction, explain reference evidence and guide reflection. It never supplies motor targets, operator authorization or trusted consent. The server independently handles completed confirmation/cancel/STOP input; a delayed model tool call cannot execute again. Updates reach Gemini through correlated tool outcomes, not fabricated student turns.
 
-The positive integration fixture is: vinegar → prediction pink → exact proposal → presentation → new explicit confirmation → one mock execution → automatic HOME → separately labeled pink/acidic reference → reflection → fresh trial. The correction fixture changes water to baking soda, rejects the old proposal, disconnects before confirming the replacement, restores the notebook and requires a fresh proposal.
+The positive integration fixture is: natural vinegar request → expert scene inspection → exact proposal → presentation → new explicit confirmation → one confirmed simulated execution → automatic HOME → independently observed rendered color → reflection → fresh trial. The correction fixture changes water to baking soda, rejects the old proposal, disconnects before confirming the replacement, restores the notebook and requires a fresh proposal.
+
+## Simulation identity and artifacts
+
+The selected MuJoCo backend executes the updated lab apparatus from source `16a975e`, adapted for qualitative cabbage indicator dosing. Simulation state carries `scene_id`, `scene_version`, `source_revision`, `control_mode`, frame count, elapsed simulated motion, and warnings. Clients display actual evidence; they do not substitute a gallery video for an execution. Source lab videos are historical recordings.
+
+Session-authenticated GET routes `/api/sessions/{sid}/evidence/{id}` and `/api/sessions/{sid}/media/{id}.mp4` serve scoped PNG/MP4 artifacts. Paths and tokens are never exposed in URLs. Scene-specific skill admission prevents an old simulator evaluation from activating a skill in a changed apparatus.
 
 ## Evidence and release
 

@@ -315,6 +315,17 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await reopened.shutdown()
 
+    async def test_conversation_cannot_bypass_fresh_simulation_requirement(self):
+        self.lab.get(self.sid)['requires_prepare'] = True
+        state = await self.lab.converse(self.sid, 'Test the prepared vinegar sample')
+        self.assertFalse(state['tasks'])
+        self.assertIn('Prepare a fresh simulation', state['messages'][-1]['text'])
+        self.assertFalse(self.expert.contexts)
+        with self.assertRaises(LabError):
+            await self.lab.start_task(self.sid, 'Test the prepared sample')
+        await self.lab.converse(self.sid, 'stop')
+        self.assertFalse(self.lab.snapshot(self.sid)['tasks'])
+
     async def test_stop_discards_late_provider_result(self):
         entered, released = asyncio.Event(), asyncio.Event()
         signals = []

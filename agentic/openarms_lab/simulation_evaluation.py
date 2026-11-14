@@ -18,6 +18,12 @@ from .runtime import Lab
 from .skills import compute_skill_hash
 
 
+def simulation_scope():
+    from .mujoco_scene import CAMERA_SETUP, METHOD, SCENE
+    identity = {'scene': SCENE, 'camera': CAMERA_SETUP, 'observer': METHOD}
+    return 'mujoco-' + compute_skill_hash(identity)[:16]
+
+
 class SimulationSkillEvaluator:
     def __init__(self, artifact_dir):
         self.artifact_dir = Path(artifact_dir)
@@ -79,6 +85,7 @@ class SimulationSkillEvaluator:
             result['regression_gates']['mujoco_parameters'] = accepted
             result['passed'] = result['passed'] and accepted
             result['suite_hash'] = compute_skill_hash({'version': 'fixture-and-mujoco-admission-v1',
+                                                       'simulation_scope': simulation_scope(),
                                                        'fixture_suite_hash': receipt['suite_hash']})
             result['metrics'].update(environment='Synthetic robustness and MuJoCo clear-view admission',
                                      improvement_environment='SYNTHETIC', mujoco_cases=comparisons)

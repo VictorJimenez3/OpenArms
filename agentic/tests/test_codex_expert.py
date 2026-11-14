@@ -131,6 +131,43 @@ def test_reply_requires_consistent_typed_decision():
 
 
 @pytest.mark.asyncio
+async def test_invalid_final_plan_is_repaired_by_expert_with_actual_validation_feedback(tmp_path):
+    calls, validated = [], []
+    async def transport(prompt, *_):
+        calls.append(prompt)
+        if len(calls) == 1:
+            return {'raw': decision(payload={'skill_definition': {}, 'steps': ['override']})}
+        assert 'A skill proposal cannot override its definition' in prompt
+        return {'raw': decision(payload={'skill_definition': {'repaired': True}})}
+    async def handler(name, arguments):
+        assert name == 'validate_plan'
+        validated.append(arguments['plan'])
+        if 'steps' in arguments['plan']:
+            return {'valid': False, 'error': 'A skill proposal cannot override its definition.'}
+        return {'valid': True, 'validated_draft': arguments['plan']}
+    expert = CodexExpert(tmp_path/'calls', artifact_roots=[tmp_path], transport=transport)
+    result = await expert.run({'tools': [{'name': 'validate_plan'}]}, tool_handler=handler)
+    assert result['calls'] == 2 and result['payload'] == validated[1]
+    assert len(result['tool_receipts']) == 2
+    assert result['tool_receipts'][0]['result']['valid'] is False
+
+
+@pytest.mark.asyncio
+async def test_invalid_final_plan_cannot_escape_call_budget(tmp_path):
+    calls = 0
+    async def transport(*_):
+        nonlocal calls
+        calls += 1
+        return {'raw': decision(payload={'invalid': True})}
+    async def handler(*_):
+        return {'valid': False, 'error': 'Invalid proposal'}
+    expert = CodexExpert(tmp_path/'calls', artifact_roots=[tmp_path], transport=transport, max_calls=2)
+    with pytest.raises(ExpertUnavailable) as error:
+        await expert.run({'tools': [{'name': 'validate_plan'}]}, tool_handler=handler)
+    assert error.value.code == 'budget' and calls == 2
+
+
+@pytest.mark.asyncio
 async def test_real_process_transport_lifecycle_and_provider_errors(tmp_path, monkeypatch):
     # Exercise the actual subprocess boundary without an external provider call.
     fixture = tmp_path/'fake-codex'

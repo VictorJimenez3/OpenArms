@@ -300,14 +300,16 @@ class CodexExpert:
                                 usage[key] = usage.get(key, 0) + value
                         await send('expert_call_completed', call=call, kind=reply['kind'], summary=reply['summary'],
                                    usage=raw.get('usage', {}))
-                        if reply['kind'] != 'tool_call':
+                        validate_final = reply['kind'] in ('plan', 'revision') and 'validate_plan' in declared
+                        if reply['kind'] != 'tool_call' and not validate_final:
                             result = dict(kind=reply['kind'], summary=reply['summary'], payload=reply['payload'],
                                           provider=self.provider, model=self.model, reasoning_effort=self.reasoning_effort,
                                           calls=call, usage=usage, elapsed_ms=round((time.monotonic()-started)*1000),
                                           tool_receipts=receipts)
                             await send('expert_finished', kind=reply['kind'], calls=call, elapsed_ms=result['elapsed_ms'])
                             return result
-                        name, arguments = reply['tool_name'], reply['arguments']
+                        name, arguments = (('validate_plan', {'plan': reply['payload']}) if validate_final
+                                           else (reply['tool_name'], reply['arguments']))
                         if name not in declared:
                             raise ExpertUnavailable('invalid_response', 'Expert requested an undeclared tool.')
                         check_cancel()
@@ -336,6 +338,20 @@ class CodexExpert:
                         history.append({'decision': {key: reply[key] for key in ('kind', 'tool_name', 'summary')},
                                         'tool_receipt': receipt})
                         await send('expert_tool_completed', **receipt)
+                        if validate_final:
+                            if result.get('valid') is not True:
+                                # Let the actual expert repair its own proposal inside the same
+                                # call/time budget. Never substitute a canned plan or execute it.
+                                continue
+                            if not isinstance(result.get('validated_draft'), dict):
+                                raise ExpertUnavailable('tool_error', 'Plan validation returned no canonical draft.')
+                            final = dict(kind=reply['kind'], summary=reply['summary'],
+                                         payload=result['validated_draft'], provider=self.provider,
+                                         model=self.model, reasoning_effort=self.reasoning_effort,
+                                         calls=call, usage=usage, elapsed_ms=round((time.monotonic()-started)*1000),
+                                         tool_receipts=receipts)
+                            await send('expert_finished', kind=reply['kind'], calls=call, elapsed_ms=final['elapsed_ms'])
+                            return final
             raise ExpertUnavailable('budget', 'The expert exhausted its bounded planning budget.')
         except TimeoutError as exc:
             raise ExpertUnavailable('timeout', 'The expert task exceeded its time budget.') from exc

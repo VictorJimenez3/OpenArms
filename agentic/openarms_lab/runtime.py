@@ -235,6 +235,9 @@ class Lab(TaskLoop):
         limitation = _text(limitation, 'limitation')
         async with self._lock(sid):
             s = self.get(sid)
+            self._editable(s)
+            if s.get('requires_prepare'):
+                raise LabError('Prepare a fresh simulation after the server restart.')
             prior = next((t for t in s['tasks'] if t['task_id'] == task_id), None)
             if not prior or prior['status'] not in TASK_TERMINAL or not prior['observations']:
                 raise LabError('Improvement requires a completed task with independent feedback.')
@@ -612,6 +615,8 @@ class Lab(TaskLoop):
                         current = [o for o in s['observations'] if o.get('trial_id') == s['trial']['trial_id']]
                         self._message(s, 'assistant', science_reply(text, current))
                     else:
+                        if s.get('requires_prepare'):
+                            raise LabError('Prepare a fresh simulation after the server restart.')
                         task = self._queue_task(s, text, turn['turn_id'])
                         if client_request_id:
                             s['dedupe'][client_request_id]['task_id'] = task['task_id']

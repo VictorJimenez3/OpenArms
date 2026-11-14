@@ -122,11 +122,14 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             from .evaluation import SyntheticSkillEvaluator
             from .skills import SkillRegistry
             execution = os.getenv('OPENARMS_EXECUTION', 'mock').strip().lower()
+            registry_scope = execution
             app.state.execution_mode = execution
             if execution == 'mujoco':
                 from .mujoco_scene import MujocoSceneService
                 from .mujoco_backend import MujocoBackend
                 from .simulation_evaluation import SimulationSkillEvaluator
+                from .simulation_evaluation import simulation_scope
+                registry_scope = simulation_scope()
                 scene = MujocoSceneService(data / 'scene-evidence')
                 backend_factory = lambda: MujocoBackend(scene)
                 evaluator = SimulationSkillEvaluator(data / 'evaluations')
@@ -139,7 +142,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             expert = CodexExpert(data / 'expert-work', artifact_roots=[scene.artifact_dir],
                                  executable=os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'))
             app.state.lab = Lab(data, expert=expert, perception=scene,
-                                registry=SkillRegistry(data / f'task-skills-{execution}.json'),
+                                registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,
                                 auto_evaluate=True,
                                 backend_factory=backend_factory, expert_timeout=240)
