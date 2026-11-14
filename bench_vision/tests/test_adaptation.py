@@ -99,6 +99,24 @@ class AdaptationTests(unittest.TestCase):
         self.assertGreater(model["evaluation"]["held_out_max_abs_deg"], 2.9)
         self.assertEqual(propose_source_poses(model, self.observation, self.spec["setup"], now_s=50.1)["status"], "rejected")
 
+    def test_unrelated_retained_baseline_rejected_despite_perfect_heldout_fit(self):
+        self.spec["baseline_poses"]["poses"]["ABOVE_A"][ARM_JOINTS[0]] += 5
+        model = fit_source_map(self.spec)
+        self.assertLess(model["evaluation"]["held_out_max_abs_deg"], 1e-10)
+        self.assertAlmostEqual(model["evaluation"]["baseline_consistency_max_abs_deg"], 5)
+        self.assertEqual(model["status"], "rejected_baseline_mismatch")
+        result = propose_source_poses(model, self.observation, self.spec["setup"], now_s=50.1)
+        self.assertEqual(result["status"], "rejected")
+        self.assertIsNone(result["proposed_poses"])
+
+    def test_baseline_consistency_error_contributes_to_query_error_bound(self):
+        self.spec["baseline_poses"]["poses"]["ABOVE_A"][ARM_JOINTS[0]] += .25
+        model = fit_source_map(self.spec)
+        self.assertEqual(model["status"], "fit_passed")
+        result = propose_source_poses(model, self.observation, self.spec["setup"], now_s=50.1)
+        self.assertEqual(result["status"], "proposed")
+        self.assertGreater(result["target_error_bound_deg"][0], .25)
+
     def test_joint_limits_and_units_required(self):
         bad = copy.deepcopy(self.spec)
         bad["units"]["arm_joints"] = "radians"
