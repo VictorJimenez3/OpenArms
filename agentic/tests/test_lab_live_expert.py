@@ -17,9 +17,20 @@ def steps():
     ]
 
 
+def bindings():
+    return {
+        "transfer": {"source": "$source", "destination": "$destination", "object": "$object"},
+        "observe": {"station": "$destination"},
+    }
+
+
+def recipe():
+    return {"recipe": "transfer_then_observe"}
+
+
 def proposal(arguments=None, name=live_expert.TOOL_NAME):
     return types.LiveServerMessage(tool_call=types.LiveServerToolCall(function_calls=[
-        types.FunctionCall(id="candidate-1", name=name, args={"steps": steps()} if arguments is None else arguments),
+        types.FunctionCall(id="candidate-1", name=name, args=recipe() if arguments is None else arguments),
     ]))
 
 
@@ -70,8 +81,10 @@ def test_live_expert_uses_real_sdk_types_and_returns_bound_artifact():
     assert config.response_modalities == [types.Modality.AUDIO]
     declaration = config.tools[0].function_declarations[0]
     assert declaration.name == "propose_reusable_skill"
-    schema = declaration.parameters.properties["steps"].items
-    assert schema.properties["action"].enum == ["transfer", "observe"]
+    schema = declaration.parameters
+    assert schema.required == ["recipe"]
+    assert set(schema.properties) == {"recipe"}
+    assert schema.properties["recipe"].enum == ["transfer_then_observe"]
     session.send_client_content.assert_awaited_once()
     assert session.send_client_content.await_args.kwargs["turns"].parts[0].text == instruction
     session.send_tool_response.assert_awaited_once()
@@ -82,7 +95,27 @@ def test_live_expert_uses_real_sdk_types_and_returns_bound_artifact():
 
 
 @pytest.mark.parametrize("arguments", [
-    {}, {"steps": []}, {"steps": steps(), "speed": 10},
+    {}, [], "transfer then observe", {"steps": []}, {"steps": steps()},
+    {"recipe": "observe_then_transfer"}, {"recipe": "execute_robot"},
+    {"recipe": ["transfer_then_observe"]}, {"recipe": None},
+    {**recipe(), "steps": steps()}, {**recipe(), "source": "A"},
+    {**recipe(), "transfer": bindings()["transfer"]},
+    bindings(),
+    {**bindings(), "speed": 10},
+    {"transfer": bindings()["transfer"]},
+    {"observe": bindings()["observe"]},
+    {"transfer": {}, "observe": bindings()["observe"]},
+    {"transfer": bindings()["transfer"], "observe": {}},
+    {"transfer": None, "observe": bindings()["observe"]},
+    {"transfer": {"source": "A", "destination": "B", "object": "sample"},
+     "observe": bindings()["observe"]},
+    {"transfer": {**bindings()["transfer"], "station": "$destination"},
+     "observe": bindings()["observe"]},
+    {"transfer": bindings()["transfer"],
+     "observe": {**bindings()["observe"], "source": "$source"}},
+    {"transfer": {**bindings()["transfer"], "pwm": 255}, "observe": bindings()["observe"]},
+    {"transfer": bindings()["transfer"], "observe": {"station": "$source"}},
+    {"transfer": {**bindings()["transfer"], "source": ["$source"]}, "observe": bindings()["observe"]},
     {"steps": [{"action": "set_servo", "args": {"angle": 180}}]},
     {"steps": list(reversed(steps()))},
     {"steps": [
@@ -96,12 +129,27 @@ def test_live_expert_uses_real_sdk_types_and_returns_bound_artifact():
     {"steps": [steps()[0], {"action": "observe", "args": {"station": "$source"}}]},
 ])
 def test_arbitrary_controls_and_bindings_rejected(arguments):
+    # Non-object values cannot be represented by the SDK's FunctionCall.args;
+    # validate those at the deterministic boundary directly.
+    if not isinstance(arguments, dict):
+        with pytest.raises(ValueError, match="unsupported steps or parameter bindings"):
+            live_expert._validate_proposal(arguments)
+        return
     client, connection, session = fake_client([proposal(arguments)])
     with pytest.raises(ValueError, match="unsupported steps or parameter bindings"):
         asyncio.run(live_expert.compose_live("transfer and observe", client_factory=lambda: client))
     session.send_tool_response.assert_not_awaited()
     assert connection.exited
     client.aio.aclose.assert_awaited_once()
+
+
+def test_recipe_always_materializes_fresh_canonical_transfer_then_observe():
+    arguments = recipe()
+    result = live_expert._validate_proposal(arguments)
+    assert result == steps()
+    result[0]["args"]["source"] = "C"
+    arguments["recipe"] = "observe_then_transfer"
+    assert live_expert._validate_proposal(recipe()) == steps()
 
 
 @pytest.mark.parametrize("messages", [

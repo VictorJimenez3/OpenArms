@@ -23,26 +23,18 @@ _CANONICAL_STEPS = [
         "source": "$source", "destination": "$destination", "object": "$object"}},
     {"action": "observe", "args": {"station": "$destination"}},
 ]
+_EXPECTED_PROPOSAL = {"recipe": "transfer_then_observe"}
 TOOLS = [{"function_declarations": [{
     "name": TOOL_NAME,
     "description": "Propose a reusable candidate from calibrated primitives. Does not execute or approve anything.",
     "parameters": {
-        "type": "OBJECT", "required": ["steps"],
-        "properties": {"steps": {
-            "type": "ARRAY", "minItems": 2, "maxItems": 2,
-            "items": {
-                "type": "OBJECT", "required": ["action", "args"],
-                "properties": {
-                    "action": {"type": "STRING", "enum": ["transfer", "observe"]},
-                    "args": {"type": "OBJECT", "properties": {
-                        "source": {"type": "STRING", "enum": ["$source"]},
-                        "destination": {"type": "STRING", "enum": ["$destination"]},
-                        "object": {"type": "STRING", "enum": ["$object"]},
-                        "station": {"type": "STRING", "enum": ["$destination"]},
-                    }},
-                },
+        "type": "OBJECT", "required": ["recipe"],
+        "properties": {
+            "recipe": {
+                "type": "STRING", "enum": ["transfer_then_observe"],
+                "description": "Fixed reusable transfer with source/destination/object parameters, then observe destination.",
             },
-        }},
+        },
     },
 }]}]
 SYSTEM_PROMPT = """You are the OpenArms reusable-skill composition expert.
@@ -52,8 +44,11 @@ then observe(station=$destination). Source may be A or C, destination B, and
 object mandarin (orange alias) or sample. No new objects, motion settings,
 raw controls, parameters, stations, physical evidence or scientific claims.
 For a requested transfer followed by destination observation, compose those
-two primitives in order and call propose_reusable_skill exactly once with the
-reusable placeholder bindings. Otherwise explain that the request is unsupported
+two primitives in order and call propose_reusable_skill exactly once with
+{"recipe":"transfer_then_observe"}. The application binds this fixed recipe to
+the reusable source, destination, and object parameters shown above, in that
+exact order. Do not supply bindings, a steps array, concrete values or extra
+fields. Otherwise explain that the request is unsupported
 without calling the tool. The tool proposes a candidate only; it never executes,
 tests, promotes, or physically authorizes a robot. You may acknowledge briefly.
 After the tool response, end your turn without further tool calls.
@@ -61,10 +56,12 @@ After the tool response, end your turn without further tool calls.
 
 
 def _validate_proposal(arguments: Any) -> list[dict[str, Any]]:
-    if (not isinstance(arguments, dict) or set(arguments) != {"steps"} or
-            arguments["steps"] != _CANONICAL_STEPS):
+    # Models select one task-specific recipe, never actions or argument shapes.
+    # Reject extras rather than repairing them; only application-owned canonical
+    # steps and reusable placeholder bindings can cross this boundary.
+    if not isinstance(arguments, dict) or arguments != _EXPECTED_PROPOSAL:
         raise ValueError("Live expert proposed unsupported steps or parameter bindings.")
-    return copy.deepcopy(arguments["steps"])
+    return copy.deepcopy(_CANONICAL_STEPS)
 
 
 async def compose_live(instruction: str, *, client_factory: Callable | None = None) -> dict[str, Any]:
