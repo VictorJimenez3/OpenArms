@@ -1,0 +1,21 @@
+# Master tickets (attended: Duc + master agent)
+
+- [ ] **M0 Seams and scaffold** (~45 min). Done on `duc` before any lane starts.
+  - `agentic/contracts/`: `plan.example.json`, `arm_state.example.json`, `execution_result.example.json`, `turn.example.json`.
+  - `agentic/__init__.py`, `agentic/scripts/__init__.py`, `agentic/openarms_agent/__init__.py` and `types.py`: `ArmState`, `Step`, `Plan`, `ValidationResult`, `ExecutionResult`, `TurnReply`, `ArmError`, and the `ArmPort` protocol (`run_step(action, args)`, `stop()`, `state()`).
+  - Signature stubs for each lane file that return canned values (`validate` → ok, `MockArm` no-op), so lanes can import and run each other from the first iteration.
+  - `agentic/requirements.txt` (`anthropic`, `fastapi`, `uvicorn`), plus a conda env `openarms` on Python 3.12.
+  - `agentic/README.md`: how to run, which lane owns which file.
+- [ ] **M1 Interface issues** (~20 min). One GitHub issue per handoff, each with a draft example JSON:
+  - agent ↔ voice relay (Joseph, `relay/dialogue.py`, PR #5)
+  - agent ↔ teacher approval UI (Victor)
+  - agent ↔ executor (Joseph)
+  - agent ↔ sim preview (Stefanie)
+  - Edit `docs/INTERFACES.md` only after they agree.
+- [ ] **M2 Ask the team: is the demo action pouring liquid or moving a block?** Joseph's relay mock says "predict where the block will land". The catalog names (`add_sample`) depend on the answer.
+- [ ] **M3 Launch lanes**: `tmp/ralph/new-lane.sh core` and `tmp/ralph/new-lane.sh brain`. Duc runs `once.sh` in each.
+- [ ] **M4 Land core and brain** (review subagent per lane), every ~2 h or when a lane stops.
+- [ ] **M5 Launch api lane** once core has landed and M1's relay and teacher-UI examples are agreed.
+- [ ] **M6 Checkpoint PR `duc` → `main`**: a typed turn → plan → teacher approval → mock arm runs it → reply.
+- [ ] **M7 Bench integration** with Joseph: real `ArmPort` in place of `MockArm`, 10 dry runs with water.
+- [ ] **M8 Backup demo video by hour 26** (~Sat 24:00).

@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python -c:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(python -m agentic.scripts.:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(git merge:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git stash:*)",
+      "Bash(git clean:*)",
+      "Bash(git rm:*)",
+      "Bash(rm:*)"
+    ]
+  }
+}
