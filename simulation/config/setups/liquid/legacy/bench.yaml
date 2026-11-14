@@ -1,0 +1,32 @@
+# The physical bench for the liquid demo: mini-cups poured into receivers.
+# Units: metres. Origin is the arm's base frame; +x points away from the arm
+# along its zero pose, +y to the arm's left, +z up. The table top is z = 0.
+#
+# STATUS: PLACEHOLDER. These positions were chosen so the simulated arm can
+# reach them. Measure the real bench with a ruler and replace them.
+
+table:
+  size: [0.70, 0.90]        # x, y extent
+  center: [0.20, 0.0]
+
+containers:
+  mini_cup:                 # one pre-filled portion, held by the gripper
+    radius: 0.019
+    height: 0.070
+  receiver:                 # stays on the bench
+    radius: 0.040
+    height: 0.060
+    capacity_portions: 4    # total portions it holds, including what it starts with
+
+stations:
+  A: {kind: source,   pos: [0.269,  0.193], contents: {vinegar: 1}}
+  B: {kind: source,   pos: [0.331,  0.068], contents: {baking_soda: 1}}
+  C: {kind: receiver, pos: [0.331, -0.068], contents: {ph_indicator: 1}}
+  D: {kind: receiver, pos: [0.269, -0.193], contents: {ph_indicator: 1}}
+
+# Where on the cup the gripper holds it, and how the pour is shaped.
+grasp:
+  height: 0.040             # above the table, when the cup stands on it
+  lift: 0.090               # extra height for ABOVE_x / LIFT_x
+  tip_angle_deg: 115        # how far the cup is rolled over to pour
+  pour_clearance: 0.050     # cup mouth above the receiver rim while tipping

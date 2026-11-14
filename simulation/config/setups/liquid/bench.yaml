@@ -1,32 +1,46 @@
-# The physical bench for the liquid demo: mini-cups poured into receivers.
-# Units: metres. Origin is the arm's base frame; +x points away from the arm
-# along its zero pose, +y to the arm's left, +z up. The table top is z = 0.
-#
-# STATUS: PLACEHOLDER. These positions were chosen so the simulated arm can
-# reach them. Measure the real bench with a ruler and replace them.
-
+# Provisional MuJoCo coordinates in metres. Positions are in the arm-base frame.
 table:
-  size: [0.70, 0.90]        # x, y extent
+  size: [0.70, 0.90]
   center: [0.20, 0.0]
 
 containers:
-  mini_cup:                 # one pre-filled portion, held by the gripper
+  mini_cup:
     radius: 0.019
     height: 0.070
-  receiver:                 # stays on the bench
-    radius: 0.040
+    spout_extension: 0.004
+  receiver:
+    radius: 0.041
     height: 0.060
-    capacity_portions: 4    # total portions it holds, including what it starts with
+    capacity_portions: 4
 
 stations:
-  A: {kind: source,   pos: [0.269,  0.193], contents: {vinegar: 1}}
-  B: {kind: source,   pos: [0.331,  0.068], contents: {baking_soda: 1}}
-  C: {kind: receiver, pos: [0.331, -0.068], contents: {ph_indicator: 1}}
-  D: {kind: receiver, pos: [0.269, -0.193], contents: {ph_indicator: 1}}
+  A: {kind: source, pos: [0.285, 0.166], contents: {water: 1}}
+  C: {kind: receiver, pos: [0.331, -0.068], contents: {}}
 
-# Where on the cup the gripper holds it, and how the pour is shaped.
 grasp:
-  height: 0.040             # above the table, when the cup stands on it
-  lift: 0.090               # extra height for ABOVE_x / LIFT_x
-  tip_angle_deg: 115        # how far the cup is rolled over to pour
-  pour_clearance: 0.050     # cup mouth above the receiver rim while tipping
+  height: 0.040       # height of the grip band above the donor base
+  lift: 0.090
+  tip_angle_deg: 115
+  pour_clearance: 0.057
+  release_tolerance: 0.004
+  grasp_tolerance: 0.008
+
+docks:
+  base_height: 0.004
+  nest_height: 0.004
+  radial_clearance: 0.0025
+  backing_thickness: 0.004
+  backing_height: 0.017
+
+camera:
+  lookat: [0.24, 0.04, 0.045]
+  distance: 0.76
+  azimuth: 180
+  elevation: -67
+  shift_azimuth_deg: 13
+  registration_tolerance_px: 4.0
+  fiducials:
+    f1: [0.17, 0.249]
+    f2: [0.43, 0.238]
+    f3: [0.45, -0.172]
+    f4: [0.17, -0.180]

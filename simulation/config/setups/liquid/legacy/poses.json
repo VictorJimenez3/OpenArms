@@ -1,0 +1,84 @@
+{
+  "source": "placeholder",
+  "note": "Solved from bench.yaml by `python -m openarms_sim.ik --setup liquid`; not recorded on the real arm. Replace with recorded poses and set source to 'recorded'.",
+  "units": "degrees per arm joint, as LeRobot reports them (use_degrees=true)",
+  "poses": {
+    "HOME": {
+      "shoulder_pan": 0.0,
+      "shoulder_lift": -83.08,
+      "elbow_flex": 77.35,
+      "wrist_flex": 57.3,
+      "wrist_roll": 90.0
+    },
+    "GRASP_A": {
+      "shoulder_pan": -35.81,
+      "shoulder_lift": 47.38,
+      "elbow_flex": 33.16,
+      "wrist_flex": -80.55,
+      "wrist_roll": 92.79
+    },
+    "ABOVE_A": {
+      "shoulder_pan": -35.81,
+      "shoulder_lift": 3.74,
+      "elbow_flex": 44.46,
+      "wrist_flex": -48.2,
+      "wrist_roll": 92.79
+    },
+    "LIFT_A": {
+      "shoulder_pan": -35.81,
+      "shoulder_lift": 3.74,
+      "elbow_flex": 44.46,
+      "wrist_flex": -48.2,
+      "wrist_roll": 92.79
+    },
+    "GRASP_B": {
+      "shoulder_pan": -8.93,
+      "shoulder_lift": 47.34,
+      "elbow_flex": 33.36,
+      "wrist_flex": -80.7,
+      "wrist_roll": 92.79
+    },
+    "ABOVE_B": {
+      "shoulder_pan": -8.93,
+      "shoulder_lift": 3.59,
+      "elbow_flex": 44.67,
+      "wrist_flex": -48.26,
+      "wrist_roll": 92.79
+    },
+    "LIFT_B": {
+      "shoulder_pan": -8.93,
+      "shoulder_lift": 3.59,
+      "elbow_flex": 44.67,
+      "wrist_flex": -48.26,
+      "wrist_roll": 92.79
+    },
+    "ABOVE_C": {
+      "shoulder_pan": 12.08,
+      "shoulder_lift": 7.09,
+      "elbow_flex": 44.31,
+      "wrist_flex": -51.4,
+      "wrist_roll": 92.79
+    },
+    "TIP_C": {
+      "shoulder_pan": 6.12,
+      "shoulder_lift": 16.25,
+      "elbow_flex": 43.64,
+      "wrist_flex": -59.89,
+      "wrist_roll": -22.21
+    },
+    "ABOVE_D": {
+      "shoulder_pan": 38.96,
+      "shoulder_lift": 7.23,
+      "elbow_flex": 44.09,
+      "wrist_flex": -51.33,
+      "wrist_roll": 92.79
+    },
+    "TIP_D": {
+      "shoulder_pan": 33.01,
+      "shoulder_lift": 16.37,
+      "elbow_flex": 43.43,
+      "wrist_flex": -59.8,
+      "wrist_roll": -22.21
+    }
+  }
+}

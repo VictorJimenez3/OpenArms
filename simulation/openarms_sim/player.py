@@ -112,6 +112,7 @@ class Player:
         self.poured: list[dict] = []
         self._pour: _Pour | None = None
         self._poured_this_step = False
+        self._aligned_pour_seconds = 0.0
         self.step = ""
         self.label = ""
         self.t = 0.0
@@ -171,7 +172,10 @@ class Player:
         axis = self.rot[key][:, 2]
         down = -(UP - (UP @ axis) * axis)
         n = np.linalg.norm(down)
-        return self.pos[key] + axis * h / 2 + (down / n * r if n > 1e-6 else 0)
+        rim = self.pos[key] + axis * h / 2
+        if self.scene.bench.spout_extension:
+            return rim + self.rot[key][:, 1] * (r + self.scene.bench.spout_extension)
+        return rim + (down / n * r if n > 1e-6 else 0)
 
     def _write_mocap(self) -> None:
         d = self.scene.data
@@ -244,7 +248,7 @@ class Player:
             return
         self.holding, self._touch_ok = key, key
         self._rel = (R.T @ (self.pos[key] - p), R.T @ self.rot[key])
-        if self.scene.kind[key] == "object":
+        if self.scene.kind[key] == "object" or self.scene.bench.docks:
             self.location[key] = None
 
     def _open(self) -> None:
@@ -274,26 +278,51 @@ class Player:
                 return
             self.location[key] = station
             self.caption = f"The {key} is now at {station}"
+        elif b.docks:
+            self.location[key] = station
         self.pos[key], self.rot[key] = rest, np.eye(3)
 
-    def _check_pour(self) -> None:
+    def _check_pour(self, dt: float) -> None:
         s = self.holding
         if s is None or self._poured_this_step or not self.step.startswith("pour") or self.scene.kind[s] != "cup":
             return
         if math.radians(self._tilt_deg(s)) < POUR_ANGLE:
             return
-        self._poured_this_step = True
         liquid = {k: v for k, v in self.contents[s].items() if v > 0}
         if not liquid:
             self._add("note", "empty_cup", f"The cup from {s} is already empty, so this pour adds nothing.")
+            self._poured_this_step = True
             return
         b = self.scene.bench
         lip = self._lip(s)
         target = None
         for r in b.receivers:
             centre = self.scene.rest_position(r)
-            if np.linalg.norm(lip[:2] - centre[:2]) < b.receiver_radius - 0.004 and lip[2] > b.receiver_height:
+            if (np.linalg.norm(lip[:2] - centre[:2]) < b.receiver_radius - STREAM_RADIUS
+                    and lip[2] > b.receiver_height + b.dock_height):
                 target = r
+        if b.docks:
+            if target is None:
+                self._add("block", "spill", f"The spout from {s} misses the receiver opening while tipped.")
+                self._poured_this_step = True
+                return
+            if self.label != "hold while pouring" or any(i.severity == "block" for i in self.issues):
+                return
+            self._aligned_pour_seconds += dt
+            if self._aligned_pour_seconds + 1e-8 < 0.25:
+                return
+            mixture = dict(self.contents[target])
+            for key, amount in liquid.items():
+                mixture[key] = mixture.get(key, 0) + amount
+            reasons = safety_issues(self.chem_cfg, mixture)
+            for reason in reasons:
+                self._add("block", "unsafe_mix", reason)
+            if sum(mixture.values()) > b.receiver_capacity:
+                self._add("block", "overflow", f"The proposed transfer exceeds receiver {target}'s modeled capacity.")
+            if reasons or sum(mixture.values()) > b.receiver_capacity:
+                self._poured_this_step = True
+                return
+        self._poured_this_step = True
         color = self._color(s)
         self.contents[s] = {}
         if target is None:
@@ -306,14 +335,15 @@ class Player:
         self._pour = _Pour(s, target, self.t, color, old_color, old_level)
         outcome = self.chem.predict(self.contents[target])
         names = " and ".join(display_name(self.chem_cfg, k) for k in liquid)
-        self.caption = f"Predicted: {target} turns {outcome.describe()}"
+        self.caption = f"MODELED: receiver {target} appears {outcome.describe()}"
         self.poured.append({"source": s, "into": target, "added": liquid, "predicted": outcome.describe()})
         if sum(self.contents[target].values()) > b.receiver_capacity:
             self._add(
                 "block", "overflow", f"Receiver {target} would overflow: it holds {b.receiver_capacity} portions in total."
             )
-        for reason in safety_issues(self.chem_cfg, self.contents[target]):
-            self._add("block", "unsafe_mix", f"Adding {names} to {target}: {reason}.")
+        if not b.docks:
+            for reason in safety_issues(self.chem_cfg, self.contents[target]):
+                self._add("block", "unsafe_mix", f"Adding {names} to {target}: {reason}.")
 
     # ---- collisions --------------------------------------------------------
 
@@ -333,6 +363,8 @@ class Player:
                 link = LINK_NAMES[m.body(arm).name]
                 if og == sc.table_geom:
                     self._add("block", "hits_table", f"The {link} would hit the table.")
+                elif og in sc.fixture_geom:
+                    self._add("block", "hits_dock", f"The {link} would hit dock {sc.fixture_geom[og]}.")
                 elif other in body_key:
                     key = body_key[other]
                     if key == self.holding or (key == self._touch_ok and arm in sc.gripper_bodies):
@@ -347,6 +379,9 @@ class Player:
             fromto = np.zeros(6)
             if mujoco.mj_geomDistance(m, d, held, sc.table_geom, 0.05, fromto) < -PENETRATION:
                 self._add("block", "held_hits_table", f"The {self._name(self.holding)} would be pushed into the table.")
+            for g, station in sc.fixture_geom.items():
+                if mujoco.mj_geomDistance(m, d, held, g, 0.05, fromto) < -PENETRATION:
+                    self._add("block", "held_hits_dock", f"The {self._name(self.holding)} would hit dock {station}.")
             for k, g in sc.geom.items():
                 if k != self.holding and mujoco.mj_geomDistance(m, d, held, g, 0.05, fromto) < -PENETRATION:
                     self._add(
@@ -392,6 +427,7 @@ class Player:
         for seg in segments:
             if seg.step_index != last_index:
                 last_index, self._poured_this_step = seg.step_index, False
+                self._aligned_pour_seconds = 0.0
                 if seg.step.startswith("pick("):
                     station = seg.step[5:-1]
                     self._touch_ok = next((k for k, loc in self.location.items() if loc == station), None)
@@ -401,14 +437,14 @@ class Player:
                 u = blend(k / n)
                 self._apply(seg.q0 + (seg.q1 - seg.q0) * u, seg.grip0 + (seg.grip1 - seg.grip0) * u)
                 self.t += 1.0 / fps
-                self._check_pour()
-                self._animate_pour()
                 self._check_collisions()
+                self._check_pour(1.0 / fps)
+                self._animate_pour()
                 if on_frame:
                     on_frame(self)
             if seg.step.startswith("pour") and seg.label == "hold while pouring":
                 if self.holding and not self._poured_this_step:
-                    self._add("block", "no_pour", "The cup is not tipped far enough to pour.")
+                    self._add("block", "no_pour", "The motion did not complete an aligned, uninterrupted tipped hold.")
                 elif not self.holding:
                     self._add("block", "nothing_held", "The arm goes through a pour with no cup in the gripper.")
             if seg.event == "close":

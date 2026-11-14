@@ -29,9 +29,12 @@ def setup_name(setup: str | None = None) -> str:
 
 
 def setup_dir(setup: str | None = None) -> Path:
-    path = CONFIG_DIR / "setups" / setup_name(setup)
+    name = setup_name(setup)
+    root = CONFIG_DIR / "setups"
+    aliases = {"two_vessel": root / "liquid", "liquid_legacy": root / "liquid" / "legacy"}
+    path = aliases.get(name, root / name)
     if not path.is_dir():
-        known = sorted(p.name for p in (CONFIG_DIR / "setups").iterdir() if p.is_dir())
+        known = sorted({p.name for p in root.iterdir() if p.is_dir()} | aliases.keys())
         raise ValueError(f"unknown setup {setup_name(setup)!r}; known: {known}")
     return path
 
@@ -52,6 +55,26 @@ class ObjectSpec:
     color: tuple[float, float, float]
 
 
+@dataclass(frozen=True)
+class Docks:
+    base_height: float
+    nest_height: float
+    radial_clearance: float
+    backing_thickness: float
+    backing_height: float
+
+
+@dataclass(frozen=True)
+class OverviewCamera:
+    lookat: tuple[float, float, float]
+    distance: float
+    azimuth: float
+    elevation: float
+    shift_azimuth_deg: float
+    registration_tolerance_px: float
+    fiducials: dict[str, tuple[float, float]]
+
+
 @dataclass
 class Bench:
     table_size: tuple[float, float]
@@ -62,6 +85,7 @@ class Bench:
     lift: float
     cup_radius: float = 0.019
     cup_height: float = 0.070
+    spout_extension: float = 0.0
     receiver_radius: float = 0.040
     receiver_height: float = 0.060
     receiver_capacity: int = 4
@@ -69,6 +93,12 @@ class Bench:
     pour_clearance: float = 0.050
     release_tolerance: float = 0.012  # how far from a mark a released thing may be
     grasp_tolerance: float = 0.015  # how far the gripper may be from the grasp point and still pick up
+    docks: Docks | None = None
+    camera: OverviewCamera | None = None
+
+    @property
+    def dock_height(self) -> float:
+        return self.docks.base_height if self.docks else 0.0
 
     def _of_kind(self, kind: str) -> list[str]:
         return [n for n, s in self.stations.items() if s.kind == kind]
@@ -105,7 +135,9 @@ def load_bench(setup: str | None = None) -> Bench:
     extra = {}
     containers = raw.get("containers") or {}
     if "mini_cup" in containers:
-        extra.update(cup_radius=containers["mini_cup"]["radius"], cup_height=containers["mini_cup"]["height"])
+        donor = containers["mini_cup"]
+        extra.update(cup_radius=donor["radius"], cup_height=donor["height"],
+                     spout_extension=donor.get("spout_extension", 0.0))
     if "receiver" in containers:
         rec = containers["receiver"]
         extra.update(
@@ -121,6 +153,8 @@ def load_bench(setup: str | None = None) -> Bench:
         objects=objects,
         grasp_height=grasp["height"],
         lift=grasp["lift"],
+        docks=Docks(**raw["docks"]) if "docks" in raw else None,
+        camera=OverviewCamera(**raw["camera"]) if "camera" in raw else None,
         **extra,
     )
 
