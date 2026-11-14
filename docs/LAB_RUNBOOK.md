@@ -9,15 +9,31 @@ The student app targets continuous voice on Mac and iPhone. Red-cabbage indicato
 From the repository root, use Python 3.12 and the project virtual environment:
 
 ```sh
-uv pip install --python .venv/bin/python -e 'simulation[dev]'
+uv venv --python 3.12 .venv  # only if it does not exist
+uv pip install --python .venv/bin/python -r agentic/requirements-lab.txt -e 'simulation[dev]'
 OPENARMS_EXECUTION=mujoco PORT=8010 .venv/bin/python -m agentic.openarms_lab
 ```
 
-Install agentic dependencies as described in `agentic/README.md`. Authenticate the chosen Codex CLI independently. Legacy Google keys do not enable voice in the application. Never copy credentials into evidence or Git.
+Authenticate the chosen expert independently; see [model profiles and switching](EXPERT_MODELS.md). The default needs the `codex` CLI on PATH. Legacy Google keys do not enable voice in the application. Never copy credentials into evidence or Git.
 
 Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same session with the simulator, actual expert/tool trace, observations and skill evaluations. Both views use the same bearer grant and voice connection. A phone needs a reachable configured HTTPS endpoint; localhost refers to the phone itself. Browser microphone access requires localhost or HTTPS.
 
 `OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression. `mujoco` runs the updated lab apparatus, selected explicitly; failure never falls back to mock. The older `openarms_sim.Player` preview is historical and is not the current student simulator. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
+
+## Which processes to run
+
+| Process | Start / inspect | Ownership |
+| --- | --- | --- |
+| Application server | The single Python command above; keep its terminal open. `GET /api/health` reports the selected backend/provider and voice availability. | Owns sessions, task orchestration, approvals, notebook and skill registry. |
+| Desktop website | Open `http://127.0.0.1:8010/`; `/developer` adds execution frames/video and diagnostic evidence. | Served by Python. No separate Node/web development server. |
+| Expert | Launched automatically for unfamiliar tasks or feedback requiring reasoning. Select it using [expert profiles](EXPERT_MODELS.md). | A bounded Codex or Claude subprocess; host tools execute its decisions. No second agent server. |
+| MuJoCo | Started by the application when the confirmed supported action runs. Inspect `/developer`. | One subprocess per simulated operation. Do not launch the old preview/gallery as the application simulator. |
+| Native iPhone | Open `research/joseph/iphone-voice-bridge/ios/OpenArmsVoice.xcodeproj` in Xcode, select the scheme and device, then Run. Enter the reachable server origin in app Settings. | Same Python session service. No legacy Mac relay. See the [native guide](../research/joseph/iphone-voice-bridge/ios/README.md) for signing/network details. |
+| Physical arm / standalone research | Separate supervised [firmware setup](../firmware/README.md), [wet-lab runbook](WET_LAB.md), or [research index](../research/README.md). | Preserved tools; not started or activated by this software demo. |
+
+For another device, serve the app through a trusted HTTPS endpoint reaching the Mac, set `OPENARMS_DEMO_TOKEN` and explicitly allow that hostname with `OPENARMS_ALLOWED_HOSTS`. Use `OPENARMS_HOST=0.0.0.0` only when the gateway must accept external connections. Put the origin and pairing code in the phone’s Settings. USB installation does not create a network route; phone localhost refers to the phone. Keep tokens in the environment or untracked `.env`, never URLs.
+
+Stop the application with Ctrl-C. The server cancels active work; reopening a session restores history but never replays execution or consent. Use a fresh `OPENARMS_DATA_DIR` for an isolated rehearsal rather than deleting someone else’s notebook.
 
 ## Demonstrate
 

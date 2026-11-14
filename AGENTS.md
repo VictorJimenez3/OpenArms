@@ -10,6 +10,8 @@
 - Only Joseph can authorize a material change to the agreed vision. Missing hardware, model access or time is a reported blocker, not permission to replace the product with a scripted mock.
 - Preserve physical authorization, deterministic limits and STOP. Simulation is development evidence; do not activate hardware or candidate motions through a documentation task.
 
+Codex and Claude use this same instruction source; `CLAUDE.md` imports it. Select expert providers/models through the shared profile configuration, never by forking the task loop, tool contracts or skills. Provider-specific authentication stays local. Report requested and actual model identity, and never substitute a model silently.
+
 ## Assignment format
 
 Issue + D1–D4; concrete outcome; owned files/worktree; dependency and consumer; baseline to preserve; acceptance trace and measured evidence; explicit exclusions. Return commit, checks, evidence and remaining gaps. Integrator reviews before push/merge; keep runtime and documentation synchronized.
