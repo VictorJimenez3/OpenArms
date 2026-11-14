@@ -186,7 +186,7 @@ def test_app_selects_water_only_scene_and_isolates_admission(tmp_path, monkeypat
 
 @pytest.mark.parametrize('source', ['simulation/config/setups/liquid/bench.yaml',
     'agentic/openarms_lab/two_vessel_evaluation.py', 'agentic/openarms_lab/runtime.py',
-    'agentic/openarms_lab/evaluation.py'])
+    'agentic/openarms_lab/evaluation.py', 'bench_vision/perception.py'])
 def test_two_vessel_admission_scope_changes_with_fixture(monkeypatch, source):
     from pathlib import Path
     from agentic.openarms_lab.two_vessel_configuration import execution_scope
@@ -221,7 +221,7 @@ async def test_water_experiment_history_is_passive_and_keeps_conditions(tmp_path
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('channel', ['voice', 'text'])
+@pytest.mark.parametrize('channel', ['voice', 'text', 'api'])
 async def test_unsupported_correction_revokes_presented_water_before_confirm(tmp_path, channel):
     from agentic.openarms_lab.backends import MockBackend
     from agentic.openarms_lab.live import GeminiBridge
@@ -240,7 +240,12 @@ async def test_unsupported_correction_revokes_presented_water_before_confirm(tmp
         async def emit(_):
             pass
         bridge = GeminiBridge(lambda: lab.snapshot(sid), lambda n,a: lab.tool(sid,n,a), emit)
-        if channel == 'voice':
+        revision = lab.snapshot(sid)['revision']
+        if channel == 'api':
+            with pytest.raises(LabError, match='supported'):
+                await lab.choose_condition(sid, 'vinegar')
+            assert lab.snapshot(sid)['revision'] > revision
+        elif channel == 'voice':
             bridge.controls.input('Actually, use vinegar instead.')
             await bridge._finish_transcript()
         else:
@@ -284,3 +289,35 @@ async def test_concurrent_stop_and_inspection_cancel_finish_worker_cleanup(tmp_p
     finally:
         release.set()
         await asyncio.gather(inspect, stop, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_expert_receives_controller_and_observer_admission_contract(tmp_path):
+    from agentic.openarms_lab.two_vessel_configuration import EXPERIMENT, CONDITIONS
+    from agentic.tests.test_task_loop import TestPerception
+    contexts = []
+    class InspectContract:
+        async def run(self, context, **_):
+            contexts.append(context)
+            return {'kind':'clarification', 'summary':'Inspecting the admission contract only.', 'payload':{},
+                    'provider':'TEST_FAKE', 'model':'contract-test', 'calls':1,
+                    'usage':{}, 'elapsed_ms':0, 'tool_receipts':[]}
+    scene = TwoVesselSceneService(tmp_path/'frames')
+    lab = Lab(tmp_path/'lab', expert=InspectContract(), perception=TestPerception(unknown=False),
+              backend_factory=lambda: TwoVesselBackend(scene), experiment=EXPERIMENT, conditions=CONDITIONS)
+    try:
+        sid = (await lab.create())['session_id']
+        handle = await lab.start_task(sid, 'Pour water from A to C.')
+        await settled(lab, handle)
+        requirements = contexts[0]['capability_limits']['skill_admission']
+        assert requirements['required_expected_state'] == {'at':'HOME'}
+        assert requirements['required_outcome_checks'] == [
+            {'feature':'receiver_appearance', 'expected':'water_appearance'}]
+        assert 'not a camera-observed feature' in requirements['expected_state_contract']
+        assert 'independently' in requirements['outcome_checks_contract']
+        assert not {'steps', 'bindings', 'skill_definition'}.intersection(requirements)
+        assert {'inspect_scene','localize_objects','validate_plan'}.issubset(
+            {tool['name'] for tool in contexts[0]['tools']})
+        assert lab.backends[sid].executions == 0
+    finally:
+        await lab.shutdown()

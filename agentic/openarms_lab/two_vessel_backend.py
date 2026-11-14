@@ -34,6 +34,17 @@ class TwoVesselBackend(MujocoBackend):
                 'routes': [['A', 'C']], 'mock_execution': False, 'physical_execution': False,
                 'simulation_execution': True, 'supported_operations': [OPERATION], **SCENE,
                 'measurement': False, 'observation_provenance': 'SIMULATED',
+                'skill_admission': {
+                    'required_expected_state': {'at': 'HOME'},
+                    'expected_state_contract': 'SkillDefinition.expected_state describes the final controller state. '
+                        'Declare at=HOME for this complete pour; it is not a camera-observed feature or physical success.',
+                    'required_outcome_checks': [{'feature': 'receiver_appearance', 'expected': 'water_appearance'}],
+                    'outcome_checks_contract': 'SkillDefinition.outcome_checks are checked independently against '
+                        'fresh SIMULATED image features listed in scene.observable_features. '
+                        'Controller HOME cannot replace the independent water-appearance check.',
+                    'qualification': 'Initial admission of a reusable simulated water capability; '
+                        'not substantive improvement, chemistry qualification, or physical readiness.',
+                },
                 'action_description': 'pour one premeasured water portion from A into C, return the donor to A and return HOME',
                 'limitations': [*LIMITATIONS, 'One premeasured water pour from the small donor at A into the wide receiver at C.']}
 

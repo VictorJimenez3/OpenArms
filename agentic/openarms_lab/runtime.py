@@ -433,7 +433,13 @@ class Lab(TaskLoop):
                     s['dedupe'][key] = {'text': message['text'], 'task_id': task['task_id'] if task else None}
                     return await self.publish(s)
                 return self.snapshot(sid)
-            self._choose(s, condition_id)
+            pending_before = s.get('pending')
+            try:
+                self._choose(s, condition_id)
+            except LabError:
+                if pending_before is not None and s.get('pending') is None:
+                    await self.publish(s)
+                raise
             prior = s['tasks'][-1] if s['tasks'] else None
             if prior and prior['status'] == 'needs_clarification':
                 message = next((m for m in reversed(s['messages']) if m['turn_id'] == turn_id
