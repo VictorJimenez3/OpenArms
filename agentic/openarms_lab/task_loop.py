@@ -33,13 +33,15 @@ class ExpertMissing(ValueError):
     code = 'unavailable'
 
 
-def describe_step(step):
+def describe_step(step, action_description=None):
     args, operation = step['arguments'], step['operation']
     if operation == 'inspect_scene':
         return 'inspect the '+args['view']+' camera view'
     if operation == 'localize_objects':
         return 'locate '+', '.join(args['labels'])+' in the image'
     if operation == 'mock_prepared_sample':
+        if action_description:
+            return action_description
         return 'test the prepared '+args['condition_id'].replace('_', ' ')+' sample from station A with the indicator at station C'
     if operation == 'mock_pick_up':
         return 'pick up the sample cup at station '+args['station']
@@ -686,7 +688,7 @@ class TaskLoop:
 
     async def _propose_task(self, s, task, draft, phase, began, *, prior_request=None, prior_receipt=None):
         plan = self._preflight(s, task, draft, phase)
-        summary = 'In the simulation, I will '+', then '.join(describe_step(step) for step in plan['steps'])+'.'
+        summary = 'In the simulation, I will '+', then '.join(describe_step(step, s['capabilities'].get('action_description')) for step in plan['steps'])+'.'
         if draft.skill_definition:
             version = self.registry.validate_for_task(task['task_id'], draft.skill_definition)
             self.registry.authorize(task['task_id'], plan['skill_id'], version)
