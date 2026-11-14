@@ -106,7 +106,7 @@ final class VoiceClient: ObservableObject {
     var canAct: Bool { connected && !busy && foreground }
     var canConfirm: Bool {
         guard canAct, let p = snapshot?.pending else { return false }
-        return p.presented && acknowledgedProposal == p.id && visibleProposal == p.id
+        return isCurrent(p) && p.presented && acknowledgedProposal == p.id && visibleProposal == p.id
     }
     var voiceTitle: String {
         if voiceWanted {
@@ -119,7 +119,7 @@ final class VoiceClient: ObservableObject {
     var voiceDetail: String {
         if speakerActive { return "You can speak to interrupt, or tap Interrupt below." }
         if voiceWanted && muted { return "Unmute when you’re ready. Text is always available." }
-        if microphoneActive { return "Tell me your prediction, ask a question, or change your mind." }
+        if microphoneActive { return "Ask a question or tell me what you’d like to do." }
         if voiceStatus == "unavailable" { return "Voice is unavailable. You can keep going with text." }
         return "Ask a question, describe a task, or explore the pH demonstration."
     }
@@ -212,7 +212,37 @@ final class VoiceClient: ObservableObject {
         guard let response = response as? HTTPURLResponse else { throw VoiceError.message("The lab returned an invalid response.") }
         guard (200...299).contains(response.statusCode) else { throw HTTPFailure(code: response.statusCode) }
         guard data.count <= 8 * 1024 * 1024 else { throw VoiceError.message("Lab history is too large to restore safely.") }
-        return try JSONDecoder().decode(LabSnapshot.self, from: data)
+        return try LabWire.snapshot(data)
+    }
+
+    struct EvidenceScope: Hashable {
+        let connection: UUID
+        let sessionID: String
+        let generation: Int
+    }
+
+    var evidenceScope: EvidenceScope? {
+        guard connected, foreground, let connectionID, let snapshot,
+              snapshot.generation == snapshotStore.audioGeneration,
+              snapshot.sessionID == credential?.sessionID else { return nil }
+        return EvidenceScope(connection: connectionID, sessionID: snapshot.sessionID, generation: snapshot.generation)
+    }
+
+    func loadEvidenceImage(id: String, path: String, scope: EvidenceScope) async throws -> UIImage {
+        guard scope == evidenceScope, let origin, let credential else {
+            throw CancellationError()
+        }
+        try Task.checkCancellation()
+        let request = try AppEndpoint.evidenceRequest(origin, credential: credential, evidenceID: id, artifactPath: path)
+        let (data, response) = try await http.data(for: request)
+        try Task.checkCancellation()
+        guard scope == evidenceScope else { throw CancellationError() }
+        guard let response = response as? HTTPURLResponse,
+              response.statusCode == 200, response.mimeType == "image/png",
+              data.count <= 8 * 1024 * 1024, let image = UIImage(data: data) else {
+            throw VoiceError.message("The scene image is unavailable.")
+        }
+        return image
     }
 
     private func read(from ws: URLSessionWebSocketTask, attempt: UUID) {
@@ -223,7 +253,7 @@ final class VoiceClient: ObservableObject {
                     guard let self, self.connectionID == attempt else { return }
                     let data: Data
                     switch message { case let .string(text): data = Data(text.utf8); case .data: throw VoiceError.message("The lab sent unsupported binary audio."); @unknown default: continue }
-                    try self.receive(JSONDecoder().decode(ServerEvent.self, from: data), attempt: attempt)
+                    try self.receive(LabWire.event(data), attempt: attempt)
                 }
             } catch is CancellationError { }
             catch { guard let self, self.connectionID == attempt else { return }; self.connectionFailed(error) }
@@ -309,7 +339,7 @@ final class VoiceClient: ObservableObject {
             if event.replyID == nil || event.replyID == audio.activeReply { flushAudio(notify: false); updateCapture() }
         case "error":
             // Never render raw provider errors, which can contain remote URLs or credentials.
-            notice = "The lab could not complete that step. Review the current trial and try again."
+            notice = "The lab could not complete that step. Check the task status and try again."
             if event.recoverable == false || ["connection_revoked", "superseded", "owner_replaced"].contains(event.code ?? "") {
                 wantsConnection = false; closeTransport(); connectionStatus = "Session opened elsewhere. Reconnect to continue."
             }
@@ -339,41 +369,64 @@ final class VoiceClient: ObservableObject {
     }
 
     func proposalAppeared(_ proposal: Proposal) {
+        guard snapshot?.pending?.id == proposal.id else { return }
         visibleProposal = proposal.id
         acknowledgeVisibleProposal(proposal)
     }
-    func proposalDisappeared(_ id: String) { if visibleProposal == id { visibleProposal = nil } }
+    func proposalDisappeared(_ id: String) {
+        if visibleProposal == id { visibleProposal = nil }
+    }
+    private func isCurrent(_ proposal: Proposal) -> Bool {
+        guard let snapshot, snapshot.generation == snapshotStore.audioGeneration else { return false }
+        return proposal.matchesCurrent(snapshot.pending, generation: snapshot.generation, now: Date().timeIntervalSince1970)
+    }
+
     private func acknowledgeVisibleProposal(_ proposal: Proposal) {
-        guard connected, foreground, visibleProposal == proposal.id, snapshot?.pending?.id == proposal.id,
+        guard connected, foreground, visibleProposal == proposal.id, isCurrent(proposal),
               acknowledgedProposal != proposal.id, presentingProposal != proposal.id,
-              let origin, let credential, let attempt = connectionID else { return }
+              let origin, let credential, let attempt = connectionID, let generation = snapshot?.generation else { return }
         presentationTask?.cancel(); presentingProposal = proposal.id
         presentationTask = Task { [weak self] in
             guard let self else { return }
-            defer { if self.presentingProposal == proposal.id { self.presentingProposal = nil } }
+            defer {
+                if self.connectionID == attempt, self.snapshot?.generation == generation, self.presentingProposal == proposal.id {
+                    self.presentingProposal = nil
+                }
+            }
             do {
                 // Allow the mounted SwiftUI card to draw; cancellation/visibility is rechecked.
                 try await Task.sleep(for: .milliseconds(150))
-                guard self.visibleProposal == proposal.id, self.foreground, self.connectionID == attempt else { return }
+                guard self.visibleProposal == proposal.id, self.foreground, self.connectionID == attempt,
+                      self.snapshot?.generation == generation, self.isCurrent(proposal) else { return }
                 var fields = proposal.fields; fields["channel"] = .string("text")
                 let updated = try await self.request(url: AppEndpoint.sessionURL(origin, id: credential.sessionID, action: "present"), method: "POST", token: credential.accessToken, fields: fields)
                 try Task.checkCancellation()
-                guard self.connectionID == attempt, self.visibleProposal == proposal.id else { return }
+                guard self.connectionID == attempt, self.visibleProposal == proposal.id,
+                      self.snapshot?.generation == generation, self.isCurrent(proposal) else { return }
                 try self.apply(updated)
-                if self.snapshot?.pending?.id == proposal.id && self.snapshot?.pending?.presented == true { self.acknowledgedProposal = proposal.id }
+                if self.snapshot?.generation == generation && self.isCurrent(proposal) && self.snapshot?.pending?.presented == true {
+                    self.acknowledgedProposal = proposal.id
+                }
             } catch is CancellationError { }
-            catch { self.notice = "The proposal could not be marked as shown. Reconnect before confirming." }
+            catch {
+                if !Task.isCancelled, self.connectionID == attempt, self.snapshot?.generation == generation, self.isCurrent(proposal) {
+                    self.notice = "The proposal could not be marked as shown. Reconnect before confirming."
+                }
+            }
         }
     }
 
     func chooseCondition(_ id: String) { act("condition", fields: ["condition_id": .string(id)]) }
     func predict(_ text: String) { if let text = clean(text) { act("prediction", fields: ["text": .string(text)]) } }
     func reflect(_ text: String) { if let text = clean(text) { act("reflection", fields: ["text": .string(text)]) } }
-    func sendText(_ text: String) {
-        if let text = clean(text) { act("request", fields: ["text": .string(text), "client_request_id": .string(UUID().uuidString)]) }
+    @discardableResult
+    func sendText(_ text: String) -> Bool {
+        guard canAct, let request = DirectLabRequest(text) else { return false }
+        act("request", fields: request.fields)
+        return true
     }
     func confirm(_ proposal: Proposal) {
-        guard canConfirm, snapshot?.pending?.id == proposal.id else { return }
+        guard canConfirm, isCurrent(proposal) else { return }
         act("confirm", fields: proposal.fields)
     }
     func cancel(_ proposal: Proposal) { act("cancel", fields: ["request_id": .string(proposal.requestID)]) }

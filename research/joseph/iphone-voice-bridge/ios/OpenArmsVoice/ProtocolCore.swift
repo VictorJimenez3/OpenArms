@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 // Foundation-only contract and state machines; shared by the app and offline tests.
 enum VoiceError: LocalizedError {
@@ -46,6 +49,26 @@ enum AppEndpoint {
         parts.scheme = origin.scheme == "https" ? "wss" : "ws"
         return parts.url!
     }
+
+    static func evidenceURL(_ origin: URL, sessionID: String, evidenceID: String, artifactPath: String) throws -> URL {
+        let session = try sessionURL(origin, id: sessionID)
+        guard evidenceID.utf8.count == 32,
+              evidenceID.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }),
+              artifactPath == "/api/sessions/\(sessionID)/evidence/\(evidenceID)" else {
+            throw VoiceError.message("The scene image is unavailable.")
+        }
+        return session.appendingPathComponent("evidence").appendingPathComponent(evidenceID)
+    }
+
+    static func evidenceRequest(_ origin: URL, credential: SessionCredential, evidenceID: String, artifactPath: String) throws -> URLRequest {
+        guard origin.absoluteString == credential.origin else { throw VoiceError.message("The scene image is unavailable.") }
+        let url = try evidenceURL(origin, sessionID: credential.sessionID, evidenceID: evidenceID, artifactPath: artifactPath)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("image/png", forHTTPHeaderField: "Accept")
+        request.setValue("Bearer \(credential.accessToken)", forHTTPHeaderField: "Authorization")
+        return request
+    }
 }
 
 struct SessionCredential: Codable, Equatable {
@@ -80,10 +103,14 @@ struct LabSnapshot: Decodable, Equatable {
     let executionReceipts: JSONValue?
     let outcomes: JSONValue?
     let evaluations: JSONValue?
+    let requests: JSONValue?
 
     var taskRecords: [JSONValue] { RecordPresentation.records(tasks) + RecordPresentation.records(task) }
     var sceneRecords: [JSONValue] { RecordPresentation.records(sceneEvidence) + RecordPresentation.records(scene) }
-    var imageRecords: [JSONValue] { RecordPresentation.records(sceneImages) }
+    var imageRecords: [JSONValue] {
+        let current = RecordPresentation.records(sceneImages)
+        return current.isEmpty ? RecordPresentation.records(taskRecords.last?["images"]) : current
+    }
     var skillRecords: [JSONValue] { RecordPresentation.records(skills) }
     var executionRecords: [JSONValue] {
         RecordPresentation.records(executionReceipts) + taskRecords.flatMap { RecordPresentation.records($0["execution"]) }
@@ -105,9 +132,14 @@ struct LabSnapshot: Decodable, Equatable {
         }
     }
 
+    func metrics(for task: JSONValue) -> JSONValue? {
+        guard let id = task["request_id"]?.string else { return nil }
+        return RecordPresentation.records(requests).last { $0["request_id"]?.string == id }?["metrics"]
+    }
+
     enum CodingKeys: String, CodingKey {
         case backend, revision, generation, connected, experiment, trial, conditions, prediction, pending, observations, messages, notebook, state
-        case task, tasks, scene, skills, outcomes, evaluations
+        case task, tasks, scene, skills, outcomes, evaluations, requests
         case sceneEvidence = "scene_evidence", sceneImages = "scene_images", executionReceipts = "execution_receipts"
         case sessionID = "session_id", accessToken = "access_token"
     }
@@ -122,21 +154,57 @@ struct Trial: Decodable, Equatable {
 struct Condition: Decodable, Equatable, Identifiable { let id: String; let title: String }
 struct Proposal: Decodable, Equatable, Identifiable {
     let requestID: String
-    let proposalVersion: Int
+    @ProposalVersion var proposalVersion: Int
     let summary: String
     let conditionID: String?
     let planHash: String?
     let skillID: String?
     let skillVersion: JSONValue?
+    let plan: JSONValue?
     let status: String
     let presented: Bool
+    let generation: Int?
+    let expiresAt: Double?
     var id: String { "\(requestID):\(proposalVersion)" }
     enum CodingKeys: String, CodingKey {
-        case summary, status, presented
+        case summary, status, presented, generation, plan
         case requestID = "request_id", proposalVersion = "proposal_version", conditionID = "condition_id"
         case planHash = "plan_hash", skillID = "skill_id", skillVersion = "skill_version"
+        case expiresAt = "expires_at"
     }
-    var fields: [String: JSONValue] { ["request_id": .string(requestID), "proposal_version": .number(Double(proposalVersion))] }
+    var fields: [String: JSONValue] { ["request_id": .string(requestID), "proposal_version": .integer(proposalVersion)] }
+
+    func matchesCurrent(_ pending: Proposal?, generation: Int, now: TimeInterval) -> Bool {
+        guard let pending else { return false }
+        return requestID == pending.requestID && proposalVersion == pending.proposalVersion &&
+            pending.status == "requested" && (self.generation ?? generation) == generation &&
+            (pending.generation ?? generation) == generation && (pending.expiresAt ?? .infinity) > now
+    }
+
+    var reviewSteps: [String] {
+        RecordPresentation.records(plan?["steps"]).compactMap { step in
+            let args = step["arguments"]
+            switch step["operation"]?.string {
+            case "inspect_scene": return "Inspect the scene (\(args?["view"]?.string ?? "primary") view)"
+            case "localize_objects":
+                let labels = RecordPresentation.strings(args?["labels"]).joined(separator: ", ")
+                return labels.isEmpty ? "Locate labeled objects" : "Locate \(labels)"
+            case "mock_prepared_sample":
+                let sample = args?["condition_id"]?.string?.replacingOccurrences(of: "_", with: " ") ?? "the sample"
+                return "Simulate moving \(sample) from \(args?["source"]?.string ?? "A") to \(args?["destination"]?.string ?? "C")"
+            case "mock_pick_up": return "Simulate picking up the sample cup at \(args?["station"]?.string ?? "its station")"
+            case "mock_put_down": return "Simulate putting down the sample cup at \(args?["station"]?.string ?? "its station")"
+            case "mock_pour":
+                let portions = args?["portions"]?.scalarText ?? "1"
+                return "Simulate pouring from the sample cup at \(args?["station"]?.string ?? "C") (\(portions) portion)"
+            case "observe":
+                let view = args?["view"]?.string ?? "primary"
+                let fallback = args?["fallback_view"]?.string
+                return "Observe independently (\(view) view\(fallback.map { ", \($0) fallback" } ?? ""))"
+            default: return nil
+            }
+        }
+    }
 }
 struct Observation: Decodable, Equatable, Identifiable {
     let observationID: String?
@@ -146,9 +214,19 @@ struct Observation: Decodable, Equatable, Identifiable {
     let text: String
     let source: String
     let evidence: [JSONValue]
+    let status: String?
+    let checks: JSONValue?
+    let receipt: JSONValue?
+    var images: [JSONValue] {
+        let ids = Set(evidence.compactMap { $0.string ?? $0["evidence_id"]?.string })
+        return RecordPresentation.records(receipt?["images"]).filter { frame in
+            frame["evidence_id"]?.string.map(ids.contains) ?? false
+        }
+    }
     var id: String { observationID ?? "\(trialID):\(requestID)" }
     enum CodingKeys: String, CodingKey {
-        case provenance, text, source, evidence, observationID = "observation_id", requestID = "request_id", trialID = "trial_id"
+        case provenance, text, source, evidence, status, checks, receipt
+        case observationID = "observation_id", requestID = "request_id", trialID = "trial_id"
     }
 }
 struct LabMessage: Decodable, Equatable, Identifiable {
@@ -163,7 +241,7 @@ struct LabMessage: Decodable, Equatable, Identifiable {
 
 // Preserve arbitrary notebook/evidence fields without coupling the client to server internals.
 indirect enum JSONValue: Codable, Equatable {
-    case string(String), number(Double), bool(Bool), array([JSONValue]), object([String: JSONValue]), null
+    case string(String), number(Double), integer(Int), bool(Bool), array([JSONValue]), object([String: JSONValue]), null
     init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()
         if c.decodeNil() { self = .null }
@@ -178,6 +256,7 @@ indirect enum JSONValue: Codable, Equatable {
         switch self {
         case let .string(v): try c.encode(v)
         case let .number(v): try c.encode(v)
+        case let .integer(v): try c.encode(v)
         case let .bool(v): try c.encode(v)
         case let .array(v): try c.encode(v)
         case let .object(v): try c.encode(v)
@@ -186,10 +265,20 @@ indirect enum JSONValue: Codable, Equatable {
     }
     subscript(_ key: String) -> JSONValue? { if case let .object(v) = self { return v[key] }; return nil }
     var string: String? { if case let .string(v) = self { return v }; return nil }
+    var numericValue: Double? {
+        if case let .number(v) = self { return v }
+        if case let .integer(v) = self { return Double(v) }
+        return nil
+    }
+    var failedChecks: Bool {
+        if case let .object(values) = self { return values.values.contains(.bool(false)) }
+        return false
+    }
     var scalarText: String? {
         switch self {
         case let .string(v): return v.isEmpty ? nil : v
         case let .number(v): return Int(exactly: v).map(String.init) ?? String(v)
+        case let .integer(v): return String(v)
         case let .bool(v): return v ? "Yes" : "No"
         default: return nil
         }
@@ -207,6 +296,10 @@ enum RecordPresentation {
     }
     static func text(_ record: JSONValue, _ keys: String...) -> String? {
         keys.lazy.compactMap { record[$0]?.scalarText }.first
+    }
+    static func strings(_ value: JSONValue?) -> [String] {
+        if case let .array(values) = value { return values.compactMap(\.string) }
+        return []
     }
     static func status(_ record: JSONValue) -> String? {
         text(record, "status", "lifecycle", "state")?.replacingOccurrences(of: "_", with: " ")
@@ -246,8 +339,77 @@ struct ServerEvent: Decodable {
 }
 struct ReplyProposal: Decodable, Equatable {
     let requestID: String
-    let proposalVersion: Int
+    @ProposalVersion var proposalVersion: Int
     enum CodingKeys: String, CodingKey { case requestID = "request_id", proposalVersion = "proposal_version" }
+}
+
+@propertyWrapper
+struct ProposalVersion: Decodable, Equatable {
+    let wrappedValue: Int
+
+    init(from decoder: Decoder) throws {
+        let value = try decoder.singleValueContainer()
+        if let digits = try? value.decode(String.self),
+           (1...16).contains(digits.utf8.count), digits.utf8.first != 48,
+           digits.utf8.allSatisfy({ (48...57).contains($0) }), let version = Int(digits) {
+            wrappedValue = version
+        } else if let version = try? value.decode(Int.self), version > 0 {
+            wrappedValue = version
+        } else {
+            throw DecodingError.dataCorruptedError(in: value, debugDescription: "Expected a positive proposal version.")
+        }
+    }
+}
+
+// Foundation's Int decoder also accepts JSON decimal and exponent tokens that round
+// to an integer. Check the proposal token at the wire boundary before using it.
+enum LabWire {
+    static func snapshot(_ data: Data) throws -> LabSnapshot {
+        let result = try JSONDecoder().decode(LabSnapshot.self, from: data)
+        if let proposal = result.pending {
+            try validateVersion(data, path: ["pending", "proposal_version"], expected: proposal.proposalVersion)
+        }
+        return result
+    }
+
+    static func event(_ data: Data) throws -> ServerEvent {
+        let result = try JSONDecoder().decode(ServerEvent.self, from: data)
+        if let proposal = result.proposal {
+            try validateVersion(data, path: ["proposal", "proposal_version"], expected: proposal.proposalVersion)
+        }
+        if let proposal = result.state?.pending {
+            try validateVersion(data, path: ["state", "pending", "proposal_version"], expected: proposal.proposalVersion)
+        }
+        return result
+    }
+
+    private static func validateVersion(_ data: Data, path: [String], expected: Int) throws {
+        let json = try JSONSerialization.jsonObject(with: data)
+        let token = path.reduce(json as Any?) { value, key in (value as? [String: Any])?[key] }
+        if let digits = token as? String, digits == String(expected) { return }
+        if let number = token as? NSNumber, !["c", "d", "f"].contains(String(cString: number.objCType)),
+           number.stringValue == String(expected) { return }
+        throw VoiceError.message("The lab returned an invalid proposal version.")
+    }
+}
+
+struct DirectLabRequest {
+    let text: String
+    let id: UUID
+
+    static func cleanedText(_ input: String) -> String? {
+        let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, text.unicodeScalars.count <= 4000 else { return nil }
+        return text
+    }
+
+    init?(_ input: String, id: UUID = UUID()) {
+        guard let text = Self.cleanedText(input) else { return nil }
+        self.text = text
+        self.id = id
+    }
+
+    var fields: [String: JSONValue] { ["text": .string(text), "client_request_id": .string(id.uuidString)] }
 }
 
 struct ClientFrame {

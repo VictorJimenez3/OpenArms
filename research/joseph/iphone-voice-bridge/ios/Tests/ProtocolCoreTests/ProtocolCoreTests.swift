@@ -36,6 +36,91 @@ final class ProtocolCoreTests: XCTestCase {
         XCTAssertEqual(event.proposal?.proposalVersion, 3)
     }
 
+    func testProposalVersionsNormalizeToAnExactJSONInteger() throws {
+        let exact = 9_007_199_254_740_993
+        for token in [String(exact), "\"\(exact)\""] {
+            let lab = try LabWire.snapshot(proposalSnapshot(version: token))
+            let proposal = try XCTUnwrap(lab.pending)
+            XCTAssertEqual(proposal.proposalVersion, exact)
+            var present = proposal.fields
+            present["channel"] = .string("text")
+            for fields in [proposal.fields, present] {
+                let payload = String(decoding: try JSONEncoder().encode(fields), as: UTF8.self)
+                XCTAssertTrue(payload.contains("\"proposal_version\":\(exact)"))
+                XCTAssertEqual(try self.fields(payload)["request_id"], .string("request"))
+            }
+            let reply = try LabWire.event(replyStart(version: token))
+            XCTAssertEqual(reply.replyID, "reply")
+            XCTAssertEqual(reply.proposal?.requestID, proposal.requestID)
+            XCTAssertEqual(reply.proposal?.proposalVersion, proposal.proposalVersion)
+        }
+        for token in ["true", "false", "1.5", "1.0", "1e0", "1.0000000000000000001", "0", "-2",
+                      #""0""#, #""02""#, #""+2""#, #""2.0""#, #""2 ""#, #""１２""#, #""12345678901234567""#] {
+            let state = proposalSnapshot(version: token)
+            XCTAssertThrowsError(try LabWire.snapshot(state), token)
+            XCTAssertThrowsError(try LabWire.event(replyStart(version: token)), token)
+            XCTAssertThrowsError(try LabWire.event(Data(("{\"type\":\"state\",\"state\":" +
+                String(decoding: state, as: UTF8.self) + "}").utf8)), token)
+        }
+    }
+
+    func testEvidencePathIsBoundToTheTrustedOriginSessionAndFrame() throws {
+        let origin = try AppEndpoint.resolve("https://lab.example.org:8443")
+        let id = "0123456789abcdef0123456789abcdef"
+        let path = "/api/sessions/current/evidence/\(id)"
+        let url = try AppEndpoint.evidenceURL(origin, sessionID: "current", evidenceID: id, artifactPath: path)
+        XCTAssertEqual(url.absoluteString, "https://lab.example.org:8443\(path)")
+        XCTAssertNil(url.query)
+        let credential = SessionCredential(origin: origin.absoluteString, sessionID: "current", accessToken: "test-token")
+        let request = try AppEndpoint.evidenceRequest(origin, credential: credential, evidenceID: id, artifactPath: path)
+        XCTAssertEqual(request.url, url)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer test-token")
+        XCTAssertThrowsError(try AppEndpoint.evidenceRequest(URL(string: "https://other.example")!,
+                                                             credential: credential, evidenceID: id, artifactPath: path))
+        for unsafe in [
+            "https://lab.example.org:8443\(path)", "https://other.example\(path)",
+            "//other.example\(path)", "\(path)?token=do-not-send", "\(path)#preview",
+            "/api/sessions/other/evidence/\(id)", "/api/sessions/current/evidence/../\(id)",
+            "/api/sessions/current/evidence/%30\(id.dropFirst())",
+            "/api/sessions/current/evidence/\(String(repeating: "a", count: 32))"
+        ] {
+            XCTAssertThrowsError(try AppEndpoint.evidenceURL(origin, sessionID: "current", evidenceID: id, artifactPath: unsafe))
+        }
+        XCTAssertThrowsError(try AppEndpoint.evidenceURL(origin, sessionID: "current", evidenceID: "../frame", artifactPath: "/api/sessions/current/evidence/../frame"))
+    }
+
+    func testARevisedExpiredOrRegeneratedProposalRequiresFreshReview() throws {
+        let current = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(version: "3")).pending)
+        let revised = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(version: "4")).pending)
+        XCTAssertTrue(current.matchesCurrent(current, generation: 0, now: 100))
+        XCTAssertFalse(current.matchesCurrent(revised, generation: 0, now: 100))
+        XCTAssertFalse(current.matchesCurrent(current, generation: 1, now: 100))
+        XCTAssertFalse(current.matchesCurrent(current, generation: 0, now: 200))
+        XCTAssertFalse(current.matchesCurrent(nil, generation: 0, now: 100))
+        XCTAssertEqual(current.reviewSteps, ["Locate cup"])
+    }
+
+    func testDirectRequestNeedsOnlyTheStudentsMessage() throws {
+        let id = UUID()
+        let request = try XCTUnwrap(DirectLabRequest("  Inspect the scene and describe the labeled samples.\n", id: id))
+        XCTAssertEqual(request.fields, [
+            "text": .string("Inspect the scene and describe the labeled samples."),
+            "client_request_id": .string(id.uuidString)
+        ])
+        XCTAssertNil(DirectLabRequest("   "))
+        XCTAssertNil(DirectLabRequest(String(repeating: "x", count: 4001)))
+        let queued = try snapshot(extra: """
+        ,"trial":{"trial_id":"t1","condition_id":null,"state":"choosing_condition"},
+        "tasks":[{"task_id":"t","status":"queued","request":"Inspect the scene and describe the labeled samples.",
+                  "request_id":null,"condition_id":null,"prediction":""}]
+        """)
+        XCTAssertNil(queued.trial.conditionID)
+        XCTAssertTrue(queued.prediction.isEmpty)
+        XCTAssertNil(queued.pending)
+        XCTAssertEqual(queued.taskRecords.first?["request"], .string(request.text))
+    }
+
     func testAcceptedSnapshotRotatesCaptureEpochWithoutSocketHello() throws {
         var snapshots = SnapshotStore()
         var transcript = TranscriptStore()
@@ -209,6 +294,49 @@ final class ProtocolCoreTests: XCTestCase {
         XCTAssertEqual(lab.observations.map(\.provenance), ["UNKNOWN", "recorded_simulation"])
         XCTAssertEqual(lab.skillRecords.first?["status"], .string("task_validated"))
         XCTAssertEqual(lab.evaluationRecords.first?["decision"]?["decision"], .string("rejected"))
+    }
+
+    func testTaskMetricsAndIndependentImageAssociationFollowGatewaySnapshot() throws {
+        let lab = try snapshot(extra: """
+        ,"tasks":[{"task_id":"render","request_id":"r2","status":"completed","route":"active_skill",
+          "images":[{"evidence_id":"new","artifact_url":"/frame"}],
+          "execution":[{"request_id":"r2","status":"completed","backend":"mock"}]}],
+        "scene_images":[],"requests":[
+          {"request_id":"old","metrics":{"planning_ms":999}},
+          {"request_id":"r2","metrics":{"dispatch":"active_skill","planning_ms":13.5,"model_calls":0}}],
+        "observations":[
+          {"request_id":"r2","trial_id":"t1","status":"unknown","provenance":"UNKNOWN","source":"observer",
+           "text":"Unreadable","evidence":[],"receipt":{"images":[{"evidence_id":"unverified"}]}},
+          {"request_id":"r2","trial_id":"t1","status":"observed","provenance":"SIMULATED","source":"observer",
+           "text":"Observed","evidence":["used"],"checks":{"color":false},
+           "receipt":{"images":[{"evidence_id":"used"},{"evidence_id":"unrelated"}]}}]
+        """)
+        let task = try XCTUnwrap(lab.taskRecords.last)
+        XCTAssertEqual(lab.metrics(for: task)?["planning_ms"]?.numericValue, 13.5)
+        XCTAssertEqual(lab.imageRecords.first?["evidence_id"]?.string, "new")
+        XCTAssertEqual(lab.executionRecords.first?["status"]?.string, "completed")
+        XCTAssertEqual(lab.observations.first?.status, "unknown")
+        XCTAssertTrue(try XCTUnwrap(lab.observations.first).images.isEmpty)
+        XCTAssertEqual(lab.observations.last?.images.compactMap { $0["evidence_id"]?.string }, ["used"])
+        XCTAssertEqual(lab.observations.last?.checks?.failedChecks, true)
+    }
+
+    private func proposalSnapshot(version: String) -> Data {
+        Data("""
+        {"session_id":"s","backend":"mock","revision":2,"generation":0,"connected":true,
+        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "trial":{"trial_id":"t1","state":"awaiting_confirmation"},"conditions":[],"prediction":"",
+        "observations":[],"messages":[],"notebook":[],"state":{},
+        "pending":{"request_id":"request","proposal_version":\(version),"summary":"Inspect the scene",
+                   "status":"requested","presented":false,"generation":0,"expires_at":200,
+                   "plan":{"steps":[{"operation":"localize_objects","arguments":{"evidence_id":"internal","labels":["cup"]}}]}}}
+        """.utf8)
+    }
+
+    private func replyStart(version: String) -> Data {
+        Data("""
+        {"type":"reply_start","reply_id":"reply","proposal":{"request_id":"request","proposal_version":\(version)}}
+        """.utf8)
     }
 
     private func snapshot(revision: Int = 0, generation: Int = 0, id: String = "s",
