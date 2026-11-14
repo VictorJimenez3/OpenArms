@@ -1,4 +1,4 @@
-"""Shared lab backend for a confirmed, complete MuJoCo prepared-sample trajectory."""
+"""Shared lab backend for a confirmed MuJoCo metered dose."""
 from __future__ import annotations
 
 import asyncio
@@ -8,7 +8,7 @@ import uuid
 
 from .contracts import MockSampleArguments
 from .mujoco_process import run_worker
-from .mujoco_scene import CONDITIONS, LIMITATIONS, PROVENANCE
+from .mujoco_scene import CONDITIONS, LIMITATIONS, PROVENANCE, SCENE
 
 OPERATION = 'mock_prepared_sample'
 
@@ -32,8 +32,8 @@ class MujocoBackend:
             'at': 'HOME', 'holding': None, 'armed': True, 'phase': 'ready',
             'cup_station': 'A', 'cup_portions': 1, 'receiver_portions': 0,
             'state_provenance': PROVENANCE, 'physical_execution': False,
-            'simulation': {'engine': 'MuJoCo', 'status': 'ready', 'frame_name': None,
-                           'video_name': None, 'frame_count': 0, 'motion_seconds': 0,
+            'simulation': {'engine': 'MuJoCo', **SCENE, 'status': 'ready', 'frame_name': None,
+                           'video_name': None, 'frame_count': 0, 'motion_seconds': 0, 'dose_count': 0,
                            'warnings': list(LIMITATIONS), 'frame_evidence': None},
         }
 
@@ -55,10 +55,9 @@ class MujocoBackend:
     def capabilities():
         return {'experiment_id': 'red_cabbage_ph', 'conditions': list(CONDITIONS),
                 'routes': [['A', 'C']], 'mock_execution': False, 'physical_execution': False,
-                'simulation_execution': True, 'supported_operations': [OPERATION],
+                'simulation_execution': True, 'supported_operations': [OPERATION], **SCENE,
                 'measurement': False, 'observation_provenance': 'SIMULATED',
-                'limitations': [*LIMITATIONS, 'Execute one prepared A-to-C transfer per trial. '
-                                'Standalone pick, put and pour are unavailable.']}
+                'limitations': [*LIMITATIONS, 'The A and C route labels identify the fixed source dropper and receiver.']}
 
     def state(self):
         state = copy.deepcopy(self._state)
@@ -71,7 +70,7 @@ class MujocoBackend:
 
     def check_step(self, operation, arguments):
         if operation != OPERATION:
-            raise ValueError('MuJoCo supports only a complete prepared A-to-C sample transfer.')
+            raise ValueError('MuJoCo supports only a complete prepared-sample dose.')
         request = MockSampleArguments.model_validate(arguments)
         if self.session_id is None or self._state['simulation']['status'] != 'ready' or not self._idle.is_set():
             raise ValueError('Prepare a fresh MuJoCo trial before executing.')
@@ -100,10 +99,10 @@ class MujocoBackend:
             self._state['phase'] = message['phase']
             await progress(message['phase'])
 
-        command = {'kind': 'execute', 'contents': {}, 'condition': request.condition_id,
+        command = {'kind': 'execute', 'condition': request.condition_id,
                    'video_name': staging.name}
         worker = self._worker = asyncio.create_task(run_worker(folder, command, report))
-        contents = None
+        final_state = None
         reason = None
         try:
             result = await asyncio.shield(worker)
@@ -111,16 +110,18 @@ class MujocoBackend:
                 raise asyncio.CancelledError()
             self._set_frame(simulation, result)
             simulation['warnings'].extend(result['warnings'])
-            if not staging.is_file() or not staging.stat().st_size or result['frame_count'] <= 0:
-                raise RuntimeError('MuJoCo video is missing or empty.')
-            staging.replace(folder / video_name)
-            simulation['video_name'] = video_name
-            if result['ok']:
-                contents = result['contents']
+            if result['scene'] != SCENE or result['video_name'] != staging.name:
+                raise RuntimeError('MuJoCo worker returned unexpected scene or video metadata.')
+            simulation.update(trace=result['trace'], joint_names=result['joint_names'], dose_count=result['dose_count'])
+            if result['ok'] and result['dose_count'] == 1:
+                if not staging.is_file() or not staging.stat().st_size or result['frame_count'] <= 0:
+                    raise RuntimeError('MuJoCo video is missing or empty.')
+                staging.replace(folder / video_name)
+                final_state = result['state']
+                simulation.update(status='completed', video_name=video_name)
                 self._state.update(at='HOME', cup_station='A', cup_portions=0, receiver_portions=1)
-                simulation['status'] = 'completed'
             else:
-                reason = result['warnings'][0] if result['warnings'] else 'MuJoCo Player blocked the transfer.'
+                reason = result['warnings'][0] if result['warnings'] else 'MuJoCo did not deliver a dose.'
                 simulation['status'] = 'failed'
         except asyncio.CancelledError:
             simulation['status'] = 'stopped'
@@ -141,7 +142,7 @@ class MujocoBackend:
             try:
                 staging.unlink(missing_ok=True)
             finally:
-                self.scene_service.finish(sid, contents)
+                self.scene_service.finish(sid, final_state)
                 self._idle.set()
 
         return {'receipt_id': uuid.uuid4().hex, 'backend': self.mode, 'request_id': request_id,

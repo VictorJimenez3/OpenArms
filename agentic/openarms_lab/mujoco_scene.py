@@ -11,28 +11,21 @@ import cv2
 import numpy as np
 
 from bench_vision.perception import observation
+from simulation.lab_demos.ph import CONDITIONS, HEIGHT, LIMITATIONS, SCENE, WIDTH
 
 from .mujoco_process import run_worker
 
 PROVENANCE = 'SIMULATED'
-CONDITIONS = ('vinegar', 'baking_soda', 'water')
-LIMITATIONS = (
-    'The SO-101 uses placeholder poses and an unmeasured joint map.',
-    'The arm moves kinematically and holds cups by attachment. Liquid and color use a qualitative rule table.',
-    'This simulation supplies no measured pH, physical result, or calibration.',
-)
-METHOD = 'mujoco-liquid-fixture-pixels-v1'
-CAMERA_SETUP = 'mujoco-liquid-v1'
-# Regions around the fixed station marks in the two 640×480 camera views.
+METHOD = 'mujoco-metered-dropper-pixels-v1'
+CAMERA_SETUP = 'mujoco-metered-dropper-fixed-views-v1'
+# A green dropper and gold dish base mark the two fixtures in the 1280×720 views.
 REGIONS = {
-    'primary': {'source': (425, 280, 475, 312), 'receiver': (229, 304, 313, 351)},
-    'secondary': {'source': (419, 249, 471, 301), 'receiver': (237, 278, 315, 354)},
+    'primary': {'source': (724, 373, 805, 530), 'receiver': (710, 524, 811, 588)},
+    'secondary': {'source': (759, 353, 853, 466), 'receiver': (741, 448, 829, 501)},
 }
-# Hue bounds and saturation floors measured in the two rendered views.
-HUES = {
-    'primary': {'pink': (151, 179, 45), 'purple': (123, 150, 45), 'blue': (99, 121, 45)},
-    'secondary': {'pink': (149, 179, 25), 'purple': (123, 148, 45), 'blue': (99, 121, 45)},
-}
+# Read the visible liquid surface on either side of the nozzle, relative to the dish base mark.
+LIQUID_OFFSET = {'primary': (-30, -9, -63, -44), 'secondary': (-22, 16, -45, -26)}
+HUES = {'pink': (150, 179), 'purple': (125, 149), 'blue': (96, 123)}
 ALIASES = {'a': 'source', 'source_cup': 'source', 'sample_cup': 'source',
            'c': 'receiver', 'cup': 'receiver', 'receiver_cup': 'receiver'}
 
@@ -46,33 +39,33 @@ def _fixture_box(hsv, view, label):
         return None
     x, y, x2, y2 = REGIONS[view][label]
     hue, saturation, value = np.moveaxis(hsv[y:y2, x:x2], -1, 0)
-    low, high = (96, 115) if label == 'source' else (15, 35)
-    ys, xs = np.nonzero((hue >= low) & (hue <= high) & (saturation >= 145) & (value >= 150))
-    if len(xs) < 65:
+    low, high = (72, 93) if label == 'source' else (11, 38)
+    ys, xs = np.nonzero((hue >= low) & (hue <= high) & (saturation >= 145) & (value >= 68))
+    if len(xs) < 85:
         return None
     return [x + int(xs.min()), y + int(ys.min()), x + int(xs.max()) + 1, y + int(ys.max()) + 1]
 
 
 def _receiver_color(hsv, marker, view):
     left, _, right, bottom = marker
-    # Read the pigment above and inside the receiver ring, away from the orange rim.
     center = (left + right) // 2
-    hue, saturation, value = np.moveaxis(hsv[bottom-36:bottom-20, center-10:center+10], -1, 0)
-    for name, (low, high, saturation_min) in HUES[view].items():
-        matches = (hue >= low) & (hue <= high) & (saturation >= saturation_min) & (value >= 105)
-        if np.mean(matches) >= .7:
+    dx1, dx2, dy1, dy2 = LIQUID_OFFSET[view]
+    hue, saturation, value = np.moveaxis(hsv[bottom+dy1:bottom+dy2, center+dx1:center+dx2], -1, 0)
+    for name, (low, high) in HUES.items():
+        matches = (hue >= low) & (hue <= high) & (saturation >= 85) & (value >= 80)
+        if np.mean(matches) >= .62:
             return name
     return None
 
 
 class MujocoSceneService:
-    feature_schema = {'readable': {'type': 'boolean'}, 'color': {'enum': list(HUES['primary'])}}
+    feature_schema = {'readable': {'type': 'boolean'}, 'color': {'enum': list(HUES)}}
 
     def __init__(self, artifact_dir):
         self.artifact_dir = Path(artifact_dir).resolve()
         self.artifact_dir.mkdir(parents=True, exist_ok=True)
         self.frames = {}
-        self._contents = {}
+        self._saved_states = {}
         self._captures = {}
         self._active = set()
         self._invalid = set()
@@ -88,7 +81,7 @@ class MujocoSceneService:
 
     def reset(self, sid):
         self._advance(sid)
-        self._contents.pop(sid, None)
+        self._saved_states.pop(sid, None)
         self._latest.pop(sid, None)
         self._invalid.discard(sid)
 
@@ -102,9 +95,9 @@ class MujocoSceneService:
         self._advance(sid)
         self._active.add(sid)
 
-    def finish(self, sid, contents=None):
-        if contents is not None:
-            self._contents[sid] = contents
+    def finish(self, sid, final_state=None):
+        if final_state is not None:
+            self._saved_states[sid] = final_state
         else:
             self._invalid.add(sid)
         self._active.discard(sid)
@@ -127,7 +120,7 @@ class MujocoSceneService:
         folder = self.folder(sid)
         revision = self._revisions.get(sid, 0)
         capture = asyncio.create_task(run_worker(folder, {
-            'kind': 'capture', 'view': view, 'contents': self._contents.get(sid, {}),
+            'kind': 'capture', 'view': view, 'state': self._saved_states.get(sid),
         }))
         captures = self._captures.setdefault(sid, set())
         captures.add(capture)
@@ -148,14 +141,15 @@ class MujocoSceneService:
         captured, evidence_id = reference['captured_at'], reference['evidence_id']
         self._latest[sid] = reference
         return {'evidence_id': evidence_id, 'provenance': PROVENANCE, 'images': [reference],
-                'scene': {'frame_id': evidence_id, 'captured_at': captured, 'clock': 'unix_seconds',
+                'scene': {**SCENE, 'frame_id': evidence_id, 'captured_at': captured, 'clock': 'unix_seconds',
+                          'motion_seconds': result['motion_seconds'], 'width': WIDTH, 'height': HEIGHT,
                           'fresh': True, 'expires_at': captured + 180, 'view': view, 'provenance': PROVENANCE,
                           'calibration_id': CAMERA_SETUP, 'coordinate_frame': 'image_pixels',
                           'geometry_valid': False, 'physical_execution': False,
                           'available_samples': list(CONDITIONS),
                           'recognition_labels': ['source', 'receiver'],
-                          'object_descriptions': {'source': 'station A source fixture',
-                                                  'receiver': 'station C cabbage indicator receiver'},
+                          'object_descriptions': {'source': 'fixed metered source dropper',
+                                                  'receiver': 'stationary cabbage indicator dish'},
                           'observable_features': copy.deepcopy(self.feature_schema),
                           'limitations': [*LIMITATIONS, 'Recognition is limited to the rendered fixture and two fixed views.']}}
 
@@ -166,7 +160,8 @@ class MujocoSceneService:
         evidence_id = name.removesuffix('.png')
         path = self.folder(sid) / name
         reference = {'path': str(path), 'evidence_id': evidence_id, 'captured_at': message['captured_at'],
-                     'provenance': PROVENANCE, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+                     'provenance': PROVENANCE,
+                     'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
         self.frames[sid, evidence_id] = (reference, view)
         return copy.deepcopy(reference)
 
@@ -179,7 +174,7 @@ class MujocoSceneService:
         if hashlib.sha256(data).hexdigest() != reference['sha256']:
             raise ValueError('Evidence bytes changed after capture.')
         image = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
-        if image is None or image.shape != (480, 640, 3):
+        if image is None or image.shape != (HEIGHT, WIDTH, 3):
             raise ValueError('Unreadable MuJoCo scene image.')
         return cv2.cvtColor(image, cv2.COLOR_BGR2HSV), reference, view
 

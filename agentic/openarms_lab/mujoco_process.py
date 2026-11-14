@@ -10,7 +10,7 @@ from contextlib import suppress
 
 
 async def run_worker(folder, command, on_progress=None):
-    # Own the whole process group: VideoRecorder starts a separate ffmpeg process.
+    # Own the whole process group: ImageIO starts a separate FFmpeg process.
     launch = asyncio.create_task(asyncio.create_subprocess_exec(
         sys.executable, '-m', 'agentic.openarms_lab.mujoco_worker', str(folder), json.dumps(command),
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, start_new_session=True,
