@@ -1,16 +1,16 @@
 # Lab Arm: Agent Instruction Prompt & Arm Action Catalog (v3)
 
-**Status:** Proposal, Fri Nov 13, 2026, ~23:45. Nothing in `agentic/` is written yet, and nothing is verified on the real arm. Station names, poses and steps are placeholders until Joseph teaches and tests them. The team plan is [agentic-plan.md](agentic-plan.md).
+**Status:** Proposal, Fri Nov 13, 2026, ~23:45. Nothing in `agentic/` is written yet, and nothing is verified on the real arm. Station names, poses and steps are placeholders until Joseph records and tests them. The team plan is [agentic-plan.md](agentic-plan.md).
 
 **What changed since v2**
 - The brain now sees three plan actions: `add_sample`, `wait` and `look`. Pick, pour, return-the-cup and home are arm steps it never names (Part B).
 - A portion is one pre-filled mini-cup, tipped all the way out.
 - Teacher approval is synchronous only. A sim preview is optional.
-- Hardware is confirmed: SO-101 with Feetech servos on LeRobot 0.6.2. **There is a leader arm**, so poses are taught with it (Part C).
+- Hardware is confirmed: SO-101 with Feetech servos on LeRobot 0.6.2. **There is a leader arm**, used once to record the poses the scripts replay (Part C). No model is trained.
 - Part C now maps each piece to a file and an owner.
 
 **Setup**
-- **One SO-101 follower arm, on the teacher's side.** It's the only arm in the demo. The leader arm is used for teaching poses, not by the student.
+- **One SO-101 follower arm, on the teacher's side.** It's the only arm in the demo. The leader arm is used to record poses, not by the student.
 - **The teacher is on-site.** They set up the bench, approve plans and hold the physical stop.
 - **The student is remote or has a motor disability.** They speak (through Joseph's iPhone voice bridge) or type, and watch the camera feed.
 - **The LLM is the "brain"**: Claude Sonnet 5.5 (`claude-sonnet-5-5`), one model call per student turn. It turns the student's words into a short plan. Local code checks the plan, the teacher approves it, then the arm runs it without the LLM in the loop.
@@ -151,9 +151,9 @@ The brain submits 1–6 plan actions for **one** student instruction:
 
 ## Part C: How it's built, and who builds what
 
-### Layer 4: poses taught with the leader arm (Joseph, `firmware/`)
+### Layer 4: preprogrammed scripts (Joseph, `firmware/`)
 
-Each arm step is a short sequence of named poses plus gripper commands:
+Each arm step is a fixed script that replays named poses plus gripper commands. No model is trained; a pose is just saved joint readings:
 
 ```
 pick(A)  = gripper(open) → go_to(ABOVE_A) → go_to(GRASP_A) → gripper(close) → go_to(LIFT_A)
@@ -162,7 +162,7 @@ pour(C)  = go_to(ABOVE_C) → go_to(TIP_C) → go_to(ABOVE_C)
 
 | Method | How | Status |
 |---|---|---|
-| **Teach with the leader arm** | Teleoperate (`lerobot-teleoperate`, see [firmware/README.md](../../firmware/README.md)), move the follower to a pose, save its joint readings as a named pose | First choice: both arms are already calibrated in `calibration/` |
+| **Record with the leader arm** | Teleoperate (`lerobot-teleoperate`, see [firmware/README.md](../../firmware/README.md)), move the follower to a pose, save its joint readings as a named pose | First choice: both arms are already calibrated in `calibration/` |
 | **Hand-guiding** | Torque off, move the follower by hand, save the pose | Fallback |
 | **IK from grid coordinates** | LeRobot `RobotKinematics` from measured station cells | For adding stations later; the arm has only 5 positioning joints, so check reach |
 
@@ -312,7 +312,7 @@ Stop words never reach this prompt: `brain.py` answers "stop", "wait" and "cance
 
 - [ ] **Liquid or a block?** Joseph's relay mock says "predict where the block will land". If it's a block, `add_sample` becomes something like `move_block(from, to)`, `pour` becomes `place`, and the capacity rule changes. Layers 1 and 4 stay the same.
 - [ ] **Joseph:** the `pour` mechanism, and where `ArmPort` lives in `firmware/`.
-- [ ] Teach the poses with the leader arm and dry-run each step 10 times.
+- [ ] Record the poses with the leader arm and dry-run each step 10 times.
 - [ ] Should `look` be a brain tool only, not a plan action? It doesn't move anything, so it needs no approval.
 - [ ] Is `present(station)` needed? Only if the arm at HOME blocks the camera. Check at the bench.
 - [ ] **Victor:** status stream as Server-Sent Events or WebSocket.
