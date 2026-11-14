@@ -156,15 +156,24 @@ class SkillRegistry:
         return version
 
     def validate_for_task(self, task_id, definition):
+        self.check_candidate(task_id, definition)
         version = self.candidate(definition)
         entry = self.data['versions'][version]
-        if entry['status'] in ('rejected', 'retired'):
-            raise ValueError('This candidate version cannot be executed.')
         if entry['status'] != 'active':
             entry['status'] = 'task_validated'
             self.data['validations'].setdefault(task_id, {}).setdefault(version, False)
             self._save()
         return version
+
+    def check_candidate(self, task_id, definition):
+        """Check whether validation could authorize the authored version, without writing."""
+        version = compute_skill_hash(definition)
+        record = self.data['versions'].get(version)
+        if record and record['status'] in ('rejected', 'retired'):
+            raise ValueError('This candidate version cannot be executed because it was '+record['status']+'.')
+        if (record and record['status'] != 'active' and
+                self.data['validations'].get(task_id, {}).get(version) is True):
+            raise ValueError('This candidate validation was already used by this task.')
 
     def authorize(self, task_id, skill_id, version, *, consume=False):
         status = self.get(skill_id, version)['status']

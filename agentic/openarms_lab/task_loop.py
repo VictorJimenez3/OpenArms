@@ -3,15 +3,19 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import hashlib
+import math
 import re
 import time
 import uuid
+from pathlib import Path
 
-from .contracts import MOCK_OPERATIONS, ImageReference, PlanDraft
+from .contracts import MOCK_OPERATIONS, ImageReference, PlanDraft, SkillDefinition
 from .skills import PRIMITIVE_SCHEMAS, compute_skill_hash
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
+FRAME_MAX_AGE = 180
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -117,11 +121,133 @@ class TaskLoop:
             self._message(s, 'assistant', summary)
         await self.publish(s)
 
-    async def _capture(self, s, task, operation, arguments, receipt=None):
+    @staticmethod
+    def _same_timestamp(value, expected):
+        return type(value) is type(expected) and value == expected
+
+    def _check_image(self, sid, image, *, view=None):
+        evidence_id = image['evidence_id']
+        path = Path(image['path'])
+        root = getattr(self.perception, 'artifact_dir', None)
+        if root is not None:
+            # Both live producers index their own session frames before returning them.
+            owned = getattr(self.perception, 'frames', {}).get((sid, evidence_id))
+            if isinstance(owned, tuple):  # MuJoCo also retains its view.
+                owned, owned_view = owned
+                if view is not None and view != owned_view:
+                    raise ValueError('Image does not come from the requested camera.')
+            if (owned != image or path.name != evidence_id+'.png' or
+                    path.resolve().parent != (Path(root).resolve() / sid)):
+                raise ValueError('Image does not match a frame owned by this session.')
+        if hashlib.sha256(path.read_bytes()).hexdigest() != image['sha256']:
+            raise ValueError('Evidence bytes changed after capture.')
+
+    def _capture_updates(self, s, task, operation, arguments, result, *, started_at, outcome_after):
+        """Validate the complete receipt before publishing or updating any evidence."""
+        images = result['images']
+        by_id = {image['evidence_id']: image for image in images}
+        if len(by_id) != len(images):
+            raise ValueError('Duplicate image IDs in a perception receipt.')
+        evidence_id = result.get('evidence_id')
+        if not isinstance(evidence_id, str) or not evidence_id:
+            raise ValueError('Perception receipt must identify its frame.')
+        prior = task['evidence'].get(evidence_id, {})
+        scene = result.get('scene')
+        provenance = result.get('provenance')
+        if operation == 'localize_objects':
+            prior_images = prior.get('images', [])
+            if (evidence_id != arguments['evidence_id'] or not prior_images or
+                    (images and (list(by_id) != [evidence_id] or images != prior_images)) or
+                    ('scene' in result and scene != prior.get('scene')) or
+                    ('frame_id' in result and result['frame_id'] != evidence_id) or
+                    ('captured_at' in result and not self._same_timestamp(
+                        result['captured_at'], prior_images[0]['captured_at'])) or
+                    ('clock' in result and result['clock'] != (prior.get('scene') or {}).get('clock')) or
+                    ('provenance' in result and provenance != prior_images[0]['provenance'])):
+                raise ValueError('Localization did not refer to the original task frame.')
+            image = prior_images[0]
+            self._check_image(s['session_id'], image)
+            labels = result.get('verified_labels', [])
+            if (not isinstance(labels, list) or any(not isinstance(label, str) for label in labels) or
+                    not set(labels).issubset(arguments['labels'])):
+                raise ValueError('Localization verified labels outside the request.')
+            detections = result.get('detections')
+            if detections is not None:
+                if (not isinstance(detections, list) or any(
+                        not isinstance(d, dict) or d.get('object_id') not in arguments['labels'] or
+                        d.get('frame_id') != evidence_id or
+                        not self._same_timestamp(d.get('timestamp_s'), image['captured_at']) or
+                        d.get('provenance') != image['provenance'] for d in detections) or
+                        set(labels) != {d['object_id'] for d in detections if d.get('status') == 'ok'}):
+                    raise ValueError('Localization detections do not match the requested frame and labels.')
+            elif getattr(self.perception, 'artifact_dir', None) is not None:
+                raise ValueError('Localization did not return frame-bound detections.')
+            # Localization may enrich an immutable frame, but cannot replace its
+            # scene, observer receipt, image metadata, or a sibling fallback frame.
+            merged = {**prior, 'localization': result,
+                      'verified_labels': sorted((set(prior.get('verified_labels', [])) -
+                                                 set(arguments['labels'])) | set(labels))}
+            return {evidence_id: merged}
+
+        if (not isinstance(scene, dict) or scene.get('frame_id') != evidence_id or evidence_id not in by_id or
+                ('frame_id' in result and result['frame_id'] != evidence_id) or
+                ('provenance' in scene and scene['provenance'] != provenance) or
+                any(image['provenance'] != provenance for image in images)):
+            raise ValueError('Scene and image identities do not match.')
+        attempts = result.get('attempts')
+        if ((len(images) > 1 or attempts is not None) and
+                (operation != 'observe' or len(images) != 2 or
+                 arguments.get('fallback_view') in (None, arguments['view']) or
+                 attempts != list(by_id) or attempts[-1] != evidence_id)):
+            raise ValueError('Observation attempts do not match the returned images.')
+        view = arguments.get('fallback_view') if len(images) > 1 else arguments.get('view')
+        if scene.get('view') != view:
+            raise ValueError('Scene view does not match the requested camera.')
+        if (('captured_at' in result and not self._same_timestamp(
+                result['captured_at'], by_id[evidence_id]['captured_at'])) or
+                ('clock' in result and result['clock'] != scene.get('clock'))):
+            raise ValueError('Perception receipt and scene clocks or timestamps do not match.')
+        if 'captured_at' in scene and not self._same_timestamp(scene['captured_at'], by_id[evidence_id]['captured_at']):
+            raise ValueError('Scene and image timestamps do not match.')
+        if operation == 'observe' and (
+                result.get('status') not in ('observed', 'unknown') or
+                ('features' in result and not isinstance(result['features'], dict)) or
+                (result['status'] == 'observed' and
+                 (not isinstance(result.get('observer_version'), str) or not result['observer_version']))):
+            raise ValueError('Invalid independent observer receipt.')
+        updates = {}
+        now = time.time()
+        live = scene.get('clock') == 'unix_seconds'
+        if getattr(self.perception, 'artifact_dir', None) is not None and not live:
+            raise ValueError('Live perception requires a Unix producer clock.')
+        earliest = max(started_at, now - FRAME_MAX_AGE)
+        previous_time = earliest
+        for fid, image in by_id.items():
+            self._check_image(s['session_id'], image, view=view if fid == evidence_id else arguments['view'])
+            if fid in task['evidence']:
+                raise ValueError('Checkpoint did not return a fresh image: the evidence ID was already used.')
+            if any(fid in other['evidence'] for other in s['tasks'] if other is not task):
+                raise ValueError('Evidence ID belongs to another task.')
+            if live:
+                timestamp = image['captured_at']
+                if (type(timestamp) not in (int, float) or not previous_time <= timestamp <= now or
+                        (outcome_after is not None and timestamp <= outcome_after)):
+                    raise ValueError('Live evidence timestamp is stale, future-dated, or predates execution.')
+                previous_time = timestamp
+            # Only the primary ID owns the scene and outcome; other attempts are
+            # individually indexed images and can be localized by their own ID.
+            record = result if fid == evidence_id else {'evidence_id': fid, 'provenance': provenance}
+            updates[fid] = {**record, 'images': [image], 'verified_labels': []}
+        if live and not self._fresh(scene):
+            raise ValueError('The live scene is stale or lacks a valid source timestamp.')
+        return updates
+
+    async def _capture(self, s, task, operation, arguments, *, outcome_after=None):
         self._guard_task(s, task)
         if self.perception is None:
             raise ValueError('Independent scene and observation service is unavailable.')
         sid = s['session_id']
+        started_at = time.time()
         if operation == 'inspect_scene':
             pending = self.perception.inspect_scene(sid, arguments['view'])
         elif operation == 'localize_objects':
@@ -129,50 +255,39 @@ class TaskLoop:
                 raise ValueError('Localization requires evidence already received by this task.')
             pending = self.perception.localize_objects(sid, **arguments)
         else:
-            pending = self.perception.observe(sid, copy.deepcopy({**receipt, **arguments}))
+            # Observation must be independent of controller state or success.
+            pending = self.perception.observe(sid, copy.deepcopy(arguments))
         result = await asyncio.wait_for(pending, self.execution_timeout)
         self._guard_task(s, task)
         if not isinstance(result, dict):
             raise ValueError('Perception receipt must be an object.')
         compute_skill_hash(result)
-        images = [ImageReference.model_validate(i).model_dump(mode='json') for i in result.get('images', [])]
-        if len(images) > 4:
+        raw_images = result.get('images', [])
+        if not isinstance(raw_images, list) or len(raw_images) > 4:
             raise ValueError('Perception response exceeds the image budget.')
+        images = [ImageReference.model_validate(i).model_dump(mode='json') for i in raw_images]
         result = {**result, 'images': images}
-        ids = [i['evidence_id'] for i in images]
-        if isinstance(result.get('evidence_id'), str):
-            ids.append(result['evidence_id'])
-        for evidence_id in ids:
-            prior = task['evidence'].get(evidence_id, {})
-            if operation == 'localize_objects':
-                merged = {**prior, **result, 'images': images or prior.get('images', [])}
-                merged['verified_labels'] = sorted((set(prior.get('verified_labels', [])) -
-                                                   set(arguments['labels'])) | set(result.get('verified_labels', [])))
-            else:
-                previous_images = {image['evidence_id']: image['sha256'] for image in prior.get('images', [])}
-                if any(image['evidence_id'] in previous_images and
-                       previous_images[image['evidence_id']] != image['sha256'] for image in images):
-                    raise ValueError('A perception evidence ID referred to different image bytes.')
-                merged = result
-            task['evidence'][evidence_id] = copy.deepcopy(merged)
-        if images or operation != 'localize_objects':
-            task['images'] = images
+        updates = self._capture_updates(s, task, operation, arguments, result, started_at=started_at,
+                                        outcome_after=outcome_after)
+        task['evidence'].update(copy.deepcopy(updates))
         if operation != 'localize_objects':
-            task['scene'] = copy.deepcopy(result.get('scene', {k: v for k, v in result.items() if k != 'images'}))
+            task['images'] = images
+            task['scene'] = copy.deepcopy(result['scene'])
             s['scene'] = copy.deepcopy(task['scene'])
             s['scene_images'] = copy.deepcopy(images)
         await self._emit_task(s, task, 'perception_result', operation=operation, receipt=result,
-                              evidence_ids=list(dict.fromkeys(ids)), provenance=result.get('provenance', 'UNKNOWN'))
+                              evidence_ids=list(updates), provenance=result.get('provenance', 'UNKNOWN'))
         return result
 
     async def _run_expert(self, s, task, phase):
         if self.expert is None:
             raise ExpertMissing('Background expert unavailable. An OpenAI Codex adapter is required.')
         tool_calls = 0
+        validated_draft = None
         started = time.perf_counter()
 
         async def tool_handler(name, arguments):
-            nonlocal tool_calls
+            nonlocal tool_calls, validated_draft
             self._guard_task(s, task)
             tool_calls += 1
             if tool_calls > 12:
@@ -184,22 +299,30 @@ class TaskLoop:
                 raise ValueError('Invalid expert tool arguments.')
             if name in ('inspect_scene', 'localize_objects'):
                 args = PRIMITIVE_SCHEMAS[name].model_validate(arguments).model_dump(mode='json')
-                return await self._capture(s, task, name, args)
+                try:
+                    return await self._capture(s, task, name, args)
+                except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
+                    return {'status': 'unavailable', 'error': self._perception_error(exc)}
             if name == 'list_skills':
                 return {'skills': self.registry.list()}
             if name == 'get_skill':
                 return self.registry.get(arguments['skill_id'], arguments.get('version'))
             if name == 'evaluate_candidate':
                 return {'decisions': self.registry.evaluation_decisions(arguments['version'])}
+            before = task['images']
             try:
                 draft = PlanDraft.model_validate(arguments['plan'])
                 if name == 'propose_skill' and not draft.skill_definition:
                     raise ValueError('propose_skill requires a skill_definition.')
-                plan = self.registry.compile(draft, task_id=task['task_id'])
-                self._check_context(task, plan)
+                plan = await self._prepare_proposal(s, task, draft, phase)
             except (ValueError, KeyError) as exc:
-                return {'valid': False, 'error': str(exc)}
-            return {'valid': True, 'validated_draft': draft.model_dump(mode='json', exclude_none=True),
+                return {'valid': False, 'error': str(exc),
+                        **({'images': task['images']} if task['images'] != before else {})}
+            canonical = draft.model_dump(mode='json', exclude_none=True)
+            if name == 'validate_plan':
+                validated_draft = compute_skill_hash(canonical)
+            return {'valid': True, 'validated_draft': canonical,
+                    **({'images': task['images']} if task['images'] != before else {}),
                     'instruction': 'For the final plan/revision decision, return validated_draft unchanged as payload.',
                     'compiled_summary': {'skill_id': plan['skill_id'], 'skill_version': plan['skill_version'],
                                          'operations': [step['operation'] for step in plan['steps']]}}
@@ -240,6 +363,8 @@ class TaskLoop:
                              'Use localize_objects on the current image when object identity matters. '
                              'An observe step may specify fallback_view to try one alternate view only when the first '
                              'is unreadable. Do not add recovery without evidence of a relevant limitation. '
+                             'For improvement, author a new version of the same pinned skill, preserving its intent, '
+                             'parameter domain, expected state and outcome checks. '
                              'At execution checkpoints return complete with payload {"continue": true} to continue '
                              'the exact existing steps, or revision for a fresh proposal and consent. '
                              'If a mock action has been dispatched, revise only the remaining observation steps.'),
@@ -261,17 +386,33 @@ class TaskLoop:
         await self._emit_task(s, task, 'expert_result', phase=phase, run=metadata, provenance='EXPERT_ADAPTER')
         if not isinstance(result.get('payload'), dict) or not isinstance(result.get('summary'), str):
             raise ValueError('Expert result lacks a structured payload and summary.')
-        return result
+        return result, validated_draft == compute_skill_hash(result['payload'])
 
     @staticmethod
     def _fresh(scene):
+        now = time.time()
+        captured = scene.get('captured_at')
         expiry = scene.get('expires_at')
-        return scene.get('fresh') is True and (expiry is None or
-               (type(expiry) in (int, float) and expiry > time.time()))
+        return (scene.get('fresh') is True and scene.get('clock') == 'unix_seconds' and
+                type(captured) in (int, float) and now - FRAME_MAX_AGE <= captured <= now and
+                (expiry is None or (type(expiry) in (int, float) and now < expiry < math.inf)))
+
+    @staticmethod
+    def _perception_error(exc):
+        if isinstance(exc, ValueError) and not hasattr(exc, 'errors'):
+            return str(exc)
+        return f'Independent image refresh failed ({type(exc).__name__}).'
 
     @staticmethod
     def _prepared_sample(plan):
         return next((step for step in plan['steps'] if step['operation'] == 'mock_prepared_sample'), None)
+
+    @staticmethod
+    def _known_labels(task):
+        fid = (task['scene'] or {}).get('frame_id')
+        if any(image['evidence_id'] == fid for image in task['images']):
+            return set(task['evidence'][fid].get('verified_labels', []))
+        return set()
 
     def _check_context(self, task, plan):
         scene = task['scene'] or {}
@@ -288,15 +429,12 @@ class TaskLoop:
         feature_schema = getattr(self.perception, 'feature_schema', None)
         if feature_schema is not None and any(rule['feature'] not in feature_schema for rule in plan['outcome_checks']):
             raise ValueError('Use supported observer features: '+', '.join(feature_schema))
-        known_labels = set()
-        current_ids = {image['evidence_id'] for image in task['images']}
-        for evidence_id, receipt in task['evidence'].items():
-            if evidence_id not in current_ids:
-                continue
-            if not set(i['evidence_id'] for i in task['images']).intersection(
-                    [receipt.get('evidence_id'), *(i['evidence_id'] for i in receipt.get('images', []))]):
-                continue
-            known_labels.update(label for label in receipt.get('verified_labels', []) if isinstance(label, str))
+        expected = {}
+        for check in plan['outcome_checks']:
+            value = compute_skill_hash(check['expected'])
+            if expected.setdefault(check['feature'], value) != value:
+                raise ValueError('Conflicting outcome checks for '+check['feature']+'.')
+        known_labels = self._known_labels(task)
         for rule in plan['preconditions']:
             if rule['fresh_scene'] and not TaskLoop._fresh(scene):
                 raise ValueError('A fresh scene is required.')
@@ -313,10 +451,96 @@ class TaskLoop:
                 raise ValueError('This task already dispatched its single mock action.')
             if not task['images'] or not TaskLoop._fresh(scene):
                 raise ValueError('Mock execution requires fresh timestamped scene images.')
-            self._backend(task['session_id']).check_step(action['operation'], action['arguments'])
+            backend = self.backends.get(task['session_id'])
+            if backend is None:
+                raise ValueError('Prepare a fresh simulation before proposing an action.')
+            backend.check_step(action['operation'], action['arguments'])
         if any(step['operation'] == 'localize_objects' and step['arguments']['evidence_id'] not in task['evidence']
                for step in plan['steps']):
             raise ValueError('Localization steps require evidence available to this task.')
+        try:
+            checked_images = {
+                image['evidence_id']: image for image in task['images']
+            } if action or any(rule['fresh_scene'] or rule['labels'] for rule in plan['preconditions']) else {}
+            for fid in plan['evidence_ids']:
+                checked_images.update((image['evidence_id'], image) for image in task['evidence'][fid]['images'])
+            for image in checked_images.values():
+                self._check_image(task['session_id'], image)
+        except OSError as exc:
+            raise ValueError(self._perception_error(exc)) from exc
+
+    def _check_improvement(self, task, draft, plan):
+        pinned = task['improvement']['baseline_plan'] or {}
+        skill_id, version = pinned.get('skill_id'), pinned.get('skill_version')
+        if not skill_id or not version:
+            raise ValueError('Improvement requires a pinned baseline skill ID and version.')
+        if not draft.skill_definition or plan['skill_id'] != skill_id:
+            raise ValueError('Improvement must author a revision of the pinned baseline skill ID.')
+        try:
+            active = self.registry.get(skill_id)
+        except KeyError:
+            active = None
+        if not active or active['version'] != version or active['status'] != 'active':
+            raise ValueError('The active baseline changed; start improvement from its current version.')
+        if plan['skill_version'] == version:
+            raise ValueError('Improvement must author a new version of the pinned baseline.')
+        baseline = SkillDefinition.model_validate({k: v for k, v in active.items() if k not in ('status', 'version')})
+        revised = draft.skill_definition
+        if baseline.model_dump(mode='json')['parameter_schema'] != revised.model_dump(mode='json')['parameter_schema']:
+            raise ValueError('Improvement must preserve the baseline parameter domain.')
+        if baseline.intent != revised.intent:
+            raise ValueError('Improvement must preserve the baseline intent.')
+        original_actions = [step for step in pinned['steps'] if step['operation'] in MOCK_OPERATIONS]
+        revised_actions = [step for step in plan['steps'] if step['operation'] in MOCK_OPERATIONS]
+        if (compute_skill_hash(pinned['bindings']) != compute_skill_hash(plan['bindings']) or
+                original_actions != revised_actions):
+            raise ValueError('Improvement must preserve the bound action for the original request.')
+        # Compare the compiled checks as well as the definition checks so removing
+        # a composed skill cannot quietly drop its expectations.
+        for before, after in ((baseline.outcome_checks, revised.outcome_checks),
+                              (pinned['outcome_checks'], plan['outcome_checks'])):
+            if not {compute_skill_hash(c) for c in before}.issubset(compute_skill_hash(c) for c in after):
+                raise ValueError('Improvement cannot weaken baseline outcome or final-state expectations.')
+        if any(key not in revised.expected_state or
+               compute_skill_hash(revised.expected_state[key]) != compute_skill_hash(value)
+               for key, value in baseline.expected_state.items()):
+            raise ValueError('Improvement cannot weaken baseline outcome or final-state expectations.')
+
+    def _proposal_plan(self, s, task, draft, phase):
+        """Pure phase, registry and improvement checks for a proposed draft."""
+        self._guard_task(s, task)
+        if phase == 'execution_feedback':
+            if task['status'] not in ('executing', 'observing'):
+                raise ValueError('A revision requires an execution checkpoint.')
+            if task['replans'] >= 2:
+                raise ValueError('Replan limit reached; the changed plan was not approved.')
+        elif phase not in ('planning', 'improvement') or task['status'] != 'running':
+            raise ValueError('A proposal requires an active planning phase.')
+        plan = self.registry.compile(draft, task_id=task['task_id'])
+        if task['improvement']:
+            if phase == 'execution_feedback' and task['dispatched_action']:
+                if plan['skill_id']:
+                    raise ValueError('After the action, revise remaining observation steps without proposing another skill.')
+            else:
+                self._check_improvement(task, draft, plan)
+        if draft.skill_definition:
+            self.registry.check_candidate(task['task_id'], draft.skill_definition)
+        return plan
+
+    def _preflight(self, s, task, draft, phase):
+        plan = self._proposal_plan(s, task, draft, phase)
+        self._check_context(task, plan)
+        return plan
+
+    async def _prepare_proposal(self, s, task, draft, phase):
+        plan = self._proposal_plan(s, task, draft, phase)
+        # Evidence tools may acquire or localize a frame. The final check itself
+        # writes nothing and can run again at commit without another acquisition.
+        try:
+            await self._verify_labels(s, task, plan, refresh=True)
+        except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
+            raise ValueError(self._perception_error(exc)) from exc
+        return self._preflight(s, task, draft, phase)
 
     async def _plan_task(self, s, task):
         began = time.perf_counter()
@@ -326,24 +550,26 @@ class TaskLoop:
                 try:
                     await self._capture(s, task, 'inspect_scene', {'view': 'primary'})
                 except (ValueError, RuntimeError, OSError, TimeoutError) as exc:
+                    task['feedback'].append({'type': 'scene_unavailable', 'reason': self._perception_error(exc)})
                     await self._emit_task(s, task, 'scene_unavailable', code=type(exc).__name__)
+            phase = 'improvement' if task['improvement'] else 'planning'
             route = None if task['improvement'] else self.registry.match(task['request'])
             if route:
                 try:
-                    plan = self.registry.compile(route, task_id=task['task_id'])
-                    await self._verify_labels(s, task, plan)
-                    self._check_context(task, plan)
+                    await self._prepare_proposal(s, task, route, phase)
                 except (ValueError, OSError, RuntimeError, TimeoutError, KeyError) as exc:
                     task['feedback'].append({'type': 'precondition_failed', 'reason': str(exc)})
                 else:
                     task['route'] = 'active_skill'
-                    await self._propose_task(s, task, route, plan, began)
+                    await self._propose_task(s, task, route, phase, began)
                     return
             task['route'] = 'expert'
-            response = await self._run_expert(s, task, 'improvement' if task['improvement'] else 'planning')
+            response, validated = await self._run_expert(s, task, phase)
             if response['kind'] in ('plan', 'revision'):
                 draft = PlanDraft.model_validate(response['payload'])
-                await self._propose_task(s, task, draft, self.registry.compile(draft, task_id=task['task_id']), began)
+                if not validated:
+                    await self._prepare_proposal(s, task, draft, phase)
+                await self._propose_task(s, task, draft, phase, began)
             elif response['kind'] in ('clarification', 'reject', 'complete'):
                 status = {'clarification': 'needs_clarification', 'reject': 'failed', 'complete': 'completed'}[response['kind']]
                 await self._set_status(s, task, status, response['summary'])
@@ -370,15 +596,13 @@ class TaskLoop:
             details = exc.errors(include_input=False, include_url=False) if hasattr(exc, 'errors') else None
             await self._set_status(s, task, 'failed', summary, code=code, validation_errors=details)
 
-    async def _propose_task(self, s, task, draft, plan, began, *, prior_request=None, prior_receipt=None):
-        self._guard_task(s, task)
-        await self._verify_labels(s, task, plan)
-        self._check_context(task, plan)
+    async def _propose_task(self, s, task, draft, phase, began, *, prior_request=None, prior_receipt=None):
+        plan = self._preflight(s, task, draft, phase)
+        summary = 'In the simulation, I will '+', then '.join(describe_step(step) for step in plan['steps'])+'.'
         if draft.skill_definition:
             version = self.registry.validate_for_task(task['task_id'], draft.skill_definition)
             self.registry.authorize(task['task_id'], plan['skill_id'], version)
         s['proposal_sequence'] += 1
-        summary = 'In the simulation, I will '+', then '.join(describe_step(step) for step in plan['steps'])+'.'
         request_id = str(uuid.uuid4())
         bound_plan = {**plan, 'scene_hash': self._scene_hash(s), 'generation': s['generation'],
                       'trial_id': task['trial_id'], 'task_id': task['task_id']}
@@ -397,6 +621,7 @@ class TaskLoop:
                    'result': None}
         if prior_request is not None:
             prior_request.update(status='completed', result={**prior_receipt, 'status': 'superseded'})
+            task['replans'] += 1
         task.update(plan=copy.deepcopy(bound_plan), request_id=request_id, status='awaiting_confirmation')
         s['requests'].append(request)
         s['pending'] = request
@@ -448,6 +673,7 @@ class TaskLoop:
                         result = {'status': 'failed', 'controller_completed': False,
                                   'reason': f'Executor failed ({type(exc).__name__}).'}
                     receipt.update(result)
+                    receipt['execution_finished_at'] = time.time()
                     task['execution'].append(copy.deepcopy(receipt))
                     task['feedback'].append({'type': 'execution', 'receipt': copy.deepcopy(receipt)})
                     await self._emit_task(s, task, 'execution_result', receipt=receipt, provenance='SIMULATED' if s['backend'] == 'mujoco' else 'MOCK')
@@ -455,7 +681,7 @@ class TaskLoop:
 
                 await self._set_status(s, task, 'observing')
                 previous_evidence = set(task['evidence'])
-                observed = await self._observe_step(s, task, request, operation, arguments, receipt, index,
+                observed = await self._observe_step(s, task, request, operation, arguments, index,
                                                     previous_evidence)
                 fresh = self._fresh_checkpoint(observed, previous_evidence)
                 if operation in ('inspect_scene', 'observe') and fresh:
@@ -498,10 +724,17 @@ class TaskLoop:
         except Exception as exc:
             await self._fail_task(s, task, exc)
 
-    async def _verify_labels(self, s, task, plan):
+    async def _verify_labels(self, s, task, plan, *, refresh=False):
         labels = sorted({label for rule in plan['preconditions'] for label in rule['labels']})
-        if labels and task['images'] and self._fresh(task['scene'] or {}):
-            evidence_id = (task['scene'] or {}).get('frame_id', task['images'][-1]['evidence_id'])
+        fresh = self._fresh(task['scene'] or {})
+        needs_live_frame = (any(step['operation'] in MOCK_OPERATIONS for step in plan['steps']) or
+                            any(rule['fresh_scene'] for rule in plan['preconditions']))
+        if refresh and needs_live_frame and (not task['images'] or not fresh):
+            await self._capture(s, task, 'inspect_scene', {'view': 'primary'})
+            fresh = self._fresh(task['scene'] or {})
+        if (labels and task['images'] and (fresh or not needs_live_frame) and
+                not set(labels).issubset(self._known_labels(task))):
+            evidence_id = task['scene']['frame_id']
             found = await self._capture(s, task, 'localize_objects',
                                         {'evidence_id': evidence_id, 'labels': labels})
             alternate = next((step['arguments'].get('fallback_view') for step in plan['steps']
@@ -509,22 +742,19 @@ class TaskLoop:
             if not set(labels).issubset(found.get('verified_labels') or []) and alternate:
                 frame = await self._capture(s, task, 'inspect_scene', {'view': alternate})
                 await self._capture(s, task, 'localize_objects',
-                                    {'evidence_id': frame['images'][-1]['evidence_id'], 'labels': labels})
+                                    {'evidence_id': frame['evidence_id'], 'labels': labels})
 
     async def _execution_feedback(self, s, task, request, receipt, failure, *, is_final=False):
         if failure:
             task['feedback'].append({'type': 'checkpoint_failed', 'reason': failure})
-        decision = await self._run_expert(s, task, 'execution_feedback')
+        decision, validated = await self._run_expert(s, task, 'execution_feedback')
         kind, payload = decision['kind'], decision['payload']
         if kind in ('revision', 'plan'):
-            if task['replans'] >= 2:
-                raise ValueError('Replan limit reached; the changed plan was not approved.')
             proposed_at = time.perf_counter()
             draft = PlanDraft.model_validate(payload)
-            revised = self.registry.compile(draft, task_id=task['task_id'])
-            self._check_context(task, revised)
-            task['replans'] += 1
-            await self._propose_task(s, task, draft, revised, proposed_at,
+            if not validated:
+                await self._prepare_proposal(s, task, draft, 'execution_feedback')
+            await self._propose_task(s, task, draft, 'execution_feedback', proposed_at,
                                      prior_request=request, prior_receipt=receipt)
             return True
         if kind in ('clarification', 'reject'):
@@ -542,16 +772,22 @@ class TaskLoop:
     @classmethod
     def _fresh_checkpoint(cls, observed, previous_evidence):
         return (cls._fresh(observed.get('scene') or observed) and
-                any(image['evidence_id'] not in previous_evidence for image in observed['images']))
+                observed.get('evidence_id') not in previous_evidence and
+                any(image['evidence_id'] == observed.get('evidence_id') for image in observed['images']))
 
-    async def _observe_step(self, s, task, request, operation, arguments, receipt, index, previous_evidence):
+    async def _observe_step(self, s, task, request, operation, arguments, index, previous_evidence):
         try:
-            observed = await self._capture(s, task, operation, arguments, receipt)
+            outcome_after = None
+            if operation == 'observe':
+                outcome_after = max([request['confirmed_at'], *(r['execution_finished_at'] for r in task['execution']
+                                     if 'execution_finished_at' in r)])
+            observed = await self._capture(s, task, operation, arguments, outcome_after=outcome_after)
         except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
             observed = {'status': 'unknown', 'provenance': 'UNKNOWN', 'images': [],
-                        'reason': f'Independent observation unavailable ({type(exc).__name__}).'}
+                        'reason': self._perception_error(exc)}
             if operation != 'localize_objects':
                 task.update(images=[], scene=None)
+                s.update(scene_images=[], scene=None)
         if operation == 'observe':
             plan = request['plan']
             features = observed.get('features') or {}
