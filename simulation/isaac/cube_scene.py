@@ -10,7 +10,11 @@ from manipulation_checks import Sample, TransferCheck
 
 
 class CubeTrial:
-    def __init__(self, world, stage, asset_dir):
+    def __init__(self, world, stage, asset_dir, condition='light'):
+        masses = {'light': .010, 'heavy': .040}
+        if condition not in masses:
+            raise ValueError('Expected light or heavy mass condition')
+        mass = masses[condition]
         self.model = Model.from_usd(stage, '/World/Robot')
         self.source = np.array([.23, 0., .01])
         self.destination = np.array([.20, .10, .014])
@@ -26,11 +30,13 @@ class CubeTrial:
         material = PhysicsMaterial('/World/BlockMaterial', static_friction=.9,
                                    dynamic_friction=.8, restitution=0.)
         self.cube = world.scene.add(DynamicCuboid('/World/Block', name='trial_block',
-            position=self.source, orientation=orientation, size=.020, mass=.010,
+            position=self.source, orientation=orientation, size=.020, mass=mass,
             color=np.array([.8, .15, .05]), physics_material=material))
-        self.floor = world.scene.add(DynamicCuboid('/World/Receiver/Floor', name='receiver_floor',
+        # This fixture is kinematic. Scene.post_reset would attempt dynamic-only
+        # velocity writes; initialize its measurement wrapper explicitly instead.
+        self.floor = DynamicCuboid('/World/Receiver/Floor', name='receiver_floor',
             position=np.array([.20, .10, .002]), scale=np.array([.10, .10, .004]),
-            size=1., mass=1., color=np.array([.1, .35, .5]), physics_material=material))
+            size=1., mass=1., color=np.array([.1, .35, .5]), physics_material=material)
         UsdPhysics.RigidBodyAPI(stage.GetPrimAtPath('/World/Receiver/Floor')).CreateKinematicEnabledAttr(True)
         for name, position, scale in (
                 ('Left', [.152, .10, .006], [.004, .10, .004]),
@@ -52,13 +58,16 @@ class CubeTrial:
                                    max_linear_speed=.01, max_angular_speed=.1)
         self.config = {'kind': 'cube_to_receiver_candidate', 'source_m': self.source.tolist(),
                        'destination_m': self.destination.tolist(), 'cube_edge_m': .02,
-                       'cube_mass_kg': .01, 'cube_yaw_rad': yaw,
+                       'cube_mass_kg': mass, 'cube_yaw_rad': yaw,
+                       'experiment': {'name': 'mass_vs_weight', 'condition': condition,
+                                      'gravity_m_s2': 9.81},
                        'material': {'static_friction': .9, 'dynamic_friction': .8, 'restitution': 0.},
                        'contact_jaw_rad': contact_jaw, 'closed_jaw_rad': closed_jaw,
                        'phases': self.phases, 'attachments': False,
                        'pose_writes_after_reset': False, 'receiver_kinematic_fixture': True}
 
     def initialize(self, measured_q):
+        self.floor.initialize()
         poses = {}
         self.last_observation = {'phase': 'initialize', 'joint_measured_rad': measured_q.tolist(),
                                  'body_poses': {}}

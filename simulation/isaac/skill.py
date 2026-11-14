@@ -23,7 +23,8 @@ def validate_request(request):
     skill = request['skill_id']
     if skill == 'isaac.articulation.v1' and request['parameters'] == {}:
         return 'articulation'
-    if skill == 'known_station_transfer.v1' and request['parameters'] == {
+    if skill in ('known_station_transfer.v1', 'isaac.mass_weight.light.v1',
+                 'isaac.mass_weight.heavy.v1') and request['parameters'] == {
             'object': 'sample', 'source': 'A', 'destination': 'B'}:
         return 'cube'
     raise ValueError('Unsupported simulated skill or parameters')
@@ -38,6 +39,7 @@ def main():
     args = parser.parse_args()
     request = json.loads(args.request.read_text())
     task = validate_request(request)
+    condition = 'heavy' if request['skill_id'] == 'isaac.mass_weight.heavy.v1' else 'light'
     if task == 'cube' and not args.allow_unvalidated_transfer:
         parser.error('Transfer is not yet runtime-qualified; experimental opt-in is required')
     from execution_context import validate_context
@@ -50,7 +52,8 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         command = [sys.executable, str(Path(__file__).with_name('run_recording.py')),
                    '--workshop', str(args.workshop), '--output', str(args.output/'recording'),
-                   '--request-id', request['request_id'], '--task', task]
+                   '--request-id', request['request_id'], '--task', task,
+                   '--condition', condition]
         stopped = False
         with (args.output/'startup.log').open('w') as log:
             process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,

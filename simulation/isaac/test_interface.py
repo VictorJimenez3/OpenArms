@@ -23,6 +23,14 @@ class InterfaceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'Slurm'):
                 validate_context()
 
+    def test_science_conditions_keep_canonical_parameters(self):
+        for condition in ('light', 'heavy'):
+            self.assertEqual(validate_request({
+                'request_id': 'r1', 'session_id': 's1',
+                'skill_id': f'isaac.mass_weight.{condition}.v1',
+                'parameters': {'object': 'sample', 'source': 'A', 'destination': 'B'},
+            }), 'cube')
+
     def test_dedicated_host_must_match_and_not_be_rutgers(self):
         env = {'OPENARMS_EXECUTION_CONTEXT': 'dedicated', 'OPENARMS_DEDICATED_HOST': 'approved-host'}
         with patch.dict(os.environ, env, clear=True), patch('socket.gethostname', return_value='approved-host'):

@@ -17,6 +17,7 @@ parser.add_argument('--workshop', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--seconds', type=float, default=8)
 parser.add_argument('--task', choices=['articulation','vial','cube'], default='articulation')
+parser.add_argument('--condition', choices=['light', 'heavy'], default='light')
 parser.add_argument('--request-id', default=None)
 parser.add_argument('--startup-stage', choices=['new', 'existing'], default='new')
 parser.add_argument('--cleanup', choices=['full', 'immediate', 'sensors'], default='full',
@@ -99,6 +100,8 @@ try:
     import omni.usd
 
     world = World(stage_units_in_meters=1, physics_dt=1/120, rendering_dt=1/30)
+    world.get_physics_context().set_gravity(-9.81)
+    receipt['scene']['gravity_m_s2'] = 9.81
     world.scene.add_default_ground_plane()
     add_reference_to_stage(str(asset), '/World/Robot')
     stage = omni.usd.get_context().get_stage()
@@ -123,7 +126,7 @@ try:
         trial = VialTrial(world, stage, asset.parent)
     elif args.task == 'cube':
         from cube_scene import CubeTrial
-        trial = CubeTrial(world, stage, asset.parent)
+        trial = CubeTrial(world, stage, asset.parent, condition=args.condition)
     world.reset()
     camera.initialize()
     names = ['Rotation','Pitch','Elbow','Wrist_Pitch','Wrist_Roll','Jaw']
