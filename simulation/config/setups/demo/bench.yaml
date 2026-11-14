@@ -25,8 +25,12 @@ table:
   center: [0.20, 0.0]
 
 ruler_frame:
-  arm_cm: [17.0, 35.5]        # the arm's base axis (shoulder pan), in ruler centimetres
-  arm_heading_deg: -100       # the arm points toward the X ruler, turned about 10 degrees toward the corner
+  # Corrected 2026-11-14 from a pour recorded on the real arm (outputs/pour-take-1.json, beaker at
+  # (22.3, 7.6), container at (5.8, 7.6)): the recorded grasp only lands on the beaker if the arm
+  # faces the X ruler almost squarely. The earlier -100 was the direction the gripper happened to
+  # point in the photo, not the base's own forward direction.
+  arm_cm: [17.0, 36.0]        # the arm's base axis (shoulder pan), in ruler centimetres
+  arm_heading_deg: -88        # the base's forward direction (shoulder pan at zero)
 
 containers:
   mini_cup:                   # the small beaker (about 50 mL): rim 4.5 cm, base 3.2 cm, about 4.7 cm tall
@@ -39,11 +43,15 @@ containers:
 
 stations:
   # Updated by `python -m firmware.openarms_camera locate --apply`. Photographed at A (4.8, 4.1), C (5.6, 12.8).
-  A: {kind: source,   ruler: [4.0, 7.0],  contents: {citric_acid: 1}}
-  C: {kind: receiver, ruler: [22.0, 4.0], contents: {baking_soda: 1, liquid_soap: 1, red_colour: 1}}
+  A: {kind: source,   ruler: [22.3, 7.6],  contents: {citric_acid: 1}}
+  C: {kind: receiver, ruler: [5.8, 7.6], contents: {baking_soda: 1, liquid_soap: 1, red_colour: 1}}
 
 grasp:
-  height: 0.025               # above the table, when the beaker stands on it
+  # Matched to the recorded real pour, so the solved poses resemble what the arm really did there.
+  height: 0.025               # above the table, when the beaker stands on it. Recorded: about 1.6 cm, but at 2 cm
+                              # the simulated gripper scrapes the table in other layouts, so this stays at 2.5.
   lift: 0.100
-  tip_angle_deg: 115
-  pour_clearance: 0.050
+  tip_angle_deg: 90           # recorded: the wrist rolled a quarter turn to pour
+  pour_clearance: 0.055       # recorded: the gripper was 8.5 cm above the table while pouring
+  wrist_roll_deg: 180         # recorded: the gripper holds the beaker this way up (wrist roll near -90 on the arm)
+  pour_offset: 0.030          # recorded: the beaker pours about 3 cm from the container's centre, not over the middle

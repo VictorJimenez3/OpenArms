@@ -91,6 +91,10 @@ class Bench:
     receiver_capacity: int = 4
     tip_angle_deg: float = 115.0
     pour_clearance: float = 0.050
+    # Taken from a pour recorded on the real arm, so the solved poses resemble what the arm really does:
+    wrist_roll_deg: float = 0.0  # which way up the gripper holds the cup; 180 is the other of its two level grips
+    pour_offset: float = 0.0  # the cup's mouth pours this far (m) from the receiver's centre, toward the cup
+    tip_direction: int = 0  # which way the wrist rolls to tip: +1, -1, or 0 for whichever reaches better
     release_tolerance: float = 0.012  # how far from a mark a released thing may be
     grasp_tolerance: float = 0.015  # how far the gripper may be from the grasp point and still pick up
     docks: Docks | None = None
@@ -176,7 +180,7 @@ def load_bench(setup: str | None = None) -> Bench:
         extra.update(
             receiver_radius=rec["radius"], receiver_height=rec["height"], receiver_capacity=rec["capacity_portions"]
         )
-    for key in ("tip_angle_deg", "pour_clearance", "release_tolerance", "grasp_tolerance"):
+    for key in ("tip_angle_deg", "pour_clearance", "release_tolerance", "grasp_tolerance", "wrist_roll_deg", "pour_offset", "tip_direction"):
         if key in grasp:
             extra[key] = grasp[key]
     return Bench(

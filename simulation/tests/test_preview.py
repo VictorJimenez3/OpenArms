@@ -436,7 +436,9 @@ def test_demo_bench_uses_the_measured_containers_and_ruler_positions():
     for station in ("A", "C"):
         x, y = bench.stations[station].pos
         assert 0.25 < x < 0.33, (station, x, y)
-    assert bench.stations["A"].pos[1] > 0.05 and bench.stations["C"].pos[1] < -0.05  # beaker left, container right
+    assert bench.stations["A"].pos[1] < -0.03 and bench.stations["C"].pos[1] > 0.05  # beaker right, container left
+    # The grip and the pour follow the pour recorded on the real arm (see bench.yaml).
+    assert (bench.wrist_roll_deg, bench.tip_angle_deg, bench.pour_offset) == (180, 90, 0.030)
     out = preview(_pour("A", "C"), setup="demo", render=False)
     assert out["ok"], out["warnings"]
     assert _receiver(out, "C")["observations"] == ["fizzing", "foam rising like a volcano"]

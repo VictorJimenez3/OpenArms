@@ -70,10 +70,10 @@ def test_bench_file_positions_are_read_and_rewritten_in_place(tmp_path):
     path = tmp_path / "bench.yaml"
     path.write_text(bench.BENCH_FILE.read_text())
     before = bench.read_bench(path)
-    assert before["arm_cm"] == (17.0, 35.5) and before["beaker"] and before["dish"]
+    assert before["arm_cm"] == (17.0, 36.0) and before["beaker"] and before["dish"]
     bench.write_bench({"beaker": (3.2, 8.75), "dish": (21.0, 5.0)}, path)
     after = bench.read_bench(path)
-    assert after["beaker"] == (3.2, 8.8) and after["dish"] == (21.0, 5.0) and after["arm_cm"] == (17.0, 35.5)
+    assert after["beaker"] == (3.2, 8.8) and after["dish"] == (21.0, 5.0) and after["arm_cm"] == (17.0, 36.0)
     assert path.read_text().count("\n") == bench.BENCH_FILE.read_text().count("\n")  # comments and layout kept
     assert "contents: {citric_acid: 1}" in path.read_text()
 

@@ -213,7 +213,8 @@ What is measured and what is not:
 
 - **Container sizes** come from `outputs/camera/live_demo.jpg`, scaled by the rulers' millimetre marks: beaker rim 4.5 cm, base 3.2 cm, about 4.7 cm tall; container rim 8.4 cm, base 6.0 cm, about 3.0 cm tall. The photo is tilted, so widths are good to about 0.5 cm and heights to about 1 cm. Check them against the real pieces.
 - **Container positions** are read from the same photo.
-- **The arm's position and heading** are from `outputs/camera/live_demo_2.jpg`, flattened to a top-down view. The base plate lies on the table and shows where the base is: swivel axis at about ruler (17, 35.5), pointing toward the X ruler turned about 10 degrees toward the corner. Good to about 1.5 cm and 5 degrees. (The marker in that photo touches a raised part of the arm and reads about 6 cm too far forward.)
+- **The arm's position and heading** were first read from `outputs/camera/live_demo_2.jpg`, then corrected from a pour recorded on the real arm (2026-11-14, beaker at (22.3, 7.6), container at (5.8, 7.6)): swivel axis at about ruler (17, 36), base facing the X ruler almost squarely (heading -88). With that, the recorded grasp lands 0.6 cm from the photographed beaker. The earlier heading of -100 was the direction the gripper pointed in the photo, not the base's forward direction.
+- **The grip and the pour** (`grasp:` in `bench.yaml`) also follow that recording: which way up the gripper holds the beaker (`wrist_roll_deg`), a quarter-turn tip (`tip_angle_deg`), and pouring about 3 cm from the container's centre (`pour_offset`). The solved grasp pose is within 8 degrees of the recorded one on every joint; the pouring pose is within 17 degrees and 4 cm. One recording is not a calibration: `joint_map.yaml` is still unmeasured and the solved poses are not sent to the real arm.
 - The poses are solved by the simulation, not recorded on the arm.
 
 ### Rebuilding the bench from a picture
@@ -226,7 +227,7 @@ python -m firmware.openarms_camera locate --camera 0 --apply --beaker 4,7       
 
 It finds the two red rulers, saves a flattened top-down picture with a 5 cm grid (`outputs/camera/bench_flat.jpg`), looks for the container and the beaker, and with `--apply` writes their positions into `bench.yaml`, re-solves the poses and runs the pour preview. The ruler mapping is good to about 0.5 cm near the rulers. Finding the clear containers is not reliable: on the two bench photos the container was right in one and 1.8 cm out in the other, and the beaker was 1 cm and 3.5 cm out, because its raised rim is easier to see than its base. Open `bench_flat.jpg`, read the true base position off the grid, and pass `--beaker X,Y` or `--dish X,Y` to correct it. The arm's own position is not detected; edit `arm_cm` if the arm moves.
 
-Where the pour works in the simulation: the two side by side about 30 cm in front of the arm, the beaker about 8 cm to the arm's left and the container about 10 cm to its right. With the arm at (17, 35.5) that is the beaker near ruler (4, 7) and the container near (22, 4). As photographed (beaker (4.8, 4.1), container (5.6, 12.8)) the container is between the arm and the beaker and the pour is blocked.
+Where the pour works in the simulation: both about 28 to 31 cm from the arm's base, on either side of it. Checked with the arm at (17, 36): beaker (22.3, 7.6) with container (5.8, 7.6), the mirror layout beaker (4, 7) with container (22, 4), and beaker (12, 6) with container (24, 8). Closer than about 25 cm the grasp is out of reach. As first photographed (beaker (4.8, 4.1), container (5.6, 12.8)) the container is between the arm and the beaker and the pour is blocked.
 
 ## Preview inside the student lab app
 
