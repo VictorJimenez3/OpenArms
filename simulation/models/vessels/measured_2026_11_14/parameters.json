@@ -1,0 +1,451 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "status": "photo-derived reconstruction with unmeasured interior assumptions",
+  "measured_on": "2026-11-14",
+  "frame": {
+    "origin": "centre of exterior support plane",
+    "up": "+Z",
+    "donor_spout": "+Y",
+    "mesh_units": "m"
+  },
+  "uncertainty": "Judgment bounds including perspective, parallax and transparent edges; not statistical confidence intervals. Shared photos/ruler errors are correlated. No exact product identification.",
+  "photos": {
+    "IMG_9257": {
+      "original_filename": "IMG_9257.HEIC",
+      "sha256": "a738a344e813412c9ddcd770131a08a779beb6c1f785b4a79ff86223ce0a913b",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9258": {
+      "original_filename": "IMG_9258.HEIC",
+      "sha256": "beb66b7e4c1a36c30e7583590a3cbdf33db4c8362033f90b921b53ce52aebc41",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9259": {
+      "original_filename": "IMG_9259.HEIC",
+      "sha256": "32825bbe4eb678e304ced78e344c9996b7c424b7832579b30ad03358894ea72c",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9260": {
+      "original_filename": "IMG_9260.HEIC",
+      "sha256": "ac32c9f76d38d1edb848e1f6f9060b9b62e4edaf533b04b0893599eedf446479",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9261": {
+      "original_filename": "IMG_9261.HEIC",
+      "sha256": "fb4fa87e74e0940af14bf4eb17149d51ce9826eb9166538d7d658c90d75c5065",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9262": {
+      "original_filename": "IMG_9262.HEIC",
+      "sha256": "f34e1a12c6115a1e6b5146da64d5d5bc4df460b383dd83b8b9441b3b313a267e",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9263": {
+      "original_filename": "IMG_9263.HEIC",
+      "sha256": "6d9d6ff8f5a93f0a895cde3789a8d3a79e0ddf7769f9cb702a92dfe06ba4d2e2",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9264": {
+      "original_filename": "IMG_9264.HEIC",
+      "sha256": "bf2d7a6904bc5b9c06b0c45e93c5d9539759763d2333ad09675bc886ea768c37",
+      "pixels": [
+        5712,
+        4284
+      ]
+    },
+    "IMG_9265": {
+      "original_filename": "IMG_9265.HEIC",
+      "sha256": "1a65b701db747c5831c4a7c0982c3b3187aa7d374dcbb972a53a59a483a5472b",
+      "pixels": [
+        5712,
+        4284
+      ]
+    }
+  },
+  "vessels": {
+    "donor_A": {
+      "role": "Small donor at A; 5\u201325 mL raised graduations",
+      "dimensions": {
+        "height": {
+          "value_mm": 51,
+          "plausible_range_mm": [
+            47,
+            56
+          ],
+          "evidence": [
+            "IMG_9257",
+            "IMG_9265"
+          ],
+          "method": "image-derived",
+          "note": "Ruler-edge scales disagree; side view favoured over handheld overhead view."
+        },
+        "rim_diameter_excluding_spout": {
+          "value_mm": 41,
+          "plausible_range_mm": [
+            38,
+            44
+          ],
+          "evidence": [
+            "IMG_9259",
+            "IMG_9260"
+          ],
+          "method": "image-derived",
+          "note": "9259 apparent diameter 41.8 mm; depth-plane correction unresolved."
+        },
+        "body_diameter_below_lip": {
+          "value_mm": 35,
+          "plausible_range_mm": [
+            32,
+            38
+          ],
+          "evidence": [
+            "IMG_9257",
+            "IMG_9265"
+          ],
+          "method": "image-derived",
+          "note": ""
+        },
+        "base_diameter": {
+          "value_mm": 31,
+          "plausible_range_mm": [
+            28,
+            34
+          ],
+          "evidence": [
+            "IMG_9259",
+            "IMG_9265"
+          ],
+          "method": "image-derived",
+          "note": ""
+        },
+        "opening_diameter": {
+          "value_mm": 34,
+          "plausible_range_mm": [
+            31,
+            37
+          ],
+          "evidence": [
+            "IMG_9259",
+            "IMG_9260"
+          ],
+          "method": "image-derived",
+          "note": "Transparent overlapping edges; low confidence."
+        },
+        "spout_extension_beyond_circular_rim": {
+          "value_mm": 4,
+          "plausible_range_mm": [
+            2,
+            6
+          ],
+          "evidence": [
+            "IMG_9259",
+            "IMG_9260"
+          ],
+          "method": "image-derived",
+          "note": "Approximate tip projection; local rim crease simplified."
+        },
+        "interior_floor_above_support": {
+          "value_mm": 2,
+          "plausible_range_mm": [
+            1,
+            4
+          ],
+          "evidence": [],
+          "method": "assumed",
+          "note": "Unmeasured stand-off including base structure; not claimed material thickness."
+        },
+        "interior_bottom_diameter": {
+          "value_mm": 28,
+          "plausible_range_mm": [
+            25,
+            31
+          ],
+          "evidence": [],
+          "method": "assumed",
+          "note": "Hidden internal radius; conditional cavity model."
+        },
+        "straight_wall_thickness": {
+          "value_mm": 0.8,
+          "plausible_range_mm": [
+            0.4,
+            1.5
+          ],
+          "evidence": [],
+          "method": "assumed",
+          "note": "Nominal simplification; lip is thicker and flared."
+        },
+        "graduation_25ml_above_exterior_base": {
+          "value_mm": 34,
+          "plausible_range_mm": [
+            29,
+            39
+          ],
+          "evidence": [
+            "IMG_9257",
+            "IMG_9258",
+            "IMG_9265"
+          ],
+          "method": "image-derived",
+          "note": "Outer scale line; subtract assumed floor datum for interior height."
+        },
+        "grip_band_z": {
+          "range_mm": [
+            10,
+            40
+          ],
+          "method": "image-derived candidate only",
+          "evidence": [
+            "IMG_9257",
+            "IMG_9265"
+          ],
+          "note": "Smooth body region; not a qualified grasp."
+        }
+      },
+      "outer_profile": [
+        [
+          0,
+          14.5
+        ],
+        [
+          1,
+          15.2
+        ],
+        [
+          3,
+          15.5
+        ],
+        [
+          45,
+          17.5
+        ],
+        [
+          48.5,
+          17.5
+        ],
+        [
+          50,
+          20.5
+        ],
+        [
+          51,
+          20.5
+        ]
+      ],
+      "inner_profile": [
+        [
+          2,
+          14
+        ],
+        [
+          4,
+          14.7
+        ],
+        [
+          45,
+          16.7
+        ],
+        [
+          49,
+          17
+        ],
+        [
+          51,
+          17
+        ]
+      ],
+      "spout": {
+        "extension_mm": 4,
+        "half_angle_deg": 20,
+        "start_height_mm": 46,
+        "status": "image-derived extent; assumed triangular transition"
+      },
+      "graduation": {
+        "marked_ml": 25,
+        "height_from_exterior_base_mm": 34,
+        "plausible_range_mm": [
+          29,
+          39
+        ]
+      },
+      "interior_status": "assumed profile constrained by coarse opening estimate; wall/base thickness unmeasured",
+      "unknown": [
+        "material grade",
+        "mass",
+        "base material thickness",
+        "exact inner profile",
+        "embossing depth",
+        "wet contact and grip properties",
+        "exact maker/model"
+      ]
+    },
+    "receiver_C": {
+      "role": "Wider receiver at C; 100 mL embossed on underside, no located fill graduation",
+      "dimensions": {
+        "height": {
+          "value_mm": 36,
+          "plausible_range_mm": [
+            31,
+            41
+          ],
+          "evidence": [
+            "IMG_9264"
+          ],
+          "method": "image-derived",
+          "note": "Oblique side view; direct outside height requested."
+        },
+        "rim_diameter": {
+          "value_mm": 80,
+          "plausible_range_mm": [
+            75,
+            85
+          ],
+          "evidence": [
+            "IMG_9261",
+            "IMG_9262",
+            "IMG_9263"
+          ],
+          "method": "image-derived",
+          "note": "Apparent 75.7 versus82.9 mm; incompatible scales retained as uncertainty rather than averaged as independent readings."
+        },
+        "opening_diameter": {
+          "value_mm": 75,
+          "plausible_range_mm": [
+            70,
+            79
+          ],
+          "evidence": [
+            "IMG_9261"
+          ],
+          "method": "image-derived",
+          "note": "Opening edge ambiguous; low confidence."
+        },
+        "base_diameter": {
+          "value_mm": 59,
+          "plausible_range_mm": [
+            54,
+            66
+          ],
+          "evidence": [
+            "IMG_9261",
+            "IMG_9264"
+          ],
+          "method": "image-derived",
+          "note": "Base circle partly seen through tapered walls; low confidence."
+        },
+        "interior_floor_above_support": {
+          "value_mm": 1.2,
+          "plausible_range_mm": [
+            0.5,
+            2.5
+          ],
+          "evidence": [],
+          "method": "assumed",
+          "note": "Includes unmeasured bottom stand-off."
+        },
+        "interior_bottom_diameter": {
+          "value_mm": 56,
+          "plausible_range_mm": [
+            51,
+            63
+          ],
+          "evidence": [],
+          "method": "assumed",
+          "note": ""
+        },
+        "straight_wall_thickness": {
+          "value_mm": 0.7,
+          "plausible_range_mm": [
+            0.3,
+            1.2
+          ],
+          "evidence": [],
+          "method": "assumed",
+          "note": ""
+        }
+      },
+      "outer_profile": [
+        [
+          0,
+          29.5
+        ],
+        [
+          1.2,
+          29.5
+        ],
+        [
+          3,
+          30.5
+        ],
+        [
+          33,
+          38
+        ],
+        [
+          34.5,
+          40
+        ],
+        [
+          36,
+          40
+        ]
+      ],
+      "inner_profile": [
+        [
+          1.2,
+          28
+        ],
+        [
+          3,
+          29.8
+        ],
+        [
+          33,
+          37.3
+        ],
+        [
+          36,
+          37.5
+        ]
+      ],
+      "spout": {
+        "extension_mm": 0,
+        "half_angle_deg": 20,
+        "start_height_mm": 33,
+        "status": "no spout visible"
+      },
+      "graduation": null,
+      "nominal_label_ml": 100,
+      "interior_status": "assumed tapered profile; floor and wall thickness unmeasured",
+      "unknown": [
+        "interior depth",
+        "actual usable/brim capacity",
+        "100mL reference level",
+        "mass",
+        "exact maker/model",
+        "wet contact properties"
+      ]
+    }
+  }
+}
