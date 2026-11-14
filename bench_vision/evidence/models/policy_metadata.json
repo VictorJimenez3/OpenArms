@@ -1,0 +1,43 @@
+{
+  "policy_id": "allenai/MolmoAct2-SO100_101",
+  "revision": "152569fe57914d97be91055800035f54e250d009",
+  "metadata_source": "https://huggingface.co/allenai/MolmoAct2-SO100_101/tree/152569fe57914d97be91055800035f54e250d009",
+  "joint_names": [
+    "shoulder_pan",
+    "shoulder_lift",
+    "elbow_flex",
+    "wrist_flex",
+    "wrist_roll",
+    "gripper"
+  ],
+  "joint_units": null,
+  "control_mode": "absolute joint pose",
+  "camera_keys": [],
+  "action_dim": 6,
+  "padded_action_dim": 32,
+  "horizon": 30,
+  "normalization": {
+    "mode": "q01_q99",
+    "low": [
+      -42.1300246338976,
+      45.18258358164995,
+      35.40059182962813,
+      4.929781836327758,
+      -65.57568617645342,
+      -0.3016556932619033
+    ],
+    "high": [
+      48.55349563198916,
+      186.10646680077767,
+      173.6076722013997,
+      93.41056417929472,
+      43.53107398260694,
+      44.74649336930881
+    ]
+  },
+  "metadata_sha256": "a2efa0eb5574e3eeaa880d97a9ace73b9d4b99c089ae301d25bdc7249dd442d3",
+  "missing_semantics": [
+    "joint units/signs/offsets for this calibrated Hiwonder arm",
+    "camera arrangement and key binding"
+  ]
+}

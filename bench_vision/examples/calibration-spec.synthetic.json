@@ -1,0 +1,125 @@
+{
+  "calibration_id": "cal-1",
+  "camera_id": "overview",
+  "camera_mount_id": "fixed-1",
+  "plane_id": "table",
+  "clock_id": "episode-1",
+  "measurement_ref": "synthetic-known-transform",
+  "provenance": "synthetic",
+  "pixel_space": "undistorted",
+  "intrinsics_id": "synthetic-pinhole",
+  "valid_from_s": 0,
+  "valid_until_s": 100,
+  "max_error_mm": 2,
+  "plane_height_mm": 0,
+  "fit_points": [
+    {
+      "id": "f1",
+      "pixel": [
+        10,
+        20
+      ],
+      "xy_mm": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "f2",
+      "pixel": [
+        210,
+        20
+      ],
+      "xy_mm": [
+        100,
+        0
+      ]
+    },
+    {
+      "id": "f3",
+      "pixel": [
+        210,
+        220
+      ],
+      "xy_mm": [
+        100,
+        100
+      ]
+    },
+    {
+      "id": "f4",
+      "pixel": [
+        10,
+        220
+      ],
+      "xy_mm": [
+        0,
+        100
+      ]
+    }
+  ],
+  "check_points": [
+    {
+      "id": "c1",
+      "pixel": [
+        50,
+        60
+      ],
+      "xy_mm": [
+        20,
+        20
+      ]
+    },
+    {
+      "id": "c2",
+      "pixel": [
+        170,
+        60
+      ],
+      "xy_mm": [
+        80,
+        20
+      ]
+    },
+    {
+      "id": "c3",
+      "pixel": [
+        170,
+        180
+      ],
+      "xy_mm": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "c4",
+      "pixel": [
+        50,
+        180
+      ],
+      "xy_mm": [
+        20,
+        80
+      ]
+    }
+  ],
+  "workspace_mm": [
+    [
+      5,
+      5
+    ],
+    [
+      95,
+      5
+    ],
+    [
+      95,
+      95
+    ],
+    [
+      5,
+      95
+    ]
+  ]
+}

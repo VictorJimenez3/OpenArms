@@ -1,0 +1,116 @@
+{
+  "run_date": "2026-11-14",
+  "hardware": "Apple M2 GPU via MPS",
+  "source_images": 4,
+  "unique_stress_cases": 16,
+  "timing_repeats": 3,
+  "physical_trials": 0,
+  "methods": {
+    "hsv-orange-v1": {
+      "accuracy_unique_cases": {
+        "count": 16,
+        "correct_at_iou_0_5_or_negative_unknown": 4,
+        "positive_count": 12,
+        "positive_localized_iou_0_5": 1,
+        "negative_false_positives": 1,
+        "median_end_to_end_ms": 73.24729138053954,
+        "p95_end_to_end_ms": 110.51006312482059,
+        "median_detector_ms": 0.4758755676448345
+      },
+      "warm_timing": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 8,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 2,
+        "negative_false_positives": 2,
+        "median_end_to_end_ms": 74.1517087444663,
+        "p95_end_to_end_ms": 81.38313752133399,
+        "median_detector_ms": 0.4840204492211342
+      },
+      "cold_first_frame_ms": 203.61462514847517,
+      "failed_positive_cases": [
+        "A-after-identity",
+        "A-after-dark",
+        "A-after-gray",
+        "A-after-occlude",
+        "A-before-dark",
+        "A-before-gray",
+        "A-before-occlude",
+        "C-before-identity",
+        "C-before-dark",
+        "C-before-gray",
+        "C-before-occlude"
+      ],
+      "false_positive_cases": [
+        "C-hover-identity"
+      ]
+    },
+    "torchvision-ssdlite320-mobilenet-v3-large-coco-v1": {
+      "accuracy_unique_cases": {
+        "count": 16,
+        "correct_at_iou_0_5_or_negative_unknown": 5,
+        "positive_count": 12,
+        "positive_localized_iou_0_5": 1,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 98.1256456580013,
+        "p95_end_to_end_ms": 1057.3524894425645,
+        "median_detector_ms": 27.21310406923294
+      },
+      "warm_timing": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 10,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 2,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 103.311333572492,
+        "p95_end_to_end_ms": 112.04427941702306,
+        "median_detector_ms": 29.815020971000195
+      },
+      "cold_first_frame_ms": 3801.7239589244127,
+      "failed_positive_cases": [
+        "A-after-identity",
+        "A-after-dark",
+        "A-after-gray",
+        "A-after-occlude",
+        "A-before-dark",
+        "A-before-gray",
+        "A-before-occlude",
+        "C-before-identity",
+        "C-before-dark",
+        "C-before-gray",
+        "C-before-occlude"
+      ],
+      "false_positive_cases": []
+    },
+    "grounding-dino-tiny-a2bb814": {
+      "accuracy_unique_cases": {
+        "count": 16,
+        "correct_at_iou_0_5_or_negative_unknown": 14,
+        "positive_count": 12,
+        "positive_localized_iou_0_5": 10,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 1564.5887502469122,
+        "p95_end_to_end_ms": 5787.624510354362,
+        "median_detector_ms": 1457.3362080845982
+      },
+      "warm_timing": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 28,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 20,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 1602.079791482538,
+        "p95_end_to_end_ms": 1802.0568311214447,
+        "median_detector_ms": 1502.628979505971
+      },
+      "cold_first_frame_ms": 17726.569666992873,
+      "failed_positive_cases": [
+        "A-before-occlude",
+        "C-before-occlude"
+      ],
+      "false_positive_cases": []
+    }
+  },
+  "decision": "Use Grounding DINO only for offline/keyframe inspection pending actual-cup evaluation; keep calibrated manual/marker baseline and unknown fallback. Do not promote SSDLite.",
+  "grounding_dino_weight_sha256": "1a2412ef99bd74bcd3c2a246fa1e48581f8889a1300c9051974741314fc042f3"
+}

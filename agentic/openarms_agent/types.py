@@ -1,17 +1,18 @@
 """Shared shapes for every lane. Values stay plain JSON dicts; these TypedDicts only name the keys.
 Examples of each shape live in agentic/contracts/. Only the master agent edits this file."""
-from typing import Any, Literal, Optional, Protocol, TypedDict
+from typing import Any, Literal, NotRequired, Optional, Protocol, TypedDict
 
-PlanAction = Literal["add_sample", "wait", "look"]  # what the brain may put in a plan
-ArmStep = Literal["pick", "pour", "return_cup", "home", "wait", "look"]  # what ArmPort runs
+PlanAction = Literal["add_sample", "move_block", "go_to", "gripper", "wait", "look"]  # what the brain may put in a plan
+ArmStep = Literal["pick", "place", "pour", "return_cup", "home", "go_to", "gripper", "wait", "look"]  # what ArmPort runs
 RunStatus = Literal["rejected", "awaiting_teacher", "teacher_rejected", "executing", "executed", "failed", "stopped"]
 TurnStatus = Literal["reply", "awaiting_teacher", "stop_requested", "help_requested"]
 LabStage = Literal["pre_lab", "experiment", "post_lab"]
 
 
 class Station(TypedDict, total=False):
-    kind: Literal["source", "receiver"]
+    kind: Literal["source", "receiver", "point"]  # point: a mark a loose object stands on
     contents: str
+    holds: str  # points: the object standing there at the start, e.g. "block"; absent if empty
     portions: int  # sources: full mini-cups at the start
     capacity: int  # receivers: max portions
 
@@ -33,6 +34,9 @@ class ArmState(TypedDict):
     portions_left: dict[str, int]
     receiver_load: dict[str, int]
     armed: bool
+    point_holds: NotRequired[dict[str, Optional[str]]]  # benches with points: what stands on each, or None
+    poses: NotRequired[list[str]]  # saved positions go_to may name; if absent they follow from the stations
+    gripper: NotRequired[Literal["open", "closed"]]  # set once a plan has commanded the gripper
 
 
 class ValidationResult(TypedDict):

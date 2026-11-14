@@ -1,8 +1,8 @@
 # OpenArms
 
-A HackPrinceton project for accessible lab work. A student speaks a command, reviews the interpreted transfer, then confirms before the physical arm moves. Simulation is deferred for the current mandarin demo.
+A HackPrinceton project for accessible, student-directed lab work. The [student lab runbook](docs/LAB_RUNBOOK.md) is the primary setup: continuous Gemini Live voice, text controls, experiment lessons, confirmed mock actions, quizzes, and a persistent notebook. Start it with `.venv/bin/python -m agentic.openarms_lab`, then open <http://127.0.0.1:8000>.
 
-Start with the [demo runbook, next steps, and human to-do](research/joseph/mandarin-transfer-handoff.md).
+The [mandarin phone demo](research/joseph/mandarin-transfer-handoff.md) documents the older SwiftUI/Whisper path. Physical bench work and its separate operator approval remain in the [wet-lab guide](docs/WET_LAB.md). Simulation is deferred.
 
 ## Where to start
 
@@ -21,4 +21,5 @@ Put research notes and source links in your folder. Use [GitHub Issues](https://
 - [Architecture and team to-do](docs/ARCHITECTURE.md) covers component ownership, the command flow, and issues you can claim.
 - [Interfaces](docs/INTERFACES.md) is where we record examples shared between areas.
 - [Arm setup and teleoperation](firmware/README.md) covers LeRobot, calibration, and the physical arms.
+- [Wet-lab bring-up and training](docs/WET_LAB.md) covers the first water pour, demo scopes, and reuse across recorded takes.
 - [Working project outline](voice-lab-arm-outline.md) has the longer concept and background.

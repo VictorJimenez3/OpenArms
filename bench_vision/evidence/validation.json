@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-14",
+  "tested_code_commit": "957a2ae3ac92cb8b8a6a126a41c4baae30cb254e",
+  "checkout": "clean git archive, no untracked local source or environment file",
+  "environment": {
+    "python": "3.12.15",
+    "pytest": "9.2.0",
+    "numpy": "2.2.6",
+    "opencv": "4.12.0",
+    "platform": "macOS arm64"
+  },
+  "tests": {
+    "passed": 507,
+    "subtests_passed": 43,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "bench_tests": 129,
+    "existing_agentic_tests": 378,
+    "elapsed_pytest_s": 8.64
+  },
+  "runs": [
+    {
+      "command": "python -m pytest bench_vision/tests agentic/tests firmware/openarms_executor/test_transfer_runner.py -q --junitxml=TASK_OUTPUT_ROOT/work/final-validation/tests.xml",
+      "exit_code": 0,
+      "elapsed_s": 9.233937167096883,
+      "log": "00.txt",
+      "log_sha256": "24ae7c6ef8af6486d64723e378977ee09a8ce468b0c5f004e8e678aa4e1abe54"
+    },
+    {
+      "command": "python -m firmware.openarms_executor.check_motion",
+      "exit_code": 0,
+      "elapsed_s": 0.36623966600745916,
+      "log": "01.txt",
+      "log_sha256": "55db21dec7cbc99a7d790387db109383a17f46c5f00502d4f0b57fe7dce06f72"
+    },
+    {
+      "command": "python -m firmware.openarms_executor.check_pose_arm",
+      "exit_code": 0,
+      "elapsed_s": 1.957824416924268,
+      "log": "02.txt",
+      "log_sha256": "8f37c69c198f269b1923e2bb2e965dd95251d1def715b4b279d81e776f3828d3"
+    },
+    {
+      "command": "python -m agentic.scripts.lab_demo",
+      "exit_code": 0,
+      "elapsed_s": 0.27104083402082324,
+      "log": "03.txt",
+      "log_sha256": "3df1c9fa32b685b6c2f89b6c42b5ca3db301e5b121f0ca4390054b94b5d48245"
+    },
+    {
+      "command": "python -m bench_vision demo --out TASK_OUTPUT_ROOT/outputs/verified-demo",
+      "exit_code": 0,
+      "elapsed_s": 0.48880979185923934,
+      "log": "04.txt",
+      "log_sha256": "21ae663a549f6085a909656dc9a987c03d96ed41f8eabe538d3a74b025b3a1bd"
+    },
+    {
+      "command": "python -m bench_vision adaptation synthetic --out TASK_OUTPUT_ROOT/outputs/verified-source-map.json",
+      "exit_code": 0,
+      "elapsed_s": 0.10407054098322988,
+      "log": "05.txt",
+      "log_sha256": "719241a35823b7dc22298bba632e75519ea763a93453a36d3b17367b4ce6d4fe"
+    }
+  ],
+  "physical_actuation": false,
+  "live_camera_tested": false,
+  "physical_outcome": "unknown",
+  "isolated_environments": true,
+  "motor_environment_modified": false,
+  "student_demo": {
+    "backend": "MOCK",
+    "completed_trials": 3,
+    "cold": {
+      "expert_mode": "local_composer",
+      "model_calls": 0,
+      "tokens": 0,
+      "planning_ms": 0.6853342056274414,
+      "cost_usd": null,
+      "cost_note": "Dollar cost not measured; provider token usage recorded when supplied."
+    },
+    "warm": {
+      "model_calls": 0,
+      "tokens": 0,
+      "cases": 7,
+      "correct": 7,
+      "routing_latency_ms_mean": 0.12425572744437627
+    },
+    "limitation": "local compiler versus local routing; no LLM token/cost savings claim"
+  },
+  "parent_gpu_check": {
+    "device": "mps",
+    "cases": 4,
+    "repeats": 1,
+    "results": {
+      "hsv-orange-v1": {
+        "count": 4,
+        "correct_at_iou_0_5_or_negative_unknown": 1,
+        "positive_count": 3,
+        "positive_localized_iou_0_5": 1,
+        "negative_false_positives": 1,
+        "median_end_to_end_ms": 110.12022895738482,
+        "p95_end_to_end_ms": 155.66193144768474,
+        "median_detector_ms": 1.4125625602900982
+      },
+      "grounding-dino-tiny-a2bb814": {
+        "count": 4,
+        "correct_at_iou_0_5_or_negative_unknown": 4,
+        "positive_count": 3,
+        "positive_localized_iou_0_5": 3,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 2484.1837498825043,
+        "p95_end_to_end_ms": 6868.953738990238,
+        "median_detector_ms": 2290.324374800548
+      }
+    },
+    "limitation": "correctness spot check; cold one-pass timings are not the repeated warm benchmark"
+  },
+  "merged_other_worktree": {
+    "local_main": "b49d3997a3e394eac2397ffcdcafbf2c4fec8b81",
+    "remote_main_unchanged": "f53173853ad1cef200c6aac4bec6f4c42d9c16ed",
+    "uncommitted_docs_preserved": true,
+    "unrelated_AGENTS_edit_preserved": true
+  },
+  "account2_worker": {
+    "status": "usage_limit_before_work",
+    "fallback": "independent native workers",
+    "credentials_copied": false
+  },
+  "blockers": [
+    "No actual-cup aligned episode or supervised route evidence",
+    "No measured current camera/table/robot-base calibration or physical source map",
+    "SAM3 anonymous HTTP401; no local Hugging Face token available",
+    "MolmoAct2 camera conventions and Hiwonder unit/sign/offset mapping unverified",
+    "No project-specific Blackwell endpoint supplied; local MPS used"
+  ]
+}

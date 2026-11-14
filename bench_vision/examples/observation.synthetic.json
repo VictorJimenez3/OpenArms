@@ -1,0 +1,49 @@
+{
+  "calibration_id": "cal-1",
+  "camera_id": "overview",
+  "camera_mount_id": "fixed-1",
+  "plane_id": "table",
+  "clock_id": "episode-1",
+  "intrinsics_id": "synthetic-pinhole",
+  "pixel_space": "undistorted",
+  "object_id": "source-cup",
+  "timestamp_s": 50,
+  "status": "ok",
+  "feature": "table_contact",
+  "feature_height_mm": 0,
+  "pixel": [
+    110,
+    120
+  ],
+  "uncertainty_px": 1,
+  "anchors": [
+    {
+      "id": "c1",
+      "pixel": [
+        50,
+        60
+      ]
+    },
+    {
+      "id": "c2",
+      "pixel": [
+        170,
+        60
+      ]
+    },
+    {
+      "id": "c3",
+      "pixel": [
+        170,
+        180
+      ]
+    },
+    {
+      "id": "c4",
+      "pixel": [
+        50,
+        180
+      ]
+    }
+  ]
+}
