@@ -1,17 +1,24 @@
-# Lab Arm: Agent Instruction Prompt & Arm Action Catalog (v2)
+# Lab Arm: Agent Instruction Prompt & Arm Action Catalog (v3)
 
-**Status:** Proposal, Nov 13, 2026. Not verified on the real arm. Station names, poses and actions are placeholders until the hardware owner teaches and tests them.
+**Status:** Proposal, Fri Nov 13, 2026, ~23:45. Nothing in `agentic/` is written yet, and nothing is verified on the real arm. Station names, poses and steps are placeholders until Joseph teaches and tests them. The team plan is [agentic-plan.md](agentic-plan.md).
 
-**Setup assumed in v2**
-- **One SO-101 arm, on the teacher's side.** It's the follower only; there is no leader arm.
+**What changed since v2**
+- The brain now sees three plan actions: `add_sample`, `wait` and `look`. Pick, pour, return-the-cup and home are arm steps it never names (Part B).
+- A portion is one pre-filled mini-cup, tipped all the way out.
+- Teacher approval is synchronous only. A sim preview is optional.
+- Hardware is confirmed: SO-101 with Feetech servos on LeRobot 0.6.2. **There is a leader arm**, so poses are taught with it (Part C).
+- Part C now maps each piece to a file and an owner.
+
+**Setup**
+- **One SO-101 follower arm, on the teacher's side.** It's the only arm in the demo. The leader arm is used for teaching poses, not by the student.
 - **The teacher is on-site.** They set up the bench, approve plans and hold the physical stop.
-- **The student is remote.** They speak or type commands and watch the camera feed.
-- **The LLM is the "brain."** It turns the student's words into a short plan of catalog actions. Local code checks the plan, the teacher approves it, then the arm runs it without the LLM in the loop.
+- **The student is remote or has a motor disability.** They speak (through Joseph's iPhone voice bridge) or type, and watch the camera feed.
+- **The LLM is the "brain"**: Claude Sonnet 5.5 (`claude-sonnet-5-5`), one model call per student turn. It turns the student's words into a short plan. Local code checks the plan, the teacher approves it, then the arm runs it without the LLM in the loop.
 
 **Contents**
 - **Part A:** design rules from NVIDIA's Astranomy study
-- **Part B:** arm action catalog (what the brain can ask the arm to do)
-- **Part C:** how actions are built without a leader arm
+- **Part B:** tool layers and the action catalog
+- **Part C:** how it's built, and who builds what
 - **Part D:** paste-ready instruction prompt for the brain
 - **Part E:** open items
 
@@ -27,93 +34,107 @@ Source: J. X. Yang, A. Khetan, S. Zhang, *Astranomy*, NVIDIA Seattle Robotics La
 - **Stations, not coordinates.** Geometry in the prompt was crucial for direct control (19% → 73%). We avoid the problem: the brain names stations, and the executor owns calibrated, absolute poses.
 - **Give the brain the session notebook.** Keeping full history helped most.
 - **No shell or code tools.** Optional tools didn't clearly help.
-- **Ambiguous request → clarify, no motion.** Vague instructions hurt one-shot calls (72.7% → 64.0%); a persistent agent barely noticed (86.0% → 85.3%). Our brain makes one call per turn, so it is in the sensitive group.
+- **Ambiguous request → clarify, no motion.** Vague instructions hurt one-shot calls (72.7% → 64.0%); a persistent agent barely noticed (86.0% → 85.3%). We keep the full conversation history across turns to get closer to the persistent case, and still ask before planning.
 - **Separate "the move finished" from "the experiment worked."** When the model reviewed a fast policy's moves, it stepped in for: failed grasps 64.4%, wrong target or plan 20.2%, placement failures 11.4%.
 - **Don't force a "plan first" instruction for reasoning.** Explicit planning prompts didn't help (86.0% with vs 90.0% without). Our plan is a structured output for the validator, not a reasoning step.
 - **Model ranking doesn't transfer.** As a direct policy, Astra scored 72.7% and Claude Opus 5.5 25.3%. That measures low-level control, which we never ask the brain to do. Pick our brain model by latency and tool-use reliability.
+- **Fewer choices, fewer wrong plans.** Wrong target or plan was the biggest planning failure (20.2%). So the brain gets one macro for the one experiment, not the separate arm steps.
 
 ---
 
-## Part B: Arm action catalog
+## Part B: Tool layers and the action catalog
 
-The brain sees **only** this catalog. Every action uses **station names**, never angles, XYZ, speed or torque.
+Each layer can only reach the one below it through a check:
 
-### Bench map (example; set per lab in `config/stations.yaml`)
+```
+1. Brain tools (Claude calls these)          agentic/openarms_agent/tools.py
+        │ submit_plan
+2. Plan actions (what a plan may contain)    agentic/openarms_agent/catalog.py
+        │ validator → [sim preview] → teacher Approve → runner
+3. Arm steps (ArmPort, what moves)           firmware/ (Joseph); mock_arm.py for development
+        │ named poses + gripper
+4. Motor primitives (never seen by the LLM)  firmware/ on LeRobot 0.6.2
+```
+
+**STOP sits outside all four layers.** It goes from the UI, voice or keyboard straight to the runner and `ArmPort.stop()`. Stop words ("stop", "wait", "cancel") are matched before any LLM call.
+
+### Bench map (example; set per lab)
 
 | Station | Holds | Kind |
 |---|---|---|
-| `A` | cup of sample A (teacher-labeled) | source |
-| `B` | cup of sample B (teacher-labeled) | source |
+| `A` | pre-filled mini-cups of sample A (teacher-labeled) | source |
+| `B` | pre-filled mini-cups of sample B (teacher-labeled) | source |
 | `C` | receiver with purple indicator | receiver (fixed) |
 | `D` | receiver with purple indicator | receiver (fixed) |
 | `HOME` | arm rest pose, gripper open | — |
 
-### Arm state the brain can rely on
+### Arm state
 
 ```json
 { "at": "HOME", "holding": null, "portions_left": { "A": 2, "B": 2 }, "receiver_load": { "C": 0, "D": 0 }, "armed": true }
 ```
 
 - `holding` is the station the held cup came from (`"A"`), or `null`.
-- Capacity is counted in **portions**, not mL.
+- Capacity is counted in **portions**, not mL. A portion is one pre-filled mini-cup tipped all the way out, so its size comes from the cup, not from timing.
 
-### Actions
+### Layer 1: brain tools (none of these moves the arm)
 
-| Action | What the arm physically does | Preconditions (validator) | After |
-|---|---|---|---|
-| `home()` | Moves to the rest pose, gripper open | not holding a cup | `at: HOME` |
-| `pick(station)` | Hovers above the source cup, lowers, closes the gripper, lifts to a safe height | `holding = null`; station is a source with a cup | `holding = station` |
-| `pour(into, portions=1)` | Moves above the receiver, tilts the cup to a calibrated angle for a calibrated time (one portion), turns upright | holding a source cup; the cup has portions left; the receiver has capacity | `portions_left −1`, `receiver_load +1` |
-| `return_cup()` | Puts the held cup back at its own station and releases | holding a cup | `holding = null` |
-| `present(station)` | Moves the arm clear so the scene camera sees the station | not mid-pour | arm clear of view |
-| `wait(seconds)` | Holds still (e.g., to let a color change develop) | `1 ≤ seconds ≤ 30` | unchanged |
-| `look(station)` | Takes a camera still of a station (no motion) | — | image ref |
-| `get_arm_state()` | Reports state (no motion) | — | state JSON |
+| Tool | What it does | Why |
+|---|---|---|
+| `submit_plan(plan)` | Runs the validator. Returns the rejection reason, or `awaiting_teacher`. | The only route to motion, and it ends at a human. A rejection comes back in the same turn, so the brain fixes its own plan without bothering the student. |
+| `look(station)` | Camera still of a station | "Before" and "after" pictures as evidence |
+| `record_prediction(text)` | Saves the student's prediction | Saved *before* the run, so it can't be revised afterwards |
+| `record_observation(text, source)` | Saves what was seen; `source` ∈ `student`, `teacher`, `unknown` | Keeps evidence apart from what the arm reports |
+| `get_notebook()` | The session so far, as short text | Refers back without a long prompt |
+| `request_help(reason)` | Alerts the teacher; the brain stops submitting plans | Spills, a dropped cup, a worried student |
 
-**Macro (expands into the actions above, shown to the student and teacher in full)**
+### Layer 2: plan actions (the only things a plan may contain)
 
-- `add_sample(source, into, portions=1)` → `pick(source)`, `pour(into, portions)`, `return_cup()`, `home()`
+| Action | What happens | Validator checks |
+|---|---|---|
+| `add_sample(source, into, portions=1)` | Expands to `pick(source)`, `pour(into)` × portions, `return_cup()`, `home()`. The teacher sees every expanded step. | source is a source with enough portions left; `into` is a receiver with room |
+| `wait(seconds)` | The arm holds still, e.g. to let a color develop. In the plan so the teacher approves the timing and the UI can show a countdown. | `1 ≤ seconds ≤ 30` |
+| `look(station)` | Camera still, no motion | station exists |
 
-**Mechanism variants for `pour`** (same name for the brain; the hardware team picks one after dry tests)
+`look` is both a tool and a plan action for now; see Part E. **Never available to the brain:** pick/pour/return/home on their own, joint angles, XYZ targets, speed, torque, gripper force, free-form motion, the physical stop, arming/disarming, retries after a failure.
 
-1. `drop_in`: the arm drops a pre-portioned mini-cup into the receiver.
-2. `tip_cradle`: the arm presses a cradle that tips one portion into the receiver.
-3. `tilt_pour`: a short real pour from a held cup. This is the stretch option.
+### Layer 3: arm steps (`ArmPort`)
 
-**Not available to the brain:** joint angles, XYZ targets, speed, torque, gripper force, free-form motion, the physical stop, arming/disarming, retries after a failure.
+| Step | What the arm does | Precondition |
+|---|---|---|
+| `pick(station)` | Opens the gripper, moves above a mini-cup, lowers, grips, lifts to a safe height | gripper empty; the station has a cup |
+| `pour(into)` | Moves above the receiver and tips the mini-cup out completely | holding a cup; the receiver has room |
+| `return_cup()` | Puts the cup back at its own station and lets go | holding a cup |
+| `home()` | Rest pose, gripper open | gripper empty |
+| `wait(seconds)` | Holds still | 1–30 s |
+| `stop()` | Halts after the current motion, holds a safe pose, skips the remaining steps. It doesn't cut torque, so a held cup isn't dropped. The teacher's physical e-stop is still the hard stop. | always allowed |
+| `state()` | Returns the arm state above | — |
 
-### Plan format (brain → validator → teacher → executor)
+`ArmPort` is `run_step(action, args)`, `stop()`, `state()`. Failures raise `ArmError(step, reason)`. The runner stops at the first one and **never retries**: a blind retry around liquid risks a spill.
 
-The brain submits a **plan**: an ordered list of 1–6 catalog actions for **one** student instruction.
+**`pour` mechanism** (Joseph picks after dry runs; the name stays the same): drop the mini-cup in → a tipping cradle → a real tilt pour (stretch).
+
+### Plan format (brain → validator → teacher → runner)
+
+The brain submits 1–6 plan actions for **one** student instruction:
 
 ```json
 {
   "plan_id": "p-0007",
   "student_instruction": "add some of A to C",
   "steps": [
-    { "action": "pick",       "args": { "station": "A" } },
-    { "action": "pour",       "args": { "into": "C", "portions": 1 } },
-    { "action": "return_cup", "args": {} },
-    { "action": "home",       "args": {} }
+    { "action": "add_sample", "args": { "source": "A", "into": "C", "portions": 1 } }
   ]
 }
 ```
 
-**Validator** (local code, no LLM)
-- Simulates the plan step by step against the arm state.
-- Rejects the plan if:
-  - an action is unknown
-  - an argument is out of range
-  - it picks while already holding a cup
-  - it pours with nothing held
-  - a source is empty or a receiver is over capacity
-  - it doesn't end at `HOME` with an empty gripper
-  - there are more than 6 steps
-- On a rejection: no motion, and a short readable reason goes back to the brain.
+**Validator** (local code, no LLM): expands the plan and walks it step by step against `state()`. It rejects an unknown action, a bad argument, more than 6 plan actions, an empty source, a receiver over capacity, or a plan that doesn't end at `HOME` with an empty gripper. A rejection means no motion and one readable sentence back to the brain. On success it returns the predicted end state.
 
-**Teacher approval:** a validated plan appears on the teacher's screen as plain steps, with **Approve / Reject + comment**. Nothing moves without approval. This can be asynchronous.
+**Sim preview (optional):** the agent calls Stefanie's `preview(plan) -> {ok, video_url?, warnings[]}` with a 3 s timeout and carries on without it.
 
-**Executor:** runs the approved steps locally, in order, one at a time. On any step failure or stop, it holds safely, skips the remaining steps and reports which step failed.
+**Teacher approval:** the expanded steps appear in Victor's UI with **Approve / Reject + comment**, synchronously. Nothing moves without approval.
+
+**Runner:** runs the approved steps one at a time on `ArmPort`, stops at the first error or STOP, and reports which step failed. The brain then tells the student in one line (`notify`) and asks what they see.
 
 ```json
 // ExecutionResult
@@ -128,38 +149,50 @@ The brain submits a **plan**: an ordered list of 1–6 catalog actions for **one
 
 ---
 
-## Part C: How each action is built without a leader arm
+## Part C: How it's built, and who builds what
 
-With no leader arm, actions are built from **named poses plus gripper commands**, taught directly on the follower.
+### Layer 4: poses taught with the leader arm (Joseph, `firmware/`)
+
+Each arm step is a short sequence of named poses plus gripper commands:
+
+```
+pick(A)  = gripper(open) → go_to(ABOVE_A) → go_to(GRASP_A) → gripper(close) → go_to(LIFT_A)
+pour(C)  = go_to(ABOVE_C) → go_to(TIP_C) → go_to(ABOVE_C)
+```
 
 | Method | How | Status |
 |---|---|---|
-| **Hand-guided pose teaching** | Turn motor torque off, move the arm by hand to a pose, save the joint readings as a named pose (`ABOVE_A`, `GRASP_A`, `LIFT_A`, `POUR_C`, ...) | **Verify** that the Hiwonder servos can be backdriven safely with torque off |
-| **Keyboard / end-effector teleop** | Nudge the gripper in x/y/z with keys using LeRobot's inverse-kinematics tools, then save the pose | Fallback if hand-guiding doesn't work |
-| **IK from grid coordinates** | Measure each station's grid cell, compute poses with LeRobot `RobotKinematics` | Good for adding stations later; the arm has only 5 positioning joints, so check reachability |
+| **Teach with the leader arm** | Teleoperate (`lerobot-teleoperate`, see [firmware/README.md](../../firmware/README.md)), move the follower to a pose, save its joint readings as a named pose | First choice: both arms are already calibrated in `calibration/` |
+| **Hand-guiding** | Torque off, move the follower by hand, save the pose | Fallback |
+| **IK from grid coordinates** | LeRobot `RobotKinematics` from measured station cells | For adding stations later; the arm has only 5 positioning joints, so check reach |
 
-Each catalog action is then a short scripted sequence, for example:
+`go_to` has a speed limit and a timeout. A step is marked `verified` only after 9 successes in 10 dry runs. **Learned policies (ACT) stay deprioritized**: the leader arm makes demos possible, but ~50 demos per skill doesn't fit 36 h, and scripted poses are easier to debug.
 
-```
-pick(A)   = gripper(open) → go_to(ABOVE_A) → go_to(GRASP_A) → gripper(close) → go_to(LIFT_A)
-pour(C,1) = go_to(ABOVE_C) → go_to(POUR_C) → wait(t_portion) → go_to(ABOVE_C)
-```
+### `agentic/openarms_agent/` (Duc, built in Ralph lanes)
 
-**Learned policies (ACT) are deprioritized.** ACT needs about 50 smooth demos per skill, and without a leader arm, demos would come from keyboard or phone teleop, which is slower and less smooth. Revisit only if a scripted action proves unreliable.
+| Lane | File | What it does |
+|---|---|---|
+| foundation | `types.py`, `contracts/*.example.json` | Shared dataclasses and the `ArmPort` protocol; example JSON the team agrees on in `docs/INTERFACES.md` |
+| core | `catalog.py` | The three plan actions and `expand()` |
+| core | `validator.py` | `validate(plan, state) -> ValidationResult` |
+| core | `mock_arm.py` | Fake `ArmPort`: ~0.5 s per step, can fail at a named step |
+| core | `runner.py` | `run(plan, arm, should_stop) -> ExecutionResult`, never retries |
+| core | `notebook.py` | Session log to `outputs/sessions/<id>.json`, `as_text()` for the brain |
+| brain | `prompts/brain_system.md`, `prompting.py` | Part D, filled by `render_system_prompt(stations, arm_state, objective)` |
+| brain | `tools.py` | Layer 1 tool schemas and `dispatch()` |
+| brain | `brain.py` | `Brain(session_id).handle_turn(turn_id, text) -> TurnReply`, stop words, `notify(result)` |
+| brain | `scripts/brain_repl.py` | Terminal demo: type as the student, approve y/n as the teacher, run on `MockArm` |
+| api | `relay_adapter.py` | `dialogue_reply(session_id, turn_id, text) -> {text, lab_stage}` for Joseph's `relay/dialogue.py` |
+| api | `agentic/server.py` | FastAPI: `GET /plans/pending`, `POST /plans/{id}/approve\|reject`, `POST /stop`, a status stream |
+| api | `preview.py` | Stefanie's `preview(plan)` with a 3 s timeout |
 
-### Team scripts
+The agent server runs on the laptop plugged into the arm and calls the executor as ordinary Python. Everyone develops against `MockArm`.
 
-| Script | Purpose |
-|---|---|
-| `scripts/identify_hardware.py` | Scan the bus; report motor model, IDs, voltage |
-| `scripts/calibrate.sh` | Wrap `lerobot-calibrate` for the follower |
-| `scripts/teach_pose.py --name ABOVE_A` | Torque off → move by hand → save joint pose to `poses.yaml` |
-| `scripts/test_action.py --action pick --station A --runs 10` | Dry-run an action N times and log successes. Mark `verified: true` only on ≥ 9/10 |
-| `src/robot/actions.py` | Catalog actions as pose + gripper sequences, with speed limits and timeouts |
-| `src/robot/mock_arm.py` | Same interface, no hardware, for frontend and brain testing |
-| `src/validator.py` | Plan simulation and rules |
-| `src/approval.py` | Teacher approve/reject queue (UI + API) |
-| `src/notebook.py` | Session log and lab-notebook export |
+### Built by teammates
+- The real `ArmPort` and layer 4 on the SO-101: Joseph.
+- Speech-to-text, text-to-speech and the iPhone bridge (PR #5): Joseph.
+- The teacher approval UI: Victor.
+- The 3D sim and `preview()`: Stefanie.
 
 ---
 
@@ -178,43 +211,37 @@ plans and help them learn.
 
 ## Who decides what
 - Student: chooses predictions, which samples, where, how many portions, what order, and the conclusion.
-- You: translate one student instruction into a short plan using ONLY the arm actions below, ask
+- You: translate one student instruction into a short plan using ONLY the plan actions below, ask
   clarifying questions, keep the notebook, and ask learning questions.
 - Teacher: approves or rejects each plan, handles the physical stop, and may confirm what the camera shows.
 - Never make a scientific choice for the student or tell them the expected result before they test it.
 
-## The arm
+## Lab
+Objective: {{objective}}
+
 One arm, one action at a time. It works only with these stations:
-{{stations_table}}   (e.g., A = sample A cup, B = sample B cup, C and D = receivers with purple indicator)
+{{stations_table}}
 
-Current arm state is given to you each turn:
-{{arm_state}}        (where it is, what cup it holds, portions left, receiver load)
+Current arm state:
+{{arm_state}}        (where it is, what it holds, portions left, receiver load)
 
-### Actions you may use in a plan
-- home(): go to the rest pose with the gripper open. Only when not holding a cup.
-- pick(station): pick up the cup at a source station (A or B). Only when not holding anything.
-- pour(into, portions=1): pour from the held cup into a receiver (C or D). One portion is a fixed small
-  amount, not a measured volume.
-- return_cup(): put the held cup back where it came from.
-- present(station): move the arm out of the camera's way so the student can see that station.
-- wait(seconds): hold still for 1–30 seconds, e.g., to let a change develop.
+### Plan actions
+- add_sample(source, into, portions=1): the arm picks up a cup from a source (A or B), tips one portion
+  into a receiver (C or D) per portion, puts the cup back and returns home. A portion is one small
+  pre-filled cup, not a measured volume.
+- wait(seconds): the arm holds still for 1–30 seconds, e.g., to let a change develop.
 - look(station): take a camera picture of a station. No motion.
-- get_arm_state(): read the arm's current state. No motion.
-- Shortcut: add_sample(source, into, portions=1) = pick → pour → return_cup → home.
 
 ### Plan rules
-- One student instruction → one plan of 1–6 steps.
-- Every plan must end at home() with nothing held.
-- You may add only the MECHANICAL steps an instruction needs (pick before pour, return_cup and home
-  after). Never add a scientific step the student didn't ask for: no extra samples, receivers or portions.
+- One student instruction → one plan of 1–6 plan actions.
+- Never add a scientific step the student didn't ask for: no extra samples, receivers or portions.
 - You cannot control angles, positions, speed, force, or any motion not listed above. If the student
   asks for something outside the list, say it isn't possible on this arm and list what is.
 - Never retry a failed plan on your own.
 
 ### Your tools
-- get_lab_context() → objective, stations, allowed actions, arm state
 - record_prediction(text)
-- submit_plan(plan) → validator result, then teacher decision, then ExecutionResult
+- submit_plan(plan) → a rejection reason you can fix, or awaiting_teacher
 - look(station) → image reference
 - record_observation(text, source)   source ∈ student | teacher | unknown
 - get_notebook()
@@ -229,18 +256,16 @@ Current arm state is given to you each turn:
 2. EXPERIMENT (for each student instruction)
    a. If anything is missing or unclear (which sample, which receiver, how many portions), ask ONE
       short question. No plan yet.
-   b. Build the plan. Read it back in plain words:
-      "I'll pick up cup A, pour one portion into C, put A back, and return home. Send it to your
-      teacher?"
+   b. Read the plan back in plain words:
+      "I'll add one portion of A to C. Send it to your teacher?"
    c. Only after a clear yes: look(into) for a "before" picture, then submit_plan.
-   d. Keep the student informed with one short line per stage:
-      - rejected: "That plan can't run because <reason>." Offer what is possible.
-      - awaiting_teacher: "Waiting for your teacher to approve."
+      If it's rejected, fix the plan if you can; otherwise tell the student why and offer what is possible.
+   d. Then say: "Waiting for your teacher to approve."
+   e. When you're told the result, say what happened in one short line:
       - teacher_rejected: share the teacher's comment.
-      - executing: "The arm is working on it."
       - executed: "The arm finished the steps."
       - failed or stopped: "The arm stopped at <step>." Ask the student what they want to do next.
-   e. Take look(into) for an "after" picture. Ask what the student sees. Save it with
+   f. Take look(into) for an "after" picture. Ask what the student sees. Save it with
       record_observation. If they can't tell, ask the teacher or record "unknown".
 3. POST-LAB
    - Using the notebook, ask what actually changed and how it compares with the prediction.
@@ -252,14 +277,14 @@ Current arm state is given to you each turn:
 - Never invent what happened. Colors, amounts and results come only from the student, the teacher, or
   "unknown". "The arm finished" never means "the sample was added".
 - No plan is sent without the student's yes. No motion happens without the teacher's approval.
-- If the student says stop, wait or cancel, don't submit anything. If something seems wrong (spill,
-  dropped cup, the student is worried), call request_help and stop submitting plans.
+- If something seems wrong (spill, dropped cup, the student is worried), call request_help and stop
+  submitting plans.
 - Say "portions", never milliliters or exact pH.
 
 ## Tone and accessibility
-- Short sentences, one question at a time, plain words. Define a science term the first time.
-- The student may speak, type or press large buttons. Accept short or partial phrases and confirm
-  them rather than correcting.
+- Your replies may be spoken aloud. Short sentences, one question at a time, plain words, no lists or
+  symbols. Define a science term the first time.
+- The student may speak or type. Accept short or partial phrases and confirm them rather than correcting.
 - Be warm and patient. Praise good questions and careful thinking, not only right answers.
 
 ## Examples
@@ -267,26 +292,31 @@ Student: "do the vinegar one"
 You: "Into which receiver, C or D?"
 
 Student: "C"
-You: "I'll pick up cup A, pour one portion into C, put A back, and return home. Send it to your teacher?"
+You: "I'll add one portion of A to C. Send it to your teacher?"
 Student: "yes"
-→ look("C"); submit_plan({steps:[pick A, pour C 1, return_cup, home]})
-You: "Waiting for your teacher to approve." … "The arm is working on it." … "The arm finished the steps."
+→ look("C"); submit_plan({steps:[add_sample(source="A", into="C", portions=1)]})
+You: "Waiting for your teacher to approve." … "The arm finished the steps."
 → look("C")
 You: "Take a look at C. What do you notice?"
 
 Student: "make it pour faster and tilt more"
-You: "I can't change speed or tilt on this arm. I can pour a portion, wait, or show you a station
+You: "I can't change speed or tilt on this arm. I can add a portion, wait, or show you a station
 up close. What would you like to do?"
 ```
+
+Stop words never reach this prompt: `brain.py` answers "stop", "wait" and "cancel" itself and calls the runner's stop.
 
 ---
 
 ## Part E: Open items
 
-- [ ] Identify the motor family and pin the LeRobot version (upstream vs Hiwonder fork).
-- [ ] Test whether the follower can be hand-guided with torque off. If not, use keyboard/IK teaching.
-- [ ] Teach the poses for each station and test each action ≥ 10 dry runs. Pick the `pour` mechanism (drop-in → cradle → tilt-pour).
-- [ ] Build the teacher approval screen. Decide synchronous (live demo) vs asynchronous mode.
-- [ ] Stream the camera to the remote student; check latency on venue Wi-Fi.
-- [ ] Decide `stop()` behavior (hold vs torque off) and test it with a held cup over the spill tray.
+- [ ] **Liquid or a block?** Joseph's relay mock says "predict where the block will land". If it's a block, `add_sample` becomes something like `move_block(from, to)`, `pour` becomes `place`, and the capacity rule changes. Layers 1 and 4 stay the same.
+- [ ] **Joseph:** the `pour` mechanism, and where `ArmPort` lives in `firmware/`.
+- [ ] Teach the poses with the leader arm and dry-run each step 10 times.
+- [ ] Should `look` be a brain tool only, not a plan action? It doesn't move anything, so it needs no approval.
+- [ ] Is `present(station)` needed? Only if the arm at HOME blocks the camera. Check at the bench.
+- [ ] **Victor:** status stream as Server-Sent Events or WebSocket.
+- [ ] `types.py`: dataclasses for now; revisit pydantic when the api lane starts.
+- [ ] Stream the camera to the student; check latency on venue Wi-Fi.
+- [ ] Test `stop()` with a held cup over the spill tray.
 - [ ] Get organizer approval for liquids. Keep electronics out of the pour zone.
