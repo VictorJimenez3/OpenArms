@@ -134,6 +134,59 @@ async def t_wrong_plan():
         assert robot.sent == [], f"moved for {bad}"
 
 
+async def t_shifted_pickup_and_shared_placement():
+    robot = FakeRobot(HOME)
+    r, asks = make(robot, pan_offset_deg=4, pan_limits=(-100, 100))
+    baseline, shifted = r.scripts["A"], r.scripts["C"]
+    assert shifted[0] == baseline[0] and shifted[3] == baseline[3]
+    for i in (1, 2, 4):
+        assert shifted[i] == {**baseline[i], tr.PAN: baseline[i][tr.PAN] + 4}
+    assert shifted[5:] == baseline[5:]
+    assert await r.authorize(plan())
+    check_result(await r.execute(plan(src="C")), "P1", "failed")
+    assert robot.sent == []
+    assert await r.authorize(plan(src="C")) and "pan offset +4°" in asks[-1]
+    check_result(await r.execute(plan(src="C")), "P1", "completed")
+
+
+async def t_taught_pickup_and_dry_approach():
+    robot = FakeRobot(HOME)
+    p = POSES["poses"]
+    taught = {"ABOVE_C": p["ABOVE_A"], "GRASP_C": {**p["GRASP_A"], tr.PAN: 2}}
+    r, asks = make(robot, taught_pickup=taught, dry_approach=True)
+    assert await r.authorize(plan(src="C")) and "empty approach to C (taught pickup)" in asks[-1]
+    check_result(await r.execute(plan(src="C")), "P1", "completed")
+    assert robot.sent == [{tr.GRIPPER: POSES["gripper"]["open"]}, taught["ABOVE_C"], taught["GRASP_C"],
+                          taught["ABOVE_C"], p["ABOVE_B"], HOME]
+
+
+async def t_high_carry_stops_without_lift_confirmation():
+    for dry, accept in ((False, True), (False, False), (True, False)):
+        waypoints, checks = [], []
+        limits = {joint: (-180, 180) for joint in HOME} | {tr.GRIPPER: (0, 100)}
+
+        def trace(event, **details):
+            if event == "waypoint":
+                waypoints.append(details["target"])
+
+        def confirm(_should_stop):
+            checks.append(len(waypoints))
+            return accept
+
+        r, _ = make(pan_offset_deg=5, pan_limits=limits[tr.PAN], joint_limits=limits,
+                    high_carry=True, dry_approach=dry, confirm_lift=confirm, trace=trace)
+        request = plan(src="C")
+        assert await r.authorize(request)
+        check_result(await r.execute(request), "P1", "completed" if dry or accept else "stopped")
+        assert checks == ([] if dry else [6])
+        assert waypoints == (r.scripts["C"] if dry or accept else r.scripts["C"][:6])
+        raised_b = {joint: value + tr.HIGH_CARRY_DELTA.get(joint, 0)
+                    for joint, value in POSES["poses"]["ABOVE_B"].items()}
+        assert r.scripts["C"][6] == raised_b
+        if dry:
+            assert {p[tr.GRIPPER] for p in waypoints if tr.GRIPPER in p} == {POSES["gripper"]["open"]}
+
+
 async def t_idle_stop_between_runs():
     # mandarin.close() calls stop() at every session end; idle stop must not latch.
     robot = FakeRobot(HOME)
@@ -360,7 +413,9 @@ def t_singleton():
 
 
 ASYNC = [t_mode, t_authorize_answers, t_unauthorized_execute, t_rejected_then_execute, t_happy_path,
-         t_one_auth_one_run, t_auth_other_plan_id, t_wrong_plan, t_idle_stop_between_runs, t_stop_mid_run,
+         t_one_auth_one_run, t_auth_other_plan_id, t_wrong_plan, t_shifted_pickup_and_shared_placement,
+         t_taught_pickup_and_dry_approach, t_high_carry_stops_without_lift_confirmation,
+         t_idle_stop_between_runs, t_stop_mid_run,
          t_stop_returns_after_motion_halts, t_cancel, t_fault_latch, t_execute_does_not_block_loop,
          t_authorize_does_not_block_loop, t_concurrent_execute_shared_runner, t_authorize_while_running,
          t_not_at_home, t_double_cancel, t_stale_prompt]

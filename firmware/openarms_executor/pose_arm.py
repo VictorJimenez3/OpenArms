@@ -12,9 +12,10 @@ from .poses import GRIPPER
 
 class PoseArm:
     def __init__(self, robot, poses: dict, stations: dict, seconds: float = 1.5, hz: float = 30,
-                 pour_hold: float = 2.0) -> None:
+                 pour_hold: float = 2.0, *, stop_within_move: bool = False) -> None:
         self.robot, self.poses, self.stations = robot, poses, stations
         self.seconds, self.hz, self.pour_hold = seconds, hz, pour_hold
+        self.stop_within_move = stop_within_move
         self._stopped, self._slot = False, None
         self._state: ArmState = {
             "at": "HOME", "holding": None, "armed": True,
@@ -41,6 +42,8 @@ class PoseArm:
                 # STOP lets the current move finish (never freezes mid-arc), then holds; waits are cut short
                 if isinstance(target, (int, float)):
                     self._hold(target)
+                elif self.stop_within_move:
+                    move_to(self.robot, target, self.seconds, self.hz, should_stop=lambda: self._stopped, nudges=0)
                 else:
                     move_to(self.robot, target, self.seconds, self.hz)
                 if self._stopped:

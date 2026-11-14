@@ -34,3 +34,18 @@ Voice is half-duplex: speech is not captured while processing or playing a reply
 ## Acceptance checks
 
 The [rehearsal](../research/joseph/mandarin-verification/voice_rehearsal.py) covers generated speech through actual Whisper, AGY MCP invocation, proposal, confirm or cancel, and mock result. Tests also cover changed destinations, stale IDs, duplicate confirmation, subprocess cleanup, operator rejection, and wrong result identity. Physical success remains unverified until the real runner is connected and bench-tested.
+
+## Local water bench
+
+The supervised CLI uses the existing agentic plan and shares the physical pose executor. With source fixture A and receiver C fixed, the minimum request is:
+
+```json
+{
+  "plan_id": "bench-pour",
+  "steps": [
+    {"action": "add_sample", "args": {"source": "A", "into": "C", "portions": 1}}
+  ]
+}
+```
+
+The catalog expands this to `pick → pour → return_cup → home`. The local operator approves the start and confirms visible lift before the pour. Receipts log the controller's result and the separate operator observation. The phone relay still dispatches mandarin transfers. [Bench setup and demo tiers](WET_LAB.md)
