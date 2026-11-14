@@ -199,6 +199,9 @@ export class SessionClient {
       case 'state': this.acceptState(frame.state); break;
       case 'transcript': if (frame.turn_id && ['user','assistant'].includes(frame.role) && typeof frame.text === 'string') this.onTranscript(frame); break;
       case 'status': {
+        // Optional relay metadata is diagnostic only. The audio gate uses provider status.
+        if (typeof frame.model === 'string') this.status.model = frame.model;
+        if (typeof frame.provider === 'string') this.status.providerName = frame.provider;
         if (frame.status === 'unavailable') {
           this.dropAudio();
           this.update({ voiceOn: false, provider: 'unavailable', mic: 'off', playback: 'idle', detail: frame.message || 'Voice is unavailable. You can keep exploring with text.' });

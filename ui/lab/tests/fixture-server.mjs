@@ -9,6 +9,8 @@ const sessions = new Map();
 const conditions = [{id:'vinegar',title:'Vinegar'},{id:'baking_soda',title:'Baking-soda solution'},{id:'water',title:'Water'}];
 const clients = new Map();
 const traces = new Map();
+// Static test pixels and a silent MP4 exercise browser decoding, never simulation.
+const videoFixture = await readFile(new URL('./media-fixture.mp4', import.meta.url));
 const port = Number(process.env.OPENARMS_FIXTURE_PORT || 8766);
 const clone = value => JSON.parse(JSON.stringify(value));
 const snapshot = session => { const { token, ...state } = session; return clone(state); };
@@ -53,10 +55,15 @@ const server = http.createServer(async (request, response) => {
     traces.get(sid).push({channel:'rest',action:action || 'snapshot',body});
     if (!action) return json(200,snapshot(session));
     if (session.failNext===action) { delete session.failNext; return json(503,{detail:'The lab is temporarily unavailable. Your draft has been kept.'}); }
+    const simulation = session.state?.simulation;
     if (action === 'evidence' && request.method === 'GET') {
-      if (!session.scene_images.some(frame => frame.evidence_id === evidenceId)) return json(404,{});
+      if (simulation?.frame_url !== path && !session.scene_images.some(frame => frame.evidence_id === evidenceId)) return json(404,{});
       response.writeHead(200,{'Content-Type':'image/png'});
       return response.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNdcAAAAASUVORK5CYII=', 'base64'));
+    }
+    if (action === 'media' && request.method === 'GET' && simulation?.video_url === path) {
+      response.writeHead(200, {'Content-Type':'video/mp4'});
+      return response.end(videoFixture);
     }
     switch(action) {
       case 'condition': session.trial.condition_id=body.condition_id; session.pending=null; break;
@@ -91,7 +98,7 @@ const server = http.createServer(async (request, response) => {
     return json(200,publish(session));
   }
   try {
-    const file = path==='/' ? 'index.html' : decodeURIComponent(path.slice(1));
+    const file = ['/', '/developer', '/developer/'].includes(path) ? 'index.html' : decodeURIComponent(path.slice(1));
     if (file.includes('..') || file.startsWith('tests/')) return json(404,{});
     const content=await readFile(root+file);
     response.writeHead(200,{'Content-Type':file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'}); response.end(content);

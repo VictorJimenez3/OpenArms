@@ -2,8 +2,13 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 async function session(page) { return page.evaluate(()=>JSON.parse(sessionStorage.getItem('openarms.ph.session')).session_id); }
 async function fixture(page,request,body={}) { return (await request.post(`/fixture/${await session(page)}`,{data:body})).json(); }
-async function ready(page) { await page.goto('/'); await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible(); }
+async function ready(page) { await page.goto('/'); await expect(page.getByText('Connected',{exact:true})).toBeVisible(); }
+async function disclose(page, id) {
+  const details = page.locator('#' + id);
+  if (!(await details.evaluate(el => el.open))) await details.locator(':scope > summary').click();
+}
 async function sendRequest(page, text) {
+  await disclose(page, 'typing');
   await page.getByRole('textbox', {name:'What would you like to do?'}).fill(text);
   await page.getByRole('button',{name:'Send request'}).click();
 }
@@ -45,7 +50,7 @@ test('a direct request queues without a sample or prediction while typing and vo
   await expect(page.locator('#task-status')).toHaveText('Reviewing your request');
   const draft = page.getByRole('textbox', {name:'What would you like to do?'});
   await draft.fill('Compare with water next.');
-  await page.getByRole('button',{name:'Speak a request'}).click();
+  await page.getByRole('button',{name:'Talk'}).click();
   await expect(page.locator('#provider-state')).toHaveText('Voice listening');
   await expect(draft).toHaveValue('Compare with water next.');
   await expect(page.locator('#proposal')).toBeHidden();
@@ -83,7 +88,7 @@ test('complete a pH trial with text, reflection, history and a new sample',async
   await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Why does cabbage change color?');
   await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('acid–base conditions');
-  await page.getByText('Your lab notebook',{exact:true}).click();
+  await disclose(page, 'history');
   await expect(page.locator('#history-list')).toContainText('supports my prediction');
   await page.getByRole('button',{name:'Start a new notebook entry'}).click();
   await expect(page.getByRole('textbox', {name:'What would you like to do?'})).toBeFocused();
@@ -102,9 +107,11 @@ test('exact proposal must be visible before presentation and a newer server prop
   await sendRequest(page, 'Check the vinegar sample.');
   await expect(page.locator('#task-status')).toHaveText('Request queued');
   // Place the proposal below the viewport to verify state delivery alone cannot acknowledge it.
-  await page.locator('#message-form').evaluate(form => form.style.marginBottom = '110vh');
+  await page.locator('.camera-stage').evaluate(stage => stage.style.minHeight = '150vh');
+  await page.evaluate(() => scrollTo(0, 0));
   const first = await fixture(page,request,{propose:'vinegar'});
   await expect(page.locator('#proposal-summary')).toContainText('Vinegar');
+  await expect(page.getByRole('link', {name:'Review proposed action'})).toBeInViewport();
   await page.waitForTimeout(150);
   expect((await fixture(page,request)).trace.filter(t=>t.action==='present')).toHaveLength(0);
   await expect(page.getByRole('button',{name:'Confirm this action'})).toBeDisabled();
@@ -131,8 +138,9 @@ test('voice outage preserves the socket, coalesces turns and permits text',async
   ]) await fixture(page,request,{frame});
   await expect(page.locator('.message.assistant')).toHaveCount(1);
   await expect(page.locator('.message.assistant')).toContainText('Let’s compare the color.');
-  await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
+  await expect(page.getByText('Connected',{exact:true})).toBeVisible();
   await expect(page.locator('#provider-state')).toHaveText('Voice unavailable');
+  await disclose(page, 'typing');
   await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Can I compare with water?');
   await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('Can I compare with water?');
@@ -142,6 +150,7 @@ test('voice outage preserves the socket, coalesces turns and permits text',async
 test('network error preserves draft and reconnect never replays a command or approval',async({page,request})=>{
   await ready(page);
   await fixture(page,request,{fail:'request'});
+  await disclose(page, 'typing');
   await page.getByRole('textbox', {name:'What would you like to do?'}).fill('A question that must not replay');
   await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.getByRole('alert')).toContainText('temporarily unavailable');
@@ -151,7 +160,7 @@ test('network error preserves draft and reconnect never replays a command or app
   await reviewProposal(page);
   await fixture(page,request,{close:true});
   await expect(page.locator('#confirm')).toBeDisabled();
-  await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
+  await expect(page.getByText('Connected',{exact:true})).toBeVisible();
   await expect(page.locator('#proposal')).toBeHidden();
   const result=await fixture(page,request);
   expect(result.trace.filter(t=>t.action==='request')).toHaveLength(1);
@@ -170,7 +179,7 @@ test('older snapshots cannot replace newer trial state and credentials are priva
   expect(await page.locator('body').innerText()).not.toContain(token);
   expect(page.url()).not.toContain(token);
   await page.reload();
-  await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
+  await expect(page.getByText('Connected',{exact:true})).toBeVisible();
   await openContext(page);
   await expect(page.getByRole('button',{name:/^Water/})).toHaveAttribute('aria-pressed','true');
 });
@@ -181,10 +190,19 @@ test('layout fits the viewport, touch controls and accessibility at every stage'
     const violations=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations;
     expect(violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}))).toEqual([]);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.evaluate(() => scrollTo(0, 0));
     await page.screenshot({path:testInfo.outputPath(`${name}.png`),fullPage:true});
   }
+  await expect(page.getByRole('heading', {name:'Camera'})).toBeInViewport();
+  await expect(page.getByRole('button', {name:'Stop', exact:true})).toBeInViewport();
+  await expect(page.getByRole('button', {name:'Talk', exact:true})).toBeInViewport();
+  await expect(page.getByText('Type instead', {exact:true})).toBeInViewport();
+  await expect(page.getByText('History', {exact:true})).toBeInViewport();
+  for (const id of ['typing', 'history', 'trial-context']) await expect(page.locator('#' + id)).not.toHaveAttribute('open');
+  await expect(page.getByRole('button', {name:'Send request'})).toBeHidden();
+  expect((await fixture(page, request)).trace.filter(t => t.frame?.type === 'start_voice')).toHaveLength(0);
   await check('welcome');
-  expect(await page.locator('#voice-request').evaluate(button => {
+  expect(await page.locator('#voice-toggle').evaluate(button => {
     const rect = button.getBoundingClientRect();
     return button.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
   })).toBe(true);
@@ -199,9 +217,10 @@ test('layout fits the viewport, touch controls and accessibility at every stage'
 test('microphone denial is recoverable and cannot block text',async({page,request})=>{
   await page.addInitScript(()=>{navigator.mediaDevices.getUserMedia=async()=>{throw new DOMException('Permission denied','NotAllowedError');};});
   await ready(page);
-  await page.getByRole('button',{name:'Start voice',exact:true}).click();
+  await page.getByRole('button',{name:'Talk',exact:true}).click();
   await expect(page.locator('#mic-state')).toHaveText('Mic blocked');
   await expect(page.getByRole('button',{name:'Retry microphone'})).toBeEnabled();
+  await disclose(page, 'typing');
   await page.getByRole('textbox', {name:'What would you like to do?'}).fill('I prefer typing.');
   await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('I prefer typing.');
@@ -214,14 +233,15 @@ test('remote session creation asks for pairing code only after rejection',async(
   await expect(page.getByLabel('Pairing code')).toBeVisible();
   await page.getByLabel('Pairing code').fill('pair-test');
   await page.getByRole('button',{name:'Connect',exact:true}).click();
-  await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
+  await expect(page.getByText('Connected',{exact:true})).toBeVisible();
   await expect(page.getByLabel('Pairing code')).toHaveValue('');
   expect(await page.locator('body').innerText()).not.toContain('pair-test');
 });
 
 test('optional task, scene, observation and active skill evidence stays server-owned', async ({page, request}) => {
   await ready(page);
-  for (const id of ['task-progress', 'scene', 'active-skills', 'evidence']) await expect(page.locator(`#${id}`)).toBeHidden();
+  await expect(page.locator('#camera-empty')).toBeVisible();
+  for (const id of ['task-progress', 'active-skills', 'evidence']) await expect(page.locator(`#${id}`)).toBeHidden();
   const { state } = await fixture(page, request);
   const trialId = state.trial.trial_id;
   const evidenceUrl = `/api/sessions/${state.session_id}/evidence/frame-a`;
@@ -250,6 +270,9 @@ test('optional task, scene, observation and active skill evidence stays server-o
   await expect(page.getByText('Which sample is in the left holder?')).toBeVisible();
   await expect(page.getByText('Stale scene')).toBeVisible();
   await expect(page.locator('#scene')).toContainText('Simulated · Captured');
+  await expect(page.getByText('Image unavailable.', {exact:true})).toHaveCount(0);
+  await disclose(page, 'active-skills');
+  await page.getByText('More camera images', {exact:true}).click();
   await expect(page.getByText('Image unavailable.', {exact:true})).toHaveCount(2);
   expect(await page.locator('#scene').innerText()).not.toContain('frame-a');
   expect(await page.locator('#scene').innerText()).not.toContain('a'.repeat(64));
@@ -265,7 +288,10 @@ test('optional task, scene, observation and active skill evidence stays server-o
   expect(await page.content()).not.toContain(token);
   await expect(page.locator('#scene img')).toHaveCount(1);
   await expect(page.locator('#scene')).not.toContainText('/internal/frame.png');
-  await expect(page.locator('#skill-labels')).toHaveText('Compare sample conditions · v2');
+  await expect(page.locator('#skill-labels li')).toHaveCount(1);
+  await expect(page.locator('#skill-labels li')).toContainText('Compare sample conditions');
+  await page.getByText('Skill details', {exact:true}).click();
+  await expect(page.getByText('Version: v2', {exact:true})).toBeVisible();
   await page.getByRole('button', { name: 'Reply to the question' }).press('Enter');
   const composer = page.getByRole('textbox', {name:'What would you like to do?'});
   await expect(composer).toBeFocused();
@@ -332,13 +358,13 @@ test('a replaced frame revokes its blob and a late decode leaves the new scene i
   await expect(page.getByText('Image unavailable.', {exact:true})).toBeHidden();
   const currentUrl = await current.getAttribute('src');
   await fixture(page, request, {state:{scene_images:[]}});
-  await expect(page.locator('#scene')).toBeHidden();
+  await expect(page.locator('#camera-empty')).toBeVisible();
   expect(await page.evaluate(() => window.revokedFrames)).toContain(currentUrl);
 });
 
 test('fresh mic packets follow provider and STOP generations while stale state is ignored', async ({page, request}) => {
   await ready(page);
-  await page.getByRole('button', {name:'Start voice', exact:true}).click();
+  await page.getByRole('button', {name:'Talk', exact:true}).click();
   await expect(page.locator('#provider-state')).toHaveText('Voice listening');
   const audio = async epoch => (await fixture(page, request)).trace.filter(entry => entry.frame?.type === 'audio' && entry.frame.epoch === epoch);
   const { state: initial } = await fixture(page, request);
@@ -349,7 +375,7 @@ test('fresh mic packets follow provider and STOP generations while stale state i
   await fixture(page, request, { frame: {type:'status', status:'listening'} });
   await expect.poll(async () => (await audio(initial.generation + 1)).length).toBeGreaterThan(0);
 
-  await page.getByRole('button', { name:'Stop trial' }).focus();
+  await page.getByRole('button', { name:'Stop' }).focus();
   await page.keyboard.press('Escape');
   await expect.poll(async () => (await audio(initial.generation + 2)).length).toBeGreaterThan(0);
   const {state: current} = await fixture(page, request);
@@ -359,6 +385,7 @@ test('fresh mic packets follow provider and STOP generations while stale state i
     { ...current, revision: current.revision + 10, generation: initial.generation },
     { ...current, revision: current.revision + 10, generation: current.generation + 50, session_id: 'another-session' },
   ]) await fixture(page, request, { frame: {type:'state', state} });
+  await disclose(page, 'voice-options');
   await page.getByRole('button', { name:'Mute', exact:true }).click();
   await expect(page.locator('#mic-state')).toHaveText('Mic muted');
   const mutedCount = (await audio(current.generation)).length;
@@ -373,14 +400,14 @@ test('fresh mic packets follow provider and STOP generations while stale state i
   expect(trace.filter(entry => entry.frame?.type === 'audio' && entry.frame.epoch > current.generation)).toHaveLength(0);
   await fixture(page, request, {close:true});
   await expect(page.locator('#mic-state')).toHaveText('Mic off');
-  await expect(page.getByText('Notebook connected', {exact:true})).toBeVisible();
+  await expect(page.getByText('Connected', {exact:true})).toBeVisible();
   expect((await fixture(page, request)).trace.filter(entry => entry.frame?.type === 'start_voice')).toHaveLength(1);
   expect(await audio(current.generation + 1)).toHaveLength(0);
 });
 
 test('audio completion acknowledges scheduled playback and interrupt clears queued speech', async ({page, request}) => {
   await ready(page);
-  await page.getByRole('button', {name:'Start voice', exact:true}).click();
+  await page.getByRole('button', {name:'Talk', exact:true}).click();
   await expect(page.locator('#provider-state')).toHaveText('Voice listening');
   const pcm = Buffer.alloc(24000 * 2).toString('base64');
   async function reply(reply_id, chunks) {
@@ -397,6 +424,7 @@ test('audio completion acknowledges scheduled playback and interrupt clears queu
   await expect.poll(async () => (await frames('played','finished')).length).toBe(1);
   await expect(page.locator('#playback-state')).toHaveText('Speaker idle');
   await reply('aborted', 2);
+  await disclose(page, 'voice-options');
   await page.getByRole('button', {name:'Interrupt', exact:true}).click();
   await expect.poll(async () => (await frames('interrupt', 'aborted')).length).toBe(1);
   await fixture(page, request, {frame:{type:'audio', reply_id:'aborted', data:pcm}});
@@ -404,4 +432,175 @@ test('audio completion acknowledges scheduled playback and interrupt clears queu
   expect(await frames('played', 'aborted')).toHaveLength(0);
   await page.getByRole('button', { name:'End voice', exact:true }).click();
   await expect(page.locator('#mic-state')).toHaveText('Mic off');
+});
+
+test('developer diagnostics work without simulation media and switching views keeps live voice', async ({page, request}, testInfo) => {
+  await page.goto('/developer');
+  await expect(page.locator('#connection-label')).toHaveText('Connected');
+  await expect(page.locator('#simulation-status')).toHaveText('No simulation data');
+  await expect(page.getByText('No simulation frame yet.')).toBeVisible();
+  await expect(page.getByText('No execution recording yet.')).toBeVisible();
+  await expect(page.locator('#trace-empty')).toBeVisible();
+  await expect(page.locator('#skill-evidence-empty')).toBeVisible();
+
+  const taskId = 'expert-task-1';
+  const adapter = {provider:'openai_codex_cli', model:'gpt-6.1-sol', reasoning_effort:'medium', task_id:taskId};
+  const event = (kind, data, timestamp) => ({kind, data, timestamp, task_id:taskId, provenance:'EXPERT_ADAPTER'});
+  const { state } = await fixture(page, request);
+  await fixture(page, request, {state:{
+    tasks:[{task_id:taskId, status:'running', route:'expert', request:'Inspect the left holder.', expert_runs:[{...adapter, calls:2, host_elapsed_ms:461.4}]}],
+    requests:[{task_id:taskId, metrics:{planning_ms:917.4}}],
+    notebook:[
+      event('expert_started', {adapter}, 1794672000),
+      event('expert_tool_completed', {adapter:{...adapter, name:'localize_objects', arguments:{labels:['left_holder']}, result:{verified_labels:['left_holder'], images:[{evidence_id:'frame-1'}]}}}, 1794672001),
+      {...event('observation', {observation:{text:'The marked receiver is readable.', status:'observed'}}, 1794672002), provenance:'SIMULATED', evidence_ids:['frame-1']},
+    ],
+    observations:[{trial_id:state.trial.trial_id, text:'The marked receiver is readable.', status:'observed', provenance:'SIMULATED', evidence:['frame-1']}],
+    skills:[{skill_id:'inspect_holder', name:'Inspect holder', status:'active', version:'a'.repeat(64), evidence_ids:['frame-1']}],
+    evaluations:[{evaluation_id:'eval-1', passed:true, baseline_hash:'b'.repeat(64), candidate_hash:'a'.repeat(64), baseline_recovered:1, candidate_recovered:3, metrics:{provenance:'SYNTHETIC'}}],
+    skill_decisions:[{evaluation_id:'eval-1', status:'promoted'}],
+  }});
+  await expect(page.locator('#developer-status')).toContainText('openai_codex_cli · gpt-6.1-sol · medium');
+  await expect(page.locator('#developer-status')).toContainText('461 ms · 2 model calls');
+  await expect(page.locator('#developer-status')).toContainText('917 ms');
+  await page.getByText(/Tool completed · localize_objects/).click();
+  await expect(page.locator('#developer-trace')).toContainText('Verified labels');
+  await expect(page.locator('#developer-trace')).toContainText('frame-1');
+  await expect(page.getByText(/Independent observation · SIMULATED/)).toBeVisible();
+  await page.getByText('Inspect holder · active').click();
+  await expect(page.locator('#developer-skills dd').filter({hasText:'a'.repeat(64)})).toBeVisible();
+  await page.getByText('Evaluation receipt · Passed · promoted').click();
+  await expect(page.locator('#developer-evaluations')).toContainText('SYNTHETIC');
+  await expect(page.locator('#developer-evaluations')).toContainText('Baseline recoveries');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const violations = (await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations;
+  expect(violations.map(v => ({id:v.id,nodes:v.nodes.map(n => n.target)}))).toEqual([]);
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.screenshot({path:testInfo.outputPath('developer-empty-with-evidence.png'),fullPage:true});
+
+  await page.getByRole('button', {name:'Talk', exact:true}).click();
+  await expect(page.locator('#developer-status')).toContainText('Voice listening');
+  await fixture(page, request, {frame:{type:'status', status:'listening', provider:'Gemini Live', model:'fixture-live-model'}});
+  await expect(page.locator('#developer-status')).toContainText('Gemini Live · fixture-live-model');
+  await page.getByRole('link', {name:'Lab', exact:true}).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('button', {name:'End voice', exact:true})).toBeEnabled();
+  await page.getByRole('link', {name:'Developer', exact:true}).click();
+  await expect(page).toHaveURL(/\/developer$/);
+  await expect(page.locator('#developer-status')).toContainText('Voice listening');
+  await page.goBack();
+  await expect(page.locator('#developer')).toBeHidden();
+  await page.goForward();
+  await expect(page.locator('#developer')).toBeVisible();
+  await page.getByRole('button', {name:'End voice', exact:true}).click();
+  const { trace } = await fixture(page, request);
+  expect(trace.filter(t => t.frame?.type === 'hello')).toHaveLength(1);
+  expect(trace.filter(t => t.frame?.type === 'start_voice')).toHaveLength(1);
+  expect(trace.filter(t => t.frame?.type === 'stop_voice')).toHaveLength(1);
+});
+
+test('developer authenticates and decodes frame and recording, replacing and revoking blobs', async ({page, request}) => {
+  await page.addInitScript(() => {
+    const revoke = URL.revokeObjectURL.bind(URL);
+    window.revokedMedia = [];
+    URL.revokeObjectURL = url => { window.revokedMedia.push(url); revoke(url); };
+  });
+  await page.setExtraHTTPHeaders({'x-fixture-pairing':'required'});
+  await page.goto('/developer');
+  await expect(page.getByLabel('Pairing code')).toBeVisible();
+  await page.getByLabel('Pairing code').fill('pair-test');
+  await page.getByRole('button', {name:'Connect', exact:true}).click();
+  await expect(page.locator('#connection-label')).toHaveText('Connected');
+  const sid = await session(page);
+  const token = await page.evaluate(() => JSON.parse(sessionStorage.getItem('openarms.ph.session')).access_token);
+  const sessionPath = `/api/sessions/${sid}`;
+  const frame = `${sessionPath}/evidence/${'a'.repeat(32)}`;
+  const nextFrame = `${sessionPath}/evidence/${'b'.repeat(32)}`;
+  const video = `${sessionPath}/media/${'c'.repeat(32)}.mp4`;
+  const frameRequest = page.waitForRequest(req => new URL(req.url()).pathname === frame);
+  const videoRequest = page.waitForRequest(req => new URL(req.url()).pathname === video);
+  const simulation = {engine:'MuJoCo', status:'completed', frame_url:frame, video_url:video, frame_count:5, motion_seconds:1};
+  await fixture(page, request, {state:{state:{simulation}}});
+  const image = page.getByRole('img', {name:'MuJoCo simulation frame'});
+  const player = page.locator('#simulation-video video');
+  await expect(image).toHaveJSProperty('naturalWidth', 1);
+  await expect(player).toHaveJSProperty('videoWidth', 64);
+  await expect(player).toHaveJSProperty('duration', 1);
+  await expect(player).toHaveJSProperty('paused', true);
+  await expect(page.locator('#simulation-metrics')).toHaveText('5 frames · 1.00 s of motion');
+  const requests = await Promise.all([frameRequest, videoRequest]);
+  for (const authenticated of requests) {
+    expect(await authenticated.headerValue('authorization')).toBe(`Bearer ${token}`);
+    expect(new URL(authenticated.url()).search).toBe('');
+  }
+  expect((await request.get(frame)).status()).toBe(401);
+  expect((await request.get(video)).status()).toBe(401);
+  expect(await page.content()).not.toContain(token);
+  const frameBlob = await image.getAttribute('src');
+  const videoBlob = await player.getAttribute('src');
+  expect(frameBlob).toMatch(/^blob:/);
+  expect(videoBlob).toMatch(/^blob:/);
+
+  await fixture(page, request, {state:{state:{simulation:{...simulation, frame_url:nextFrame}}}});
+  await expect(image).not.toHaveAttribute('src', frameBlob);
+  await expect(player).toHaveAttribute('src', videoBlob);
+  expect(await page.evaluate(() => window.revokedMedia)).toContain(frameBlob);
+  const replacement = await image.getAttribute('src');
+
+  await page.getByRole('link', {name:'Lab', exact:true}).click();
+  await expect(player).toHaveCount(0);
+  expect(await page.evaluate(() => window.revokedMedia)).toEqual(expect.arrayContaining([replacement, videoBlob]));
+  await page.getByRole('link', {name:'Developer', exact:true}).click();
+  await expect(player).toHaveJSProperty('videoWidth', 64);
+  await expect(image).toHaveJSProperty('naturalWidth', 1);
+  const beforeDisconnect = await player.getAttribute('src');
+  await fixture(page, request, {close:true});
+  await expect.poll(() => page.evaluate(() => window.revokedMedia)).toContain(beforeDisconnect);
+  await expect(page.locator('#connection-label')).toHaveText('Connected');
+  await expect(player).toHaveJSProperty('videoWidth', 64);
+  await expect(player).not.toHaveAttribute('src', beforeDisconnect);
+});
+
+test('developer rejects foreign media URLs and aborts a replaced fetch', async ({page, request}) => {
+  await page.addInitScript(() => {
+    const fetchMedia = window.fetch.bind(window);
+    window.mediaFetches = [];
+    window.fetch = (input, options) => {
+      if (typeof input === 'string' && /\/(evidence|media)\//.test(input)) {
+        const record = {path:input, aborted:false};
+        window.mediaFetches.push(record);
+        options.signal.addEventListener('abort', () => { record.aborted = true; }, {once:true});
+      }
+      return fetchMedia(input, options);
+    };
+  });
+  await page.goto('/developer');
+  await expect(page.locator('#connection-label')).toHaveText('Connected');
+  const sid = await session(page);
+  const delayedPath = `/api/sessions/${sid}/evidence/${'d'.repeat(32)}`;
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  await page.route(`**${delayedPath}`, async route => {
+    await gate;
+    await route.fallback();
+  });
+  try {
+    const started = page.waitForRequest(req => new URL(req.url()).pathname === delayedPath);
+    await fixture(page, request, {state:{state:{simulation:{status:'rendering', frame_url:delayedPath}}}});
+    await started;
+    await expect(page.getByText('Loading simulation frame…')).toBeVisible();
+    const invalid = {status:'failed', warnings:['Simulation backend failed.'],
+      frame_url:`/api/sessions/another-session/evidence/${'e'.repeat(32)}`,
+      video_url:`https://example.invalid/api/sessions/${sid}/media/${'f'.repeat(32)}.mp4`};
+    await fixture(page, request, {state:{state:{simulation:invalid}}});
+    await expect(page.locator('#simulation-status')).toHaveText('failed');
+    await expect(page.getByText('Simulation backend failed.')).toBeVisible();
+    await expect(page.getByText('Simulation frame unavailable.')).toBeVisible();
+    await expect(page.getByText('Execution recording unavailable.')).toBeVisible();
+    expect(await page.evaluate(() => window.mediaFetches)).toEqual([{path:delayedPath, aborted:true}]);
+  } finally {
+    release();
+  }
+  await expect(page.locator('#simulation-frame img')).toHaveCount(0);
+  await expect(page.locator('#simulation-video video')).toHaveCount(0);
 });

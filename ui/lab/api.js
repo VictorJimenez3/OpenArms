@@ -35,21 +35,34 @@ export class LabApiClient {
   snapshot() { return this.request(`/api/sessions/${encodeURIComponent(this.sessionId)}`); }
   action(name, body = {}) { return this.request(`/api/sessions/${encodeURIComponent(this.sessionId)}/${name}`, body); }
   async evidenceImage(frame, signal) {
+    if (typeof frame.evidence_id !== 'string' || !frame.evidence_id) throw new Error('Image unavailable');
+    return this.#media(frame.artifact_url, 'image', signal,
+      path => path === `evidence/${encodeURIComponent(frame.evidence_id)}`);
+  }
+  async simulationMedia(artifactUrl, kind, signal) {
+    const pathPattern = kind === 'video' ? /^media\/[0-9a-f]{32}\.mp4$/ : /^evidence\/[0-9a-f]{32}$/;
+    return this.#media(artifactUrl, kind, signal, path => pathPattern.test(path));
+  }
+  async #media(artifactUrl, kind, signal, acceptsPath) {
     const { session_id: sessionId, access_token: token } = this.#credentials || {};
-    if (!sessionId || !token || typeof frame.evidence_id !== 'string' || !frame.evidence_id ||
-        typeof frame.artifact_url !== 'string') throw new Error('Image unavailable');
-    const url = new URL(frame.artifact_url, location.href);
-    const path = `/api/sessions/${encodeURIComponent(sessionId)}/evidence/${encodeURIComponent(frame.evidence_id)}`;
+    if (!sessionId || !token || typeof artifactUrl !== 'string') throw new Error('Media unavailable');
+    const url = new URL(artifactUrl, location.href);
+    const prefix = `/api/sessions/${encodeURIComponent(sessionId)}/`;
     if (url.origin !== location.origin || !/^https?:$/.test(url.protocol) || url.username || url.password ||
-        url.pathname !== path || url.search || url.hash) throw new Error('Image unavailable');
+        url.search || url.hash || !url.pathname.startsWith(prefix) || !acceptsPath(url.pathname.slice(prefix.length))) {
+      throw new Error('Media unavailable');
+    }
 
-    const response = await fetch(path, {
-      headers: { Accept: 'image/*', Authorization: `Bearer ${token}` },
+    const video = kind === 'video';
+    const response = await fetch(url.pathname, {
+      headers: { Accept: video ? 'video/mp4' : 'image/*', Authorization: `Bearer ${token}` },
       signal: AbortSignal.any([signal, AbortSignal.timeout(12000)]),
       redirect: 'error', cache: 'no-store', credentials: 'same-origin',
     });
     const type = response.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase();
-    if (!response.ok || !/^image\/(png|jpeg|webp|gif|avif|bmp)$/.test(type)) throw new Error('Image unavailable');
+    if (!response.ok || !(video ? type === 'video/mp4' : /^image\/(png|jpeg|webp|gif|avif|bmp)$/.test(type))) {
+      throw new Error('Media unavailable');
+    }
     return response.blob();
   }
 }

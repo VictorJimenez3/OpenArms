@@ -3,73 +3,176 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f7f5ef">
-  <meta name="description" content="Ask OpenArms to investigate red-cabbage indicator and review the evidence in your lab notebook.">
-  <title>OpenArms — A study in color</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="app.js"></script>
+  <meta name="theme-color" content="#fbfdfc">
+  <meta name="description" content="Talk to OpenArms and review the evidence from your lab session.">
+  <title>OpenArms Lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
 </head>
 <body>
   <a class="skip" href="#workspace">Skip to the lab</a>
   <header class="masthead">
-    <a href="./" class="brand" aria-label="OpenArms home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 20V9m0 7c0 14 24 14 24 0V9M10 4v12m12-12v12M16 8v14"/></svg>OpenArms<span>Science, in your hands.</span></a>
-    <div class="session-indicator"><i id="connection-dot" aria-hidden="true"></i><span id="connection-label" role="status">Opening your notebook</span></div>
-    <button id="stop" class="stop" type="button">Stop trial</button>
+    <div class="header-inner">
+      <h1>OpenArms</h1>
+      <nav aria-label="Lab view"><a id="view-link" href="/developer">Developer</a></nav>
+      <div class="session-indicator"><i id="connection-dot" aria-hidden="true"></i><span id="connection-label" role="status">Connecting</span></div>
+      <button id="stop" class="stop" type="button">Stop</button>
+    </div>
+    <div class="proposal-nav" id="proposal-nav" hidden>
+      <a id="jump-to-proposal" href="#proposal">Review proposed action</a>
+    </div>
   </header>
 
   <main>
-    <div id="notice" class="notice" role="alert" hidden><p id="notice-text"></p><button id="reconnect" type="button">Reconnect session</button><button id="dismiss-notice" class="quiet" aria-label="Dismiss notification" type="button">×</button></div>
+    <div id="notice" class="notice" role="alert" hidden>
+      <p id="notice-text"></p>
+      <button id="reconnect" class="secondary" type="button">Reconnect session</button>
+      <button id="dismiss-notice" class="quiet" aria-label="Dismiss notification" type="button">×</button>
+    </div>
     <form id="pairing" class="pairing" hidden>
-      <h2>Connect to this lab</h2><p>This lab requires a pairing code. Ask your demo host for it.</p>
-      <label for="pairing-code">Pairing code</label><div class="input-row"><input id="pairing-code" type="password" autocomplete="off" required><button class="primary" type="submit">Connect</button></div>
+      <h2>Connect to this lab</h2>
+      <p>Ask your demo host for the lab’s pairing code.</p>
+      <label for="pairing-code">Pairing code</label>
+      <div class="input-row"><input id="pairing-code" type="password" autocomplete="off" required><button class="primary" type="submit">Connect</button></div>
     </form>
 
-    <section class="intro" aria-labelledby="page-title">
-      <div class="intro-copy"><p class="eyebrow">THE COLOR LAB</p><h1 id="page-title">A little color.<br>A bigger question.</h1><p class="dek">What can red cabbage tell us about the things we use every day?</p><p class="mode"><span aria-hidden="true">◈</span> Software lab <span class="mode-note">Hardware is disabled in this session.</span></p></div>
-      <div class="color-study" aria-hidden="true"><div class="study-orbit"></div><div class="study-caption">ONE INDICATOR. MANY POSSIBILITIES.</div><div class="vessel vessel-one"><div class="liquid"></div><span>?</span></div><div class="vessel vessel-two"><div class="liquid"></div><span>?</span></div><div class="vessel vessel-three"><div class="liquid"></div><span>?</span></div><div class="study-baseline"></div><span class="study-number">Fig. 01 — Red-cabbage indicator</span></div>
-    </section>
-
-    <section id="workspace" class="workspace" aria-labelledby="trial-title" tabindex="-1">
-      <div class="workspace-head"><h2 id="trial-title"><label for="message">What would you like to do?</label></h2></div>
-
-      <div class="trial-body">
-        <form id="message-form" class="request-form">
-          <div class="composer"><textarea id="message" rows="2" placeholder="Check the color of the vinegar sample." maxlength="4000" required disabled></textarea></div>
-          <div class="request-actions"><button id="send" type="submit" class="primary" disabled>Send request <span aria-hidden="true">↑</span></button><button id="voice-request" type="button" class="secondary" disabled>Speak a request</button><a id="jump-to-proposal" href="#proposal" class="secondary" hidden>Review proposed action</a></div>
-        </form>
-        <section class="conversation" aria-label="Lab conversation">
-          <section id="task-progress" class="session-card" aria-labelledby="task-title" hidden>
-            <h4 id="task-title">Task progress</h4>
-            <div role="status"><p id="task-status"></p><p id="task-detail"></p><p id="task-reason"></p></div><details id="task-context" class="lab-details" hidden><summary>Task details</summary><p id="task-request"></p><p id="task-route"></p></details>
-            <button id="answer-clarification" type="button" class="secondary" hidden>Reply to the question</button>
-          </section>
-          <section id="proposal" class="proposal" aria-labelledby="proposal-title" tabindex="-1" hidden><p class="eyebrow">REVIEW BEFORE CONFIRMING</p><h3 id="proposal-title">Here’s the plan.</h3><p id="proposal-summary"></p><p class="proposal-footnote">Confirm only if this is the action you want.</p><div class="proposal-actions"><button id="confirm" class="primary" type="button" disabled>Confirm this action</button><button id="cancel" class="secondary" type="button">Cancel</button></div><p id="proposal-status" class="field-hint" role="status"></p><button id="review-again" class="quiet" type="button" hidden>Present this proposal again</button></section>
-
-          <div id="messages" class="messages" role="log" aria-label="Lab conversation" aria-live="polite" aria-relevant="additions text"></div>
+    <div class="lab-layout">
+      <section id="workspace" class="workspace" aria-label="Lab conversation" tabindex="-1">
+        <section id="scene" class="camera" aria-labelledby="scene-title">
+          <div class="section-head"><h2 id="scene-title">Camera</h2><span>Hardware off</span></div>
+          <div class="camera-stage">
+            <p id="camera-empty">No camera image yet.</p>
+            <div id="scene-frames"></div>
+          </div>
+          <p id="scene-detail" class="field-hint" hidden></p>
         </section>
-        <details id="trial-context" class="lab-details"><summary>Optional sample and prediction</summary>
-        <fieldset id="conditions" disabled><legend class="sr-only">Prepared samples</legend><div class="condition-grid">
-          <button class="condition" type="button" data-condition="vinegar" aria-pressed="false"><span class="sample-icon vinegar" aria-hidden="true"><svg viewBox="0 0 40 48"><path d="M16 4h8v12l7 9v16a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3V25l7-9Z"/><path d="M16 10h8M9 29h22M16 35h8"/></svg></span><span><strong>Vinegar</strong><small>A familiar kitchen ingredient</small></span><span class="choice-mark" aria-hidden="true">+</span></button>
-          <button class="condition" type="button" data-condition="baking_soda" aria-pressed="false"><span class="sample-icon soda" aria-hidden="true"><svg viewBox="0 0 40 48"><path d="m10 5 20 0 3 38H7ZM10 12h20M14 22h12M14 28h12"/><path d="M18 34h4"/></svg></span><span><strong>Baking-soda solution</strong><small>A little baking soda in water</small></span><span class="choice-mark" aria-hidden="true">+</span></button>
-          <button class="condition" type="button" data-condition="water" aria-pressed="false"><span class="sample-icon water" aria-hidden="true"><svg viewBox="0 0 40 48"><path d="M20 5S7 22 7 30a13 13 0 0 0 26 0C33 22 20 5 20 5Z"/><path d="M12 30a8 8 0 0 0 8 8"/></svg></span><span><strong>Water</strong><small>Your comparison control</small></span><span class="choice-mark" aria-hidden="true">+</span></button>
-        </div></fieldset>
 
-        <form id="prediction-form" class="prediction-block"><div class="prompt-mark" aria-hidden="true">↳</div><div class="prompt-content"><label for="prediction">What do you think will happen?</label><p class="field-hint">Predict a color or an acid/base category, and tell us why.</p><textarea id="prediction" rows="2" placeholder="I think the indicator will… because…" maxlength="4000" required disabled></textarea><div class="prediction-footer"><span id="prediction-saved" role="status"></span><button id="save-prediction" type="submit" class="primary" disabled>Save prediction <span aria-hidden="true">↗</span></button></div></div></form>
+        <section class="voice" aria-label="Voice">
+          <p id="voice-title" role="status">Connecting</p>
+          <button id="voice-toggle" type="button" class="primary voice-button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>
+            <span id="voice-label">Talk</span>
+          </button>
+          <p id="voice-detail" class="field-hint" hidden></p>
+        </section>
+
+        <section id="proposal" class="proposal" aria-labelledby="proposal-title" tabindex="-1" hidden>
+          <h2 id="proposal-title">Proposed action</h2>
+          <p id="proposal-summary"></p>
+          <div class="actions"><button id="confirm" class="primary" type="button" disabled>Confirm this action</button><button id="cancel" class="secondary" type="button">Cancel</button></div>
+          <p id="proposal-status" class="field-hint" role="status"></p>
+          <button id="review-again" class="quiet" type="button" hidden>Present this proposal again</button>
+        </section>
+
+        <section id="task-progress" class="task" aria-label="Task progress" hidden>
+          <div role="status"><p id="task-status"></p><p id="task-detail"></p><p id="task-reason"></p></div>
+          <button id="answer-clarification" type="button" class="secondary" hidden>Reply to the question</button>
+          <details id="task-context" class="lab-details" hidden><summary>Task details</summary><p id="task-request"></p><p id="task-route"></p></details>
+        </section>
+
+        <div class="disclosures">
+          <details id="typing" class="lab-details">
+            <summary>Type instead</summary>
+            <form id="message-form">
+              <label for="message">What would you like to do?</label>
+              <textarea id="message" rows="2" placeholder="Check the color of the vinegar sample." maxlength="4000" required disabled></textarea>
+              <button id="send" type="submit" class="primary" disabled>Send request</button>
+            </form>
+          </details>
+          <details id="history" class="lab-details">
+            <summary>History</summary>
+            <h2>Conversation</h2>
+            <div id="messages" class="messages" role="log" aria-label="Lab conversation history" aria-live="polite" aria-relevant="additions text"></div>
+            <h2>Your lab notebook</h2>
+            <p id="history-count" class="field-hint">No trials yet</p>
+            <div id="history-list"><p>Observations and related notes will appear here.</p></div>
+          </details>
+          <details id="voice-options" class="lab-details" hidden>
+            <summary>Voice controls</summary>
+            <div class="actions">
+              <button id="mute" class="secondary" type="button" aria-pressed="false" hidden>Mute</button>
+              <button id="interrupt" class="secondary" type="button" hidden>Interrupt</button>
+            </div>
+            <ul class="signal-list" aria-label="Audio status"><li id="mic-state">Mic off</li><li id="provider-state">Voice off</li><li id="playback-state">Speaker idle</li></ul>
+          </details>
+        </div>
+
+        <p id="latest-reply" class="latest-reply" aria-live="polite" hidden></p>
+
+        <section id="evidence" class="observation" aria-labelledby="evidence-title" hidden>
+          <div class="evidence-swatch" aria-hidden="true" hidden></div>
+          <div>
+            <h2 id="evidence-title">Latest observation</h2>
+            <p id="evidence-provenance" class="field-hint"></p>
+            <p id="evidence-text"></p>
+            <p id="evidence-source" class="field-hint"></p>
+            <p id="evidence-limit" class="field-hint"></p>
+            <details id="observation-details" class="lab-details" hidden><summary>Observation details</summary><ul id="observation-fields"></ul></details>
+          </div>
+        </section>
+
+        <details id="trial-context" class="lab-details">
+          <summary>Optional sample and prediction</summary>
+          <fieldset id="conditions" disabled>
+            <legend class="sr-only">Prepared samples</legend>
+            <div class="actions">
+              <button class="condition secondary" type="button" data-condition="vinegar" aria-pressed="false">Vinegar</button>
+              <button class="condition secondary" type="button" data-condition="baking_soda" aria-pressed="false">Baking-soda solution</button>
+              <button class="condition secondary" type="button" data-condition="water" aria-pressed="false">Water</button>
+            </div>
+          </fieldset>
+          <form id="prediction-form">
+            <label for="prediction">What do you think will happen?</label>
+            <p class="field-hint">Predict a color or an acid/base category, and tell us why.</p>
+            <textarea id="prediction" rows="2" maxlength="4000" required disabled></textarea>
+            <div class="actions"><button id="save-prediction" type="submit" class="primary" disabled>Save prediction</button><span id="prediction-saved" role="status"></span></div>
+          </form>
         </details>
 
-        <section id="scene" class="session-card" aria-labelledby="scene-title" hidden><h3 id="scene-title">Scene evidence</h3><p id="scene-detail"></p><div id="scene-frames"></div></section>
-        <section id="evidence" class="evidence" aria-labelledby="evidence-title" hidden><div class="evidence-swatch" aria-hidden="true" hidden></div><div><p class="eyebrow" id="evidence-provenance"></p><h3 id="evidence-title">Latest observation</h3><p id="evidence-text"></p><p id="evidence-source" class="field-hint"></p><p id="evidence-limit" class="evidence-limit"></p><details id="observation-details" class="lab-details" hidden><summary>Observation details</summary><ul id="observation-fields"></ul></details></div></section>
-        <section id="active-skills" class="session-card" aria-labelledby="skills-title" hidden><h3 id="skills-title">Reusable skills</h3><ul id="skill-labels"></ul></section>
-        <details id="reflection-panel" class="lab-details" hidden><summary>Add a reflection (optional)</summary>
-          <form id="reflection-form" class="reflection"><label for="reflection">What did you learn?</label><textarea id="reflection" rows="3" placeholder="The evidence suggests…" maxlength="4000" required></textarea><div class="reflection-actions"><span id="reflection-saved" role="status"></span><button class="secondary" type="submit">Save reflection</button></div></form>
+        <details id="reflection-panel" class="lab-details" hidden>
+          <summary>Add a reflection (optional)</summary>
+          <form id="reflection-form">
+            <label for="reflection">What did you learn?</label>
+            <textarea id="reflection" rows="3" maxlength="4000" required></textarea>
+            <div class="actions"><button class="secondary" type="submit">Save reflection</button><span id="reflection-saved" role="status"></span></div>
+          </form>
         </details>
         <button id="new-trial" class="secondary" type="button" hidden>Start a new notebook entry</button>
-      </div>
-    </section>
-    <details class="history"><summary><span>Your lab notebook</span><span id="history-count">No trials yet</span></summary><div id="history-list"><p>Observations and related notes will appear here.</p></div></details>
-    <footer class="page-footer"><span>OpenArms / The color lab</span><p>Good science starts with a question.</p></footer>
-  </main>
+        <details id="active-skills" class="lab-details" hidden><summary>Reusable skills</summary><ul id="skill-labels"></ul></details>
+      </section>
 
-  <aside class="voice-dock" aria-label="Voice companion controls"><div class="voice-main"><button id="voice-toggle" type="button" class="voice-button" aria-label="Start voice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></button><div class="voice-copy"><strong id="voice-title" role="status">Your companion, a tap away.</strong><span id="voice-detail">Voice is optional. Your notebook is always here.</span></div></div><div class="voice-actions"><button id="mute" class="dock-action" type="button" hidden aria-pressed="false">Mute</button><button id="interrupt" class="dock-action" type="button" hidden>Interrupt</button><button id="voice-end" class="dock-action" type="button" hidden>End voice</button></div><div class="voice-signals" aria-label="Audio status"><span id="mic-state">Mic off</span><span id="provider-state">Voice off</span><span id="playback-state">Speaker idle</span></div></aside>
+      <section id="developer" class="developer" aria-label="Developer view" hidden>
+        <section class="simulator" aria-labelledby="simulation-title">
+          <div class="section-head"><h2 id="simulation-title">MuJoCo</h2><span id="simulation-status" role="status">Waiting for session</span></div>
+          <div class="simulation-stage">
+            <p id="simulation-frame-state">No simulation frame yet.</p>
+            <div id="simulation-frame"></div>
+          </div>
+          <p id="simulation-metrics" class="field-hint" hidden></p>
+          <ul id="simulation-warnings" hidden></ul>
+          <section class="simulation-recording" aria-labelledby="recording-title">
+            <h3 id="recording-title">Execution recording</h3>
+            <p id="simulation-video-state" class="field-hint">No execution recording yet.</p>
+            <div id="simulation-video"></div>
+          </section>
+        </section>
+
+        <section class="diagnostics" aria-labelledby="diagnostics-title">
+          <h2 id="diagnostics-title">Session activity</h2>
+          <dl id="developer-status" class="status-grid"></dl>
+          <h3>Expert and tool events</h3>
+          <p id="trace-empty" class="field-hint">Expert and tool activity will appear here when a task runs.</p>
+          <ol id="developer-trace" class="trace-list" hidden></ol>
+        </section>
+
+        <section class="diagnostics" aria-labelledby="skill-evidence-title">
+          <h2 id="skill-evidence-title">Skill evidence</h2>
+          <p id="skill-evidence-empty" class="field-hint">No skill versions or evaluation receipts in this session.</p>
+          <ul id="developer-skills" class="receipt-list" hidden></ul>
+          <ul id="developer-evaluations" class="receipt-list" hidden></ul>
+        </section>
+      </section>
+    </div>
+  </main>
 </body>
 </html>
