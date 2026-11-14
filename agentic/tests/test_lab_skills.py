@@ -338,7 +338,7 @@ def test_compose_with_mocked_genai_sdk_rejects_unapproved_primitives(registry: S
         with patch.dict(os.environ, {"GEMINI_API_KEY": "fake_test_key"}):
             with patch.dict("sys.modules", {"google": mock_google, "google.genai": mock_genai_module}):
                 with pytest.raises(ValueError, match="unsupported steps"):
-                    await registry.compose("transfer and drill")
+                    await registry.compose("transfer and observe")
 
     asyncio.run(_run())
 
@@ -519,3 +519,245 @@ def test_resolve_active_composed_skill_paraphrases(
         assert plain_res["skill_id"] == "known_station_transfer.v1"
 
     asyncio.run(_run())
+
+
+@pytest.mark.parametrize("phrase", [
+    "move sample from A to B at 50 mm/s",
+    "move sample from A to B slowly",
+    "move sample from A to B without observing",
+    "move sample from A to B and rotate it",
+    "move sample from A to B and move mandarin from C to B",
+    "move sample and beaker from A to B",
+    "move sample from A to B with water",
+    "move two samples from A to B",
+    "move samples from A to B",
+    "move the red sample from A to B",
+    "move sample from A to B twice",
+    "move sample from A or C to B",
+    "move sample from A to B or C",
+    "do not move sample from A to B",
+    "don't move sample from A to B",
+    "never move sample from A to B",
+    "what if we move sample from A to B?",
+    "did you move sample from A to B?",
+    "should we move sample from A to B?",
+    "is it safe to move sample from A to B?",
+    "explain how to move sample from A to B",
+    "I saw someone move sample from A to B",
+    "move sample from Alpha to Bravo",
+    "move sample from AB to B",
+    "move sample from A to BC",
+    "move sample from A to B; reset",
+    "move sample from A to B and don't inspect",
+    "move sample from A to B and inspect station A",
+    "move orange sample from A to B",
+    "move from A to B",  # no object inference from context
+])
+def test_full_request_never_executes_supported_subset(registry, phrase):
+    result = registry.resolve(phrase)
+    assert result["status"] in {"clarify", "unsupported"}
+    assert "skill_id" not in result
+    assert "parameters" not in result
+    assert result["metrics"]["model_calls"] == 0
+
+
+@pytest.mark.parametrize("phrase,source,obj", [
+    ("Could you move the sample from the source station C into the destination station B?", "C", "sample"),
+    ("would you please carry an orange from A to B?", "A", "mandarin"),
+    ("please deliver the mandarin at station C into station B.", "C", "mandarin"),
+    ("take sample at A and put it on B", "A", "sample"),
+    ("pick up the orange from station C and set it at station B", "C", "mandarin"),
+    ("I'd like you to transport a sample from C to B, please", "C", "sample"),
+    ("move sample C -> B", "C", "sample"),
+])
+def test_varied_complete_polite_requests(registry, phrase, source, obj):
+    result = registry.resolve(phrase)
+    assert result["status"] == "resolved", result
+    assert result["parameters"] == {"source": source, "destination": "B", "object": obj}
+
+
+@pytest.mark.parametrize("instruction", [
+    "sing a song", "transfer and drill", "observe then transfer", "transfer",
+    "do not transfer and observe", "transfer beaker from A to B and observe",
+    "transfer sample from A to B and observe twice", "what if we transfer and observe?",
+    "transfer sample from A to B and observe station A",
+    "transfer sample from A to B and observe and rotate",
+])
+def test_compose_rejects_unrepresented_intent_before_provider(registry, instruction):
+    with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key"}):
+        with patch("builtins.__import__", side_effect=AssertionError("provider import not expected")):
+            with pytest.raises(ValueError, match="Unsupported composition intent"):
+                asyncio.run(registry.compose(instruction))
+    assert len(registry.list()) == 1
+
+
+def test_duplicate_composition_preserves_tested_artifact(registry):
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer and observe"))
+        evidence = registry.test_candidate(candidate["skill_id"])
+        before = registry.catalog_path.read_bytes()
+        with pytest.raises(ValueError, match="already exists"):
+            asyncio.run(registry.compose("move sample C to B and inspect"))
+        assert registry.catalog_path.read_bytes() == before
+        assert registry.get(candidate["skill_id"])["evidence_id"] == evidence["evidence_id"]
+
+
+def test_candidate_evidence_runs_actual_bindings_via_validator(registry):
+    from agentic.openarms_lab.skills import _execute_bound_skill, _mock_state
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer and observe"))
+    # Directly run a misbound artifact: C is empty. A hardcoded A->B simulator
+    # would incorrectly report success even though the artifact requests C.
+    candidate["steps"][0]["args"]["source"] = "$destination"
+    with pytest.raises(ValueError, match="absent at source"):
+        _execute_bound_skill(candidate, {"source": "A", "destination": "B", "object": "sample"},
+                             _mock_state("A", "sample"))
+    candidate = registry.get(candidate["skill_id"])
+    # Reading the wrong station must produce the wrong observation, not hardcoded B.
+    candidate["steps"][1]["args"]["station"] = "$source"
+    end, observed = _execute_bound_skill(candidate,
+        {"source": "C", "destination": "B", "object": "mandarin"}, _mock_state("C", "mandarin"))
+    assert end["point_holds"]["B"] == "mandarin"
+    assert observed == {"C": None}
+
+
+def test_candidate_tests_depend_on_independent_validator(registry):
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer and observe"))
+    with patch("agentic.openarms_agent.validator.validate", return_value={"ok": False, "reason": "injected validator rejection"}) as checked:
+        with pytest.raises(ValueError, match="injected validator rejection"):
+            registry.test_candidate(candidate["skill_id"])
+    checked.assert_called_once()
+    assert registry.get(candidate["skill_id"])["evidence_id"] is None
+
+
+@pytest.mark.parametrize("parameter,values", [
+    ("source", ["A", "C", "D"]), ("source", ["A"]),
+    ("destination", ["B", "D"]), ("object", ["mandarin", "sample", "beaker"]),
+])
+def test_candidate_tests_reject_overbroad_or_changed_domains(registry, parameter, values):
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer and observe"))
+    registry._skills[candidate["skill_id"]]["parameters"][parameter]["enum"] = values
+    with pytest.raises(ValueError, match="unsupported domain"):
+        registry.test_candidate(candidate["skill_id"])
+
+
+def test_forged_candidate_embedded_evidence_cannot_promote(registry):
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer and observe"))
+    skill = registry._skills[candidate["skill_id"]]
+    skill["evidence_id"] = "fake-embedded-evidence"
+    skill["evidence"] = {"evidence_id": skill["evidence_id"], "skill_id": candidate["skill_id"],
+                         "skill_hash": compute_skill_hash(skill), "verdict": "passed"}
+    with pytest.raises(ValueError, match="has not been tested"):
+        registry.promote(candidate["skill_id"], skill["evidence_id"])
+
+
+def test_mock_evidence_persists_and_active_definition_stays_bound(registry):
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer and observe"))
+    evidence = registry.test_candidate(candidate["skill_id"])
+    assert evidence["provenance"] == "MOCK"
+    assert "symbolic" in evidence["test_method"]
+    assert evidence["approval_scopes"]["physical"] == "unsupported"
+    reloaded = SkillRegistry(registry.catalog_path)
+    promoted = reloaded.promote(candidate["skill_id"], evidence["evidence_id"])
+    assert compute_skill_hash(promoted) == evidence["skill_hash"]
+    assert reloaded.resolve("move sample A to B then observe")["status"] == "resolved"
+    reloaded._skills[candidate["skill_id"]]["steps"][1]["args"]["station"] = "$source"
+    assert reloaded.resolve("move sample A to B then observe")["status"] == "unsupported"
+
+
+def _fake_sdk(payload, usage=73):
+    """Real async boundary with a minimal SDK-shaped module, no network or keys."""
+    import types
+    generate = AsyncMock(return_value=types.SimpleNamespace(
+        text=json.dumps(payload), usage_metadata=types.SimpleNamespace(total_token_count=usage)))
+    close = AsyncMock()
+    client = types.SimpleNamespace(aio=types.SimpleNamespace(
+        models=types.SimpleNamespace(generate_content=generate), aclose=close))
+    module = types.ModuleType("google.genai")
+    module.Client = MagicMock(return_value=client)
+    module.types = types.SimpleNamespace(GenerateContentConfig=lambda **kwargs: kwargs)
+    google = types.ModuleType("google")
+    google.genai = module
+    return {"google": google, "google.genai": module}, generate, close
+
+
+def _approved_composite_steps():
+    return [
+        {"action": "transfer", "args": {"source": "$source", "destination": "$destination", "object": "$object"}},
+        {"action": "observe", "args": {"station": "$destination"}},
+    ]
+
+
+def test_async_expert_uses_instruction_reports_actual_usage_and_closes(registry):
+    modules, generate, close = _fake_sdk({"steps": _approved_composite_steps()}, usage=137)
+    phrase = "could you transfer sample from C to B and verify the result?"
+    with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key", "OPENARMS_EXPERT_MODEL": "test-model"}):
+        with patch.dict("sys.modules", modules):
+            candidate = asyncio.run(registry.compose(phrase))
+    generate.assert_awaited_once()
+    close.assert_awaited_once()
+    assert phrase in generate.await_args.kwargs["contents"]
+    assert generate.await_args.kwargs["model"] == "test-model"
+    assert candidate["model_calls"] == 1
+    assert candidate["tokens"] == 137
+    assert candidate["planning_ms"] >= 0
+    assert candidate["expert_mode"] == "test-model"
+
+
+@pytest.mark.parametrize("payload", [
+    {"steps": []}, {"steps": None}, [],
+    {"steps": _approved_composite_steps(), "speed": "fast"},
+    {"steps": [{"action": "observe", "args": {"station": "$destination"}}]},
+    {"steps": list(reversed(_approved_composite_steps()))},
+    {"steps": [
+        {"action": "transfer", "args": {"source": "$destination", "destination": "$source", "object": "$object"}},
+        {"action": "observe", "args": {"station": "$destination"}},
+    ]},
+    {"steps": [
+        {"action": "transfer", "args": {"source": "$source", "destination": "$destination", "object": "$object", "speed": 5}},
+        {"action": "observe", "args": {"station": "$destination"}},
+    ]},
+])
+def test_invalid_expert_output_never_falls_back_or_persists(registry, payload):
+    modules, generate, close = _fake_sdk(payload)
+    with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key"}):
+        with patch.dict("sys.modules", modules):
+            with pytest.raises(ValueError):
+                asyncio.run(registry.compose("transfer sample from A to B and observe"))
+    generate.assert_awaited_once()
+    close.assert_awaited_once()
+    assert len(registry.list()) == 1
+
+
+def test_unknown_usage_is_not_replaced_with_estimate(registry):
+    modules, _, _ = _fake_sdk({"steps": _approved_composite_steps()}, usage=None)
+    with patch.dict(os.environ, {"GEMINI_API_KEY": "fake-key"}):
+        with patch.dict("sys.modules", modules):
+            candidate = asyncio.run(registry.compose("transfer and observe"))
+    assert candidate["model_calls"] == 1
+    assert candidate["tokens"] is None
+
+
+def test_active_baseline_can_receive_supplemental_mock_evidence_without_physical_promotion(registry):
+    baseline = registry.get("known_station_transfer.v1")
+    evidence = registry.test_candidate(baseline["skill_id"])
+    assert evidence["verdict"] == "passed"
+    assert evidence["provenance"] == "MOCK"
+    assert evidence["approval_scopes"]["physical"] == "unsupported"
+    tested = registry.get(baseline["skill_id"])
+    assert tested["status"] == "active"
+    assert tested["approval_scopes"] == baseline["approval_scopes"]
+    assert tested["evidence"] == baseline["evidence"]
+    assert registry.resolve("move mandarin A to B")["status"] == "resolved"
+
+
+def test_compose_observe_destination_demo_phrase(registry):
+    with patch.dict(os.environ, {}, clear=True):
+        candidate = asyncio.run(registry.compose("transfer sample from A to B and observe the destination"))
+    evidence = registry.test_candidate(candidate["skill_id"])
+    registry.promote(candidate["skill_id"], evidence["evidence_id"])
+    assert registry.resolve("transfer sample from A to B and observe the destination")["status"] == "resolved"

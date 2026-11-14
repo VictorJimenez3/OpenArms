@@ -108,10 +108,130 @@ SEED_KNOWN_STATION_TRANSFER: Dict[str, Any] = {
 }
 
 
+# The grammar deliberately consumes the whole request. Broad substring extraction
+# would silently discard quantities, new objects, extra actions, or motion settings.
+_TRANSFER = {"action": "transfer", "args": {
+    "source": "$source", "destination": "$destination", "object": "$object"}}
+_TRANSFER_OBSERVE = [_TRANSFER, {"action": "observe", "args": {"station": "$destination"}}]
+_VERB = r"(?:transfer|move|carry|take|bring|put|place|transport|deliver|relocate|send|shift|pickup|pick up|test)"
+_OBJECT = r"(?:the |an? )?(?P<object>[a-z][a-z-]*)"
+_SOURCE = r"(?:the )?(?:source )?(?:station )?(?P<source>[a-z0-9])"
+_DESTINATION = r"(?:the )?(?:destination )?(?:station )?(?P<destination>[a-z0-9])"
+_OBSERVE = (r"(?:observe|inspect|watch|check|verify)"
+            r"(?: (?:the )?(?:placement|outcome|result|it|destination))?"
+            r"(?: (?:at |in )?(?:the )?(?:destination )?station (?P<observed>[a-z0-9]))?")
+
+
+def _parse_request(text: str, abstract: bool = False) -> Dict[str, Any]:
+    if not isinstance(text, str) or not text.strip() or len(text) > 4000:
+        return {"status": "clarify", "message": "Please give one transfer request."}
+    cleaned = re.sub(r"\s+", " ", text.strip().lower())
+    polite = re.match(r"^(?:(?:can|could|would|will) you |(?:can|could) we |i(?:'d| would) like you to |i want you to )", cleaned)
+    if polite:
+        cleaned = cleaned[polite.end():]
+    elif cleaned.endswith("?"):
+        return {"status": "clarify", "message": "Please give an affirmative request, rather than a question."}
+    cleaned = re.sub(r"[.!?]$", "", cleaned).strip()
+    cleaned = re.sub(r"^please ", "", cleaned)
+    cleaned = re.sub(r",? please$", "", cleaned)
+    for verb in sorted(UNSUPPORTED_ACTION_VERBS):
+        if re.search(rf"\b{verb}\b", cleaned):
+            return {"status": "unsupported", "message": f"Unsupported action '{verb}'; request does not match a supported skill."}
+    observe = False
+    observed = None
+    observation = re.fullmatch(r"(?P<transfer>.+?)(?:,? and (?:then )?|,? then |,? followed by )" + _OBSERVE, cleaned)
+    if observation:
+        observe = True
+        observed = observation.group("observed")
+        cleaned = observation.group("transfer")
+    # An abstract skill request is allowed only for composition, never execution.
+    if abstract and observe and cleaned in ("transfer", "move", "transfer an object", "move an object"):
+        return {"status": "parsed", "parameters": {"object": None, "source": None, "destination": None}, "observe": True}
+
+    patterns = [
+        _VERB + r"(?: from " + _SOURCE + r")?(?: (?:to|into|in) " + _DESTINATION + r")?",
+        # Transfer phrasing, including partial requests that need missing-slot clarification.
+        _VERB + r" " + _OBJECT + r"(?: (?:from|at) " + _SOURCE + r")?(?: (?:to|into|in) " + _DESTINATION + r")?",
+        _VERB + r" " + _OBJECT + r" (?:to|into|in) " + _DESTINATION + r" from " + _SOURCE,
+        _VERB + r" " + _OBJECT + r" " + _SOURCE + r" (?:to|->) " + _DESTINATION,
+        _OBJECT + r" " + _SOURCE + r" (?:to|->) " + _DESTINATION,
+        # Pickup/place describes the same single transfer, not a second independent action.
+        r"(?:pick up|pickup|take) " + _OBJECT + r" (?:from|at) " + _SOURCE +
+        r" and (?:place|put|set|release) it (?:to|at|in|into|on) " + _DESTINATION,
+    ]
+    match = next((m for pattern in patterns if (m := re.fullmatch(pattern, cleaned))), None)
+    if match is None:
+        return {"status": "clarify", "message": "Request is ambiguous or contains unsupported details. Specify one object and one source/destination; extra actions, quantities and motion settings need separate validated skills."}
+    slots = match.groupdict()
+    obj = slots.get("object")
+    if obj == "orange":
+        obj = "mandarin"
+    if obj and obj not in {"mandarin", "sample"}:
+        return {"status": "unsupported", "message": f"Unsupported object '{obj}'. Only mandarin (orange) and sample are supported."}
+    source = slots.get("source")
+    destination = slots.get("destination")
+    source = source.upper() if source else None
+    destination = destination.upper() if destination else None
+    if source and source not in ALLOWED_SOURCES:
+        return {"status": "unsupported", "message": f"Unsupported source station '{source}'; use A or C."}
+    if destination and destination not in ALLOWED_DESTINATIONS:
+        return {"status": "unsupported", "message": f"Unsupported destination station '{destination}'; use B."}
+    if observed and (not destination or observed.upper() != destination):
+        return {"status": "unsupported", "message": "Observation must target the transfer destination B."}
+    return {"status": "parsed", "parameters": {"object": obj, "source": source, "destination": destination}, "observe": observe}
+
+
+def _mock_state(source: str, obj: str) -> Dict[str, Any]:
+    return {"at": "HOME", "holding": None, "armed": True, "gripper": "open",
+            "portions_left": {}, "receiver_load": {},
+            "point_holds": {"A": None, "C": None, "B": None, source: obj},
+            "observation_sensor_ready": True}
+
+
+def _execute_bound_skill(skill: Dict[str, Any], parameters: Dict[str, Any],
+                         state: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Symbolically execute bound steps with the same independent validator as runtime."""
+    from .contracts import Parameters
+    from agentic.openarms_agent.validator import validate
+    bound_parameters = Parameters.model_validate(parameters).model_dump()
+    state = copy.deepcopy(state)
+    observations = {}
+    for step in skill["steps"]:
+        args = {}
+        for name, value in step["args"].items():
+            if not isinstance(value, str) or not value.startswith("$") or value[1:] not in bound_parameters:
+                raise ValueError("Unsupported primitive binding.")
+            args[name] = bound_parameters[value[1:]]
+        if step["action"] == "transfer":
+            if set(args) != {"source", "destination", "object"}:
+                raise ValueError("Transfer arguments must be source, destination, and object.")
+            if state["point_holds"].get(args["source"]) != args["object"]:
+                raise ValueError("Requested object is absent at source.")
+            plan = {"plan_id": "candidate-mock-test", "student_instruction": "Bound artifact test",
+                    "steps": [{"action": "move_block", "args": {"from": args["source"], "to": args["destination"]}}]}
+            stations = {name: {"kind": "point", "holds": item}
+                        for name, item in state["point_holds"].items()}
+            checked = validate(plan, state, stations)
+            if not checked["ok"]:
+                raise ValueError(checked["reason"])
+            state = checked["end_state"]
+        elif step["action"] == "observe":
+            if not state.get("observation_sensor_ready"):
+                raise ValueError("Mock observation sensor is unavailable.")
+            if set(args) != {"station"} or args["station"] not in state["point_holds"]:
+                raise ValueError("Observation arguments require a known station.")
+            observations[args["station"]] = state["point_holds"][args["station"]]
+        else:
+            raise ValueError("Unsupported primitive.")
+    return state, observations
+
+
 def compute_skill_hash(skill_data: Dict[str, Any]) -> str:
-    """Compute deterministic SHA256 of skill definition excluding volatile runtime fields."""
+    """Hash definition, including physical scope, excluding evidence and mock lifecycle."""
     volatile = {"evidence", "evidence_id", "promoted_at", "updated_at", "status", "content_hash"}
-    frozen = {k: v for k, v in skill_data.items() if k not in volatile}
+    frozen = copy.deepcopy({k: v for k, v in skill_data.items() if k not in volatile})
+    if isinstance(frozen.get("approval_scopes"), dict):
+        frozen["approval_scopes"].pop("mock", None)
     payload = json.dumps(frozen, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
@@ -128,6 +248,7 @@ class SkillRegistry:
 
         self.catalog_path.parent.mkdir(parents=True, exist_ok=True)
         self._skills: Dict[str, Dict[str, Any]] = {}
+        self._evidence: Dict[str, Dict[str, Any]] = {}
         self._load_or_initialize()
 
     def _load_or_initialize(self) -> None:
@@ -138,6 +259,7 @@ class SkillRegistry:
                     data = json.load(f)
                 if isinstance(data, dict) and "skills" in data and isinstance(data["skills"], dict):
                     self._skills = data["skills"]
+                    self._evidence = data.get("test_evidence", {})
                 elif isinstance(data, dict):
                     self._skills = data
                 else:
@@ -157,6 +279,7 @@ class SkillRegistry:
             "schema_version": "1.0.0",
             "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "skills": self._skills,
+            "test_evidence": self._evidence,
         }
         tmp_path = self.catalog_path.with_name(f"{self.catalog_path.name}.tmp.{os.getpid()}")
         try:
@@ -184,294 +307,37 @@ class SkillRegistry:
         return copy.deepcopy(self._skills[skill_id])
 
     def resolve(self, text: str) -> Dict[str, Any]:
-        """Synchronously resolve a natural language instruction against active skills.
+        """Resolve an entire affirmative request; never discard extra instructions."""
+        started = time.perf_counter()
 
-        Returns:
-            dict with {
-                'status': 'resolved' | 'clarify' | 'unsupported',
-                'skill_id': str (optional),
-                'parameters': dict (optional),
-                'message': str,
-                'metrics': {
-                    'model_calls': int,
-                    'tokens': int,
-                    'planning_ms': float
-                }
-            }
-        """
-        start_time = time.perf_counter()
-        normalized_text = text.strip()
-        lowered = normalized_text.lower()
+        def result(status, message, **fields):
+            return {"status": status, "message": message, **fields, "metrics": {
+                "model_calls": 0, "tokens": 0,
+                "planning_ms": (time.perf_counter() - started) * 1000,
+            }}
 
-        # Check for explicitly unsupported action verbs
-        for verb in UNSUPPORTED_ACTION_VERBS:
-            if re.search(rf"\b{verb}\b", lowered):
-                elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-                return {
-                    "status": "unsupported",
-                    "message": (
-                        f"Instruction contains unsupported action '{verb}' and does not match any recognized "
-                        "lab action. OpenArms only supports calibrated station transfers and buoyancy sample tests."
-                    ),
-                    "metrics": {
-                        "model_calls": 0,
-                        "tokens": 0,
-                        "planning_ms": round(elapsed_ms, 3),
-                    },
-                }
-
-        # Ambiguous alternatives, negation, repetition and unrecognized control modifiers
-        # must never be silently discarded while extracting an otherwise valid route.
-        if re.search(r"\b(don[’']t|do not|never|instead of|unless|maybe|or|twice|three times|repeat|fast|faster|servo|joint|degrees|arbitrary|anywhere)\b",lowered):
-            return {"status":"clarify","message":"Please give one affirmative action, one object, source A or C, and destination B. Repeats or motion changes need a separately validated skill.","metrics":{"model_calls":0,"tokens":0,"planning_ms":(time.perf_counter()-start_time)*1000}}
-        if not re.search(r"\b(move|transfer|carry|take|bring|put|place|pick|pickup|test|release|transport|deliver|relocate|send|shift)\b",lowered) and not re.fullmatch(r"(?:mandarin|orange|sample)\s+[ac]\s+(?:to|->)\s+b",lowered):
-            return {"status":"clarify","message":"What action would you like? Say, for example, test sample at A in B.","metrics":{"model_calls":0,"tokens":0,"planning_ms":(time.perf_counter()-start_time)*1000}}
-
-        # Check for observation intent
-        observe_match = re.search(
-            r"\b(observe|inspect|inspection|check\s+placement|verify\s+placement|watch)\b",
-            lowered,
-        )
-        wants_observe = bool(observe_match)
-
-        # 1. Detect Object
-        obj: Optional[str] = None
-        # Check known supported objects
-        if re.search(r"\b(mandarin|mandarins|orange|oranges)\b", lowered):
-            obj = "mandarin"
-        elif re.search(r"\b(sample|samples)\b", lowered):
-            obj = "sample"
-        else:
-            # Check for known unsupported objects
-            for unsupp in KNOWN_UNSUPPORTED_OBJECTS:
-                if re.search(rf"\b{unsupp}\b", lowered):
-                    elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-                    return {
-                        "status": "unsupported",
-                        "message": (
-                            f"Unsupported object '{unsupp}'. OpenArms currently only supports "
-                            "'mandarin' (or 'orange') and 'sample'."
-                        ),
-                        "metrics": {
-                            "model_calls": 0,
-                            "tokens": 0,
-                            "planning_ms": round(elapsed_ms, 3),
-                        },
-                    }
-
-        # 2. Extract Stations
-        source: Optional[str] = None
-        destination: Optional[str] = None
-
-        # Pattern A: Lesson buoyancy request syntax: "test sample at A in B" or "test sample at C in B"
-        buoyancy_pattern = re.search(
-            r"\btest\s+(?:the\s+)?sample\s+at\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9])\s+in\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9])\b",
-            lowered,
-        )
-        if buoyancy_pattern:
-            source = buoyancy_pattern.group(1).upper()
-            destination = buoyancy_pattern.group(2).upper()
-            if not obj:
-                obj = "sample"
-        else:
-            # Pattern B: Explicit source: "from [the] [source] [station] X" / "pickup from X"
-            from_match = re.search(
-                r"\b(?:from|source|pickup\s+from|pick\s+up\s+from)\s+(?:the\s+)?(?:source\s+)?(?:station\s+)?([A-Za-z0-9])\b",
-                lowered,
-            )
-            if from_match:
-                source = from_match.group(1).upper()
-            else:
-                # "at [the] [station] X" when followed later by "to" or "in"
-                at_match = re.search(
-                    r"\bat\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9])\b(?=.*?\b(?:to|into|in)\b)",
-                    lowered,
-                )
-                if at_match:
-                    source = at_match.group(1).upper()
-
-            # Pattern C: Explicit destination: "to [the] [destination] [station] Y" / "into Y" / "in Y"
-            to_match = re.search(
-                r"\b(?:to|into|in|destination)\s+(?:the\s+)?(?:destination\s+)?(?:station\s+)?([A-Za-z0-9])\b",
-                lowered,
-            )
-            if to_match:
-                destination = to_match.group(1).upper()
-
-            # Pattern D: Arrow / transition syntax "A -> B" or "A to B"
-            if not source or not destination:
-                arrow_match = re.search(
-                    r"\b(?:station\s+)?([A-Za-z0-9])\s*(?:->|to)\s*(?:station\s+)?([A-Za-z0-9])\b",
-                    lowered,
-                )
-                if arrow_match:
-                    if not source:
-                        source = arrow_match.group(1).upper()
-                    if not destination:
-                        destination = arrow_match.group(2).upper()
-
-        # 3. Check for explicitly unsupported stations first (before checking for missing stations)
-        elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-        if source and source not in ALLOWED_SOURCES:
-            return {
-                "status": "unsupported",
-                "message": (
-                    f"Unsupported source station '{source}'. OpenArms calibrated pickup is only "
-                    f"supported from stations {sorted(list(ALLOWED_SOURCES))}."
-                ),
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        if destination and destination not in ALLOWED_DESTINATIONS:
-            return {
-                "status": "unsupported",
-                "message": (
-                    f"Unsupported destination station '{destination}'. OpenArms calibrated placement "
-                    f"is only supported to station {sorted(list(ALLOWED_DESTINATIONS))}."
-                ),
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        # 4. Handle Ambiguities (Missing Parameters)
-        if not obj and (not source or not destination):
-            return {
-                "status": "unsupported",
-                "message": (
-                    f"Instruction '{normalized_text}' does not match any recognized lab action. "
-                    "Expected station transfer or buoyancy sample test."
-                ),
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        if not obj:
-            return {
-                "status": "clarify",
-                "message": "Missing object to transfer. Please specify whether to move a 'mandarin' or 'sample'.",
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        if not source and not destination:
-            return {
-                "status": "clarify",
-                "message": (
-                    "Missing pickup and placement stations. Please specify source (A or C) "
-                    "and destination (B)."
-                ),
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        if not source:
-            return {
-                "status": "clarify",
-                "message": (
-                    f"Ambiguous request: missing source station for {obj}. "
-                    "Please specify whether to pick from station A or station C."
-                ),
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        if not destination:
-            return {
-                "status": "clarify",
-                "message": (
-                    f"Ambiguous request: missing destination station for {obj}. "
-                    "Please specify placement destination station B."
-                ),
-                "metrics": {
-                    "model_calls": 0,
-                    "tokens": 0,
-                    "planning_ms": round(elapsed_ms, 3),
-                },
-            }
-
-        # 5. Route to Active Skill
-        selected_skill_id = "known_station_transfer.v1"
-        if wants_observe:
-            # Check if transfer_and_observe.v1 exists and is active
-            if "transfer_and_observe.v1" in self._skills:
-                candidate_skill = self._skills["transfer_and_observe.v1"]
-                if candidate_skill.get("status") == "active":
-                    selected_skill_id = "transfer_and_observe.v1"
-                else:
-                    return {
-                        "status": "unsupported",
-                        "message": (
-                            "Skill 'transfer_and_observe.v1' is currently a candidate and not yet active. "
-                            "It must be tested and promoted before dispatch."
-                        ),
-                        "metrics": {
-                            "model_calls": 0,
-                            "tokens": 0,
-                            "planning_ms": round(elapsed_ms, 3),
-                        },
-                    }
-            else:
-                return {
-                    "status": "unsupported",
-                    "message": (
-                        "Observation composite skill 'transfer_and_observe.v1' is not registered. "
-                        "Compose and promote the skill before dispatch."
-                    ),
-                    "metrics": {
-                        "model_calls": 0,
-                        "tokens": 0,
-                        "planning_ms": round(elapsed_ms, 3),
-                    },
-                }
-        else:
-            if selected_skill_id not in self._skills or self._skills[selected_skill_id].get("status") != "active":
-                return {
-                    "status": "unsupported",
-                    "message": f"Skill '{selected_skill_id}' is not active in the registry.",
-                    "metrics": {
-                        "model_calls": 0,
-                        "tokens": 0,
-                        "planning_ms": round(elapsed_ms, 3),
-                    },
-                }
-
-        parameters = {
-            "object": obj,
-            "source": source,
-            "destination": destination,
-        }
-
-        elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-        return {
-            "status": "resolved",
-            "skill_id": selected_skill_id,
-            "parameters": parameters,
-            "message": f"Resolved instruction to active skill '{selected_skill_id}' ({source} -> {destination}).",
-            "metrics": {
-                "model_calls": 0,
-                "tokens": 0,
-                "planning_ms": round(elapsed_ms, 3),
-            },
-        }
+        parsed = _parse_request(text)
+        if parsed.get("status") != "parsed":
+            return result(parsed["status"], parsed["message"])
+        parameters = parsed["parameters"]
+        missing = [key for key, value in parameters.items() if value is None]
+        if missing:
+            return result("clarify", "Please specify " + ", ".join(missing) +
+                          ". Use one mandarin or sample, source A or C, and destination B.")
+        skill_id = "transfer_and_observe.v1" if parsed["observe"] else "known_station_transfer.v1"
+        skill = self._skills.get(skill_id)
+        if not skill or skill.get("status") != "active":
+            state = "candidate; test and promote it first" if skill else "not registered"
+            return result("unsupported", f"Skill '{skill_id}' is {state}.")
+        if skill_id == "transfer_and_observe.v1":
+            evidence = self._evidence.get(skill.get("evidence_id"))
+            if (not evidence or evidence.get("skill_id") != skill_id or
+                    evidence.get("skill_hash") != compute_skill_hash(skill)):
+                return result("unsupported", "Active composite no longer matches its tested artifact.")
+        if skill.get("steps") != (_TRANSFER_OBSERVE if parsed["observe"] else [_TRANSFER]):
+            return result("unsupported", "Skill definition has unsupported steps or parameter bindings.")
+        return result("resolved", f"Resolved instruction to active skill '{skill_id}'.",
+                      skill_id=skill_id, parameters=parameters)
 
     async def compose(self, instruction: str) -> Dict[str, Any]:
         """Compose a reusable candidate skill from natural language instruction.
@@ -486,6 +352,13 @@ class SkillRegistry:
             raise ValueError(
                 f"Composition rejected: instruction contains low-level hardware or forbidden token '{forbidden.group(1)}'."
             )
+
+        parsed_request = _parse_request(instruction, abstract=True)
+        if parsed_request.get("status") != "parsed" or not parsed_request.get("observe"):
+            raise ValueError("Unsupported composition intent: request one transfer followed by destination observation.")
+        candidate_id = "transfer_and_observe.v1"
+        if candidate_id in self._skills:
+            raise ValueError("This version already exists. Reuse its artifact; a new version requires explicit review.")
 
         expert_model = os.environ.get("OPENARMS_EXPERT_MODEL", DEFAULT_EXPERT_MODEL)
         api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
@@ -505,18 +378,22 @@ class SkillRegistry:
                     "Compose a reusable OpenArms skill for: "+instruction+
                     '. Allowed steps are exactly [{"action":"transfer","args":{"source":"$source","destination":"$destination","object":"$object"}},'
                     '{"action":"observe","args":{"station":"$destination"}}]. Return JSON {"steps":[...]}. '
-                    'Use existing transfer then observe. No motor code, new parameters or extra actions.'),
+                    'Compose only the requested intent using these existing primitives. No motor code, new parameters or extra actions.'),
                     config=types.GenerateContentConfig(response_mime_type='application/json'))
                 model_calls=1
                 expert_mode=expert_model
                 parsed=json.loads(response.text)
-                steps=parsed.get('steps',[])
-                tokens=getattr(response.usage_metadata,'total_token_count',None)
+                if not isinstance(parsed, dict) or set(parsed) != {"steps"}:
+                    raise ValueError("Expert candidate must contain only steps.")
+                steps=parsed["steps"]
+                tokens=getattr(getattr(response, 'usage_metadata', None), 'total_token_count', None)
+                if type(tokens) is not int or tokens < 0:
+                    tokens = None
             finally:
                 await client.aio.aclose()
 
         # Fallback deterministic compiler: expert_mode='local_composer', model_calls=0
-        if not steps:
+        if not api_key:
             expert_mode = "local_composer"
             model_calls = 0
             tokens = 0
@@ -538,19 +415,9 @@ class SkillRegistry:
                 },
             ]
 
-        expected_steps=[{'action':'transfer','args':{'source':'$source','destination':'$destination','object':'$object'}},
-                        {'action':'observe','args':{'station':'$destination'}}]
-        if steps!=expected_steps:
+        if steps != _TRANSFER_OBSERVE:
             raise ValueError('Expert candidate has unsupported steps, order or parameter bindings.')
-        # Validate steps against whitelist
-        for step in steps:
-            action = step.get("action")
-            if action not in ALLOWED_PRIMITIVES:
-                raise ValueError(f"Invalid primitive '{action}' in composed candidate. Allowed: {ALLOWED_PRIMITIVES}")
 
-        candidate_id = "transfer_and_observe.v1"
-        if candidate_id in self._skills:
-            raise ValueError('This version already exists. Reuse its artifact; a new version requires explicit review.')
         candidate_skill: Dict[str, Any] = {
             "skill_id": candidate_id,
             "name": "Transfer and Observe",
@@ -621,6 +488,8 @@ class SkillRegistry:
             raise KeyError(f"Skill '{skill_id}' not found in registry.")
 
         skill = self._skills[skill_id]
+        if not isinstance(skill, dict) or skill.get("skill_id") != skill_id:
+            raise ValueError("Skill artifact identity does not match the registry key.")
         tests_passed: List[str] = []
 
         # 1. Structural Checks
@@ -636,6 +505,8 @@ class SkillRegistry:
             raise ValueError("Candidate structural test failed: steps must be a non-empty list.")
 
         for i, step in enumerate(steps):
+            if not isinstance(step, dict):
+                raise ValueError(f"Candidate step {i} must be a dictionary.")
             action = step.get("action")
             if action not in ALLOWED_PRIMITIVES:
                 raise ValueError(f"Candidate step {i} uses forbidden primitive '{action}'. Allowed: {ALLOWED_PRIMITIVES}")
@@ -646,6 +517,8 @@ class SkillRegistry:
 
         # 3. Parameter Bindings Check
         params = skill.get("parameters", {})
+        if not isinstance(params, dict):
+            raise ValueError("Candidate parameters must be a dictionary.")
         for i, step in enumerate(steps):
             for k, val in step.get("args", {}).items():
                 if isinstance(val, str) and val.startswith("$"):
@@ -654,44 +527,61 @@ class SkillRegistry:
                         raise ValueError(f"Candidate step {i} references undeclared parameter '{param_name}'.")
         tests_passed.append("parameter_bindings_check")
 
-        expected_steps=[{'action':'transfer','args':{'source':'$source','destination':'$destination','object':'$object'}},
-                        {'action':'observe','args':{'station':'$destination'}}]
-        if steps!=expected_steps:
-            raise ValueError('Candidate must bind one transfer and then destination observation exactly.')
-        # 4. Mock Execution Simulation
-        # Simulate route A -> B
-        state: Dict[str, Any] = {"A": "sample", "B": None, "C": None, "observed": None}
-        for step in steps:
-            action = step["action"]
-            if action == "transfer":
-                if state["A"] is None or state["B"] is not None:
-                    raise ValueError("Mock simulation failed: transfer precondition violated.")
-                state["B"] = state["A"]
-                state["A"] = None
-            elif action == "observe":
-                state["observed"] = state["B"]
-        if state["B"] != "sample" or state["A"] is not None or state["observed"] != "sample":
-            raise ValueError("Mock simulation A->B outcome mismatch.")
-        tests_passed.append("mock_simulation_A_to_B")
-
-        # Simulate route C -> B
-        state = {"A": None, "B": None, "C": "mandarin", "observed": None}
-        for step in steps:
-            action = step["action"]
-            if action == "transfer":
-                if state["C"] is None or state["B"] is not None:
-                    raise ValueError("Mock simulation failed: transfer precondition violated.")
-                state["B"] = state["C"]
-                state["C"] = None
-            elif action == "observe":
-                state["observed"] = state["B"]
-        if state["B"] != "mandarin" or state["C"] is not None or state["observed"] != "mandarin":
-            raise ValueError("Mock simulation C->B outcome mismatch.")
-        tests_passed.append("mock_simulation_C_to_B")
-
-        # Boundary rejection check: invalid route B -> A
-        if params.get("source", {}).get("enum") and "B" in params["source"]["enum"]:
-            raise ValueError("Boundary check failed: source allows invalid station 'B'.")
+        if steps not in ([_TRANSFER], _TRANSFER_OBSERVE):
+            raise ValueError("Skill must bind one transfer, optionally followed by destination observation.")
+        has_observation = steps == _TRANSFER_OBSERVE
+        # Execute the actual bound artifact through the independent legacy validator.
+        # This is a symbolic mock check of occupancy/gripper invariants, not physics.
+        expected_parameters = {"object": {"mandarin", "orange", "sample"},
+                               "source": {"A", "C"}, "destination": {"B"}}
+        if set(params) != set(expected_parameters):
+            raise ValueError("Candidate parameters must be exactly object, source and destination.")
+        for key, values in expected_parameters.items():
+            definition = params[key]
+            if (not isinstance(definition, dict) or definition.get("type") != "string" or
+                    not isinstance(definition.get("enum"), list) or
+                    not all(isinstance(value, str) for value in definition["enum"]) or
+                    set(definition["enum"]) != values):
+                raise ValueError(f"Candidate parameter '{key}' has an unsupported domain.")
+        scopes = skill.get("approval_scopes", {})
+        is_baseline = (skill_id == "known_station_transfer.v1" and steps == [_TRANSFER] and
+                       scopes.get("physical") == "team_reported_baseline_only")
+        if skill.get("status") not in ("candidate", "active") or (
+                scopes.get("physical") != "unsupported" and not is_baseline):
+            raise ValueError("Mock tests cannot approve a new physical authorization scope.")
+        for source in ("A", "C"):
+            for obj in ("sample", "mandarin"):
+                bound = {"source": source, "destination": "B", "object": obj}
+                state = _mock_state(source, obj)
+                end, observed = _execute_bound_skill(skill, bound, state)
+                if (end["point_holds"][source] is not None or
+                        end["point_holds"]["B"] != obj or observed != ({"B": obj} if has_observation else {})):
+                    raise ValueError("Bound mock execution outcome mismatch.")
+                tests_passed.append(f"mock_{source}_to_B_{obj}")
+                failures = [
+                    ("occupied_destination", {"point_holds": {source: obj, "B": "obstruction"}}),
+                    ("empty_source", {"point_holds": {source: None, "B": None}}),
+                    ("held_object", {"holding": "other"}),
+                    ("disarmed", {"armed": False}),
+                ]
+                if has_observation:
+                    failures.append(("sensor_unavailable", {"observation_sensor_ready": False}))
+                for case, changed in failures:
+                    invalid = copy.deepcopy(state)
+                    invalid.update(changed)
+                    try:
+                        _execute_bound_skill(skill, bound, invalid)
+                    except ValueError:
+                        tests_passed.append(f"reject_{case}_{source}_{obj}")
+                    else:
+                        raise ValueError(f"Mock boundary test failed to reject {case}.")
+        for invalid in ({"source": "B", "destination": "A", "object": "sample"},
+                        {"source": "A", "destination": "B", "object": "beaker"}):
+            try:
+                _execute_bound_skill(skill, invalid, _mock_state("A", "sample"))
+            except ValueError:
+                continue
+            raise ValueError("Mock boundary test accepted unsupported parameters.")
         tests_passed.append("boundary_rejection_check")
 
         # Generate Evidence Binding
@@ -704,6 +594,8 @@ class SkillRegistry:
             "skill_id": skill_id,
             "skill_hash": content_hash,
             "verdict": "passed",
+            "provenance": "MOCK",
+            "test_method": "bound artifact through legacy validator; symbolic state only",
             "tests_passed": tests_passed,
             "approval_scopes": {
                 "mock": "approved",
@@ -713,7 +605,9 @@ class SkillRegistry:
         }
 
         # Bind evidence to candidate in registry
-        skill["evidence"] = evidence
+        self._evidence[evidence_id] = copy.deepcopy(evidence)
+        if not is_baseline:
+            skill["evidence"] = evidence
         skill["evidence_id"] = evidence_id
         self._save()
         return copy.deepcopy(evidence)
@@ -733,13 +627,16 @@ class SkillRegistry:
             raise ValueError(f"Skill '{skill_id}' is already active.")
 
         # Check evidence presence and matching ID
-        evidence = skill.get("evidence")
-        if not evidence or skill.get("evidence_id") != evidence_id:
+        evidence = self._evidence.get(evidence_id)
+        if (not evidence or skill.get("evidence_id") != evidence_id or
+                evidence.get("skill_id") != skill_id or evidence.get("evidence_id") != evidence_id):
             raise ValueError(
                 f"Refusing promotion: skill '{skill_id}' has not been tested with evidence '{evidence_id}'."
             )
 
-        if evidence.get("verdict") != "passed":
+        if skill.get("status") != "candidate":
+            raise ValueError("Only candidates can be promoted.")
+        if evidence.get("verdict") != "passed" or evidence.get("provenance") != "MOCK":
             raise ValueError(f"Refusing promotion: evidence '{evidence_id}' has non-passing verdict.")
 
         # Check hash binding: verify candidate has not been modified since test
