@@ -1,0 +1,4143 @@
+{
+  "file": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/02_titration/Environment.usdc",
+  "errors": [],
+  "warnings": [
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Borosilicate_clear_glass",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Reagent_bottle_amber_glass",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_liquid",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Illustrative_faint_pink_endpoint",
+    "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+    "UsdLux presence does not establish photometric or renderer equivalence"
+  ],
+  "usd_version": [
+    0,
+    26,
+    11
+  ],
+  "metersPerUnit": 1.0,
+  "upAxis": "Z",
+  "defaultPrim": "/ClassicLab",
+  "composition_errors": [],
+  "dependencies": {
+    "layers": [
+      "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/02_titration/Environment.usdc"
+    ],
+    "assets": [],
+    "unresolved": []
+  },
+  "self_contained_single_layer": true,
+  "authored_asset_paths": [],
+  "absolute_asset_paths": [],
+  "physics_or_articulation": [],
+  "bounds_time": "default",
+  "mesh_count": 172,
+  "meshes": [
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_013/Cylinder_041",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4298094230170594,
+          -0.11777201868339916,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4309094233040466,
+          -0.11667201839641193,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_007/Cylinder_035",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4441812651629792,
+          -0.11181900478645702,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4452812654499664,
+          -0.1107190044994698,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Catcher_bench_label/Catcher_bench_label",
+      "points": 1320,
+      "faces": 978,
+      "world_bounds": {
+        "min": [
+          0.40845599240856245,
+          -0.03200000151991844,
+          0.0009850000478763832
+        ],
+        "max": [
+          0.43842599354684353,
+          -0.02788400137796998,
+          0.0010150000471185194
+        ],
+        "size": [
+          0.029970001138281077,
+          0.0041160001419484615,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_020/Cylinder_048",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4315505044932709,
+          -0.13544949717565913,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4326505047802581,
+          -0.13434949688867193,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_030/Cylinder_058",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4543842988486634,
+          -0.1309075636391296,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4554842991356506,
+          -0.12980756335214239,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Reagent_bottle_legend/Reagent_bottle_legend",
+      "points": 1280,
+      "faces": 932,
+      "world_bounds": {
+        "min": [
+          0.42411899500439176,
+          -0.15281499469354964,
+          0.04793699970269148
+        ],
+        "max": [
+          0.453728998079896,
+          -0.1527849931143871,
+          0.05980200041285214
+        ],
+        "size": [
+          0.02961000307550421,
+          3.000157916255297e-05,
+          0.01186500071016066
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_014/Cylinder_042",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.42851567439988714,
+          -0.12019242919727703,
+          0.10999999567866325
+        ],
+        "max": [
+          0.42961567468687434,
+          -0.1190924289102898,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_001/Cylinder_029",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.45518100433305364,
+          -0.12281873650595089,
+          0.10999999567866325
+        ],
+        "max": [
+          0.45628100462004084,
+          -0.12171873621896366,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_008/Cylinder_036",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.44145000152543645,
+          -0.11155000157400509,
+          0.10999999567866325
+        ],
+        "max": [
+          0.44255000181242365,
+          -0.11045000128701786,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Endpoint_comparison_card/Cube_071",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.16250000894069672,
+          -0.25299999490380287,
+          0.0
+        ],
+        "max": [
+          0.3135000020265579,
+          -0.21299999579787254,
+          0.00139999995008111
+        ],
+        "size": [
+          0.1509999930858612,
+          0.03999999910593033,
+          0.00139999995008111
+        ]
+      },
+      "material": "/ClassicLab/_materials/Paper_label"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_021/Cylinder_049",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4336720126147614,
+          -0.13719057865187068,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4347720129017486,
+          -0.13609057836488347,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Reagent_provenance/Reagent_provenance",
+      "points": 2376,
+      "faces": 1758,
+      "world_bounds": {
+        "min": [
+          0.42417759499221575,
+          -0.15281499375748847,
+          0.030966699488821057
+        ],
+        "max": [
+          0.45616409555077553,
+          -0.15278499341336693,
+          0.033556699754804964
+        ],
+        "size": [
+          0.03198650055855978,
+          3.000034412153907e-05,
+          0.002590000265983907
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_005/Cylinder_033",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4492279904361115,
+          -0.11390942908569714,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4503279907230987,
+          -0.11280942879870991,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_015/Cylinder_043",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.42771899871781927,
+          -0.12281873650595089,
+          0.10999999567866325
+        ],
+        "max": [
+          0.42881899900480647,
+          -0.12171873621896366,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_029/Cylinder_057",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.45309058003381353,
+          -0.13332798905416865,
+          0.10999999567866325
+        ],
+        "max": [
+          0.45419058032080073,
+          -0.13222798876718145,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_009/Cylinder_037",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.43871873788789373,
+          -0.11181900478645702,
+          0.10999999567866325
+        ],
+        "max": [
+          0.43981873817488093,
+          -0.1107190044994698,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib/Cylinder_028",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.455450000094925,
+          -0.1255500001434936,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4565500003819122,
+          -0.12444999985650639,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872155,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_022/Cylinder_050",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.43609243802980047,
+          -0.13848431236788172,
+          0.10999999567866325
+        ],
+        "max": [
+          0.43719243831678767,
+          -0.13738431208089452,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Clear_start_sample_vial/Clear_start_sample_vial",
+      "points": 576,
+      "faces": 480,
+      "world_bounds": {
+        "min": [
+          0.3400000035762787,
+          -0.2070000022649765,
+          0.0010000000474974513
+        ],
+        "max": [
+          0.36399999260902405,
+          -0.18299999833106995,
+          0.04100000113248825
+        ],
+        "size": [
+          0.02399998903274536,
+          0.024000003933906555,
+          0.0400000010849908
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_016/Cylinder_044",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4274500029559479,
+          -0.1255500001434936,
+          0.10999999567866325
+        ],
+        "max": [
+          0.42855000324293513,
+          -0.12444999985650639,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872155,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_010/Cylinder_038",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.43609243802980047,
+          -0.11261568791910549,
+          0.10999999567866325
+        ],
+        "max": [
+          0.43719243831678767,
+          -0.11151568763211826,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_028/Cylinder_056",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.451349498557602,
+          -0.13544949717565913,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4524494988445892,
+          -0.13434949688867193,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_004/Cylinder_032",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.451349498557602,
+          -0.11565050311132809,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4524494988445892,
+          -0.11455050282434086,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Reagent_ribbed_screw_cap/Cylinder_027",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4280000012367964,
+          -0.13900000043213367,
+          0.10899999644607306
+        ],
+        "max": [
+          0.45600000210106373,
+          -0.11099999956786633,
+          0.12299999687820673
+        ],
+        "size": [
+          0.02800000086426735,
+          0.02800000086426735,
+          0.014000000432133675
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_023/Cylinder_051",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.43871873788789373,
+          -0.1392809880499496,
+          0.10999999567866325
+        ],
+        "max": [
+          0.43981873817488093,
+          -0.1381809877629624,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Amber_reagent_bottle/Amber_reagent_bottle",
+      "points": 1248,
+      "faces": 1152,
+      "world_bounds": {
+        "min": [
+          0.41499999165534973,
+          -0.15199999511241913,
+          0.0020000000949949026
+        ],
+        "max": [
+          0.4690000116825104,
+          -0.09799999743700027,
+          0.11500000208616257
+        ],
+        "size": [
+          0.054000020027160645,
+          0.053999997675418854,
+          0.11300000199116766
+        ]
+      },
+      "material": "/ClassicLab/_materials/Reagent_bottle_amber_glass"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_011/Cylinder_039",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4336720126147614,
+          -0.11390942908569714,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4347720129017486,
+          -0.11280942879870991,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_006/Cylinder_034",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.44680756502107244,
+          -0.11261568791910549,
+          0.10999999567866325
+        ],
+        "max": [
+          0.44790756530805964,
+          -0.11151568763211826,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_024/Cylinder_052",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.44145000152543645,
+          -0.13954999871298213,
+          0.10999999567866325
+        ],
+        "max": [
+          0.44255000181242365,
+          -0.13844999842599492,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Drop_catcher_dish/Drop_catcher_dish",
+      "points": 672,
+      "faces": 576,
+      "world_bounds": {
+        "min": [
+          0.4009999930858612,
+          -0.01899999938905239,
+          0.0010000000474974513
+        ],
+        "max": [
+          0.4650000035762787,
+          0.04500000178813934,
+          0.014000000432133675
+        ],
+        "size": [
+          0.06400001049041748,
+          0.06400000117719173,
+          0.013000000384636223
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_ceramic_tile"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_003/Cylinder_031",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.45309058003381353,
+          -0.11777201868339916,
+          0.10999999567866325
+        ],
+        "max": [
+          0.45419058032080073,
+          -0.11667201839641193,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Start_sample_bench_label/Start_sample_bench_label",
+      "points": 1856,
+      "faces": 1368,
+      "world_bounds": {
+        "min": [
+          0.32128800978534855,
+          -0.21805399475852028,
+          0.0009850000478763832
+        ],
+        "max": [
+          0.35950201004743576,
+          -0.213853994384408,
+          0.0010150000471185194
+        ],
+        "size": [
+          0.03821400026208721,
+          0.004200000374112278,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_027/Cylinder_055",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4492279904361115,
+          -0.13719057865187068,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4503279907230987,
+          -0.13609057836488347,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Endpoint_comparison_text/Endpoint_comparison_text",
+      "points": 1408,
+      "faces": 1012,
+      "world_bounds": {
+        "min": [
+          0.1713360038411338,
+          -0.2400629946423578,
+          0.0015849999599595321
+        ],
+        "max": [
+          0.2436949983239174,
+          -0.2351629943586886,
+          0.0016149999592016684
+        ],
+        "size": [
+          0.0723589944827836,
+          0.004900000283669215,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_018/Cylinder_046",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.42851567439988714,
+          -0.1309075636391296,
+          0.10999999567866325
+        ],
+        "max": [
+          0.42961567468687434,
+          -0.12980756335214239,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_012/Cylinder_040",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4315505044932709,
+          -0.11565050311132809,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4326505047802581,
+          -0.11455050282434086,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Clear_starting_sample/Cylinder_060",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3416999978944659,
+          -0.20529999304562807,
+          0.0029999995604157448
+        ],
+        "max": [
+          0.3622999982908368,
+          -0.18469999264925718,
+          0.019000000320374966
+        ],
+        "size": [
+          0.020600000396370888,
+          0.020600000396370888,
+          0.01600000075995922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_025/Cylinder_053",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4441812651629792,
+          -0.1392809880499496,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4452812654499664,
+          -0.1381809877629624,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_017/Cylinder_045",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.42771899871781927,
+          -0.12828126378103633,
+          0.10999999567866325
+        ],
+        "max": [
+          0.42881899900480647,
+          -0.12718126349404912,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_031/Cylinder_059",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.45518100433305364,
+          -0.12828126378103633,
+          0.10999999567866325
+        ],
+        "max": [
+          0.45628100462004084,
+          -0.12718126349404912,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_019/Cylinder_047",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4298094230170594,
+          -0.13332798905416865,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4309094233040466,
+          -0.13222798876718145,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_002/Cylinder_030",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4543842988486634,
+          -0.12019242919727703,
+          0.10999999567866325
+        ],
+        "max": [
+          0.4554842991356506,
+          -0.1190924289102898,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872294,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Reagent_label/Cube_070",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4210000019520521,
+          -0.15265000017825514,
+          0.023499999195337296
+        ],
+        "max": [
+          0.463000001385808,
+          -0.15195000020321459,
+          0.07049999758601189
+        ],
+        "size": [
+          0.041999999433755875,
+          0.000699999975040555,
+          0.04699999839067459
+        ]
+      },
+      "material": "/ClassicLab/_materials/Paper_label"
+    },
+    {
+      "path": "/ClassicLab/Reagent_and_catcher/Cap_grip_rib_026/Cylinder_054",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.44680756502107244,
+          -0.13848431236788172,
+          0.10999999567866325
+        ],
+        "max": [
+          0.44790756530805964,
+          -0.13738431208089452,
+          0.12199999764561653
+        ],
+        "size": [
+          0.0011000002869872016,
+          0.0011000002869872016,
+          0.012000001966953278
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_10/Cube_022",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.5447750166931655
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.5452250166854355
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_20/Burette_scale_20",
+      "points": 740,
+      "faces": 551,
+      "world_bounds": {
+        "min": [
+          0.25214960405719467,
+          -0.06301500101817309,
+          0.46826041472905117
+        ],
+        "max": [
+          0.25637800386175513,
+          -0.06298500060880413,
+          0.47134041483713746
+        ],
+        "size": [
+          0.004228399804560468,
+          3.0000409368957648e-05,
+          0.0030800001080862893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Rolled_flask_rim/Torus",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.22960000485181808,
+          -0.07039999961853027,
+          0.15039999515283853
+        ],
+        "max": [
+          0.2604000046849251,
+          -0.03959999978542328,
+          0.15359999507199973
+        ],
+        "size": [
+          0.030799999833106995,
+          0.030799999833106995,
+          0.0031999999191612005
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_00/Cube_012",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.6197750047722366
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.6202250047645066
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_10/Burette_scale_10",
+      "points": 400,
+      "faces": 296,
+      "world_bounds": {
+        "min": [
+          0.2528888040687889,
+          -0.06301500101817309,
+          0.5432603730057998
+        ],
+        "max": [
+          0.25637800386175513,
+          -0.06298500060880413,
+          0.5463403731138862
+        ],
+        "size": [
+          0.0034891997929662466,
+          3.0000409368957648e-05,
+          0.0030800001080864003
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_21/Cube_033",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.46227500596432947
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.4627250059565995
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_49/Cube_061",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.2522749976196792
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.2527249976119492
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/ILLUSTRATIVE_faint_pink_liquid/ILLUSTRATIVE_faint_pink_liquid",
+      "points": 576,
+      "faces": 480,
+      "world_bounds": {
+        "min": [
+          0.2085999995470047,
+          -0.09139999747276306,
+          0.039000000804662704
+        ],
+        "max": [
+          0.28139999508857727,
+          -0.01860000006854534,
+          0.07599999755620956
+        ],
+        "size": [
+          0.07279999554157257,
+          0.07279999740421772,
+          0.03699999675154686
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_faint_pink_endpoint"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_00/Burette_scale_00",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.2521320040541468,
+          -0.06301500101817309,
+          0.6182604206895156
+        ],
+        "max": [
+          0.254068004200235,
+          -0.06298500060880413,
+          0.621340420797602
+        ],
+        "size": [
+          0.0019360001460881904,
+          3.0000409368957648e-05,
+          0.0030800001080864003
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Pink_meniscus/Torus_001",
+      "points": 768,
+      "faces": 768,
+      "world_bounds": {
+        "min": [
+          0.21280000358819962,
+          -0.08720000088214874,
+          0.07529999758116901
+        ],
+        "max": [
+          0.27720000594854355,
+          -0.02279999852180481,
+          0.07669999753125012
+        ],
+        "size": [
+          0.06440000236034393,
+          0.06440000236034393,
+          0.00139999995008111
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_faint_pink_endpoint"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_45/Cube_057",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.2822749988117721
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.2827249988040421
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Open_250_mL_conical_endpoint_flask/Open_250_mL_conical_endpoint_flask",
+      "points": 1632,
+      "faces": 1536,
+      "world_bounds": {
+        "min": [
+          0.20600000023841858,
+          -0.09399999678134918,
+          0.03500000014901161
+        ],
+        "max": [
+          0.2840000092983246,
+          -0.01600000075995922,
+          0.15299999713897705
+        ],
+        "size": [
+          0.078000009059906,
+          0.07799999602138996,
+          0.11799999698996544
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_11/Cube_023",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5372750238457229
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5377250238379929
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_22/Cube_034",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.45477501311688684
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.45522501310915686
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_33/Cube_045",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.3722750023880508
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.3727250023803208
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_01/Cube_013",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.6122750119247939
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.612725011917064
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_36/Cube_048",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.3497749940434005
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.35022499403567053
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_12/Cube_024",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5297749713936355
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5302249713859055
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_32/Cube_044",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.3797749952354934
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.38022499522776343
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_23/Cube_035",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.4472749904671218
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.44772499045939185
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_34/Cube_046",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.36477500954060815
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.3652250095328782
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_capacity/Flask_capacity",
+      "points": 1504,
+      "faces": 1112,
+      "world_bounds": {
+        "min": [
+          0.22917000214511063,
+          -0.07601499756182274,
+          0.10795500279873874
+        ],
+        "max": [
+          0.24477000162005424,
+          -0.07598499709652738,
+          0.11145500303445816
+        ],
+        "size": [
+          0.015599999474943615,
+          3.0000465295360046e-05,
+          0.0035000002357194193
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_02/Cube_014",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.6047750190773513
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.6052250190696213
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_13/Cube_025",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5222749785461929
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5227249785384629
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_47/Cube_059",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.26727501311688684
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.26772501310915686
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_24/Cube_036",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.4397749976196792
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.4402249976119492
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_35/Cube_047",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.35727498689084314
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.35772498688311316
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_43/Cube_055",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.29727501430897973
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.29772501430124976
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_03/Cube_015",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5972750262299087
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5977250262221787
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_14/Cube_026",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5147749856987502
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5152249856910203
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_25/Cube_037",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.43227500477223657
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.4327250047645066
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_35/Burette_scale_35",
+      "points": 900,
+      "faces": 667,
+      "world_bounds": {
+        "min": [
+          0.25228160407277755,
+          -0.06301500101817309,
+          0.3557604028081222
+        ],
+        "max": [
+          0.25623720418661833,
+          -0.06298500060880413,
+          0.3588404029162085
+        ],
+        "size": [
+          0.003955600113840774,
+          3.0000409368957648e-05,
+          0.0030800001080862893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_04/Cube_016",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5897749737778213
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5902249737700913
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_15/Cube_027",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.5072749928513076
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.5077249928435776
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_25/Burette_scale_25",
+      "points": 668,
+      "faces": 493,
+      "world_bounds": {
+        "min": [
+          0.25214960405719467,
+          -0.06301500101817309,
+          0.43076039088719326
+        ],
+        "max": [
+          0.25623720418661833,
+          -0.06298500060880413,
+          0.43384039099527955
+        ],
+        "size": [
+          0.004087600129423663,
+          3.0000409368957648e-05,
+          0.0030800001080862893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_50/Cube_062",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.24477500477223657
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.2452250047645066
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_graduation_100/Cube_010",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2264999975450337,
+          -0.09162499917147215,
+          0.06579999964742456
+        ],
+        "max": [
+          0.24149999720975757,
+          -0.09137499915959779,
+          0.0661999996373197
+        ],
+        "size": [
+          0.014999999664723873,
+          0.0002500000118743628,
+          0.00039999998989515007
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_05/Cube_017",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.5822749809303787
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.5827249809226487
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_volume/Burette_volume",
+      "points": 452,
+      "faces": 331,
+      "world_bounds": {
+        "min": [
+          0.25226550406659953,
+          -0.06301500101290003,
+          0.6320000290850692
+        ],
+        "max": [
+          0.25774200400337577,
+          -0.06298500060499582,
+          0.6350690291748798
+        ],
+        "size": [
+          0.005476499936776236,
+          3.0000407904212656e-05,
+          0.003069000089810592
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/White_PTFE_stir_bar/Cylinder_005",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2330000028014183,
+          -0.05799999972805381,
+          0.040000001434236765
+        ],
+        "max": [
+          0.25700000673532486,
+          -0.051999999675899744,
+          0.04600000148639083
+        ],
+        "size": [
+          0.024000003933906555,
+          0.006000000052154064,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_ceramic_tile"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_15/Burette_scale_15",
+      "points": 328,
+      "faces": 238,
+      "world_bounds": {
+        "min": [
+          0.2528888040687889,
+          -0.06301500101817309,
+          0.5057604087685866
+        ],
+        "max": [
+          0.25623720418661833,
+          -0.06298500061407716,
+          0.5088008090408004
+        ],
+        "size": [
+          0.003348400117829442,
+          3.0000404095925637e-05,
+          0.00304040027221375
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_26/Cube_038",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.42477501192479394
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.42522501191706397
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_volume_100/Flask_volume_100",
+      "points": 784,
+      "faces": 584,
+      "world_bounds": {
+        "min": [
+          0.2488887959625572,
+          -0.09171500255597292,
+          0.06396040303461983
+        ],
+        "max": [
+          0.2546879956498742,
+          -0.09168500214660397,
+          0.06704040314270615
+        ],
+        "size": [
+          0.005799199687317014,
+          3.0000409368957648e-05,
+          0.003080000108086317
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_05/Burette_scale_05",
+      "points": 312,
+      "faces": 230,
+      "world_bounds": {
+        "min": [
+          0.25222000405483413,
+          -0.06301500101817309,
+          0.5807603968476577
+        ],
+        "max": [
+          0.25392720417585224,
+          -0.06298500061407716,
+          0.5838007971198714
+        ],
+        "size": [
+          0.0017072001210181043,
+          3.0000404095925637e-05,
+          0.00304040027221375
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_37/Cube_049",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.3422750011959579
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.3427250011882279
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_16/Cube_028",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.499775000003865
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.500224999996135
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_27/Cube_039",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.41727498927502893
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.41772498926729895
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_graduation_150/Cube_011",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2264999975450337,
+          -0.08602500123379286,
+          0.08180000227002893
+        ],
+        "max": [
+          0.24149999720975757,
+          -0.0857750012219185,
+          0.08220000225992408
+        ],
+        "size": [
+          0.014999999664723873,
+          0.0002500000118743628,
+          0.00039999998989515007
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_06/Cube_018",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.574774988082936
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5752249880752061
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_17/Cube_029",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.49227500715642236
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.4927250071486924
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_48/Cube_060",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.2597749904671218
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.26022499045939185
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_28/Cube_040",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.4097749964275863
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.4102249964198563
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_39/Cube_051",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.32727498569875024
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.32772498569102027
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_44/Cube_056",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.2897749916592147
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.29022499165148474
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_07/Cube_019",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5672749952354934
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5677249952277634
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_45/Burette_scale_45",
+      "points": 372,
+      "faces": 275,
+      "world_bounds": {
+        "min": [
+          0.25204840405785944,
+          -0.06301500101817309,
+          0.28076041472905117
+        ],
+        "max": [
+          0.25623720418661833,
+          -0.06298500060880413,
+          0.28384041483713746
+        ],
+        "size": [
+          0.004188800128758885,
+          3.0000409368957648e-05,
+          0.0030800001080862893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_18/Cube_030",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.48477501430897973
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.48522501430124976
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_29/Cube_041",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.4022750035801437
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.4027250035724137
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_40/Cube_052",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.3197749928513076
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.32022499284357764
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_08/Cube_020",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5597750023880508
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5602250023803208
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_31/Cube_043",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.38727498808293603
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.38772498807520606
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_19/Cube_031",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.4772749916592147
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.47772499165148474
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_30/Cube_042",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.39477501073270105
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.39522501072497107
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_volume_150/Flask_volume_150",
+      "points": 712,
+      "faces": 526,
+      "world_bounds": {
+        "min": [
+          0.2488887959625572,
+          -0.08611499716771304,
+          0.07996039820664361
+        ],
+        "max": [
+          0.2546879956498742,
+          -0.08608499675834408,
+          0.08304039831472992
+        ],
+        "size": [
+          0.005799199687317014,
+          3.0000409368957648e-05,
+          0.003080000108086317
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_50/Burette_scale_50",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.25222000405483413,
+          -0.06301500101817309,
+          0.24326040578835442
+        ],
+        "max": [
+          0.25637800386175513,
+          -0.06298500060880413,
+          0.24634040589644074
+        ],
+        "size": [
+          0.004157999806920998,
+          3.0000409368957648e-05,
+          0.003080000108086317
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Graduated_burette_open_glass_tube/Graduated_burette_open_glass_tube",
+      "points": 672,
+      "faces": 576,
+      "world_bounds": {
+        "min": [
+          0.23600000143051147,
+          -0.06400000303983688,
+          0.20999999344348907
+        ],
+        "max": [
+          0.2540000081062317,
+          -0.04600000008940697,
+          0.6449999809265137
+        ],
+        "size": [
+          0.018000006675720215,
+          0.018000002950429916,
+          0.4349999874830246
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_09/Cube_021",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.5522750095406082
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.5527250095328782
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_graduation_50/Cube_009",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2264999975450337,
+          -0.09617500168678816,
+          0.052799999379203655
+        ],
+        "max": [
+          0.24149999720975757,
+          -0.0959250016749138,
+          0.053199999369098805
+        ],
+        "size": [
+          0.014999999664723873,
+          0.0002500000118743628,
+          0.00039999998989515007
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_46/Cube_058",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.27477500596432947
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.2752250059565995
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_41/Cube_053",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.312275000003865
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.312724999996135
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_20/Cube_032",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23850000696256757,
+          -0.0630099993213662,
+          0.4697749988117721
+        ],
+        "max": [
+          0.24650000734254718,
+          -0.0627899993196479,
+          0.4702249988040421
+        ],
+        "size": [
+          0.00800000037997961,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Flask_volume_50/Flask_volume_50",
+      "points": 696,
+      "faces": 518,
+      "world_bounds": {
+        "min": [
+          0.24821999594860245,
+          -0.09626499762070834,
+          0.05096039904110864
+        ],
+        "max": [
+          0.25237799575552344,
+          -0.09623499721133938,
+          0.054040399149194944
+        ],
+        "size": [
+          0.004157999806920998,
+          3.0000409368957648e-05,
+          0.003080000108086303
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_30/Burette_scale_30",
+      "points": 972,
+      "faces": 725,
+      "world_bounds": {
+        "min": [
+          0.25228160407277755,
+          -0.06301500101817309,
+          0.39326039684765773
+        ],
+        "max": [
+          0.25637800386175513,
+          -0.06298500060880413,
+          0.396340396955744
+        ],
+        "size": [
+          0.004096399788977578,
+          3.0000409368957648e-05,
+          0.0030800001080862893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_42/Cube_054",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.30477500715642236
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.3052250071486924
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Clear_titrant_column/Clear_titrant_column",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.23864999413490295,
+          -0.06134999915957451,
+          0.21400000154972076
+        ],
+        "max": [
+          0.2513499855995178,
+          -0.048650000244379044,
+          0.5720000267028809
+        ],
+        "size": [
+          0.012699991464614868,
+          0.012699998915195465,
+          0.3580000251531601
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_scale_40/Burette_scale_40",
+      "points": 444,
+      "faces": 333,
+      "world_bounds": {
+        "min": [
+          0.25204840405785944,
+          -0.06301500101817309,
+          0.3182604087685867
+        ],
+        "max": [
+          0.25637800386175513,
+          -0.06298500060880413,
+          0.321340408876673
+        ],
+        "size": [
+          0.0043295998038956895,
+          3.0000409368957648e-05,
+          0.0030800001080862893
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Glassware/Burette_graduation_38/Cube_050",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2399999985937029,
+          -0.0630099993213662,
+          0.33477500834851526
+        ],
+        "max": [
+          0.24399999878369272,
+          -0.0627899993196479,
+          0.3352250083407853
+        ],
+        "size": [
+          0.004000000189989805,
+          0.00022000000171829015,
+          0.00044999999227002263
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_jaw/Cylinder_015",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.24574741090548616,
+          -0.06816356389458832,
+          0.2944999909819976
+        ],
+        "max": [
+          0.26725260053860567,
+          -0.05283643544976059,
+          0.2994999908981904
+        ],
+        "size": [
+          0.02150518963311951,
+          0.015327128444827726,
+          0.004999999916192821
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_jaw_002/Cylinder_022",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.24574741090548616,
+          -0.06816356389458832,
+          0.5264999843062773
+        ],
+        "max": [
+          0.26725260053860567,
+          -0.05283643544976059,
+          0.5314999842224702
+        ],
+        "size": [
+          0.02150518963311951,
+          0.015327128444827726,
+          0.004999999916192932
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Boss_screw_001/Cylinder_020",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4069999963976443,
+          0.1159999884126114,
+          0.525999981042503
+        ],
+        "max": [
+          0.41299999644979835,
+          0.13999999394441376,
+          0.5319999874862446
+        ],
+        "size": [
+          0.006000000052154064,
+          0.024000005531802357,
+          0.006000006443741546
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Boss_screw/Cylinder_013",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4069999963976443,
+          0.1159999884126114,
+          0.2939999877182232
+        ],
+        "max": [
+          0.41299999644979835,
+          0.13999999394441376,
+          0.29999999416196477
+        ],
+        "size": [
+          0.006000000052154064,
+          0.024000005531802357,
+          0.006000006443741546
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Vertical_retort_stand/Cylinder_011",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4039999947736708,
+          0.14699999548892653,
+          0.019999980926513672
+        ],
+        "max": [
+          0.4159999980737718,
+          0.15899999878902757,
+          0.6809999942779541
+        ],
+        "size": [
+          0.012000003300100981,
+          0.012000003300101036,
+          0.6610000133514404
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Rubber_clamp_contact_002/Sphere_004",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.24100000839307922,
+          -0.0639999977704137,
+          0.5229999842122197
+        ],
+        "max": [
+          0.24900000376626844,
+          -0.059999998891726136,
+          0.5349999843165278
+        ],
+        "size": [
+          0.007999995373189212,
+          0.003999998878687558,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_screw_head/Sphere_003",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.25799999215453884,
+          -0.07400000038370488,
+          0.2919999910518527
+        ],
+        "max": [
+          0.27199998382478946,
+          -0.06800000229850411,
+          0.3019999908283353
+        ],
+        "size": [
+          0.013999991670250622,
+          0.0059999980852007695,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_jaw_003/Cylinder_024",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.24574741066358646,
+          -0.057163564640402266,
+          0.5264999824934151
+        ],
+        "max": [
+          0.26725260078050533,
+          -0.04183643482315593,
+          0.5314999860353324
+        ],
+        "size": [
+          0.02150519011691887,
+          0.015327129817246335,
+          0.0050000035419173194
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_curved_finger_001/Cylinder_018",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23788196611731474,
+          -0.0502360687538731,
+          0.2944999907059226
+        ],
+        "max": [
+          0.24811803531319673,
+          -0.04176393142494084,
+          0.2994999911742654
+        ],
+        "size": [
+          0.010236069195881992,
+          0.008472137328932261,
+          0.005000000468342813
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_curved_finger/Cylinder_016",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23788196617551116,
+          -0.06823606445821817,
+          0.2944999909063427
+        ],
+        "max": [
+          0.2481180352550003,
+          -0.05976392672029441,
+          0.2994999909738453
+        ],
+        "size": [
+          0.010236069079489152,
+          0.008472137737923761,
+          0.0050000000675025635
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_curved_finger_003/Cylinder_025",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23788196611731474,
+          -0.0502360687538731,
+          0.5264999840302024
+        ],
+        "max": [
+          0.24811803531319673,
+          -0.04176393142494084,
+          0.5314999844985452
+        ],
+        "size": [
+          0.010236069195881992,
+          0.008472137328932261,
+          0.005000000468342813
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Boss_thumb_screw/Cube_067",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3979999963194132,
+          0.10850000334903598,
+          0.2929999907501042
+        ],
+        "max": [
+          0.42199999652802944,
+          0.11550000356510282,
+          0.3009999911300838
+        ],
+        "size": [
+          0.024000000208616257,
+          0.007000000216066837,
+          0.00800000037997961
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Stand_top_cap/Cylinder_012",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4031999963335693,
+          0.14619999704882503,
+          0.6794999814592302
+        ],
+        "max": [
+          0.41679999651387334,
+          0.15979999722912908,
+          0.6844999813474715
+        ],
+        "size": [
+          0.01360000018030405,
+          0.01360000018030405,
+          0.004999999888241291
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_horizontal_arm_001/Cylinder_021",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.25973341099992114,
+          -0.057308579590029725,
+          0.5249999668320658
+        ],
+        "max": [
+          0.4132665670655696,
+          0.15530857702703,
+          0.5330000016966817
+        ],
+        "size": [
+          0.15353315606564844,
+          0.2126171566170597,
+          0.008000034864615868
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_adjustment_screw_001/Cylinder_026",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2629999828023204,
+          -0.06700000250355326,
+          0.526999979642005
+        ],
+        "max": [
+          0.2669999885874501,
+          -0.036999999642213954,
+          0.5309999888867426
+        ],
+        "size": [
+          0.004000005785129712,
+          0.030000002861339303,
+          0.004000009244737646
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Boss_head_001/Cube_068",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.39499999675899744,
+          0.14049999695271254,
+          0.517499984242022
+        ],
+        "max": [
+          0.4249999960884452,
+          0.16549999732524157,
+          0.5404999842867255
+        ],
+        "size": [
+          0.029999999329447746,
+          0.02500000037252903,
+          0.023000000044703484
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Rubber_clamp_contact_001/Sphere_002",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.24100000839307922,
+          -0.04999999920092517,
+          0.29099999088793993
+        ],
+        "max": [
+          0.24900000376626844,
+          -0.04600000032223761,
+          0.30299999099224806
+        ],
+        "size": [
+          0.007999995373189212,
+          0.003999998878687558,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_curved_finger_002/Cylinder_023",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.23788196617551116,
+          -0.06823606445821817,
+          0.5264999842306225
+        ],
+        "max": [
+          0.2481180352550003,
+          -0.05976392672029441,
+          0.5314999842981251
+        ],
+        "size": [
+          0.010236069079489152,
+          0.008472137737923761,
+          0.0050000000675025635
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Rubber_clamp_contact/Sphere_001",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.24100000839307922,
+          -0.0639999977704137,
+          0.29099999088793993
+        ],
+        "max": [
+          0.24900000376626844,
+          -0.059999998891726136,
+          0.30299999099224806
+        ],
+        "size": [
+          0.007999995373189212,
+          0.003999998878687558,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_screw_head_001/Sphere_006",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.25799999215453884,
+          -0.07400000038370488,
+          0.5239999843761325
+        ],
+        "max": [
+          0.27199998382478946,
+          -0.06800000229850411,
+          0.5339999841526151
+        ],
+        "size": [
+          0.013999991670250622,
+          0.0059999980852007695,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Rubber_clamp_contact_003/Sphere_005",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.24100000839307922,
+          -0.04999999920092517,
+          0.5229999842122197
+        ],
+        "max": [
+          0.24900000376626844,
+          -0.04600000032223761,
+          0.5349999843165278
+        ],
+        "size": [
+          0.007999995373189212,
+          0.003999998878687558,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_horizontal_arm/Cylinder_014",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.25973341099992114,
+          -0.057308579590029725,
+          0.29299997350778617
+        ],
+        "max": [
+          0.4132665670655696,
+          0.15530857702703,
+          0.3010000083724018
+        ],
+        "size": [
+          0.15353315606564844,
+          0.2126171566170597,
+          0.008000034864615646
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Boss_head/Cube_066",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.39499999675899744,
+          0.14049999695271254,
+          0.28549999091774225
+        ],
+        "max": [
+          0.4249999960884452,
+          0.16549999732524157,
+          0.30849999096244574
+        ],
+        "size": [
+          0.029999999329447746,
+          0.02500000037252903,
+          0.023000000044703484
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Heavy_retort_stand_base/Cube_065",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3024999871850014,
+          0.025499999523162842,
+          0.0
+        ],
+        "max": [
+          0.47749998420476913,
+          0.21050000190734863,
+          0.019999999552965164
+        ],
+        "size": [
+          0.17499999701976776,
+          0.1850000023841858,
+          0.019999999552965164
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_adjustment_screw/Cylinder_019",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2629999828023204,
+          -0.06700000250355326,
+          0.2949999863177252
+        ],
+        "max": [
+          0.2669999885874501,
+          -0.036999999642213954,
+          0.29899999556246276
+        ],
+        "size": [
+          0.004000005785129712,
+          0.030000002861339303,
+          0.004000009244737535
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Boss_thumb_screw_001/Cube_069",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3979999963194132,
+          0.10850000334903598,
+          0.524999984074384
+        ],
+        "max": [
+          0.42199999652802944,
+          0.11550000356510282,
+          0.5329999844543636
+        ],
+        "size": [
+          0.024000000208616257,
+          0.007000000216066837,
+          0.00800000037997961
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Stand_and_clamps/Clamp_jaw_001/Cylinder_017",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.24574741066358646,
+          -0.057163564640402266,
+          0.29449998916913545
+        ],
+        "max": [
+          0.26725260078050533,
+          -0.04183643482315593,
+          0.29949999271105254
+        ],
+        "size": [
+          0.02150519011691887,
+          0.015327129817246335,
+          0.005000003541917097
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg_001/Cube_002",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          0.28250001184642315,
+          -0.7380000054836273
+        ],
+        "max": [
+          -0.29250000230968,
+          0.31750001199543476,
+          -0.021999984979629517
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7160000205039978
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg_003/Cube_004",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          0.28250001184642315,
+          -0.7380000054836273
+        ],
+        "max": [
+          0.5675000119954348,
+          0.31750001199543476,
+          -0.021999984979629517
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7160000205039978
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg_002/Cube_003",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.5325000118464231,
+          -0.31750001199543476,
+          -0.7380000054836273
+        ],
+        "max": [
+          0.5675000119954348,
+          -0.28250001184642315,
+          -0.021999984979629517
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7160000205039978
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Bench/Floor/Cube_005",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          -99.89999999850988,
+          -100.0,
+          -0.8100000265985727
+        ],
+        "max": [
+          100.10000000149012,
+          100.0,
+          -0.7600000258535147
+        ],
+        "size": [
+          200.0,
+          200.0,
+          0.05000000074505806
+        ]
+      },
+      "material": "/ClassicLab/_materials/Neutral_background"
+    },
+    {
+      "path": "/ClassicLab/Bench/Normal_100_x_75_cm_worktop/Cube",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.380000002682209,
+          -0.375,
+          -0.04399999976158142
+        ],
+        "max": [
+          0.619999997317791,
+          0.375,
+          0.0
+        ],
+        "size": [
+          1.0,
+          0.75,
+          0.04399999976158142
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_powder_coat"
+    },
+    {
+      "path": "/ClassicLab/Bench/Bench_leg/Cube_001",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3275000024586916,
+          -0.31750001199543476,
+          -0.7380000054836273
+        ],
+        "max": [
+          -0.29250000230968,
+          -0.28250001184642315,
+          -0.021999984979629517
+        ],
+        "size": [
+          0.03500000014901161,
+          0.03500000014901161,
+          0.7160000205039978
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Titration/Magnetic_stirrer_body/Cube_006",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.1680000051856041,
+          -0.12699999660253525,
+          0.0
+        ],
+        "max": [
+          0.32200000435113907,
+          0.016999997198581696,
+          0.02800000086426735
+        ],
+        "size": [
+          0.15399999916553497,
+          0.14399999380111694,
+          0.02800000086426735
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_powder_coat"
+    },
+    {
+      "path": "/ClassicLab/Titration/Glass_stopcock_barrel/Cylinder_006",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.22999999672174454,
+          -0.06350000016391277,
+          0.1985000018030405
+        ],
+        "max": [
+          0.2619999870657921,
+          -0.04649999924004077,
+          0.2155000027269125
+        ],
+        "size": [
+          0.031999990344047546,
+          0.017000000923872,
+          0.017000000923871994
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stirrer_speed_knob/Cylinder_004",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.28299999609589577,
+          -0.13349999653808425,
+          0.007000000681336287
+        ],
+        "max": [
+          0.3009999953210354,
+          -0.12649999392517258,
+          0.025000000838582153
+        ],
+        "size": [
+          0.017999999225139618,
+          0.007000002612911671,
+          0.018000000157245864
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Titration/Glass_outlet_shoulder/Cylinder_008",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2400000048801303,
+          -0.05999999959021807,
+          0.18200000002980232
+        ],
+        "max": [
+          0.2500000046566129,
+          -0.049999999813735485,
+          0.19999999925494194
+        ],
+        "size": [
+          0.009999999776482582,
+          0.009999999776482582,
+          0.017999999225139618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    },
+    {
+      "path": "/ClassicLab/Titration/Power_indicator/Cube_008",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.1970000008586794,
+          -0.12750000407686457,
+          0.014000000664964318
+        ],
+        "max": [
+          0.20100000104866922,
+          -0.12650000402936712,
+          0.018000000854954123
+        ],
+        "size": [
+          0.004000000189989805,
+          0.0010000000474974513,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_teal"
+    },
+    {
+      "path": "/ClassicLab/Titration/White_endpoint_contrast_tile/Cube_007",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.17900000512599945,
+          -0.11699999868869781,
+          0.027999999467283487
+        ],
+        "max": [
+          0.3110000044107437,
+          0.006999999284744263,
+          0.03399999951943755
+        ],
+        "size": [
+          0.13199999928474426,
+          0.12399999797344208,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_ceramic_tile"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stirrer_rubber_foot_002/Cylinder_002",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.29200001154094934,
+          -0.11299999710172415,
+          0.0
+        ],
+        "max": [
+          0.30800001230090857,
+          -0.09699999634176493,
+          0.004000000189989805
+        ],
+        "size": [
+          0.01600000075995922,
+          0.01600000075995922,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Titration/ONE_staged_hanging_titrant_drop/Sphere",
+      "points": 482,
+      "faces": 512,
+      "world_bounds": {
+        "min": [
+          0.24240000724084676,
+          -0.05759999800436198,
+          0.1582999941892922
+        ],
+        "max": [
+          0.24760000400058924,
+          -0.052399999694898725,
+          0.16669999388977885
+        ],
+        "size": [
+          0.005199996759742476,
+          0.005199998309463258,
+          0.00839999970048666
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid"
+    },
+    {
+      "path": "/ClassicLab/Titration/PTFE_stopcock_plug/Cylinder_007",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.226999996627913,
+          -0.060500003385392145,
+          0.20149999858156153
+        ],
+        "max": [
+          0.26800000814045855,
+          -0.04949999601856141,
+          0.21250000594839147
+        ],
+        "size": [
+          0.04100001151254554,
+          0.011000007366830739,
+          0.011000007366829934
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_ceramic_tile"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stirrer_rubber_foot_001/Cylinder_001",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.1819999972358346,
+          -0.013000000268220901,
+          0.0
+        ],
+        "max": [
+          0.19799999799579382,
+          0.0030000004917383194,
+          0.004000000189989805
+        ],
+        "size": [
+          0.01600000075995922,
+          0.01600000075995922,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Titration/Accessible_dosing_paddle/Cube_063",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.20850000530481339,
+          -0.10399999748915434,
+          0.11700000427663326
+        ],
+        "max": [
+          0.23750000447034836,
+          -0.09199999738484621,
+          0.13700000382959843
+        ],
+        "size": [
+          0.028999999165534973,
+          0.012000000104308128,
+          0.019999999552965164
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_teal"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stirrer_name/Stirrer_name",
+      "points": 912,
+      "faces": 672,
+      "world_bounds": {
+        "min": [
+          0.21420000155922025,
+          -0.12801500608528696,
+          0.012955000265541337
+        ],
+        "max": [
+          0.2239550007507205,
+          -0.1279850056199916,
+          0.016455000501260746
+        ],
+        "size": [
+          0.009754999191500247,
+          3.0000465295360046e-05,
+          0.003500000235719409
+        ]
+      },
+      "material": "/ClassicLab/_materials/Black_enamel_graduations"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stirrer_rubber_foot_003/Cylinder_003",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.29200001154094934,
+          -0.013000000268220901,
+          0.0
+        ],
+        "max": [
+          0.30800001230090857,
+          0.0030000004917383194,
+          0.004000000189989805
+        ],
+        "size": [
+          0.01600000075995922,
+          0.01600000075995922,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Titration/Paddle_tactile_stripe/Cube_064",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.21350000519305468,
+          -0.10475000317092054,
+          0.12550000404007733
+        ],
+        "max": [
+          0.23250000458210707,
+          -0.10425000314717181,
+          0.12850000406615436
+        ],
+        "size": [
+          0.01899999938905239,
+          0.0005000000237487257,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_ceramic_tile"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stirrer_rubber_foot/Cylinder",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.1819999972358346,
+          -0.11299999710172415,
+          0.0
+        ],
+        "max": [
+          0.19799999799579382,
+          -0.09699999634176493,
+          0.004000000189989805
+        ],
+        "size": [
+          0.01600000075995922,
+          0.01600000075995922,
+          0.004000000189989805
+        ]
+      },
+      "material": "/ClassicLab/_materials/Graphite_rubber"
+    },
+    {
+      "path": "/ClassicLab/Titration/Stopcock_rotary_adapter/Cylinder_009",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.21900000469759107,
+          -0.09000000783420108,
+          0.20299999974472052
+        ],
+        "max": [
+          0.22700000507757068,
+          -0.05500000289463498,
+          0.21100000478523248
+        ],
+        "size": [
+          0.00800000037997961,
+          0.03500000493956609,
+          0.00800000504051196
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_teal"
+    },
+    {
+      "path": "/ClassicLab/Titration/Remote_dosing_lever_extension/Cylinder_010",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.21950000477954745,
+          -0.0935000143369561,
+          0.12699999567043024
+        ],
+        "max": [
+          0.2265000049956143,
+          -0.08649999281560128,
+          0.2069999957465009
+        ],
+        "size": [
+          0.007000000216066837,
+          0.007000021521354816,
+          0.08000000007607067
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless_steel"
+    },
+    {
+      "path": "/ClassicLab/Titration/Burette_tapered_outlet/Burette_tapered_outlet",
+      "points": 480,
+      "faces": 384,
+      "world_bounds": {
+        "min": [
+          0.23999999463558197,
+          -0.05999999865889549,
+          0.1679999977350235
+        ],
+        "max": [
+          0.25,
+          -0.05000000074505806,
+          0.18400000035762787
+        ],
+        "size": [
+          0.01000000536441803,
+          0.009999997913837433,
+          0.01600000262260437
+        ]
+      },
+      "material": "/ClassicLab/_materials/Borosilicate_clear_glass"
+    }
+  ],
+  "materials": [
+    {
+      "path": "/ClassicLab/_materials/Graphite_rubber",
+      "universal_surface_shader": "/ClassicLab/_materials/Graphite_rubber/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Black_enamel_graduations",
+      "universal_surface_shader": "/ClassicLab/_materials/Black_enamel_graduations/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Paper_label",
+      "universal_surface_shader": "/ClassicLab/_materials/Paper_label/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Borosilicate_clear_glass",
+      "universal_surface_shader": "/ClassicLab/_materials/Borosilicate_clear_glass/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.1599999964237213,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Reagent_bottle_amber_glass",
+      "universal_surface_shader": "/ClassicLab/_materials/Reagent_bottle_amber_glass/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.6499999761581421,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/White_ceramic_tile",
+      "universal_surface_shader": "/ClassicLab/_materials/White_ceramic_tile/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Clear_liquid",
+      "universal_surface_shader": "/ClassicLab/_materials/Clear_liquid/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.05999999865889549,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_faint_pink_endpoint",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_faint_pink_endpoint/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.550000011920929,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Brushed_stainless_steel",
+      "universal_surface_shader": "/ClassicLab/_materials/Brushed_stainless_steel/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Neutral_background",
+      "universal_surface_shader": "/ClassicLab/_materials/Neutral_background/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Warm_white_powder_coat",
+      "universal_surface_shader": "/ClassicLab/_materials/Warm_white_powder_coat/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Fixture_teal",
+      "universal_surface_shader": "/ClassicLab/_materials/Fixture_teal/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    }
+  ],
+  "cameras": [
+    "/ClassicLab/Cameras/Overhead/Overhead",
+    "/ClassicLab/Cameras/Result/Result",
+    "/ClassicLab/Cameras/Front/Front"
+  ],
+  "lights": [
+    {
+      "path": "/ClassicLab/Lighting/Large_laboratory_ceiling_softbox/Large_laboratory_ceiling_softbox",
+      "type": "DiskLight",
+      "intensity": 14.323945045471191,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/White_wall_fill/White_wall_fill",
+      "type": "DiskLight",
+      "intensity": 9.549296379089355,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/Lighting/Glass_highlight_strip/Glass_highlight_strip",
+      "type": "DiskLight",
+      "intensity": 2.5464789867401123,
+      "exposure": 0.0,
+      "normalize": true
+    }
+  ],
+  "proxies": [],
+  "world_mesh_bounds": {
+    "min": [
+      -99.89999999850988,
+      -100.0,
+      -0.8100000265985727
+    ],
+    "max": [
+      100.10000000149012,
+      100.0,
+      0.6844999813474715
+    ],
+    "size": [
+      200.0,
+      200.0,
+      1.4945000079460442
+    ]
+  },
+  "limitations": [
+    "Static geometry/material/bounds inspection at the selected time only; default is the default time",
+    "Proxy naming is heuristic unless --expect-proxy is supplied; proxy geometry is not a collider",
+    "Does not render, evaluate texture pixels, prove complete shader-network support, or validate physical/robot capability",
+    "Composed traversal uses selected variants; authored physics/dependencies are also inspected across layer specs"
+  ],
+  "ok": true
+}

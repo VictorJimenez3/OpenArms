@@ -1,0 +1,4871 @@
+{
+  "file": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/06_precipitation/Environment.usdc",
+  "errors": [],
+  "warnings": [
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Approximate_glass_12percent",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_liquid_5percent",
+    "Transparency needs target-renderer inspection: /ClassicLab/_materials/Illustrative_white_suspension",
+    "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+    "UsdLux presence does not establish photometric or renderer equivalence"
+  ],
+  "usd_version": [
+    0,
+    26,
+    11
+  ],
+  "metersPerUnit": 1.0,
+  "upAxis": "Z",
+  "defaultPrim": "/ClassicLab",
+  "composition_errors": [],
+  "dependencies": {
+    "layers": [
+      "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-blender-visual-production/outputs/classic_lab/06_precipitation/Environment.usdc"
+    ],
+    "assets": [],
+    "unresolved": []
+  },
+  "self_contained_single_layer": true,
+  "authored_asset_paths": [],
+  "absolute_asset_paths": [],
+  "physics_or_articulation": [],
+  "bounds_time": "default",
+  "mesh_count": 203,
+  "meshes": [
+    {
+      "path": "/ClassicLab/ClassicLab/Bench/Leg_002/Cube_003",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.533000010997057,
+          -0.31700001284480095,
+          -0.7739999890327454
+        ],
+        "max": [
+          0.567000012844801,
+          -0.28300001099705696,
+          -0.022000014781951904
+        ],
+        "size": [
+          0.03400000184774399,
+          0.03400000184774399,
+          0.7519999742507935
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Bench/Leg_003/Cube_004",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.533000010997057,
+          0.28300001099705696,
+          -0.7739999890327454
+        ],
+        "max": [
+          0.567000012844801,
+          0.31700001284480095,
+          -0.022000014781951904
+        ],
+        "size": [
+          0.03400000184774399,
+          0.03400000184774399,
+          0.7519999742507935
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Bench/Tabletop/Cube",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.380000002682209,
+          -0.375,
+          -0.04399999976158142
+        ],
+        "max": [
+          0.619999997317791,
+          0.375,
+          0.0
+        ],
+        "size": [
+          1.0,
+          0.75,
+          0.04399999976158142
+        ]
+      },
+      "material": "/ClassicLab/_materials/Warm_white_bench"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Bench/Floor/Cube_005",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          -99.89999999850988,
+          -100.0,
+          -0.8100000265985727
+        ],
+        "max": [
+          100.10000000149012,
+          100.0,
+          -0.7600000258535147
+        ],
+        "size": [
+          200.0,
+          200.0,
+          0.05000000074505806
+        ]
+      },
+      "material": "/ClassicLab/_materials/Floor_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Bench/Leg/Cube_001",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3270000033080578,
+          -0.31700001284480095,
+          -0.7739999890327454
+        ],
+        "max": [
+          -0.2930000014603138,
+          -0.28300001099705696,
+          -0.022000014781951904
+        ],
+        "size": [
+          0.03400000184774399,
+          0.03400000184774399,
+          0.7519999742507935
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Bench/Leg_001/Cube_002",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          -0.3270000033080578,
+          0.28300001099705696,
+          -0.7739999890327454
+        ],
+        "max": [
+          -0.2930000014603138,
+          0.31700001284480095,
+          -0.022000014781951904
+        ],
+        "size": [
+          0.03400000184774399,
+          0.03400000184774399,
+          0.7519999742507935
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_bottom/Cylinder_027",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.37299999222159386,
+          -0.09699999913573265,
+          0.0399999984074384
+        ],
+        "max": [
+          0.4569999910891056,
+          -0.013000000268220901,
+          0.04299999843351543
+        ],
+        "size": [
+          0.08399999886751175,
+          0.08399999886751175,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_4/Cube_045",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.42916001100093126,
+          -0.09300999666447751,
+          0.10864999738987535
+        ],
+        "max": [
+          0.4411600111052394,
+          -0.09250999664072879,
+          0.10934999736491591
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_1/Cube_042",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.42916001100093126,
+          -0.09300999666447751,
+          0.056900000548921525
+        ],
+        "max": [
+          0.4411600111052394,
+          -0.09250999664072879,
+          0.05760000052396208
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker/Water_control_beaker",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.37299999594688416,
+          -0.09700000286102295,
+          0.03999999910593033
+        ],
+        "max": [
+          0.4569999873638153,
+          -0.008999999612569809,
+          0.1550000011920929
+        ],
+        "size": [
+          0.08399999141693115,
+          0.08800000324845314,
+          0.11500000208616257
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_3/Cube_044",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.42916001100093126,
+          -0.09300999666447751,
+          0.09140000340994447
+        ],
+        "max": [
+          0.4411600111052394,
+          -0.09250999664072879,
+          0.09210000338498503
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_rim/Torus_005",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.3726999945938587,
+          -0.09729999676346779,
+          0.1542000012123026
+        ],
+        "max": [
+          0.45729998871684074,
+          -0.012700002640485764,
+          0.1558000011718832
+        ],
+        "size": [
+          0.08459999412298203,
+          0.08459999412298203,
+          0.0015999999595806003
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_meniscus/Cylinder_029",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.37469999119639397,
+          -0.09530000016093254,
+          0.11380000345525332
+        ],
+        "max": [
+          0.4552999921143055,
+          -0.014699999243021011,
+          0.11460000343504362
+        ],
+        "size": [
+          0.08060000091791153,
+          0.08060000091791153,
+          0.0007999999797903001
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_liquid/Cylinder_028",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.37449999153614044,
+          -0.09549999982118607,
+          0.0430000014603138
+        ],
+        "max": [
+          0.455499991774559,
+          -0.014499999582767487,
+          0.11400000378489494
+        ],
+        "size": [
+          0.08100000023841858,
+          0.08100000023841858,
+          0.07100000232458115
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid_5percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_stir_bar/Cube_046",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.39713010542684823,
+          -0.0643018560373355,
+          0.043000000063329935
+        ],
+        "max": [
+          0.43286987788385123,
+          -0.04569814336661806,
+          0.049000000115484
+        ],
+        "size": [
+          0.035739772457002994,
+          0.01860371267071744,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_2/Cube_043",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.42916001100093126,
+          -0.09300999666447751,
+          0.074150001979433
+        ],
+        "max": [
+          0.4411600111052394,
+          -0.09250999664072879,
+          0.07485000195447356
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Stand_foot/Cube_025",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.19300000369548798,
+          0.13500000163912773,
+          0.0
+        ],
+        "max": [
+          0.47300000488758087,
+          0.23500000312924385,
+          0.01600000075995922
+        ],
+        "size": [
+          0.2800000011920929,
+          0.10000000149011612,
+          0.01600000075995922
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Stirrer_rest/Cube_049",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.07999999821186066,
+          -0.20149999763816595,
+          0.0
+        ],
+        "max": [
+          0.20999999344348907,
+          -0.17849999759346247,
+          0.024000000208616257
+        ],
+        "size": [
+          0.12999999523162842,
+          0.023000000044703484,
+          0.024000000208616257
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_mixer_label/Reaction_mixer_label",
+      "points": 124,
+      "faces": 81,
+      "world_bounds": {
+        "min": [
+          0.20322100399062037,
+          -0.11821499688952454,
+          0.023200000285036264
+        ],
+        "max": [
+          0.21320500457659364,
+          -0.1181849963453996,
+          0.027292000597477554
+        ],
+        "size": [
+          0.009984000585973263,
+          3.0000544124941797e-05,
+          0.00409200031244129
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_004/Cube_019",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2564999863971025,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.2594999864231795,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_overhead_label/Reactive_condition_overhead_label",
+      "points": 516,
+      "faces": 387,
+      "world_bounds": {
+        "min": [
+          0.22196499910205603,
+          -0.13730000355280936,
+          0.03998499910630926
+        ],
+        "max": [
+          0.2478149989619851,
+          -0.12975400313735008,
+          0.040014999105551396
+        ],
+        "size": [
+          0.025849999859929085,
+          0.007546000415459275,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_drip_tray/Cube_006",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.15799999982118607,
+          -0.14400000125169754,
+          0.0
+        ],
+        "max": [
+          0.31199999898672104,
+          0.014000006020069122,
+          0.009999999776482582
+        ],
+        "size": [
+          0.15399999916553497,
+          0.15800000727176666,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_mixer_label/Control_mixer_label",
+      "points": 124,
+      "faces": 81,
+      "world_bounds": {
+        "min": [
+          0.38322101114317775,
+          -0.11821499688952454,
+          0.023200000285036264
+        ],
+        "max": [
+          0.393205011729151,
+          -0.1181849963453996,
+          0.027292000597477554
+        ],
+        "size": [
+          0.009984000585973263,
+          3.0000544124941797e-05,
+          0.00409200031244129
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/B_dosing_collar/Torus_002",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.3529999926686287,
+          0.07100000232458115,
+          0.20699999341741204
+        ],
+        "max": [
+          0.416999988257885,
+          0.13499999791383743,
+          0.2129999934695661
+        ],
+        "size": [
+          0.06399999558925629,
+          0.06399999558925629,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Reagent_B_ochre_identifier"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Stand_rod/Cylinder_004",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.19400000292807817,
+          0.1740000071004033,
+          0.008000001311302185
+        ],
+        "max": [
+          0.2060000030323863,
+          0.18600000720471144,
+          0.2880000025033951
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.2800000011920929
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_drip_tray/Cube_010",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33799999207258224,
+          -0.14400000125169754,
+          0.0
+        ],
+        "max": [
+          0.4919999912381172,
+          0.014000006020069122,
+          0.009999999776482582
+        ],
+        "size": [
+          0.15399999916553497,
+          0.15800000727176666,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_005/Cube_020",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3904999897349626,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.3934999897610396,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_text/Water_bottle_text",
+      "points": 552,
+      "faces": 402,
+      "world_bounds": {
+        "min": [
+          0.476332007907331,
+          0.11078499771937564,
+          0.05555199808241368
+        ],
+        "max": [
+          0.5036680111661553,
+          0.11081499845578086,
+          0.06108799879638909
+        ],
+        "size": [
+          0.02733600325882435,
+          3.0000736405216832e-05,
+          0.005536000713975413
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_mixing_station/Cube_007",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.17149999737739563,
+          -0.11749999970197678,
+          0.009499999694526196
+        ],
+        "max": [
+          0.2985000014305115,
+          0.007500000298023224,
+          0.034500000067055225
+        ],
+        "size": [
+          0.12700000405311584,
+          0.125,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_backplate/Cube_014",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.15999998152256012,
+          0.009500000160187483,
+          0.039500005543231964
+        ],
+        "max": [
+          0.48999999463558197,
+          0.014500000048428774,
+          0.18450000137090683
+        ],
+        "size": [
+          0.33000001311302185,
+          0.004999999888241291,
+          0.14499999582767487
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_print/Reactive_condition_print",
+      "points": 1896,
+      "faces": 1402,
+      "world_bounds": {
+        "min": [
+          0.19587499648332596,
+          -0.16021500051462392,
+          0.011700000611930517
+        ],
+        "max": [
+          0.27412500232458115,
+          -0.16018499928899602,
+          0.020910001361877307
+        ],
+        "size": [
+          0.07825000584125519,
+          3.000122562790697e-05,
+          0.00921000074994679
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Rod_foot/Cylinder_005",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.18600000254809856,
+          0.1660000067204237,
+          0.00800000037997961
+        ],
+        "max": [
+          0.2140000034123659,
+          0.19400000758469105,
+          0.03799999970942736
+        ],
+        "size": [
+          0.02800000086426735,
+          0.02800000086426735,
+          0.029999999329447746
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_mixing_station/Cube_011",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3514999896287918,
+          -0.11749999970197678,
+          0.009499999694526196
+        ],
+        "max": [
+          0.47849999368190765,
+          0.007500000298023224,
+          0.034500000067055225
+        ],
+        "size": [
+          0.12700000405311584,
+          0.125,
+          0.02500000037252903
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/B_holder_arm/Cylinder_016",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.38099999027326703,
+          0.10299999160336556,
+          0.2069999850268862
+        ],
+        "max": [
+          0.38899999065324664,
+          0.1800000007672399,
+          0.21500000591320778
+        ],
+        "size": [
+          0.00800000037997961,
+          0.07700000916387434,
+          0.008000020886321568
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_006/Cube_021",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.40250001405365765,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.4055000140797347,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_vessel_seat/Cylinder",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.18699999898672104,
+          -0.10300000011920929,
+          0.034000000450760126
+        ],
+        "max": [
+          0.28299999982118607,
+          -0.006999999284744263,
+          0.04000000050291419
+        ],
+        "size": [
+          0.09600000083446503,
+          0.09600000083446503,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Silicone_seats"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/A_dosing_collar/Torus",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.22299999743700027,
+          0.07100000232458115,
+          0.20699999341741204
+        ],
+        "max": [
+          0.28699999302625656,
+          0.13499999791383743,
+          0.2129999934695661
+        ],
+        "size": [
+          0.06399999558925629,
+          0.06399999558925629,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Reagent_A_blue_identifier"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar/Cube_015",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2104999974835664,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.21349999750964344,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_label/Cube_048",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4690000098198652,
+          0.11100000340957195,
+          0.04449999798089266
+        ],
+        "max": [
+          0.5110000092536211,
+          0.11300000350456685,
+          0.07149999868124723
+        ],
+        "size": [
+          0.041999999433755875,
+          0.0020000000949949026,
+          0.027000000700354576
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Stand_rod_001/Cylinder_006",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.443999988026917,
+          0.1740000071004033,
+          0.008000001311302185
+        ],
+        "max": [
+          0.4559999881312251,
+          0.18600000720471144,
+          0.2880000025033951
+        ],
+        "size": [
+          0.012000000104308128,
+          0.012000000104308128,
+          0.2800000011920929
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Glass_stirring_rod/Cylinder_033",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.09000000357627869,
+          -0.19249999755993488,
+          0.024500000756233913
+        ],
+        "max": [
+          0.24500000476837158,
+          -0.18749999767169354,
+          0.02950000064447524
+        ],
+        "size": [
+          0.1550000011920929,
+          0.0049999998882413466,
+          0.004999999888241326
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_vessel_seat/Cylinder_002",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3669999912381172,
+          -0.10300000011920929,
+          0.034000000450760126
+        ],
+        "max": [
+          0.46299999207258224,
+          -0.006999999284744263,
+          0.04000000050291419
+        ],
+        "size": [
+          0.09600000083446503,
+          0.09600000083446503,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Silicone_seats"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_card/Cube_041",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.1524999961256981,
+          -0.16000000736676157,
+          0.0005000010132789612
+        ],
+        "max": [
+          0.317500002682209,
+          -0.15600000717677176,
+          0.03150000050663948
+        ],
+        "size": [
+          0.16500000655651093,
+          0.004000000189989805,
+          0.03099999949336052
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_control_print/Water_control_print",
+      "points": 1544,
+      "faces": 1126,
+      "world_bounds": {
+        "min": [
+          0.36717499420046806,
+          -0.16021500051462392,
+          0.011700000611930517
+        ],
+        "max": [
+          0.4628249891102314,
+          -0.16018499928899602,
+          0.020910001361877307
+        ],
+        "size": [
+          0.09564999490976334,
+          3.000122562790697e-05,
+          0.00921000074994679
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_007/Cube_022",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.4134999916423112,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.41649999166838825,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop/Cube_008",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.18549999548122287,
+          -0.06499999947845936,
+          0.0400000000372529
+        ],
+        "max": [
+          0.1924999956972897,
+          -0.044999999925494194,
+          0.05200000014156103
+        ],
+        "size": [
+          0.007000000216066837,
+          0.019999999552965164,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_001/Cube_016",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.22250000690110028,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.2255000069271773,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Rod_foot_001/Cylinder_007",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.43599998764693737,
+          0.1660000067204237,
+          0.00800000037997961
+        ],
+        "max": [
+          0.4639999885112047,
+          0.19400000758469105,
+          0.03799999970942736
+        ],
+        "size": [
+          0.02800000086426735,
+          0.02800000086426735,
+          0.029999999329447746
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop/Cube_012",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.36549998773261905,
+          -0.06499999947845936,
+          0.0400000000372529
+        ],
+        "max": [
+          0.3724999879486859,
+          -0.044999999925494194,
+          0.05200000014156103
+        ],
+        "size": [
+          0.007000000216066837,
+          0.019999999552965164,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_cap/Cylinder_032",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.47400000877678394,
+          0.12099999375641346,
+          0.10399999935179949
+        ],
+        "max": [
+          0.5060000102967024,
+          0.1529999952763319,
+          0.11599999945610762
+        ],
+        "size": [
+          0.03200000151991844,
+          0.03200000151991844,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_008/Cube_023",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.42449999903328717,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.4274999990593642,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop_001/Cube_009",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2774999882094562,
+          -0.06499999947845936,
+          0.0400000000372529
+        ],
+        "max": [
+          0.28449998842552304,
+          -0.044999999925494194,
+          0.05200000014156103
+        ],
+        "size": [
+          0.007000000216066837,
+          0.019999999552965164,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_control_card/Cube_047",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.33249998837709427,
+          -0.16000000736676157,
+          0.0005000010132789612
+        ],
+        "max": [
+          0.4974999949336052,
+          -0.15600000717677176,
+          0.03150000050663948
+        ],
+        "size": [
+          0.16500000655651093,
+          0.004000000189989805,
+          0.03099999949336052
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_002/Cube_017",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.23349999939091504,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.23649999941699207,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Upper_crossbar/Cylinder_008",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.19999999552965164,
+          0.17500000726431605,
+          0.26899998914450407
+        ],
+        "max": [
+          0.44999998062849045,
+          0.1850000070407987,
+          0.27899998892098665
+        ],
+        "size": [
+          0.2499999850988388,
+          0.009999999776482638,
+          0.009999999776482582
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop_001/Cube_013",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.4574999953620136,
+          -0.06499999947845936,
+          0.0400000000372529
+        ],
+        "max": [
+          0.4644999955780804,
+          -0.044999999925494194,
+          0.05200000014156103
+        ],
+        "size": [
+          0.007000000216066837,
+          0.019999999552965164,
+          0.012000000104308128
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_009/Cube_024",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.43649999354965985,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.4394999935757369,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reaction_speed_dial/Cylinder_001",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2680000104010105,
+          -0.12100000193975517,
+          0.016000000360485135
+        ],
+        "max": [
+          0.28600000962615013,
+          -0.1149999994907563,
+          0.034000000384572925
+        ],
+        "size": [
+          0.017999999225139618,
+          0.00600000244899887,
+          0.01800000002408779
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_contents/Cylinder_031",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4670000094920397,
+          0.1139999944716692,
+          0.005499999970197678
+        ],
+        "max": [
+          0.5130000095814466,
+          0.15999999456107616,
+          0.08050000295042992
+        ],
+        "size": [
+          0.04600000008940697,
+          0.04600000008940697,
+          0.07500000298023224
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid_5percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle/Cylinder_030",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.46500000916421413,
+          0.11199999414384365,
+          0.0030000023543834686
+        ],
+        "max": [
+          0.5150000099092722,
+          0.1619999948889017,
+          0.10500000044703484
+        ],
+        "size": [
+          0.05000000074505806,
+          0.05000000074505806,
+          0.10199999809265137
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar_003/Cube_018",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.244500006781891,
+          0.008399999962421134,
+          0.056999996304512024
+        ],
+        "max": [
+          0.24750000680796802,
+          0.009199999942211434,
+          0.1469999998807907
+        ],
+        "size": [
+          0.003000000026077032,
+          0.0007999999797903001,
+          0.09000000357627869
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/A_holder_arm/Cylinder_009",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.2509999950416386,
+          0.10299999160336556,
+          0.2069999850268862
+        ],
+        "max": [
+          0.2589999954216182,
+          0.1800000007672399,
+          0.21500000591320778
+        ],
+        "size": [
+          0.00800000037997961,
+          0.07700000916387434,
+          0.008000020886321568
+        ]
+      },
+      "material": "/ClassicLab/_materials/Brushed_stainless"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Water_control_overhead_label/Water_control_overhead_label",
+      "points": 644,
+      "faces": 467,
+      "world_bounds": {
+        "min": [
+          0.38626799173653126,
+          -0.13736600358970463,
+          0.03998499910630926
+        ],
+        "max": [
+          0.4437319915741682,
+          -0.12975400313735008,
+          0.040014999105551396
+        ],
+        "size": [
+          0.05746399983763695,
+          0.00761200045235455,
+          2.9999999242136255e-05
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Fixtures/Control_speed_dial/Cylinder_003",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.4479999877512455,
+          -0.12100000193975517,
+          0.016000000360485135
+        ],
+        "max": [
+          0.4659999869763851,
+          -0.1149999994907563,
+          0.034000000384572925
+        ],
+        "size": [
+          0.017999999225139618,
+          0.00600000244899887,
+          0.01800000002408779
+        ]
+      },
+      "material": "/ClassicLab/_materials/Fixture_gray"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup/A_dosing_cup",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.2280000001192093,
+          0.07599999755620956,
+          0.1940000057220459
+        ],
+        "max": [
+          0.28200000524520874,
+          0.1340000033378601,
+          0.2669999897480011
+        ],
+        "size": [
+          0.05400000512599945,
+          0.05800000578165054,
+          0.0729999840259552
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_valve_handle/Cylinder_013",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.2409999966621399,
+          0.10000000009313226,
+          0.1840000064112246
+        ],
+        "max": [
+          0.26899999380111694,
+          0.10600000014528632,
+          0.19000000646337867
+        ],
+        "size": [
+          0.02799999713897705,
+          0.006000000052154064,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_valve_body/Cylinder_012",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.2469999948516488,
+          0.09499999973922968,
+          0.17600000277161598
+        ],
+        "max": [
+          0.26299999561160803,
+          0.1110000004991889,
+          0.1940000019967556
+        ],
+        "size": [
+          0.01600000075995922,
+          0.01600000075995922,
+          0.017999999225139618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Reagent_A_blue_identifier"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_identity/A_identity",
+      "points": 944,
+      "faces": 692,
+      "world_bounds": {
+        "min": [
+          0.2336267437785864,
+          0.07178500061623451,
+          0.23637349228174925
+        ],
+        "max": [
+          0.27637324668467045,
+          0.07181500140776717,
+          0.24232349312132656
+        ],
+        "size": [
+          0.04274650290608406,
+          3.000079153266111e-05,
+          0.005950000839577307
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_3/Cube_028",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.26196001190692186,
+          0.07819000308518298,
+          0.22650000301655382
+        ],
+        "max": [
+          0.27396001201123,
+          0.0786900031089317,
+          0.22720000299159437
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_delivery_stem/Cylinder_014",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.21452337495845053,
+          -0.04086965054374185,
+          0.16151112574563997
+        ],
+        "max": [
+          0.2574766279025724,
+          0.10386965155702081,
+          0.18048888188375456
+        ],
+        "size": [
+          0.04295325294412189,
+          0.14473930210076266,
+          0.018977756138114588
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_rim/Torus_001",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.22769999504089355,
+          0.07569999992847443,
+          0.2661999897682108
+        ],
+        "max": [
+          0.2822999954223633,
+          0.13030000030994415,
+          0.2677999897277914
+        ],
+        "size": [
+          0.05460000038146973,
+          0.05460000038146973,
+          0.0015999999595806003
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_spout_tip/Cylinder_015",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.2144999927841127,
+          -0.04250000104742178,
+          0.14900001071869717
+        ],
+        "max": [
+          0.21949999267235398,
+          -0.03749999716443888,
+          0.16400001264632358
+        ],
+        "size": [
+          0.004999999888241291,
+          0.005000003882982898,
+          0.015000001927626405
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_clear_reagent/Cylinder_011",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.22949999570846558,
+          0.07750000059604645,
+          0.19750000163912773
+        ],
+        "max": [
+          0.28049999475479126,
+          0.12849999964237213,
+          0.24450000002980232
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.04699999839067459
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid_5percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_2/Cube_027",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.26196001190692186,
+          0.07819000308518298,
+          0.21555000392254442
+        ],
+        "max": [
+          0.27396001201123,
+          0.0786900031089317,
+          0.21625000389758497
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_bottom/Cylinder_010",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.22799999453127384,
+          0.07599999941885471,
+          0.19400000129826367
+        ],
+        "max": [
+          0.281999995931983,
+          0.13000000081956387,
+          0.1970000013243407
+        ],
+        "size": [
+          0.05400000140070915,
+          0.05400000140070915,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_4/Cube_029",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.26196001190692186,
+          0.07819000308518298,
+          0.23745000211056322
+        ],
+        "max": [
+          0.27396001201123,
+          0.0786900031089317,
+          0.23815000208560377
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_1/Cube_026",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.26196001190692186,
+          0.07819000308518298,
+          0.20460000482853502
+        ],
+        "max": [
+          0.27396001201123,
+          0.0786900031089317,
+          0.20530000480357558
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_A/A_identity_plate/Cube_030",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2199999950826168,
+          0.07199999887961894,
+          0.22899999283254147
+        ],
+        "max": [
+          0.28999999538064003,
+          0.07399999897461385,
+          0.24899999238550663
+        ],
+        "size": [
+          0.07000000029802322,
+          0.0020000000949949026,
+          0.019999999552965164
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_1/Cube_031",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3919600071385503,
+          0.07819000308518298,
+          0.20460000482853502
+        ],
+        "max": [
+          0.4039600072428584,
+          0.0786900031089317,
+          0.20530000480357558
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_identity/B_identity",
+      "points": 1324,
+      "faces": 981,
+      "world_bounds": {
+        "min": [
+          0.3647062387317419,
+          0.07178500061623451,
+          0.23637349228174925
+        ],
+        "max": [
+          0.4059312418103218,
+          0.07181500140776717,
+          0.24232349312132656
+        ],
+        "size": [
+          0.0412250030785799,
+          3.000079153266111e-05,
+          0.005950000839577307
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup/B_dosing_cup",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.3580000102519989,
+          0.07599999755620956,
+          0.1940000057220459
+        ],
+        "max": [
+          0.41200000047683716,
+          0.1340000033378601,
+          0.2669999897480011
+        ],
+        "size": [
+          0.05399999022483826,
+          0.05800000578165054,
+          0.0729999840259552
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_valve_body/Cylinder_019",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.3769999900832772,
+          0.09499999973922968,
+          0.17600000277161598
+        ],
+        "max": [
+          0.39299999084323645,
+          0.1110000004991889,
+          0.1940000019967556
+        ],
+        "size": [
+          0.01600000075995922,
+          0.01600000075995922,
+          0.017999999225139618
+        ]
+      },
+      "material": "/ClassicLab/_materials/Reagent_B_ochre_identifier"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_3/Cube_033",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3919600071385503,
+          0.07819000308518298,
+          0.22650000301655382
+        ],
+        "max": [
+          0.4039600072428584,
+          0.0786900031089317,
+          0.22720000299159437
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_valve_handle/Cylinder_020",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.3709999918937683,
+          0.10000000009313226,
+          0.1840000064112246
+        ],
+        "max": [
+          0.39899998903274536,
+          0.10600000014528632,
+          0.19000000646337867
+        ],
+        "size": [
+          0.02799999713897705,
+          0.006000000052154064,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_rim/Torus_003",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.357699990272522,
+          0.07569999992847443,
+          0.2661999897682108
+        ],
+        "max": [
+          0.4122999906539917,
+          0.13030000030994415,
+          0.2677999897277914
+        ],
+        "size": [
+          0.05460000038146973,
+          0.05460000038146973,
+          0.0015999999595806003
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_delivery_stem/Cylinder_021",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.2510413249158439,
+          -0.04182751405408332,
+          0.16150642329983156
+        ],
+        "max": [
+          0.3869586865282479,
+          0.10482751506736228,
+          0.18049358432956297
+        ],
+        "size": [
+          0.13591736161240398,
+          0.1466550291214456,
+          0.018987161029731414
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_clear_reagent/Cylinder_018",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.359499990940094,
+          0.07750000059604645,
+          0.19750000163912773
+        ],
+        "max": [
+          0.4104999899864197,
+          0.12849999964237213,
+          0.24450000002980232
+        ],
+        "size": [
+          0.050999999046325684,
+          0.050999999046325684,
+          0.04699999839067459
+        ]
+      },
+      "material": "/ClassicLab/_materials/Clear_liquid_5percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_2/Cube_032",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3919600071385503,
+          0.07819000308518298,
+          0.21555000392254442
+        ],
+        "max": [
+          0.4039600072428584,
+          0.0786900031089317,
+          0.21625000389758497
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_bottom/Cylinder_017",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.35799998976290226,
+          0.07599999941885471,
+          0.19400000129826367
+        ],
+        "max": [
+          0.4119999911636114,
+          0.13000000081956387,
+          0.1970000013243407
+        ],
+        "size": [
+          0.05400000140070915,
+          0.05400000140070915,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_spout_tip/Cylinder_022",
+      "points": 64,
+      "faces": 34,
+      "world_bounds": {
+        "min": [
+          0.2504999912343919,
+          -0.04250000104742178,
+          0.14900001071869717
+        ],
+        "max": [
+          0.2554999911226332,
+          -0.03749999716443888,
+          0.16400001264632358
+        ],
+        "size": [
+          0.004999999888241291,
+          0.005000003882982898,
+          0.015000001927626405
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_4/Cube_034",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.3919600071385503,
+          0.07819000308518298,
+          0.23745000211056322
+        ],
+        "max": [
+          0.4039600072428584,
+          0.0786900031089317,
+          0.23815000208560377
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reagent_B/B_identity_plate/Cube_035",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.3499999903142452,
+          0.07199999887961894,
+          0.22899999283254147
+        ],
+        "max": [
+          0.41999999061226845,
+          0.07399999897461385,
+          0.24899999238550663
+        ],
+        "size": [
+          0.07000000029802322,
+          0.0020000000949949026,
+          0.019999999552965164
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_021/Icosphere_021",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25233357888646424,
+          -0.02341994852758944,
+          0.053309782582800835
+        ],
+        "max": [
+          0.25383967417292297,
+          -0.021987581392750144,
+          0.05499365256400779
+        ],
+        "size": [
+          0.0015060952864587307,
+          0.0014323671348392963,
+          0.0016838699812069535
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_093/Icosphere_093",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26639208325650543,
+          -0.054372266633436084,
+          0.10163084277883172
+        ],
+        "max": [
+          0.26850238314364105,
+          -0.05236527253873646,
+          0.1039902358315885
+        ],
+        "size": [
+          0.002110299887135625,
+          0.002006994094699621,
+          0.0023593930527567863
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_034/Icosphere_034",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2367294337018393,
+          -0.09186023526126519,
+          0.09400848904624581
+        ],
+        "max": [
+          0.23853821499506012,
+          -0.09013999946182594,
+          0.09603077312931418
+        ],
+        "size": [
+          0.001808781293220818,
+          0.0017202357994392514,
+          0.002022284083068371
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_liquid/Cylinder_024",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.19449999928474426,
+          -0.09549999982118607,
+          0.0430000014603138
+        ],
+        "max": [
+          0.27549999952316284,
+          -0.014499999582767487,
+          0.11400000378489494
+        ],
+        "size": [
+          0.08100000023841858,
+          0.08100000023841858,
+          0.07100000232458115
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_white_suspension"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_088/Icosphere_088",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2562890865956433,
+          -0.040889299707487226,
+          0.10084832005668432
+        ],
+        "max": [
+          0.25762680982006714,
+          -0.039617062313482165,
+          0.10234394378494471
+        ],
+        "size": [
+          0.0013377232244238257,
+          0.0012722373940050602,
+          0.001495623728260398
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_009/Icosphere_009",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20470226026372984,
+          -0.0707656504237093,
+          0.05204430699814111
+        ],
+        "max": [
+          0.20604309224290773,
+          -0.0694904564297758,
+          0.05354340642224997
+        ],
+        "size": [
+          0.0013408319791778922,
+          0.0012751939939334989,
+          0.0014990994241088629
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_084/Icosphere_084",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23461580893490463,
+          -0.030902064172551036,
+          0.0643526865169406
+        ],
+        "max": [
+          0.23674013593699783,
+          -0.028881729813292623,
+          0.06672776211053133
+        ],
+        "size": [
+          0.002124327002093196,
+          0.0020203343592584133,
+          0.0023750755935907364
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_083/Icosphere_083",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2526581546990201,
+          -0.07262166240252554,
+          0.06731802271679044
+        ],
+        "max": [
+          0.25453201320488006,
+          -0.07083953521214426,
+          0.06941306544467807
+        ],
+        "size": [
+          0.001873858505859971,
+          0.0017821271903812885,
+          0.0020950427278876305
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_022/Icosphere_022",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24082136509241536,
+          -0.08665685431333259,
+          0.05936760327313095
+        ],
+        "max": [
+          0.24192675593076274,
+          -0.08560557587770745,
+          0.060603470890782773
+        ],
+        "size": [
+          0.0011053908383473754,
+          0.001051278435625136,
+          0.0012358676176518202
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_035/Icosphere_035",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23550125485053286,
+          -0.08074015221791342,
+          0.06082651508040726
+        ],
+        "max": [
+          0.23727339977631345,
+          -0.07905475952429697,
+          0.06280783819966018
+        ],
+        "size": [
+          0.0017721449257805943,
+          0.0016853926936164498,
+          0.00198132311925292
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_068/Icosphere_068",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23453657794743776,
+          -0.09297867765417323,
+          0.07184314588084817
+        ],
+        "max": [
+          0.23561642598360777,
+          -0.09195169160375372,
+          0.07305045565590262
+        ],
+        "size": [
+          0.0010798480361700058,
+          0.0010269860504195094,
+          0.0012073097750544548
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_meniscus/Cylinder_025",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.1946999989449978,
+          -0.09530000016093254,
+          0.11380000345525332
+        ],
+        "max": [
+          0.2752999998629093,
+          -0.014699999243021011,
+          0.11460000343504362
+        ],
+        "size": [
+          0.08060000091791153,
+          0.08060000091791153,
+          0.0007999999797903001
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_white_suspension"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_071/Icosphere_071",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.27096603414975107,
+          -0.04592767113354057,
+          0.08915268920827657
+        ],
+        "max": [
+          0.27296419837512076,
+          -0.0440273234853521,
+          0.0913867101771757
+        ],
+        "size": [
+          0.001998164225369692,
+          0.0019003476481884718,
+          0.002234020968899131
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_010/Icosphere_010",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25788917229510844,
+          -0.038217571564018726,
+          0.10333274817094207
+        ],
+        "max": [
+          0.26002393080852926,
+          -0.03618731629103422,
+          0.10571948671713471
+        ],
+        "size": [
+          0.0021347585134208202,
+          0.0020302552729845047,
+          0.002386738546192646
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_063/Icosphere_063",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2628041845164262,
+          -0.06605590524850413,
+          0.10293707955861464
+        ],
+        "max": [
+          0.26423117105150595,
+          -0.0646987741929479,
+          0.10453250299906358
+        ],
+        "size": [
+          0.0014269865350797772,
+          0.0013571310555562377,
+          0.0015954234404489398
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_073/Icosphere_073",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25892436841968447,
+          -0.040015198464971036,
+          0.09600453084567562
+        ],
+        "max": [
+          0.26037847658153623,
+          -0.03863227349938825,
+          0.09763027721783146
+        ],
+        "size": [
+          0.0014541081618517637,
+          0.001382924965582788,
+          0.0016257463721558452
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_023/Icosphere_023",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2235029418952763,
+          -0.07867401681141928,
+          0.0673848818987608
+        ],
+        "max": [
+          0.22522252006456256,
+          -0.07703861751360819,
+          0.06930743344128132
+        ],
+        "size": [
+          0.001719578169286251,
+          0.001635399297811091,
+          0.001922551542520523
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_036/Icosphere_036",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20984668849268928,
+          -0.04277046525385231,
+          0.08875909919152036
+        ],
+        "max": [
+          0.21113689424237236,
+          -0.041543419123627245,
+          0.09020159667124972
+        ],
+        "size": [
+          0.001290205749683082,
+          0.0012270461302250624,
+          0.0014424974797293544
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_stir_bar/Cube_040",
+      "points": 96,
+      "faces": 98,
+      "world_bounds": {
+        "min": [
+          0.2171301131754521,
+          -0.0643018560373355,
+          0.043000000063329935
+        ],
+        "max": [
+          0.25286988563245505,
+          -0.04569814336661806,
+          0.049000000115484
+        ],
+        "size": [
+          0.03573977245700294,
+          0.01860371267071744,
+          0.006000000052154064
+        ]
+      },
+      "material": "/ClassicLab/_materials/White_reference_panel"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_011/Icosphere_011",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2510393027914688,
+          -0.08054145716596395,
+          0.0836742464452982
+        ],
+        "max": [
+          0.2530750270234421,
+          -0.07860538817476481,
+          0.08595026098191738
+        ],
+        "size": [
+          0.0020357242319732904,
+          0.0019360689911991358,
+          0.0022760145366191864
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_053/Icosphere_053",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23716701718512923,
+          -0.09432048670714721,
+          0.053441853437107056
+        ],
+        "max": [
+          0.2384711637860164,
+          -0.0930801821523346,
+          0.05489993729861453
+        ],
+        "size": [
+          0.0013041466008871794,
+          0.0012403045548126101,
+          0.0014580838615074754
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_091/Icosphere_091",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22619069612119347,
+          -0.017438401526305825,
+          0.10425953270168975
+        ],
+        "max": [
+          0.2273422380676493,
+          -0.016343231254722923,
+          0.1055469989660196
+        ],
+        "size": [
+          0.0011515419464558363,
+          0.0010951702715829015,
+          0.0012874662643298507
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_024/Icosphere_024",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22517450532177463,
+          -0.0329582134145312,
+          0.0970665174536407
+        ],
+        "max": [
+          0.22702370205661282,
+          -0.03119954076828435,
+          0.09913398744538426
+        ],
+        "size": [
+          0.0018491967348381877,
+          0.0017586726462468505,
+          0.0020674699917435646
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_048/Icosphere_048",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24518441525287926,
+          -0.09315944346599281,
+          0.08656478713965043
+        ],
+        "max": [
+          0.2464732292573899,
+          -0.09193372097797692,
+          0.08800572861218825
+        ],
+        "size": [
+          0.001288814004510641,
+          0.0012257224880158901,
+          0.0014409414725378156
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_037/Icosphere_037",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2355305269593373,
+          -0.08473912853514776,
+          0.10435282264370471
+        ],
+        "max": [
+          0.23694246856030077,
+          -0.08339630585396662,
+          0.1059314253507182
+        ],
+        "size": [
+          0.0014119416009634733,
+          0.0013428226811811328,
+          0.0015786027070134878
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_086/Icosphere_086",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24625574686797336,
+          -0.08148369268747047,
+          0.07864934019744396
+        ],
+        "max": [
+          0.24786723515717313,
+          -0.07995109184412286,
+          0.08045104332268238
+        ],
+        "size": [
+          0.0016114882891997695,
+          0.001532600843347609,
+          0.0018017031252384186
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_078/Icosphere_078",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23972210008651018,
+          -0.019994740141555667,
+          0.08863278443459421
+        ],
+        "max": [
+          0.24183774273842573,
+          -0.017982664750888944,
+          0.09099815075751394
+        ],
+        "size": [
+          0.0021156426519155502,
+          0.0020120753906667233,
+          0.0023653663229197264
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_050/Icosphere_050",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2377301078522578,
+          -0.09340493602212518,
+          0.07232475752243772
+        ],
+        "max": [
+          0.23939994757529348,
+          -0.09181684034410864,
+          0.07419169967761263
+        ],
+        "size": [
+          0.0016698397230356932,
+          0.0015880956780165434,
+          0.001866942155174911
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_043/Icosphere_043",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2629736543749459,
+          -0.057451077504083514,
+          0.0781403942964971
+        ],
+        "max": [
+          0.26479257334722206,
+          -0.05572120030410588,
+          0.08017401257529855
+        ],
+        "size": [
+          0.0018189189722761512,
+          0.0017298771999776363,
+          0.002033618278801441
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_012/Icosphere_012",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.21747560461517423,
+          -0.030369566520676017,
+          0.092609619256109
+        ],
+        "max": [
+          0.21891676227096468,
+          -0.028998958179727197,
+          0.09422088647261262
+        ],
+        "size": [
+          0.0014411576557904482,
+          0.0013706083409488201,
+          0.0016112672165036201
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_081/Icosphere_081",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2566911351168528,
+          -0.0339359434437938,
+          0.07944616756867617
+        ],
+        "max": [
+          0.25864180212374777,
+          -0.03208076785085723,
+          0.08162708499003202
+        ],
+        "size": [
+          0.001950667006894946,
+          0.0018551755929365754,
+          0.0021809174213558435
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_000/Icosphere",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25841060833772644,
+          -0.06733409053413197,
+          0.10755361104384065
+        ],
+        "max": [
+          0.2597394828335382,
+          -0.06607026868732646,
+          0.10903934156522155
+        ],
+        "size": [
+          0.0013288744958117604,
+          0.001263821846805513,
+          0.0014857305213809013
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_077/Icosphere_077",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22744392533786595,
+          -0.07961370656266809,
+          0.05248775414656848
+        ],
+        "max": [
+          0.22929839114658535,
+          -0.0778500228188932,
+          0.05456111498642713
+        ],
+        "size": [
+          0.0018544658087193966,
+          0.001763683743774891,
+          0.002073360839858651
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_025/Icosphere_025",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.21443373151123524,
+          -0.07257843809202313,
+          0.07893165131099522
+        ],
+        "max": [
+          0.21654188446700573,
+          -0.07057348592206836,
+          0.08128864387981594
+        ],
+        "size": [
+          0.0021081529557704926,
+          0.0020049521699547768,
+          0.002356992568820715
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_066/Icosphere_066",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2575588748441078,
+          -0.08212448965059593,
+          0.08074796939035878
+        ],
+        "max": [
+          0.2590688540949486,
+          -0.08068842877401039,
+          0.08243618166306987
+        ],
+        "size": [
+          0.0015099792508408427,
+          0.0014360608765855432,
+          0.0016882122727110982
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_076/Icosphere_076",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2590112964389846,
+          -0.06524683954194188,
+          0.08672031352762133
+        ],
+        "max": [
+          0.26088324387092143,
+          -0.06346652982756495,
+          0.08881321956869215
+        ],
+        "size": [
+          0.00187194743193686,
+          0.0017803097143769264,
+          0.002092906041070819
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_038/Icosphere_038",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2628989762160927,
+          -0.06209405808476731,
+          0.09670803206972778
+        ],
+        "max": [
+          0.26411909400485456,
+          -0.060933668923098594,
+          0.0980721686501056
+        ],
+        "size": [
+          0.0012201177887618542,
+          0.0011603891616687179,
+          0.0013641365803778172
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_051/Icosphere_051",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22673935786588117,
+          -0.08921065251342952,
+          0.08892145624849945
+        ],
+        "max": [
+          0.22784506186144426,
+          -0.08815907617099583,
+          0.09015767404343933
+        ],
+        "size": [
+          0.0011057039955630898,
+          0.001051576342433691,
+          0.0012362177949398756
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_061/Icosphere_061",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20637690945295617,
+          -0.05197958560893312,
+          0.05697055329801515
+        ],
+        "max": [
+          0.20756959990831092,
+          -0.05084528116276488,
+          0.058304025034885854
+        ],
+        "size": [
+          0.0011926904553547502,
+          0.0011343044461682439,
+          0.001333471736870706
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_013/Icosphere_013",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20479065331164747,
+          -0.050913936633151025,
+          0.09883693442679942
+        ],
+        "max": [
+          0.20642036048229784,
+          -0.04936400876613334,
+          0.10065900697372854
+        ],
+        "size": [
+          0.001629707170650363,
+          0.0015499278670176864,
+          0.001822072546929121
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_099/Icosphere_099",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22516757913399488,
+          -0.02608221594709903,
+          0.05109654902480543
+        ],
+        "max": [
+          0.22722243599127978,
+          -0.024127950775437057,
+          0.05339395464397967
+        ],
+        "size": [
+          0.0020548568572849035,
+          0.001954265171661973,
+          0.002297405619174242
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_056/Icosphere_056",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24259287730092183,
+          -0.029514191613998264,
+          0.09764800843549892
+        ],
+        "max": [
+          0.24392055853968486,
+          -0.02825150458374992,
+          0.09913240495370701
+        ],
+        "size": [
+          0.0013276812387630343,
+          0.001262687030248344,
+          0.0014843965182080865
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_026/Icosphere_026",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20627827825956047,
+          -0.05773947399575263,
+          0.10553046630229801
+        ],
+        "max": [
+          0.20772405085153878,
+          -0.05636447656434029,
+          0.10714689327869564
+        ],
+        "size": [
+          0.0014457725919783115,
+          0.0013749974314123392,
+          0.0016164269763976336
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_094/Icosphere_094",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24238156259525567,
+          -0.08688017958775163,
+          0.06698058603797108
+        ],
+        "max": [
+          0.24448860704433173,
+          -0.08487628167495131,
+          0.06933633924927562
+        ],
+        "size": [
+          0.0021070444490760565,
+          0.002003897912800312,
+          0.0023557532113045454
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_039/Icosphere_039",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20437270734691992,
+          -0.05647755856625736,
+          0.10096304572653025
+        ],
+        "max": [
+          0.20621063973521814,
+          -0.05472959880717099,
+          0.10301792167592794
+        ],
+        "size": [
+          0.0018379323882982135,
+          0.0017479597590863705,
+          0.002054875949397683
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_052/Icosphere_052",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2675202456302941,
+          -0.056575097143650055,
+          0.06755249988054857
+        ],
+        "max": [
+          0.2689434322528541,
+          -0.05522157996892929,
+          0.06914367486024275
+        ],
+        "size": [
+          0.0014231866225600243,
+          0.0013535171747207642,
+          0.0015911749796941876
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_033/Icosphere_033",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26649313513189554,
+          -0.07531305361771956,
+          0.10247585119213909
+        ],
+        "max": [
+          0.2683054869994521,
+          -0.07358942221617326,
+          0.1045021271565929
+        ],
+        "size": [
+          0.001812351867556572,
+          0.0017236314015462995,
+          0.0020262759644538164
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_089/Icosphere_089",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2020966273266822,
+          -0.06149767304304987,
+          0.06828399957157671
+        ],
+        "max": [
+          0.20323960366658866,
+          -0.06041064893361181,
+          0.06956188916228712
+        ],
+        "size": [
+          0.001142976339906454,
+          0.0010870241094380617,
+          0.0012778895907104015
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_014/Icosphere_014",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2542194878333248,
+          -0.04158479202305898,
+          0.08859270974062383
+        ],
+        "max": [
+          0.25541762955253944,
+          -0.040445303136948496,
+          0.08993227616883814
+        ],
+        "size": [
+          0.0011981417192146182,
+          0.0011394888861104846,
+          0.0013395664282143116
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_046/Icosphere_046",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23586020048242062,
+          -0.027092288248240948,
+          0.05145555583294481
+        ],
+        "max": [
+          0.23728710238356143,
+          -0.025735237635672092,
+          0.053050884627737105
+        ],
+        "size": [
+          0.001426901901140809,
+          0.0013570506125688553,
+          0.0015953287947922945
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_027/Icosphere_027",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20775283046532422,
+          -0.05971466493792832,
+          0.10098542005289346
+        ],
+        "max": [
+          0.2095592551631853,
+          -0.0579966704826802,
+          0.1030050691915676
+        ],
+        "size": [
+          0.0018064246978610754,
+          0.0017179944552481174,
+          0.00201964913867414
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_040/Icosphere_040",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2110221206676215,
+          -0.066723340714816,
+          0.08158732124138623
+        ],
+        "max": [
+          0.21235178713686764,
+          -0.06545876566087827,
+          0.08307393721770495
+        ],
+        "size": [
+          0.001329666469246149,
+          0.0012645750539377332,
+          0.001486615976318717
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_041/Icosphere_041",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26225780334789306,
+          -0.03504706232342869,
+          0.0824611010029912
+        ],
+        "max": [
+          0.2644037714926526,
+          -0.03300614596810192,
+          0.08486037235707045
+        ],
+        "size": [
+          0.002145968144759536,
+          0.0020409163553267717,
+          0.0023992713540792465
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_069/Icosphere_069",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25039846228901297,
+          -0.0836087636416778,
+          0.05538552807411179
+        ],
+        "max": [
+          0.2521231718128547,
+          -0.0819684840971604,
+          0.057313816680107266
+        ],
+        "size": [
+          0.0017247095238417387,
+          0.0016402795445173979,
+          0.0019282886059954762
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_002/Icosphere_002",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2551515153609216,
+          -0.022148939897306263,
+          0.10844337893649936
+        ],
+        "max": [
+          0.25640910351648927,
+          -0.02095291472505778,
+          0.10984940873458982
+        ],
+        "size": [
+          0.001257588155567646,
+          0.0011960251722484827,
+          0.001406029798090458
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_079/Icosphere_079",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20544786611571908,
+          -0.03280327300308272,
+          0.060232279531192034
+        ],
+        "max": [
+          0.2068071230314672,
+          -0.03151055594207719,
+          0.061751978762913495
+        ],
+        "size": [
+          0.0013592569157481194,
+          0.0012927170610055327,
+          0.0015196992317214608
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_015/Icosphere_015",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22088790440466255,
+          -0.07976998423691839,
+          0.08199851552490145
+        ],
+        "max": [
+          0.22232961154077202,
+          -0.07839885319117457,
+          0.08361039718147367
+        ],
+        "size": [
+          0.0014417071361094713,
+          0.001371131045743823,
+          0.0016118816565722227
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_059/Icosphere_059",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25482303398894146,
+          -0.03818382229655981,
+          0.08948716754093766
+        ],
+        "max": [
+          0.2562408993835561,
+          -0.03683536592870951,
+          0.09107239311560988
+        ],
+        "size": [
+          0.001417865394614637,
+          0.0013484563678503036,
+          0.0015852255746722221
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_064/Icosphere_064",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.21696223312756047,
+          -0.030513076984789222,
+          0.08088252658490092
+        ],
+        "max": [
+          0.21844141191104427,
+          -0.029106308764312416,
+          0.08253630285616964
+        ],
+        "size": [
+          0.0014791787834838033,
+          0.0014067682204768062,
+          0.0016537762712687254
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_074/Icosphere_074",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2051511331810616,
+          -0.060388653830159456,
+          0.0960608251625672
+        ],
+        "max": [
+          0.20635185396531597,
+          -0.05924671207321808,
+          0.09740327519830316
+        ],
+        "size": [
+          0.0012007207842543721,
+          0.0011419417569413781,
+          0.0013424500357359648
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_2/Cube_037",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2491600038483739,
+          -0.09300999666447751,
+          0.074150001979433
+        ],
+        "max": [
+          0.261160003952682,
+          -0.09250999664072879,
+          0.07485000195447356
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_028/Icosphere_028",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20292083191452548,
+          -0.06190094636986032,
+          0.07084174803458154
+        ],
+        "max": [
+          0.2044874353450723,
+          -0.0604110331623815,
+          0.07259326823987067
+        ],
+        "size": [
+          0.0015666034305468202,
+          0.0014899132074788213,
+          0.0017515202052891254
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker/Reactive_condition_beaker",
+      "points": 384,
+      "faces": 288,
+      "world_bounds": {
+        "min": [
+          0.19300000369548798,
+          -0.09700000286102295,
+          0.03999999910593033
+        ],
+        "max": [
+          0.2770000100135803,
+          -0.008999999612569809,
+          0.1550000011920929
+        ],
+        "size": [
+          0.08400000631809235,
+          0.08800000324845314,
+          0.11500000208616257
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_bottom/Cylinder_023",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.19299999997019768,
+          -0.09699999913573265,
+          0.0399999984074384
+        ],
+        "max": [
+          0.2769999988377094,
+          -0.013000000268220901,
+          0.04299999843351543
+        ],
+        "size": [
+          0.08399999886751175,
+          0.08399999886751175,
+          0.003000000026077032
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_058/Icosphere_058",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22220838075736538,
+          -0.018178096564952284,
+          0.080227320198901
+        ],
+        "max": [
+          0.22337388986488804,
+          -0.017069642839487642,
+          0.08153040229808539
+        ],
+        "size": [
+          0.0011655091075226665,
+          0.001108453725464642,
+          0.0013030820991843939
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_003/Icosphere_003",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25667634373530746,
+          -0.033905834367033094,
+          0.08102097408846021
+        ],
+        "max": [
+          0.2585817896761,
+          -0.03209366608643904,
+          0.08315133256837726
+        ],
+        "size": [
+          0.0019054459407925606,
+          0.0018121682805940509,
+          0.0021303584799170494
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_016/Icosphere_016",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.21938380092615262,
+          -0.07742423843592405,
+          0.07471799303311855
+        ],
+        "max": [
+          0.22116217523580417,
+          -0.07573292125016451,
+          0.07670628081541508
+        ],
+        "size": [
+          0.0017783743096515536,
+          0.0016913171857595444,
+          0.0019882877822965384
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_054/Icosphere_054",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26678436138899997,
+          -0.0452045188867487,
+          0.08608407981228083
+        ],
+        "max": [
+          0.2685228671762161,
+          -0.043551118520554155,
+          0.08802779309917241
+        ],
+        "size": [
+          0.001738505787216127,
+          0.0016534003661945462,
+          0.0019437132868915796
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_097/Icosphere_097",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23049657547380775,
+          -0.032058706565294415,
+          0.0961242113262415
+        ],
+        "max": [
+          0.23241398727986962,
+          -0.030235158221330494,
+          0.0982679482549429
+        ],
+        "size": [
+          0.001917411806061864,
+          0.001823548343963921,
+          0.0021437369287014008
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_092/Icosphere_092",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23656042921356857,
+          -0.08676844439469278,
+          0.07615096832159907
+        ],
+        "max": [
+          0.23851836216636002,
+          -0.08490635850466788,
+          0.078340009204112
+        ],
+        "size": [
+          0.0019579329527914524,
+          0.0018620858900249004,
+          0.002189040882512927
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_029/Icosphere_029",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20981028862297535,
+          -0.05766924796625972,
+          0.09229160170070827
+        ],
+        "max": [
+          0.2116930764168501,
+          -0.0558786285109818,
+          0.09439662774093449
+        ],
+        "size": [
+          0.0018827877938747406,
+          0.0017906194552779198,
+          0.002105026040226221
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_049/Icosphere_049",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2483749642269686,
+          -0.03550068358890712,
+          0.06154674605932087
+        ],
+        "max": [
+          0.25035948015283793,
+          -0.03361331601627171,
+          0.06376550777349621
+        ],
+        "size": [
+          0.0019845159258693457,
+          0.0018873675726354122,
+          0.0022187617141753435
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_rim/Torus_004",
+      "points": 960,
+      "faces": 960,
+      "world_bounds": {
+        "min": [
+          0.19270000234246254,
+          -0.09729999676346779,
+          0.1542000012123026
+        ],
+        "max": [
+          0.27729999646544456,
+          -0.012700002640485764,
+          0.1558000011718832
+        ],
+        "size": [
+          0.08459999412298203,
+          0.08459999412298203,
+          0.0015999999595806003
+        ]
+      },
+      "material": "/ClassicLab/_materials/Approximate_glass_12percent"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_087/Icosphere_087",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2657341626472771,
+          -0.07857495226198807,
+          0.06385125144151971
+        ],
+        "max": [
+          0.2671227785758674,
+          -0.07725431345170364,
+          0.06540377513738349
+        ],
+        "size": [
+          0.0013886159285902977,
+          0.0013206388102844357,
+          0.0015525236958637834
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_096/Icosphere_096",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20413843425922096,
+          -0.03241024515591562,
+          0.05576832313090563
+        ],
+        "max": [
+          0.20551588502712548,
+          -0.031100224936380982,
+          0.05730836372822523
+        ],
+        "size": [
+          0.00137745076790452,
+          0.0013100202195346355,
+          0.001540040597319603
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_004/Icosphere_004",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.21594571322202682,
+          -0.02769662463106215,
+          0.060571613255888224
+        ],
+        "max": [
+          0.21724722534418106,
+          -0.02645882568322122,
+          0.062026751693338156
+        ],
+        "size": [
+          0.0013015121221542358,
+          0.001237798947840929,
+          0.001455138437449932
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_017/Icosphere_017",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2315358720952645,
+          -0.016215874580666423,
+          0.1083183070877567
+        ],
+        "max": [
+          0.23364810121711344,
+          -0.01420704578049481,
+          0.11067985685076565
+        ],
+        "size": [
+          0.002112229121848941,
+          0.0020088288001716137,
+          0.002361549763008952
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_082/Icosphere_082",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20586440531769767,
+          -0.06958004186162725,
+          0.0638160613598302
+        ],
+        "max": [
+          0.20771851571043953,
+          -0.06781669607153162,
+          0.06588902499061078
+        ],
+        "size": [
+          0.001854110392741859,
+          0.0017633457900956273,
+          0.0020729636307805777
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_001/Icosphere_001",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.19676352414535359,
+          -0.047342482255771756,
+          0.07173004507785663
+        ],
+        "max": [
+          0.19838213053299114,
+          -0.04580311174504459,
+          0.07353970647091046
+        ],
+        "size": [
+          0.0016186063876375556,
+          0.0015393705107271671,
+          0.0018096613930538297
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_030/Icosphere_030",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26003538368968293,
+          -0.05107155750738457,
+          0.09253714460646734
+        ],
+        "max": [
+          0.2614801049348898,
+          -0.0496975599671714,
+          0.09415239613736048
+        ],
+        "size": [
+          0.0014447212452068925,
+          0.0013739975402131677,
+          0.001615251530893147
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_067/Icosphere_067",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2532744140480645,
+          -0.0261765475734137,
+          0.09732289251405746
+        ],
+        "max": [
+          0.25472542335046455,
+          -0.024796569778118283,
+          0.09894517424982041
+        ],
+        "size": [
+          0.0014510093024000525,
+          0.0013799777952954173,
+          0.0016222817357629538
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_1/Cube_036",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2491600038483739,
+          -0.09300999666447751,
+          0.056900000548921525
+        ],
+        "max": [
+          0.261160003952682,
+          -0.09250999664072879,
+          0.05760000052396208
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_005/Icosphere_005",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.262936249258928,
+          -0.0402764561586082,
+          0.08367099793395028
+        ],
+        "max": [
+          0.2646717877360061,
+          -0.03862587781623006,
+          0.08561139373341575
+        ],
+        "size": [
+          0.0017355384770780802,
+          0.0016505783423781395,
+          0.0019403957994654775
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_062/Icosphere_062",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25907938758609816,
+          -0.07862342189764604,
+          0.05156999407336116
+        ],
+        "max": [
+          0.26099104603054,
+          -0.07680534530663863,
+          0.05370729835703969
+        ],
+        "size": [
+          0.001911658444441855,
+          0.0018180765910074115,
+          0.0021373042836785316
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_018/Icosphere_018",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26951463846489787,
+          -0.07223349099513143,
+          0.08400457282550633
+        ],
+        "max": [
+          0.2714869794435799,
+          -0.07035770232323557,
+          0.08620972256176174
+        ],
+        "size": [
+          0.001972340978682041,
+          0.0018757886718958616,
+          0.0022051497362554073
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_072/Icosphere_072",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.19935492268996313,
+          -0.05954726441996172,
+          0.07840032305102795
+        ],
+        "max": [
+          0.2012308181147091,
+          -0.05776319996220991,
+          0.08049764309544116
+        ],
+        "size": [
+          0.001875895424745977,
+          0.0017840644577518106,
+          0.002097320044413209
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_057/Icosphere_057",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.22545439010718837,
+          -0.08812884177314118,
+          0.0989347401773557
+        ],
+        "max": [
+          0.22659346455475315,
+          -0.08704552863491699,
+          0.10020826722029597
+        ],
+        "size": [
+          0.0011390744475647807,
+          0.0010833131382241845,
+          0.001273527042940259
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_031/Icosphere_031",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2564654949819669,
+          -0.02841303328750655,
+          0.10818957886658609
+        ],
+        "max": [
+          0.25791835749987513,
+          -0.027031292964238673,
+          0.10981393256224692
+        ],
+        "size": [
+          0.0014528625179082155,
+          0.001381740323267877,
+          0.0016243536956608295
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_095/Icosphere_095",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25969539512880147,
+          -0.05554873601067811,
+          0.06735147815197706
+        ],
+        "max": [
+          0.2618069804739207,
+          -0.053540519322268665,
+          0.06971230823546648
+        ],
+        "size": [
+          0.002111585345119238,
+          0.0020082166884094477,
+          0.002360830083489418
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_044/Icosphere_044",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2332683131680824,
+          -0.025203242199495435,
+          0.07070687279338017
+        ],
+        "max": [
+          0.23470623040338978,
+          -0.023835715604946017,
+          0.07231451704865322
+        ],
+        "size": [
+          0.0014379172353073955,
+          0.0013675265945494175,
+          0.0016076442552730441
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_006/Icosphere_006",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26078559062443674,
+          -0.06712087785126641,
+          0.07099540869239718
+        ],
+        "max": [
+          0.2623559127096087,
+          -0.06562742794631049,
+          0.07275108655449003
+        ],
+        "size": [
+          0.001570322085171938,
+          0.0014934499049559236,
+          0.0017556778620928526
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_019/Icosphere_019",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2131662592291832,
+          -0.04201947874389589,
+          0.10452359181363136
+        ],
+        "max": [
+          0.21522627025842667,
+          -0.04006031178869307,
+          0.10682675975840539
+        ],
+        "size": [
+          0.0020600110292434692,
+          0.001959166955202818,
+          0.0023031679447740316
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_047/Icosphere_047",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2196947134216316,
+          -0.03472893877187744,
+          0.08137558255111799
+        ],
+        "max": [
+          0.22086175315780565,
+          -0.03361902938922867,
+          0.08268037583911791
+        ],
+        "size": [
+          0.001167039736174047,
+          0.001109909382648766,
+          0.001304793287999928
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_090/Icosphere_090",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.26235143444500864,
+          -0.0549520977656357,
+          0.10174443549476564
+        ],
+        "max": [
+          0.26366819837130606,
+          -0.053699793585110456,
+          0.1032166259828955
+        ],
+        "size": [
+          0.0013167639262974262,
+          0.0012523041805252433,
+          0.0014721904881298542
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_032/Icosphere_032",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20665113965515047,
+          -0.07370067411102355,
+          0.08331055846065283
+        ],
+        "max": [
+          0.20836443861480802,
+          -0.07207124656997621,
+          0.0852260896936059
+        ],
+        "size": [
+          0.0017132989596575499,
+          0.0016294275410473347,
+          0.0019155312329530716
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_085/Icosphere_085",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2496620793826878,
+          -0.03495336027117446,
+          0.09082371718250215
+        ],
+        "max": [
+          0.2508963565342128,
+          -0.033779504883568734,
+          0.09220368438400328
+        ],
+        "size": [
+          0.0012342771515250206,
+          0.0011738553876057267,
+          0.001379967201501131
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_045/Icosphere_045",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.20336275186855346,
+          -0.06373948010150343,
+          0.10251692333258688
+        ],
+        "max": [
+          0.20470065984409302,
+          -0.06246706692036241,
+          0.1040127535816282
+        ],
+        "size": [
+          0.001337907975539565,
+          0.0012724131811410189,
+          0.001495830249041319
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_042/Icosphere_042",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24777622835244983,
+          -0.07639855128945783,
+          0.1058054004679434
+        ],
+        "max": [
+          0.24941862805280834,
+          -0.0748365523177199,
+          0.10764166369335726
+        ],
+        "size": [
+          0.00164239970035851,
+          0.0015619989717379212,
+          0.0018362632254138589
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_070/Icosphere_070",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.21079066366655752,
+          -0.08041324059013277,
+          0.0887782218051143
+        ],
+        "max": [
+          0.21244919329183176,
+          -0.07883590122219175,
+          0.09063251892803237
+        ],
+        "size": [
+          0.001658529625274241,
+          0.001577339367941022,
+          0.0018542971229180694
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_007/Icosphere_007",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2615039760712534,
+          -0.06535292958142236,
+          0.06799057353055105
+        ],
+        "max": [
+          0.2630353157874197,
+          -0.06389655376551673,
+          0.06970266770804301
+        ],
+        "size": [
+          0.0015313397161662579,
+          0.0014563758159056306,
+          0.001712094177491963
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_080/Icosphere_080",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2127353857504204,
+          -0.03494883677922189,
+          0.08268609433434904
+        ],
+        "max": [
+          0.21411046280991286,
+          -0.033641074085608125,
+          0.08422348112799227
+        ],
+        "size": [
+          0.0013750770594924688,
+          0.0013077626936137676,
+          0.0015373867936432362
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_sediment/Cylinder_026",
+      "points": 128,
+      "faces": 66,
+      "world_bounds": {
+        "min": [
+          0.19460000097751617,
+          -0.09539999812841415,
+          0.04349999828264117
+        ],
+        "max": [
+          0.27539999783039093,
+          -0.014600001275539398,
+          0.05049999849870801
+        ],
+        "size": [
+          0.08079999685287476,
+          0.08079999685287476,
+          0.007000000216066837
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_settled_solid"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_020/Icosphere_020",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.23258944833651185,
+          -0.025904863490723073,
+          0.06456814636476338
+        ],
+        "max": [
+          0.23442808305844665,
+          -0.02415623574052006,
+          0.0666238076519221
+        ],
+        "size": [
+          0.0018386347219347954,
+          0.0017486277502030134,
+          0.0020556612871587276
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_065/Icosphere_065",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.2363599031814374,
+          -0.030573343799915165,
+          0.06826674216426909
+        ],
+        "max": [
+          0.2380428523174487,
+          -0.028972780390176922,
+          0.07014834112487733
+        ],
+        "size": [
+          0.0016829491360113025,
+          0.0016005634097382426,
+          0.001881598960608244
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_075/Icosphere_075",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.227270407252945,
+          -0.03168676787754521,
+          0.05524637451162562
+        ],
+        "max": [
+          0.22876881284173578,
+          -0.0302617140696384,
+          0.05692164698848501
+        ],
+        "size": [
+          0.0014984055887907743,
+          0.0014250538079068065,
+          0.0016752724768593907
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_3/Cube_038",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2491600038483739,
+          -0.09300999666447751,
+          0.09140000340994447
+        ],
+        "max": [
+          0.261160003952682,
+          -0.09250999664072879,
+          0.09210000338498503
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_4/Cube_039",
+      "points": 8,
+      "faces": 6,
+      "world_bounds": {
+        "min": [
+          0.2491600038483739,
+          -0.09300999666447751,
+          0.10864999738987535
+        ],
+        "max": [
+          0.261160003952682,
+          -0.09250999664072879,
+          0.10934999736491591
+        ],
+        "size": [
+          0.012000000104308128,
+          0.0005000000237487257,
+          0.000699999975040555
+        ]
+      },
+      "material": "/ClassicLab/_materials/Matte_charcoal_print"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_060/Icosphere_060",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.25719323550583795,
+          -0.03972295124549419,
+          0.0973451619502157
+        ],
+        "max": [
+          0.2590395530569367,
+          -0.03796701680403203,
+          0.0994094128254801
+        ],
+        "size": [
+          0.001846317551098764,
+          0.0017559344414621592,
+          0.002064250875264406
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_008/Icosphere_008",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.223547832632903,
+          -0.08234216790879145,
+          0.060991212842054665
+        ],
+        "max": [
+          0.22540651116287336,
+          -0.08057447749888524,
+          0.06306928384583443
+        ],
+        "size": [
+          0.0018586785299703479,
+          0.0017676904099062085,
+          0.002078071003779769
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_098/Icosphere_098",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.212707549915649,
+          -0.07589516177540645,
+          0.08876584225799888
+        ],
+        "max": [
+          0.21455880941357464,
+          -0.07413452729815617,
+          0.09083561843726784
+        ],
+        "size": [
+          0.0018512594979256392,
+          0.001760634477250278,
+          0.002069776179268956
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_055/Icosphere_055",
+      "points": 12,
+      "faces": 20,
+      "world_bounds": {
+        "min": [
+          0.24560253066010773,
+          -0.027171054272912443,
+          0.10222288843942806
+        ],
+        "max": [
+          0.247024493990466,
+          -0.025818700552918017,
+          0.10381269577192143
+        ],
+        "size": [
+          0.0014219633303582668,
+          0.0013523537199944258,
+          0.0015898073324933648
+        ]
+      },
+      "material": "/ClassicLab/_materials/Illustrative_enlarged_particles"
+    }
+  ],
+  "materials": [
+    {
+      "path": "/ClassicLab/_materials/Fixture_gray",
+      "universal_surface_shader": "/ClassicLab/_materials/Fixture_gray/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Warm_white_bench",
+      "universal_surface_shader": "/ClassicLab/_materials/Warm_white_bench/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Floor_gray",
+      "universal_surface_shader": "/ClassicLab/_materials/Floor_gray/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Approximate_glass_12percent",
+      "universal_surface_shader": "/ClassicLab/_materials/Approximate_glass_12percent/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.11999999731779099,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Matte_charcoal_print",
+      "universal_surface_shader": "/ClassicLab/_materials/Matte_charcoal_print/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Clear_liquid_5percent",
+      "universal_surface_shader": "/ClassicLab/_materials/Clear_liquid_5percent/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.05000000074505806,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/White_reference_panel",
+      "universal_surface_shader": "/ClassicLab/_materials/White_reference_panel/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Reagent_B_ochre_identifier",
+      "universal_surface_shader": "/ClassicLab/_materials/Reagent_B_ochre_identifier/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Brushed_stainless",
+      "universal_surface_shader": "/ClassicLab/_materials/Brushed_stainless/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Silicone_seats",
+      "universal_surface_shader": "/ClassicLab/_materials/Silicone_seats/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Reagent_A_blue_identifier",
+      "universal_surface_shader": "/ClassicLab/_materials/Reagent_A_blue_identifier/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_enlarged_particles",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_enlarged_particles/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_white_suspension",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_white_suspension/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 0.9399999976158142,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    },
+    {
+      "path": "/ClassicLab/_materials/Illustrative_settled_solid",
+      "universal_surface_shader": "/ClassicLab/_materials/Illustrative_settled_solid/Principled_BSDF",
+      "shader_id": "UsdPreviewSurface",
+      "opacity": 1.0,
+      "opacity_connected": false,
+      "opacityThreshold": 0.0
+    }
+  ],
+  "cameras": [
+    "/ClassicLab/ClassicLab/Cameras/Front/Front",
+    "/ClassicLab/ClassicLab/Cameras/Result/Result",
+    "/ClassicLab/ClassicLab/Cameras/Overhead/Overhead"
+  ],
+  "lights": [
+    {
+      "path": "/ClassicLab/ClassicLab/Lighting/Fill/Fill",
+      "type": "DiskLight",
+      "intensity": 20.690141677856445,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Lighting/Key/Key",
+      "type": "DiskLight",
+      "intensity": 31.83098793029785,
+      "exposure": 0.0,
+      "normalize": true
+    },
+    {
+      "path": "/ClassicLab/ClassicLab/Lighting/Top/Top",
+      "type": "DiskLight",
+      "intensity": 20.690141677856445,
+      "exposure": 0.0,
+      "normalize": true
+    }
+  ],
+  "proxies": [],
+  "world_mesh_bounds": {
+    "min": [
+      -99.89999999850988,
+      -100.0,
+      -0.8100000265985727
+    ],
+    "max": [
+      100.10000000149012,
+      100.0,
+      0.2880000025033951
+    ],
+    "size": [
+      200.0,
+      200.0,
+      1.0980000291019678
+    ]
+  },
+  "limitations": [
+    "Static geometry/material/bounds inspection at the selected time only; default is the default time",
+    "Proxy naming is heuristic unless --expect-proxy is supplied; proxy geometry is not a collider",
+    "Does not render, evaluate texture pixels, prove complete shader-network support, or validate physical/robot capability",
+    "Composed traversal uses selected variants; authored physics/dependencies are also inspected across layer specs"
+  ],
+  "ok": true
+}

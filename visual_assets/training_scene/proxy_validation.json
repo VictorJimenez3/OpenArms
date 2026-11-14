@@ -1,0 +1,104 @@
+[
+  {
+    "file": "01_vial_placement/ColliderProxies.usdc",
+    "mesh_count": 1,
+    "guide_only": true,
+    "physics_attached": false,
+    "bounds_min": [
+      -0.380000002682209,
+      -0.375,
+      -0.04399999976158142
+    ],
+    "bounds_max": [
+      0.619999997317791,
+      0.375,
+      0.0
+    ],
+    "ok": true
+  },
+  {
+    "file": "02_sample_sorting/ColliderProxies.usdc",
+    "mesh_count": 1,
+    "guide_only": true,
+    "physics_attached": false,
+    "bounds_min": [
+      -0.380000002682209,
+      -0.375,
+      -0.04399999976158142
+    ],
+    "bounds_max": [
+      0.619999997317791,
+      0.375,
+      0.0
+    ],
+    "ok": true
+  },
+  {
+    "file": "03_density/ColliderProxies.usdc",
+    "mesh_count": 1,
+    "guide_only": true,
+    "physics_attached": false,
+    "bounds_min": [
+      -0.380000002682209,
+      -0.375,
+      -0.04399999976158142
+    ],
+    "bounds_max": [
+      0.619999997317791,
+      0.375,
+      0.0
+    ],
+    "ok": true
+  },
+  {
+    "file": "04_ramp_friction/ColliderProxies.usdc",
+    "mesh_count": 1,
+    "guide_only": true,
+    "physics_attached": false,
+    "bounds_min": [
+      -0.380000002682209,
+      -0.375,
+      -0.04399999976158142
+    ],
+    "bounds_max": [
+      0.619999997317791,
+      0.375,
+      0.0
+    ],
+    "ok": true
+  },
+  {
+    "file": "05_lever_balance/ColliderProxies.usdc",
+    "mesh_count": 1,
+    "guide_only": true,
+    "physics_attached": false,
+    "bounds_min": [
+      -0.380000002682209,
+      -0.375,
+      -0.04399999976158142
+    ],
+    "bounds_max": [
+      0.619999997317791,
+      0.375,
+      0.0
+    ],
+    "ok": true
+  },
+  {
+    "file": "06_indicator/ColliderProxies.usdc",
+    "mesh_count": 1,
+    "guide_only": true,
+    "physics_attached": false,
+    "bounds_min": [
+      -0.380000002682209,
+      -0.375,
+      -0.04399999976158142
+    ],
+    "bounds_max": [
+      0.619999997317791,
+      0.375,
+      0.0
+    ],
+    "ok": true
+  }
+]

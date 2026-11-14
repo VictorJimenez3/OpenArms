@@ -1,0 +1,372 @@
+{
+  "id": "02_titration",
+  "name": "Acid-base titration",
+  "status": "ART_PREVIEW / ILLUSTRATIVE_SCIENCE",
+  "units": "meters",
+  "up_axis": "Z",
+  "default_prim": "/ClassicLab",
+  "table": {
+    "center": [
+      0.12,
+      0,
+      -0.022
+    ],
+    "size": [
+      1,
+      0.75,
+      0.044
+    ],
+    "top_z": 0
+  },
+  "robot": {
+    "source": "../assets/Robot_STATIC_ART_ONLY.usdc",
+    "preview_translation": [
+      -0.05,
+      0,
+      -0.03008145
+    ],
+    "runtime_reference": [
+      -0.05,
+      0,
+      0
+    ],
+    "additional_yaw": 0,
+    "scaled": false,
+    "camera_mounted": false,
+    "environment_inclusion": false,
+    "pose": "static original; not a qualified reachable pose"
+  },
+  "apparatus": {
+    "burette": {
+      "center_xy": [
+        0.245,
+        -0.055
+      ],
+      "top_z_m": 0.645,
+      "outlet_z_m": 0.168,
+      "outside_diameter_m": 0.0156,
+      "nominal_markings": "0-50 mL illustrative"
+    },
+    "flask": {
+      "center_xy": [
+        0.245,
+        -0.055
+      ],
+      "height_m": 0.118,
+      "outer_base_diameter_m": 0.078,
+      "base_z_m": 0.035,
+      "capacity_label": "250 mL"
+    },
+    "stand": {
+      "rod_xy": [
+        0.41,
+        0.153
+      ],
+      "rod_height_m": 0.661
+    },
+    "stirrer": {
+      "center": [
+        0.245,
+        -0.055,
+        0.014
+      ],
+      "size": [
+        0.154,
+        0.144,
+        0.028
+      ]
+    }
+  },
+  "active_source": {
+    "object": "Accessible dosing paddle",
+    "contact_center_m": [
+      0.223,
+      -0.098,
+      0.127
+    ],
+    "requirement": "gripper contacts widened removable lever adapter; original stopcock axis X; fixture kinematics and collision qualification pending"
+  },
+  "active_target": {
+    "flask_center_m": [
+      0.245,
+      -0.055,
+      0.094
+    ],
+    "mouth_center_m": [
+      0.245,
+      -0.055,
+      0.153
+    ],
+    "opening_diameter_m": 0.024
+  },
+  "science": {
+    "source": "Artist-authored illustrative acid-base indicator endpoint; no simulation or chemical model executed",
+    "liquid": "non-hazardous colored-water representation",
+    "drop": "one suspended mesh, no dynamics",
+    "pink": "static illustrative final state; not experimental evidence",
+    "clear_start": "separate clear reference vial"
+  },
+  "physics_apis": false,
+  "reach_verified": false,
+  "cameras": {
+    "Front": {
+      "position_m": [
+        1.1299999952316284,
+        -1.5800000429153442,
+        0.8199999928474426
+      ],
+      "euler_xyz_rad": [
+        1.301020860671997,
+        -4.9221299036616983e-08,
+        0.54817134141922
+      ],
+      "world_matrix_row_major": [
+        [
+          0.8534789085388184,
+          -0.13888831436634064,
+          0.5022785663604736,
+          1.1299999952316284
+        ],
+        [
+          0.5211274027824402,
+          0.2274649292230606,
+          -0.8226092457771301,
+          -1.5800000429153442
+        ],
+        [
+          4.9221299036616983e-08,
+          0.9638307690620422,
+          0.26651501655578613,
+          0.8199999928474426
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "focal_length_mm": 46.0,
+      "resolution": [
+        1600,
+        1000
+      ]
+    },
+    "Overhead": {
+      "position_m": [
+        0.14000000059604645,
+        0.03500000014901161,
+        1.399999976158142
+      ],
+      "euler_xyz_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "world_matrix_row_major": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.14000000059604645
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.03500000014901161
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.399999976158142
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "focal_length_mm": 44.0,
+      "resolution": [
+        1600,
+        1000
+      ]
+    },
+    "Result": {
+      "position_m": [
+        0.5199999809265137,
+        -0.6200000047683716,
+        0.3199999928474426
+      ],
+      "euler_xyz_rad": [
+        1.2701417207717896,
+        -3.6252707502626436e-09,
+        0.4514966309070587
+      ],
+      "world_matrix_row_major": [
+        [
+          0.8997951149940491,
+          -0.12921205163002014,
+          0.41674092411994934,
+          0.5199999809265137
+        ],
+        [
+          0.4363126754760742,
+          0.2664702832698822,
+          -0.8594328761100769,
+          -0.6200000047683716
+        ],
+        [
+          3.6252707502626436e-09,
+          0.9551428556442261,
+          0.296145498752594,
+          0.3199999928474426
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "focal_length_mm": 60.0,
+      "resolution": [
+        1600,
+        1000
+      ]
+    }
+  },
+  "groups": [
+    "Bench",
+    "Glassware",
+    "Titration",
+    "Stand_and_clamps",
+    "Reagent_and_catcher",
+    "Cameras",
+    "Lighting",
+    "Robot_ART_ONLY",
+    "Overlay_ART_ONLY"
+  ],
+  "runtime_contract": {
+    "dependencies": {
+      "environment": [],
+      "preview_robot": [
+        "../assets/Robot_STATIC_ART_ONLY.usdc"
+      ],
+      "textures": []
+    },
+    "conditions": [
+      {
+        "name": "Prepared sample A: normalized acid amount 1x",
+        "student_variable": "normalized acid amount 1 at fixed starting volume",
+        "fixed_assumptions": "same titrant strength, indicator response, starting volume, mixing and endpoint persistence rule",
+        "expected_observable": "record dose V_A to the same persistent faint-pink endpoint"
+      },
+      {
+        "name": "Prepared sample B: normalized acid amount 2x",
+        "student_variable": "normalized acid amount 2 at the same starting volume",
+        "fixed_assumptions": "same titrant strength, indicator response, starting volume, mixing and endpoint persistence rule",
+        "expected_observable": "ideal declared neutralization model predicts V_B approximately 2 V_A; this package does not execute the model"
+      }
+    ],
+    "controller_missing": true,
+    "reaction_indicator_mixing_model_missing": true,
+    "color_staging_is_runtime_proof": false,
+    "entities": {
+      "dosing_paddle": {
+        "prim_path": "/ClassicLab/Titration/Accessible_dosing_paddle",
+        "mobility": "intended movable fixture; no authored joint",
+        "contact_center_m": [
+          0.223,
+          -0.098,
+          0.127
+        ],
+        "contact_surface": "front and rear broad faces of teal pad",
+        "dimensions_m": [
+          0.029,
+          0.012,
+          0.02
+        ],
+        "approach": "from front (-Y), subject to robot-specific collision/reach validation",
+        "clearance": "pad extends 22 mm below nearby vertical shaft; all finger envelopes unverified",
+        "world_transform_row_major": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.22300000488758087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.09799999743700027
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.12700000405311584
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "stopcock": {
+        "prim_path": "/ClassicLab/Titration/PTFE_stopcock_plug",
+        "mobility": "intended rotation about world X",
+        "center_m": [
+          0.2475,
+          -0.055,
+          0.207
+        ],
+        "joint_missing": true
+      },
+      "receiving_flask": {
+        "prim_path": "/ClassicLab/Glassware/Open_250_mL_conical_endpoint_flask",
+        "mobility": "movable vessel, staged stationary on tile",
+        "target_opening_m": [
+          0.245,
+          -0.055,
+          0.153
+        ],
+        "opening_diameter_m": 0.024,
+        "body_height_m": 0.118,
+        "body_diameter_m": 0.078,
+        "grasp": "neck outer diameter 28 mm; no current flask-transfer task"
+      },
+      "passive_burette": {
+        "prim_path": "/ClassicLab/Glassware/Graduated_burette_open_glass_tube",
+        "mobility": "static clamped instrument",
+        "outlet_target_m": [
+          0.245,
+          -0.055,
+          0.168
+        ]
+      },
+      "passive_stand": {
+        "prim_path": "/ClassicLab/Stand_and_clamps",
+        "mobility": "static fixture"
+      },
+      "staged_drop": {
+        "prim_path": "/ClassicLab/Titration/ONE_staged_hanging_titrant_drop",
+        "mobility": "visual-only staged result"
+      },
+      "staged_pink": {
+        "prim_path": "/ClassicLab/Glassware/ILLUSTRATIVE_faint_pink_liquid",
+        "mobility": "visual-only staged result"
+      }
+    },
+    "execution_stages": [
+      "clear below endpoint",
+      "persistent faint pink at endpoint"
+    ]
+  }
+}

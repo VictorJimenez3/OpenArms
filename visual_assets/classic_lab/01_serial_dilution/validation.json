@@ -1,0 +1,60 @@
+{
+  "all_required_files_exist": true,
+  "files": {
+    "build.py": true,
+    "Scene.blend": true,
+    "Environment.usdc": true,
+    "Front.png": true,
+    "Overhead.png": true,
+    "Result.png": true,
+    "manifest.json": true,
+    "EXPERIMENT.md": true
+  },
+  "meters_per_unit": 1.0,
+  "up_axis": "Z",
+  "default_prim": "/ClassicLab",
+  "external_asset_dependencies": [],
+  "unresolved_dependencies": [],
+  "robot_prim_paths": [],
+  "physics_api_paths": [],
+  "missing_handoff_prim_paths": [],
+  "render_sizes_px": {
+    "Front.png": [
+      1600,
+      1000
+    ],
+    "Overhead.png": [
+      1600,
+      1000
+    ],
+    "Result.png": [
+      1600,
+      1000
+    ]
+  },
+  "visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "pending": [],
+    "note": "All views reviewed after transparency fix. Labels remain small in wide view; Result view makes gradient legible."
+  },
+  "limitations": [
+    "Static art only",
+    "No runtime dynamics, controller or reach validation",
+    "Color palette uncalibrated",
+    "Approximate alpha glass in preview; test target renderer materials"
+  ],
+  "structural_checks_pass": true,
+  "orchestrator_visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "scope": "Actual Blender images visually inspected; no scientific/runtime validation"
+  }
+}

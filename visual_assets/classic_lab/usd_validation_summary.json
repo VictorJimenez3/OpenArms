@@ -1,0 +1,97 @@
+[
+  {
+    "scene": "01_serial_dilution",
+    "errors": [],
+    "warnings": [
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_borosilicate",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_water",
+      "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+      "UsdLux presence does not establish photometric or renderer equivalence"
+    ],
+    "defaultPrim": "/ClassicLab",
+    "metersPerUnit": 1.0,
+    "upAxis": "Z",
+    "self_contained": true,
+    "ok": true
+  },
+  {
+    "scene": "02_titration",
+    "errors": [],
+    "warnings": [
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Borosilicate_clear_glass",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Reagent_bottle_amber_glass",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_liquid",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Illustrative_faint_pink_endpoint",
+      "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+      "UsdLux presence does not establish photometric or renderer equivalence"
+    ],
+    "defaultPrim": "/ClassicLab",
+    "metersPerUnit": 1.0,
+    "upAxis": "Z",
+    "self_contained": true,
+    "ok": true
+  },
+  {
+    "scene": "03_colorimetry",
+    "errors": [],
+    "warnings": [
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_cuvette_walls",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Magenta_reference_0_relative_units",
+      "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+      "UsdLux presence does not establish photometric or renderer equivalence"
+    ],
+    "defaultPrim": "/ClassicLab",
+    "metersPerUnit": 1.0,
+    "upAxis": "Z",
+    "self_contained": true,
+    "ok": true
+  },
+  {
+    "scene": "04_dissolution",
+    "errors": [],
+    "warnings": [
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Glass_rim_alpha_035",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Approximate_clear_glass_alpha_009",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_water_alpha_0025",
+      "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+      "UsdLux presence does not establish photometric or renderer equivalence"
+    ],
+    "defaultPrim": "/ClassicLab",
+    "metersPerUnit": 1.0,
+    "upAxis": "Z",
+    "self_contained": true,
+    "ok": true
+  },
+  {
+    "scene": "05_filtration",
+    "errors": [],
+    "warnings": [
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Glass_rim_edge",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Illustrative_clear_glass_opacity_0_13",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Much_clearer_filtrate_illustrative",
+      "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+      "UsdLux presence does not establish photometric or renderer equivalence"
+    ],
+    "defaultPrim": "/ClassicLab",
+    "metersPerUnit": 1.0,
+    "upAxis": "Z",
+    "self_contained": true,
+    "ok": true
+  },
+  {
+    "scene": "06_precipitation",
+    "errors": [],
+    "warnings": [
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Approximate_glass_12percent",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Clear_liquid_5percent",
+      "Transparency needs target-renderer inspection: /ClassicLab/_materials/Illustrative_white_suspension",
+      "No purpose=proxy, proxy-named prim, or proxyPrim relationship found",
+      "UsdLux presence does not establish photometric or renderer equivalence"
+    ],
+    "defaultPrim": "/ClassicLab",
+    "metersPerUnit": 1.0,
+    "upAxis": "Z",
+    "self_contained": true,
+    "ok": true
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "usd": {
+    "opens": true,
+    "default_prim": "/ClassicLab",
+    "meters_per_unit": 1.0,
+    "up_axis": "Z",
+    "external_assets": [],
+    "unresolved": [],
+    "layer_count": 1,
+    "robot_prims": [],
+    "physics_prims": [],
+    "prim_count": 487
+  },
+  "files": {
+    "build.py": true,
+    "Scene.blend": true,
+    "Environment.usdc": true,
+    "manifest.json": true,
+    "EXPERIMENT.md": true
+  },
+  "renders": {
+    "Front": {
+      "exists": true,
+      "dimensions": [
+        1600,
+        1000
+      ]
+    },
+    "Overhead": {
+      "exists": true,
+      "dimensions": [
+        1600,
+        1000
+      ]
+    },
+    "Result": {
+      "exists": true,
+      "dimensions": [
+        1600,
+        1000
+      ]
+    }
+  },
+  "visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "scope": "Actual Blender PNGs inspected; staged science, not runtime proof"
+  },
+  "orchestrator_visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "scope": "Actual Blender PNGs inspected; staged science, not runtime proof"
+  }
+}

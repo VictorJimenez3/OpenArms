@@ -1,0 +1,4859 @@
+{
+  "schema_version": 1,
+  "experiment": "Precipitation: clear + clear produces cloudy solid",
+  "status": "illustrative_asset_not_runtime_verified",
+  "units": "m",
+  "up_axis": "Z",
+  "default_prim": "/ClassicLab",
+  "tabletop_z_m": 0,
+  "table_dimensions_m": [
+    1,
+    0.75,
+    0.044
+  ],
+  "robot_in_environment_usd": false,
+  "robot_preview_transform_m": [
+    -0.05,
+    0,
+    -0.03008145
+  ],
+  "robot_runtime_base_m": [
+    -0.05,
+    0,
+    0
+  ],
+  "robot_added_yaw_deg": 0,
+  "robot_scale": 1,
+  "physics_apis": false,
+  "student_variable": "Replace dose B with the same volume of water",
+  "conditions": [
+    {
+      "id": "reactive",
+      "doses": "clear A + clear B",
+      "vessel_center_m": [
+        0.235,
+        -0.055,
+        0.04
+      ],
+      "illustrative_result": "milky suspension, enlarged flecks, settled solid layer"
+    },
+    {
+      "id": "control",
+      "doses": "clear A + equal-volume water",
+      "vessel_center_m": [
+        0.415,
+        -0.055,
+        0.04
+      ],
+      "illustrative_result": "clear liquid; reference stripes visible"
+    }
+  ],
+  "matched_geometry": {
+    "beaker_outer_radius_m": 0.042,
+    "beaker_height_m": 0.115,
+    "liquid_radius_m": 0.0405,
+    "liquid_depth_m": 0.071,
+    "nominal_final_liquid_volume_ml": 365.85,
+    "note": "Visual geometry only; no calibrated dose or physical reaction recipe"
+  },
+  "sources": [
+    {
+      "group": "Reagent_A",
+      "location_m": [
+        0.255,
+        0.103,
+        0.194
+      ],
+      "radius_m": 0.027,
+      "height_m": 0.073
+    },
+    {
+      "group": "Reagent_B",
+      "location_m": [
+        0.385,
+        0.103,
+        0.194
+      ],
+      "radius_m": 0.027,
+      "height_m": 0.073
+    }
+  ],
+  "active_target": {
+    "position_m": [
+      0.235,
+      -0.055,
+      0.04
+    ],
+    "rim_z_m": 0.155,
+    "stem_endpoints_m": [
+      [
+        0.217,
+        -0.04,
+        0.149
+      ],
+      [
+        0.253,
+        -0.04,
+        0.149
+      ]
+    ]
+  },
+  "fixtures": {
+    "mixers": {
+      "centers_m": [
+        [
+          0.235,
+          -0.055,
+          0.022
+        ],
+        [
+          0.415,
+          -0.055,
+          0.022
+        ]
+      ],
+      "dimensions_m": [
+        0.127,
+        0.125,
+        0.025
+      ]
+    },
+    "reference_panel": {
+      "center_m": [
+        0.325,
+        0.012,
+        0.112
+      ],
+      "dimensions_m": [
+        0.33,
+        0.005,
+        0.145
+      ]
+    },
+    "stand": {
+      "center_m": [
+        0.333,
+        0.185,
+        0.008
+      ],
+      "base_dimensions_m": [
+        0.28,
+        0.1,
+        0.016
+      ],
+      "rod_height_m": 0.28
+    }
+  },
+  "interaction": {
+    "movable": [
+      "dosing valve handles after articulation",
+      "water bottle after separating liquid",
+      "stirring rod"
+    ],
+    "static": [
+      "bench",
+      "stand",
+      "mixing stations",
+      "reference panel"
+    ],
+    "intended_grasp_surfaces": "28mm valve lever or 5mm stirring rod; intended fixture use only, not reach-qualified",
+    "proposed_clearance_m": 0.015,
+    "reach_status": "pending; high dosing fixtures and control station require controller/fixture qualification",
+    "required_work": "jointed metering, grasp geometry, collision, fluid containment, equal-dose control and measured success"
+  },
+  "science": {
+    "model": "No reaction or transport solver present",
+    "observable": "calibrated turbidity/reference-pattern contrast plus separately modeled solid fraction",
+    "solid_fraction": "not derived; geometric sediment and enlarged particles are illustrative",
+    "chemistry": "Chosen classroom reference: A is aqueous calcium chloride, B is aqueous sodium carbonate; calcium carbonate precipitates. The water control replaces B. No reaction/transport model is implemented.",
+    "reference": "https://www.colorado.edu/lab/lecture-demo-manual/general-reactions/s130-chemical-rxns-precipitation-cacl2-na2co3-caco3"
+  },
+  "material_limits": "Approximate glass uses 12% opaque / 88% transparent shader mix; clear liquid 5%; USD Preview Surface explicitly authors opacity .12/.05/.94 for glass/water/suspension; renderer appearance may vary. No refractive calibration.",
+  "cameras": {
+    "Front": {
+      "position_m": [
+        0.8299999833106995,
+        -1.090000033378601,
+        0.6000000238418579
+      ],
+      "rotation_euler_rad": [
+        1.228742003440857,
+        -8.297533327095152e-08,
+        0.5476420521736145
+      ],
+      "world_matrix": [
+        [
+          0.8537546396255493,
+          -0.17464669048786163,
+          0.49051156640052795,
+          0.8299999833106995
+        ],
+        [
+          0.520675539970398,
+          0.2863689959049225,
+          -0.8042945861816406,
+          -1.090000033378601
+        ],
+        [
+          8.297533327095152e-08,
+          0.942067563533783,
+          0.3354231119155884,
+          0.6000000238418579
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "lens_mm": 49.0,
+      "resolution": [
+        1600,
+        1000
+      ]
+    },
+    "Overhead": {
+      "position_m": [
+        0.14000000059604645,
+        0.03500000014901161,
+        1.2999999523162842
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "world_matrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.14000000059604645
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.03500000014901161
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.2999999523162842
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "lens_mm": 44.0,
+      "resolution": [
+        1600,
+        1000
+      ]
+    },
+    "Result": {
+      "position_m": [
+        0.6399999856948853,
+        -0.7699999809265137,
+        0.3700000047683716
+      ],
+      "rotation_euler_rad": [
+        1.2657419443130493,
+        4.9091710252469056e-08,
+        0.4001524746417999
+      ],
+      "world_matrix": [
+        [
+          0.9210016131401062,
+          -0.11700200289487839,
+          0.3715730905532837,
+          0.6399999856948853
+        ],
+        [
+          0.3895587623119354,
+          0.2766183018684387,
+          -0.878479540348053,
+          -0.7699999809265137
+        ],
+        [
+          -4.9091710252469056e-08,
+          0.9538305997848511,
+          0.3003450334072113,
+          0.3700000047683716
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "lens_mm": 62.0,
+      "resolution": [
+        1600,
+        1000
+      ]
+    }
+  },
+  "objects": [
+    {
+      "name": "Tabletop",
+      "group": "Bench",
+      "position_m": [
+        0.11999999731779099,
+        0.0,
+        -0.02199999988079071
+      ],
+      "dimensions_m": [
+        1.0,
+        0.75,
+        0.04399999976158142
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Bench/Tabletop",
+      "classification": "static"
+    },
+    {
+      "name": "Leg",
+      "group": "Bench",
+      "position_m": [
+        -0.3100000023841858,
+        -0.30000001192092896,
+        -0.39800000190734863
+      ],
+      "dimensions_m": [
+        0.03400000184774399,
+        0.03400000184774399,
+        0.7519999742507935
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Bench/Leg",
+      "classification": "static"
+    },
+    {
+      "name": "Leg.001",
+      "group": "Bench",
+      "position_m": [
+        -0.3100000023841858,
+        0.30000001192092896,
+        -0.39800000190734863
+      ],
+      "dimensions_m": [
+        0.03400000184774399,
+        0.03400000184774399,
+        0.7519999742507935
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Leg.002",
+      "group": "Bench",
+      "position_m": [
+        0.550000011920929,
+        -0.30000001192092896,
+        -0.39800000190734863
+      ],
+      "dimensions_m": [
+        0.03400000184774399,
+        0.03400000184774399,
+        0.7519999742507935
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Leg.003",
+      "group": "Bench",
+      "position_m": [
+        0.550000011920929,
+        0.30000001192092896,
+        -0.39800000190734863
+      ],
+      "dimensions_m": [
+        0.03400000184774399,
+        0.03400000184774399,
+        0.7519999742507935
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Floor",
+      "group": "Bench",
+      "position_m": [
+        0.10000000149011612,
+        0.0,
+        -0.7850000262260437
+      ],
+      "dimensions_m": [
+        200.0,
+        200.0,
+        0.05000000074505806
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Bench/Floor",
+      "classification": "static"
+    },
+    {
+      "name": "Reaction_drip_tray",
+      "group": "Fixtures",
+      "position_m": [
+        0.23499999940395355,
+        -0.06499999761581421,
+        0.004999999888241291
+      ],
+      "dimensions_m": [
+        0.15399999916553497,
+        0.15800000727176666,
+        0.009999999776482582
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reaction_drip_tray",
+      "classification": "static"
+    },
+    {
+      "name": "Reaction_mixing_station",
+      "group": "Fixtures",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.02199999988079071
+      ],
+      "dimensions_m": [
+        0.12700000405311584,
+        0.125,
+        0.02500000037252903
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reaction_mixing_station",
+      "classification": "static"
+    },
+    {
+      "name": "Reaction_vessel_seat",
+      "group": "Fixtures",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.03700000047683716
+      ],
+      "dimensions_m": [
+        0.09600000083446503,
+        0.09600000083446503,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reaction_vessel_seat",
+      "classification": "static"
+    },
+    {
+      "name": "Reaction_locating_stop",
+      "group": "Fixtures",
+      "position_m": [
+        0.1889999955892563,
+        -0.054999999701976776,
+        0.04600000008940697
+      ],
+      "dimensions_m": [
+        0.007000000216066837,
+        0.019999999552965164,
+        0.012000000104308128
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop",
+      "classification": "static"
+    },
+    {
+      "name": "Reaction_locating_stop.001",
+      "group": "Fixtures",
+      "position_m": [
+        0.2809999883174896,
+        -0.054999999701976776,
+        0.04600000008940697
+      ],
+      "dimensions_m": [
+        0.007000000216066837,
+        0.019999999552965164,
+        0.012000000104308128
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reaction_speed_dial",
+      "group": "Fixtures",
+      "position_m": [
+        0.2770000100135803,
+        -0.11800000071525574,
+        0.02500000037252903
+      ],
+      "dimensions_m": [
+        0.017999999225139618,
+        0.017999999225139618,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        1.5707963705062866,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reaction_speed_dial",
+      "classification": "static"
+    },
+    {
+      "name": "Control_drip_tray",
+      "group": "Fixtures",
+      "position_m": [
+        0.41499999165534973,
+        -0.06499999761581421,
+        0.004999999888241291
+      ],
+      "dimensions_m": [
+        0.15399999916553497,
+        0.15800000727176666,
+        0.009999999776482582
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Control_drip_tray",
+      "classification": "static"
+    },
+    {
+      "name": "Control_mixing_station",
+      "group": "Fixtures",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.02199999988079071
+      ],
+      "dimensions_m": [
+        0.12700000405311584,
+        0.125,
+        0.02500000037252903
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Control_mixing_station",
+      "classification": "static"
+    },
+    {
+      "name": "Control_vessel_seat",
+      "group": "Fixtures",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.03700000047683716
+      ],
+      "dimensions_m": [
+        0.09600000083446503,
+        0.09600000083446503,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Control_vessel_seat",
+      "classification": "static"
+    },
+    {
+      "name": "Control_locating_stop",
+      "group": "Fixtures",
+      "position_m": [
+        0.36899998784065247,
+        -0.054999999701976776,
+        0.04600000008940697
+      ],
+      "dimensions_m": [
+        0.007000000216066837,
+        0.019999999552965164,
+        0.012000000104308128
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop",
+      "classification": "static"
+    },
+    {
+      "name": "Control_locating_stop.001",
+      "group": "Fixtures",
+      "position_m": [
+        0.460999995470047,
+        -0.054999999701976776,
+        0.04600000008940697
+      ],
+      "dimensions_m": [
+        0.007000000216066837,
+        0.019999999552965164,
+        0.012000000104308128
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Control_speed_dial",
+      "group": "Fixtures",
+      "position_m": [
+        0.4569999873638153,
+        -0.11800000071525574,
+        0.02500000037252903
+      ],
+      "dimensions_m": [
+        0.017999999225139618,
+        0.017999999225139618,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        1.5707963705062866,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Control_speed_dial",
+      "classification": "static"
+    },
+    {
+      "name": "Reference_backplate",
+      "group": "Fixtures",
+      "position_m": [
+        0.32499998807907104,
+        0.012000000104308128,
+        0.1120000034570694
+      ],
+      "dimensions_m": [
+        0.33000001311302185,
+        0.004999999888241291,
+        0.14499999582767487
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reference_backplate",
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar",
+      "group": "Fixtures",
+      "position_m": [
+        0.21199999749660492,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reference_bar",
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.001",
+      "group": "Fixtures",
+      "position_m": [
+        0.2240000069141388,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.002",
+      "group": "Fixtures",
+      "position_m": [
+        0.23499999940395355,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.003",
+      "group": "Fixtures",
+      "position_m": [
+        0.2460000067949295,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.004",
+      "group": "Fixtures",
+      "position_m": [
+        0.257999986410141,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.005",
+      "group": "Fixtures",
+      "position_m": [
+        0.3919999897480011,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.006",
+      "group": "Fixtures",
+      "position_m": [
+        0.40400001406669617,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.007",
+      "group": "Fixtures",
+      "position_m": [
+        0.41499999165534973,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.008",
+      "group": "Fixtures",
+      "position_m": [
+        0.4259999990463257,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Reference_bar.009",
+      "group": "Fixtures",
+      "position_m": [
+        0.43799999356269836,
+        0.008799999952316284,
+        0.10199999809265137
+      ],
+      "dimensions_m": [
+        0.003000000026077032,
+        0.0007999999797903001,
+        0.09000000357627869
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Stand_foot",
+      "group": "Fixtures",
+      "position_m": [
+        0.3330000042915344,
+        0.1850000023841858,
+        0.00800000037997961
+      ],
+      "dimensions_m": [
+        0.2800000011920929,
+        0.10000000149011612,
+        0.01600000075995922
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Stand_foot",
+      "classification": "static"
+    },
+    {
+      "name": "Stand_rod",
+      "group": "Fixtures",
+      "position_m": [
+        0.20000000298023224,
+        0.18000000715255737,
+        0.14800000190734863
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.012000000104308128,
+        0.2800000011920929
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Stand_rod",
+      "classification": "static"
+    },
+    {
+      "name": "Rod_foot",
+      "group": "Fixtures",
+      "position_m": [
+        0.20000000298023224,
+        0.18000000715255737,
+        0.023000000044703484
+      ],
+      "dimensions_m": [
+        0.02800000086426735,
+        0.02800000086426735,
+        0.029999999329447746
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Rod_foot",
+      "classification": "static"
+    },
+    {
+      "name": "Stand_rod.001",
+      "group": "Fixtures",
+      "position_m": [
+        0.44999998807907104,
+        0.18000000715255737,
+        0.14800000190734863
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.012000000104308128,
+        0.2800000011920929
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Rod_foot.001",
+      "group": "Fixtures",
+      "position_m": [
+        0.44999998807907104,
+        0.18000000715255737,
+        0.023000000044703484
+      ],
+      "dimensions_m": [
+        0.02800000086426735,
+        0.02800000086426735,
+        0.029999999329447746
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [],
+      "classification": "static"
+    },
+    {
+      "name": "Upper_crossbar",
+      "group": "Fixtures",
+      "position_m": [
+        0.32499998807907104,
+        0.18000000715255737,
+        0.27399998903274536
+      ],
+      "dimensions_m": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.2499999850988388
+      ],
+      "rotation_euler_rad": [
+        1.5707963705062866,
+        -0.0,
+        1.5707963705062866
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Upper_crossbar",
+      "classification": "static"
+    },
+    {
+      "name": "A_holder_arm",
+      "group": "Fixtures",
+      "position_m": [
+        0.2549999952316284,
+        0.14149999618530273,
+        0.210999995470047
+      ],
+      "dimensions_m": [
+        0.00800000037997961,
+        0.00800000037997961,
+        0.07700000703334808
+      ],
+      "rotation_euler_rad": [
+        1.5707964897155762,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/A_holder_arm",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_collar",
+      "group": "Fixtures",
+      "position_m": [
+        0.2549999952316284,
+        0.10300000011920929,
+        0.20999999344348907
+      ],
+      "dimensions_m": [
+        0.06399999558925629,
+        0.06399999558925629,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/A_dosing_collar",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup",
+      "group": "Reagent_A",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.05400000512599945,
+        0.05800000578165054,
+        0.0729999840259552
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [
+        "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup",
+        "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup/A_dosing_cup"
+      ],
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup_bottom",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2549999952316284,
+        0.10300000011920929,
+        0.19550000131130219
+      ],
+      "dimensions_m": [
+        0.05400000140070915,
+        0.05400000140070915,
+        0.003000000026077032
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_bottom",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup_rim",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2549999952316284,
+        0.10300000011920929,
+        0.2669999897480011
+      ],
+      "dimensions_m": [
+        0.05460000038146973,
+        0.05460000038146973,
+        0.0015999999595806003
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_rim",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup_graduation_1",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2679600119590759,
+        0.07844000309705734,
+        0.2049500048160553
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_1",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup_graduation_2",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2679600119590759,
+        0.07844000309705734,
+        0.2159000039100647
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_2",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup_graduation_3",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2679600119590759,
+        0.07844000309705734,
+        0.2268500030040741
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_3",
+      "classification": "static"
+    },
+    {
+      "name": "A_dosing_cup_graduation_4",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2679600119590759,
+        0.07844000309705734,
+        0.2378000020980835
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_4",
+      "classification": "static"
+    },
+    {
+      "name": "A_clear_reagent",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2549999952316284,
+        0.10300000011920929,
+        0.22100000083446503
+      ],
+      "dimensions_m": [
+        0.050999999046325684,
+        0.050999999046325684,
+        0.04699999839067459
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_clear_reagent",
+      "classification": "static"
+    },
+    {
+      "name": "A_identity_plate",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2549999952316284,
+        0.0729999989271164,
+        0.23899999260902405
+      ],
+      "dimensions_m": [
+        0.07000000029802322,
+        0.0020000000949949026,
+        0.019999999552965164
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_identity_plate",
+      "classification": "static"
+    },
+    {
+      "name": "A_valve_body",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2549999952316284,
+        0.10300000011920929,
+        0.1850000023841858
+      ],
+      "dimensions_m": [
+        0.01600000075995922,
+        0.01600000075995922,
+        0.017999999225139618
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_valve_body",
+      "classification": "static"
+    },
+    {
+      "name": "A_valve_handle",
+      "group": "Reagent_A",
+      "position_m": [
+        0.2549999952316284,
+        0.10300000011920929,
+        0.18700000643730164
+      ],
+      "dimensions_m": [
+        0.006000000052154064,
+        0.006000000052154064,
+        0.02799999713897705
+      ],
+      "rotation_euler_rad": [
+        1.5707963705062866,
+        -0.0,
+        1.5707963705062866
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_valve_handle",
+      "classification": "movable_candidate_currently_static"
+    },
+    {
+      "name": "A_delivery_stem",
+      "group": "Reagent_A",
+      "position_m": [
+        0.23600000143051147,
+        0.03150000050663948,
+        0.17100000381469727
+      ],
+      "dimensions_m": [
+        0.004999999422580004,
+        0.004999999888241291,
+        0.14862369000911713
+      ],
+      "rotation_euler_rad": [
+        1.6651337146759033,
+        9.9579722245835e-10,
+        -0.2597316801548004
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_delivery_stem",
+      "classification": "static"
+    },
+    {
+      "name": "A_spout_tip",
+      "group": "Reagent_A",
+      "position_m": [
+        0.21699999272823334,
+        -0.03999999910593033,
+        0.15650001168251038
+      ],
+      "dimensions_m": [
+        0.004999999888241291,
+        0.004999999888241291,
+        0.015000000596046448
+      ],
+      "rotation_euler_rad": [
+        3.141592502593994,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_A/A_spout_tip",
+      "classification": "static"
+    },
+    {
+      "name": "B_holder_arm",
+      "group": "Fixtures",
+      "position_m": [
+        0.38499999046325684,
+        0.14149999618530273,
+        0.210999995470047
+      ],
+      "dimensions_m": [
+        0.00800000037997961,
+        0.00800000037997961,
+        0.07700000703334808
+      ],
+      "rotation_euler_rad": [
+        1.5707964897155762,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/B_holder_arm",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_collar",
+      "group": "Fixtures",
+      "position_m": [
+        0.38499999046325684,
+        0.10300000011920929,
+        0.20999999344348907
+      ],
+      "dimensions_m": [
+        0.06399999558925629,
+        0.06399999558925629,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/B_dosing_collar",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup",
+      "group": "Reagent_B",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.05399999022483826,
+        0.05800000578165054,
+        0.0729999840259552
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [
+        "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup",
+        "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup/B_dosing_cup"
+      ],
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup_bottom",
+      "group": "Reagent_B",
+      "position_m": [
+        0.38499999046325684,
+        0.10300000011920929,
+        0.19550000131130219
+      ],
+      "dimensions_m": [
+        0.05400000140070915,
+        0.05400000140070915,
+        0.003000000026077032
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_bottom",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup_rim",
+      "group": "Reagent_B",
+      "position_m": [
+        0.38499999046325684,
+        0.10300000011920929,
+        0.2669999897480011
+      ],
+      "dimensions_m": [
+        0.05460000038146973,
+        0.05460000038146973,
+        0.0015999999595806003
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_rim",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup_graduation_1",
+      "group": "Reagent_B",
+      "position_m": [
+        0.39796000719070435,
+        0.07844000309705734,
+        0.2049500048160553
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_1",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup_graduation_2",
+      "group": "Reagent_B",
+      "position_m": [
+        0.39796000719070435,
+        0.07844000309705734,
+        0.2159000039100647
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_2",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup_graduation_3",
+      "group": "Reagent_B",
+      "position_m": [
+        0.39796000719070435,
+        0.07844000309705734,
+        0.2268500030040741
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_3",
+      "classification": "static"
+    },
+    {
+      "name": "B_dosing_cup_graduation_4",
+      "group": "Reagent_B",
+      "position_m": [
+        0.39796000719070435,
+        0.07844000309705734,
+        0.2378000020980835
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_4",
+      "classification": "static"
+    },
+    {
+      "name": "B_clear_reagent",
+      "group": "Reagent_B",
+      "position_m": [
+        0.38499999046325684,
+        0.10300000011920929,
+        0.22100000083446503
+      ],
+      "dimensions_m": [
+        0.050999999046325684,
+        0.050999999046325684,
+        0.04699999839067459
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_clear_reagent",
+      "classification": "static"
+    },
+    {
+      "name": "B_identity_plate",
+      "group": "Reagent_B",
+      "position_m": [
+        0.38499999046325684,
+        0.0729999989271164,
+        0.23899999260902405
+      ],
+      "dimensions_m": [
+        0.07000000029802322,
+        0.0020000000949949026,
+        0.019999999552965164
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_identity_plate",
+      "classification": "static"
+    },
+    {
+      "name": "B_valve_body",
+      "group": "Reagent_B",
+      "position_m": [
+        0.38499999046325684,
+        0.10300000011920929,
+        0.1850000023841858
+      ],
+      "dimensions_m": [
+        0.01600000075995922,
+        0.01600000075995922,
+        0.017999999225139618
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_valve_body",
+      "classification": "static"
+    },
+    {
+      "name": "B_valve_handle",
+      "group": "Reagent_B",
+      "position_m": [
+        0.38499999046325684,
+        0.10300000011920929,
+        0.18700000643730164
+      ],
+      "dimensions_m": [
+        0.006000000052154064,
+        0.006000000052154064,
+        0.02799999713897705
+      ],
+      "rotation_euler_rad": [
+        1.5707963705062866,
+        -0.0,
+        1.5707963705062866
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_valve_handle",
+      "classification": "movable_candidate_currently_static"
+    },
+    {
+      "name": "B_delivery_stem",
+      "group": "Reagent_B",
+      "position_m": [
+        0.3190000057220459,
+        0.03150000050663948,
+        0.17100000381469727
+      ],
+      "dimensions_m": [
+        0.004999999422580004,
+        0.004999999422580004,
+        0.19511279463768005
+      ],
+      "rotation_euler_rad": [
+        1.6426115036010742,
+        6.509701933055112e-08,
+        -0.745419442653656
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_delivery_stem",
+      "classification": "static"
+    },
+    {
+      "name": "B_spout_tip",
+      "group": "Reagent_B",
+      "position_m": [
+        0.2529999911785126,
+        -0.03999999910593033,
+        0.15650001168251038
+      ],
+      "dimensions_m": [
+        0.004999999888241291,
+        0.004999999888241291,
+        0.015000000596046448
+      ],
+      "rotation_euler_rad": [
+        3.141592502593994,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reagent_B/B_spout_tip",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.08400000631809235,
+        0.08799999952316284,
+        0.11500000208616257
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [
+        "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker",
+        "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker/Reactive_condition_beaker"
+      ],
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker_bottom",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.04149999842047691
+      ],
+      "dimensions_m": [
+        0.08399999886751175,
+        0.08399999886751175,
+        0.003000000026077032
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_bottom",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker_rim",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.1550000011920929
+      ],
+      "dimensions_m": [
+        0.08459999412298203,
+        0.08459999412298203,
+        0.0015999999595806003
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_rim",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker_graduation_1",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25516000390052795,
+        -0.09275999665260315,
+        0.0572500005364418
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_1",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker_graduation_2",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25516000390052795,
+        -0.09275999665260315,
+        0.07450000196695328
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_2",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker_graduation_3",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25516000390052795,
+        -0.09275999665260315,
+        0.09175000339746475
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_3",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_beaker_graduation_4",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25516000390052795,
+        -0.09275999665260315,
+        0.10899999737739563
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_4",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_liquid",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.07850000262260437
+      ],
+      "dimensions_m": [
+        0.08100000023841858,
+        0.08100000023841858,
+        0.07100000232458115
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_liquid",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_meniscus",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.11420000344514847
+      ],
+      "dimensions_m": [
+        0.08060000091791153,
+        0.08060000091791153,
+        0.0007999999797903001
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_meniscus",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_stir_bar",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.04600000008940697
+      ],
+      "dimensions_m": [
+        0.03500000014901161,
+        0.00800000037997961,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.3199999928474426
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_stir_bar",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_sediment",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23499999940395355,
+        -0.054999999701976776,
+        0.04699999839067459
+      ],
+      "dimensions_m": [
+        0.08079999685287476,
+        0.08079999685287476,
+        0.007000000216066837
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_sediment",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_000",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2590750455856323,
+        -0.06670217961072922,
+        0.1082964763045311
+      ],
+      "dimensions_m": [
+        0.0013288744958117604,
+        0.001263821846805513,
+        0.0014857305213809013
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_000",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_001",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.19757282733917236,
+        -0.04657279700040817,
+        0.07263487577438354
+      ],
+      "dimensions_m": [
+        0.0016186063876375556,
+        0.0015393705107271671,
+        0.0018096613930538297
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_001",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_002",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25578030943870544,
+        -0.021550927311182022,
+        0.10914639383554459
+      ],
+      "dimensions_m": [
+        0.001257588155567646,
+        0.0011960251722484827,
+        0.001406029798090458
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_002",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_003",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25762906670570374,
+        -0.03299975022673607,
+        0.08208615332841873
+      ],
+      "dimensions_m": [
+        0.0019054459407925606,
+        0.0018121682805940509,
+        0.0021303584799170494
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_003",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_004",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21659646928310394,
+        -0.027077725157141685,
+        0.06129918247461319
+      ],
+      "dimensions_m": [
+        0.0013015121221542358,
+        0.001237798947840929,
+        0.001455138437449932
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_004",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_005",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26380401849746704,
+        -0.03945116698741913,
+        0.08464119583368301
+      ],
+      "dimensions_m": [
+        0.0017355384770780802,
+        0.0016505783423781395,
+        0.0019403957994654775
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_005",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_006",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2615707516670227,
+        -0.06637415289878845,
+        0.0718732476234436
+      ],
+      "dimensions_m": [
+        0.001570322085171938,
+        0.0014934499049559236,
+        0.0017556778620928526
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_006",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_007",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26226964592933655,
+        -0.06462474167346954,
+        0.06884662061929703
+      ],
+      "dimensions_m": [
+        0.0015313397161662579,
+        0.0014563758159056306,
+        0.001712094177491963
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_007",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_008",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22447717189788818,
+        -0.08145832270383835,
+        0.06203024834394455
+      ],
+      "dimensions_m": [
+        0.0018586785299703479,
+        0.0017676904099062085,
+        0.002078071003779769
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_008",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_009",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2053726762533188,
+        -0.07012805342674255,
+        0.05279385671019554
+      ],
+      "dimensions_m": [
+        0.0013408319791778922,
+        0.0012751939939334989,
+        0.0014990994241088629
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_009",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_010",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25895655155181885,
+        -0.037202443927526474,
+        0.10452611744403839
+      ],
+      "dimensions_m": [
+        0.0021347585134208202,
+        0.0020302552729845047,
+        0.002386738546192646
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_010",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_011",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25205716490745544,
+        -0.07957342267036438,
+        0.08481225371360779
+      ],
+      "dimensions_m": [
+        0.0020357242319732904,
+        0.0019360689911991358,
+        0.0022760145366191864
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_011",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_012",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21819618344306946,
+        -0.029684262350201607,
+        0.09341525286436081
+      ],
+      "dimensions_m": [
+        0.0014411576557904482,
+        0.0013706083409488201,
+        0.0016112672165036201
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_012",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_013",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20560550689697266,
+        -0.05013897269964218,
+        0.09974797070026398
+      ],
+      "dimensions_m": [
+        0.001629707170650363,
+        0.0015499278670176864,
+        0.001822072546929121
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_013",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_014",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25481855869293213,
+        -0.04101504758000374,
+        0.08926249295473099
+      ],
+      "dimensions_m": [
+        0.0011981417192146182,
+        0.0011394888861104846,
+        0.0013395664282143116
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_014",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_015",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22160875797271729,
+        -0.07908441871404648,
+        0.08280445635318756
+      ],
+      "dimensions_m": [
+        0.0014417071361094713,
+        0.001371131045743823,
+        0.0016118816565722227
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_015",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_016",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2202729880809784,
+        -0.07657857984304428,
+        0.07571213692426682
+      ],
+      "dimensions_m": [
+        0.0017783743096515536,
+        0.0016913171857595444,
+        0.0019882877822965384
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_016",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_017",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23259198665618896,
+        -0.015211460180580616,
+        0.10949908196926117
+      ],
+      "dimensions_m": [
+        0.002112229121848941,
+        0.0020088288001716137,
+        0.002361549763008952
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_017",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_018",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2705008089542389,
+        -0.0712955966591835,
+        0.08510714769363403
+      ],
+      "dimensions_m": [
+        0.001972340978682041,
+        0.0018757886718958616,
+        0.0022051497362554073
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_018",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_019",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21419626474380493,
+        -0.04103989526629448,
+        0.10567517578601837
+      ],
+      "dimensions_m": [
+        0.0020600110292434692,
+        0.001959166955202818,
+        0.0023031679447740316
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_019",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_020",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23350876569747925,
+        -0.025030549615621567,
+        0.06559597700834274
+      ],
+      "dimensions_m": [
+        0.0018386347219347954,
+        0.0017486277502030134,
+        0.0020556612871587276
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_020",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_021",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2530866265296936,
+        -0.022703764960169792,
+        0.05415171757340431
+      ],
+      "dimensions_m": [
+        0.0015060952864587307,
+        0.0014323671348392963,
+        0.0016838699812069535
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_021",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_022",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24137406051158905,
+        -0.08613121509552002,
+        0.05998553708195686
+      ],
+      "dimensions_m": [
+        0.0011053908383473754,
+        0.001051278435625136,
+        0.0012358676176518202
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_022",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_023",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22436273097991943,
+        -0.07785631716251373,
+        0.06834615767002106
+      ],
+      "dimensions_m": [
+        0.001719578169286251,
+        0.001635399297811091,
+        0.001922551542520523
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_023",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_024",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22609910368919373,
+        -0.032078877091407776,
+        0.09810025244951248
+      ],
+      "dimensions_m": [
+        0.0018491967348381877,
+        0.0017586726462468505,
+        0.0020674699917435646
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_024",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_025",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21548780798912048,
+        -0.07157596200704575,
+        0.08011014759540558
+      ],
+      "dimensions_m": [
+        0.0021081529557704926,
+        0.0020049521699547768,
+        0.002356992568820715
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_025",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_026",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20700116455554962,
+        -0.05705197528004646,
+        0.10633867979049683
+      ],
+      "dimensions_m": [
+        0.0014457725919783115,
+        0.0013749974314123392,
+        0.0016164269763976336
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_026",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_027",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20865604281425476,
+        -0.05885566771030426,
+        0.10199524462223053
+      ],
+      "dimensions_m": [
+        0.0018064246978610754,
+        0.0017179944552481174,
+        0.00201964913867414
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_027",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_028",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2037041336297989,
+        -0.06115598976612091,
+        0.0717175081372261
+      ],
+      "dimensions_m": [
+        0.0015666034305468202,
+        0.0014899132074788213,
+        0.0017515202052891254
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_028",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_029",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21075168251991272,
+        -0.05677393823862076,
+        0.09334411472082138
+      ],
+      "dimensions_m": [
+        0.0018827877938747406,
+        0.0017906194552779198,
+        0.002105026040226221
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_029",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_030",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2607577443122864,
+        -0.050384558737277985,
+        0.09334477037191391
+      ],
+      "dimensions_m": [
+        0.0014447212452068925,
+        0.0013739975402131677,
+        0.001615251530893147
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_030",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_031",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.257191926240921,
+        -0.027722163125872612,
+        0.1090017557144165
+      ],
+      "dimensions_m": [
+        0.0014528625179082155,
+        0.001381740323267877,
+        0.0016243536956608295
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_031",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_032",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20750778913497925,
+        -0.07288596034049988,
+        0.08426832407712936
+      ],
+      "dimensions_m": [
+        0.0017132989596575499,
+        0.0016294275410473347,
+        0.0019155312329530716
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_032",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_033",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26739931106567383,
+        -0.07445123791694641,
+        0.103488989174366
+      ],
+      "dimensions_m": [
+        0.001812351867556572,
+        0.0017236314015462995,
+        0.0020262759644538164
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_033",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_034",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2376338243484497,
+        -0.09100011736154556,
+        0.09501963108778
+      ],
+      "dimensions_m": [
+        0.001808781293220818,
+        0.0017202357994392514,
+        0.002022284083068371
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_034",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_035",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23638732731342316,
+        -0.0798974558711052,
+        0.06181717664003372
+      ],
+      "dimensions_m": [
+        0.0017721449257805943,
+        0.0016853926936164498,
+        0.00198132311925292
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_035",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_036",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21049179136753082,
+        -0.04215694218873978,
+        0.08948034793138504
+      ],
+      "dimensions_m": [
+        0.001290205749683082,
+        0.0012270461302250624,
+        0.0014424974797293544
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_036",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_037",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23623649775981903,
+        -0.08406771719455719,
+        0.10514212399721146
+      ],
+      "dimensions_m": [
+        0.0014119416009634733,
+        0.0013428226811811328,
+        0.0015786027070134878
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_037",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_038",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26350903511047363,
+        -0.06151386350393295,
+        0.09739010035991669
+      ],
+      "dimensions_m": [
+        0.0012201177887618542,
+        0.0011603891616687179,
+        0.0013641365803778172
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_038",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_039",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20529167354106903,
+        -0.05560357868671417,
+        0.1019904837012291
+      ],
+      "dimensions_m": [
+        0.0018379323882982135,
+        0.0017479597590863705,
+        0.002054875949397683
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_039",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_040",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21168695390224457,
+        -0.06609105318784714,
+        0.0823306292295456
+      ],
+      "dimensions_m": [
+        0.001329666469246149,
+        0.0012645750539377332,
+        0.001486615976318717
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_040",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_041",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2633307874202728,
+        -0.034026604145765305,
+        0.08366073668003082
+      ],
+      "dimensions_m": [
+        0.002145968144759536,
+        0.0020409163553267717,
+        0.0023992713540792465
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_041",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_042",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2485974282026291,
+        -0.07561755180358887,
+        0.10672353208065033
+      ],
+      "dimensions_m": [
+        0.00164239970035851,
+        0.0015619989717379212,
+        0.0018362632254138589
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_042",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_043",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.263883113861084,
+        -0.056586138904094696,
+        0.07915720343589783
+      ],
+      "dimensions_m": [
+        0.0018189189722761512,
+        0.0017298771999776363,
+        0.002033618278801441
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_043",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_044",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23398727178573608,
+        -0.024519478902220726,
+        0.0715106949210167
+      ],
+      "dimensions_m": [
+        0.0014379172353073955,
+        0.0013675265945494175,
+        0.0016076442552730441
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_044",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_045",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20403170585632324,
+        -0.06310327351093292,
+        0.10326483845710754
+      ],
+      "dimensions_m": [
+        0.001337907975539565,
+        0.0012724131811410189,
+        0.001495830249041319
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_045",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_046",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23657365143299103,
+        -0.02641376294195652,
+        0.05225322023034096
+      ],
+      "dimensions_m": [
+        0.001426901901140809,
+        0.0013570506125688553,
+        0.0015953287947922945
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_046",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_047",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22027823328971863,
+        -0.034173984080553055,
+        0.08202797919511795
+      ],
+      "dimensions_m": [
+        0.001167039736174047,
+        0.001109909382648766,
+        0.001304793287999928
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_047",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_048",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24582882225513458,
+        -0.09254658222198486,
+        0.08728525787591934
+      ],
+      "dimensions_m": [
+        0.001288814004510641,
+        0.0012257224880158901,
+        0.0014409414725378156
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_048",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_049",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24936722218990326,
+        -0.034556999802589417,
+        0.06265612691640854
+      ],
+      "dimensions_m": [
+        0.0019845159258693457,
+        0.0018873675726354122,
+        0.0022187617141753435
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_049",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_050",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23856502771377563,
+        -0.09261088818311691,
+        0.07325822860002518
+      ],
+      "dimensions_m": [
+        0.0016698397230356932,
+        0.0015880956780165434,
+        0.001866942155174911
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_050",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_051",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22729220986366272,
+        -0.08868486434221268,
+        0.08953956514596939
+      ],
+      "dimensions_m": [
+        0.0011057039955630898,
+        0.001051576342433691,
+        0.0012362177949398756
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_051",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_052",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2682318389415741,
+        -0.05589833855628967,
+        0.06834808737039566
+      ],
+      "dimensions_m": [
+        0.0014231866225600243,
+        0.0013535171747207642,
+        0.0015911749796941876
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_052",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_053",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23781909048557281,
+        -0.0937003344297409,
+        0.054170895367860794
+      ],
+      "dimensions_m": [
+        0.0013041466008871794,
+        0.0012403045548126101,
+        0.0014580838615074754
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_053",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_054",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26765361428260803,
+        -0.04437781870365143,
+        0.08705593645572662
+      ],
+      "dimensions_m": [
+        0.001738505787216127,
+        0.0016534003661945462,
+        0.0019437132868915796
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_054",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_055",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24631351232528687,
+        -0.02649487741291523,
+        0.10301779210567474
+      ],
+      "dimensions_m": [
+        0.0014219633303582668,
+        0.0013523537199944258,
+        0.0015898073324933648
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_055",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_056",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24325671792030334,
+        -0.028882848098874092,
+        0.09839020669460297
+      ],
+      "dimensions_m": [
+        0.0013276812387630343,
+        0.001262687030248344,
+        0.0014843965182080865
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_056",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_057",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22602392733097076,
+        -0.08758718520402908,
+        0.09957150369882584
+      ],
+      "dimensions_m": [
+        0.0011390744475647807,
+        0.0010833131382241845,
+        0.001273527042940259
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_057",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_058",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2227911353111267,
+        -0.017623869702219963,
+        0.0808788612484932
+      ],
+      "dimensions_m": [
+        0.0011655091075226665,
+        0.001108453725464642,
+        0.0013030820991843939
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_058",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_059",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2555319666862488,
+        -0.03750959411263466,
+        0.09027978032827377
+      ],
+      "dimensions_m": [
+        0.001417865394614637,
+        0.0013484563678503036,
+        0.0015852255746722221
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_059",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_060",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25811639428138733,
+        -0.03884498402476311,
+        0.0983772873878479
+      ],
+      "dimensions_m": [
+        0.001846317551098764,
+        0.0017559344414621592,
+        0.002064250875264406
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_060",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_061",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20697325468063354,
+        -0.051412433385849,
+        0.0576372891664505
+      ],
+      "dimensions_m": [
+        0.0011926904553547502,
+        0.0011343044461682439,
+        0.001333471736870706
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_061",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_062",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2600352168083191,
+        -0.07771438360214233,
+        0.052638646215200424
+      ],
+      "dimensions_m": [
+        0.001911658444441855,
+        0.0018180765910074115,
+        0.0021373042836785316
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_062",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_063",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26351767778396606,
+        -0.06537733972072601,
+        0.10373479127883911
+      ],
+      "dimensions_m": [
+        0.0014269865350797772,
+        0.0013571310555562377,
+        0.0015954234404489398
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_063",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_064",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21770182251930237,
+        -0.02980969287455082,
+        0.08170941472053528
+      ],
+      "dimensions_m": [
+        0.0014791787834838033,
+        0.0014067682204768062,
+        0.0016537762712687254
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_064",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_065",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23720137774944305,
+        -0.029773062095046043,
+        0.06920754164457321
+      ],
+      "dimensions_m": [
+        0.0016829491360113025,
+        0.0016005634097382426,
+        0.001881598960608244
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_065",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_066",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2583138644695282,
+        -0.08140645921230316,
+        0.08159207552671432
+      ],
+      "dimensions_m": [
+        0.0015099792508408427,
+        0.0014360608765855432,
+        0.0016882122727110982
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_066",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_067",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2539999186992645,
+        -0.02548655867576599,
+        0.09813403338193893
+      ],
+      "dimensions_m": [
+        0.0014510093024000525,
+        0.0013799777952954173,
+        0.0016222817357629538
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_067",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_068",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23507650196552277,
+        -0.09246518462896347,
+        0.0724468007683754
+      ],
+      "dimensions_m": [
+        0.0010798480361700058,
+        0.0010269860504195094,
+        0.0012073097750544548
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_068",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_069",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25126081705093384,
+        -0.0827886238694191,
+        0.05634967237710953
+      ],
+      "dimensions_m": [
+        0.0017247095238417387,
+        0.0016402795445173979,
+        0.0019282886059954762
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_069",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_070",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21161992847919464,
+        -0.07962457090616226,
+        0.08970537036657333
+      ],
+      "dimensions_m": [
+        0.001658529625274241,
+        0.001577339367941022,
+        0.0018542971229180694
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_070",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_071",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2719651162624359,
+        -0.044977497309446335,
+        0.09026969969272614
+      ],
+      "dimensions_m": [
+        0.001998164225369692,
+        0.0019003476481884718,
+        0.002234020968899131
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_071",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_072",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20029287040233612,
+        -0.058655232191085815,
+        0.07944898307323456
+      ],
+      "dimensions_m": [
+        0.001875895424745977,
+        0.0017840644577518106,
+        0.002097320044413209
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_072",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_073",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.25965142250061035,
+        -0.03932373598217964,
+        0.09681740403175354
+      ],
+      "dimensions_m": [
+        0.0014541081618517637,
+        0.001382924965582788,
+        0.0016257463721558452
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_073",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_074",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20575149357318878,
+        -0.059817682951688766,
+        0.09673205018043518
+      ],
+      "dimensions_m": [
+        0.0012007207842543721,
+        0.0011419417569413781,
+        0.0013424500357359648
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_074",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_075",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2280196100473404,
+        -0.030974240973591805,
+        0.05608401075005531
+      ],
+      "dimensions_m": [
+        0.0014984055887907743,
+        0.0014250538079068065,
+        0.0016752724768593907
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_075",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_076",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.259947270154953,
+        -0.06435668468475342,
+        0.08776676654815674
+      ],
+      "dimensions_m": [
+        0.00187194743193686,
+        0.0017803097143769264,
+        0.002092906041070819
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_076",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_077",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22837115824222565,
+        -0.07873186469078064,
+        0.0535244345664978
+      ],
+      "dimensions_m": [
+        0.0018544658087193966,
+        0.001763683743774891,
+        0.002073360839858651
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_077",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_078",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24077992141246796,
+        -0.018988702446222305,
+        0.08981546759605408
+      ],
+      "dimensions_m": [
+        0.0021156426519155502,
+        0.0020120753906667233,
+        0.0023653663229197264
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_078",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_079",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20612749457359314,
+        -0.032156914472579956,
+        0.060992129147052765
+      ],
+      "dimensions_m": [
+        0.0013592569157481194,
+        0.0012927170610055327,
+        0.0015196992317214608
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_079",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_080",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21342292428016663,
+        -0.03429495543241501,
+        0.08345478773117065
+      ],
+      "dimensions_m": [
+        0.0013750770594924688,
+        0.0013077626936137676,
+        0.0015373867936432362
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_080",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_081",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2576664686203003,
+        -0.033008355647325516,
+        0.0805366262793541
+      ],
+      "dimensions_m": [
+        0.001950667006894946,
+        0.0018551755929365754,
+        0.0021809174213558435
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_081",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_082",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2067914605140686,
+        -0.06869836896657944,
+        0.06485254317522049
+      ],
+      "dimensions_m": [
+        0.001854110392741859,
+        0.0017633457900956273,
+        0.0020729636307805777
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_082",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_083",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2535950839519501,
+        -0.0717305988073349,
+        0.06836554408073425
+      ],
+      "dimensions_m": [
+        0.001873858505859971,
+        0.0017821271903812885,
+        0.0020950427278876305
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_083",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_084",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23567797243595123,
+        -0.02989189699292183,
+        0.06554022431373596
+      ],
+      "dimensions_m": [
+        0.002124327002093196,
+        0.0020203343592584133,
+        0.0023750755935907364
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_084",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_085",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2502792179584503,
+        -0.0343664325773716,
+        0.09151370078325272
+      ],
+      "dimensions_m": [
+        0.0012342771515250206,
+        0.0011738553876057267,
+        0.001379967201501131
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_085",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_086",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.24706149101257324,
+        -0.08071739226579666,
+        0.07955019176006317
+      ],
+      "dimensions_m": [
+        0.0016114882891997695,
+        0.001532600843347609,
+        0.0018017031252384186
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_086",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_087",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26642847061157227,
+        -0.07791463285684586,
+        0.0646275132894516
+      ],
+      "dimensions_m": [
+        0.0013886159285902977,
+        0.0013206388102844357,
+        0.0015525236958637834
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_087",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_088",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2569579482078552,
+        -0.040253181010484695,
+        0.10159613192081451
+      ],
+      "dimensions_m": [
+        0.0013377232244238257,
+        0.0012722373940050602,
+        0.001495623728260398
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_088",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_089",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20266811549663544,
+        -0.06095416098833084,
+        0.06892294436693192
+      ],
+      "dimensions_m": [
+        0.001142976339906454,
+        0.0010870241094380617,
+        0.0012778895907104015
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_089",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_090",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26300981640815735,
+        -0.05432594567537308,
+        0.10248053073883057
+      ],
+      "dimensions_m": [
+        0.0013167639262974262,
+        0.0012523041805252433,
+        0.0014721904881298542
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_090",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_091",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2267664670944214,
+        -0.016890816390514374,
+        0.10490326583385468
+      ],
+      "dimensions_m": [
+        0.0011515419464558363,
+        0.0010951702715829015,
+        0.0012874662643298507
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_091",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_092",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2375393956899643,
+        -0.08583740144968033,
+        0.07724548876285553
+      ],
+      "dimensions_m": [
+        0.0019579329527914524,
+        0.0018620858900249004,
+        0.002189040882512927
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_092",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_093",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.26744723320007324,
+        -0.05336876958608627,
+        0.10281053930521011
+      ],
+      "dimensions_m": [
+        0.002110299887135625,
+        0.002006994094699621,
+        0.0023593930527567863
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_093",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_094",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2434350848197937,
+        -0.08587823063135147,
+        0.06815846264362335
+      ],
+      "dimensions_m": [
+        0.0021070444490760565,
+        0.002003897912800312,
+        0.0023557532113045454
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_094",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_095",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.2607511878013611,
+        -0.05454462766647339,
+        0.06853189319372177
+      ],
+      "dimensions_m": [
+        0.002111585345119238,
+        0.0020082166884094477,
+        0.002360830083489418
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_095",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_096",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.20482715964317322,
+        -0.0317552350461483,
+        0.05653834342956543
+      ],
+      "dimensions_m": [
+        0.00137745076790452,
+        0.0013100202195346355,
+        0.001540040597319603
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_096",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_097",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.23145528137683868,
+        -0.031146932393312454,
+        0.0971960797905922
+      ],
+      "dimensions_m": [
+        0.001917411806061864,
+        0.001823548343963921,
+        0.0021437369287014008
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_097",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_098",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.21363317966461182,
+        -0.07501484453678131,
+        0.08980073034763336
+      ],
+      "dimensions_m": [
+        0.0018512594979256392,
+        0.001760634477250278,
+        0.002069776179268956
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_098",
+      "classification": "static"
+    },
+    {
+      "name": "Illustrative_particle_099",
+      "group": "Reactive_condition",
+      "position_m": [
+        0.22619500756263733,
+        -0.025105083361268044,
+        0.05224525183439255
+      ],
+      "dimensions_m": [
+        0.0020548568572849035,
+        0.001954265171661973,
+        0.002297405619174242
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_099",
+      "classification": "static"
+    },
+    {
+      "name": "Reactive_condition_card",
+      "group": "Fixtures",
+      "position_m": [
+        0.23499999940395355,
+        -0.15800000727176666,
+        0.01600000075995922
+      ],
+      "dimensions_m": [
+        0.16500000655651093,
+        0.004000000189989805,
+        0.03099999949336052
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_card",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker",
+      "group": "Water_control",
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions_m": [
+        0.08399999141693115,
+        0.08799999952316284,
+        0.11500000208616257
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": [
+        "/ClassicLab/ClassicLab/Water_control/Water_control_beaker",
+        "/ClassicLab/ClassicLab/Water_control/Water_control_beaker/Water_control_beaker"
+      ],
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker_bottom",
+      "group": "Water_control",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.04149999842047691
+      ],
+      "dimensions_m": [
+        0.08399999886751175,
+        0.08399999886751175,
+        0.003000000026077032
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_bottom",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker_rim",
+      "group": "Water_control",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.1550000011920929
+      ],
+      "dimensions_m": [
+        0.08459999412298203,
+        0.08459999412298203,
+        0.0015999999595806003
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_rim",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker_graduation_1",
+      "group": "Water_control",
+      "position_m": [
+        0.4351600110530853,
+        -0.09275999665260315,
+        0.0572500005364418
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_1",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker_graduation_2",
+      "group": "Water_control",
+      "position_m": [
+        0.4351600110530853,
+        -0.09275999665260315,
+        0.07450000196695328
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_2",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker_graduation_3",
+      "group": "Water_control",
+      "position_m": [
+        0.4351600110530853,
+        -0.09275999665260315,
+        0.09175000339746475
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_3",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_beaker_graduation_4",
+      "group": "Water_control",
+      "position_m": [
+        0.4351600110530853,
+        -0.09275999665260315,
+        0.10899999737739563
+      ],
+      "dimensions_m": [
+        0.012000000104308128,
+        0.0005000000237487257,
+        0.000699999975040555
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_4",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_liquid",
+      "group": "Water_control",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.07850000262260437
+      ],
+      "dimensions_m": [
+        0.08100000023841858,
+        0.08100000023841858,
+        0.07100000232458115
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_liquid",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_meniscus",
+      "group": "Water_control",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.11420000344514847
+      ],
+      "dimensions_m": [
+        0.08060000091791153,
+        0.08060000091791153,
+        0.0007999999797903001
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_meniscus",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_stir_bar",
+      "group": "Water_control",
+      "position_m": [
+        0.41499999165534973,
+        -0.054999999701976776,
+        0.04600000008940697
+      ],
+      "dimensions_m": [
+        0.03500000014901161,
+        0.00800000037997961,
+        0.006000000052154064
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.3199999928474426
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Water_control/Water_control_stir_bar",
+      "classification": "static"
+    },
+    {
+      "name": "Water_control_card",
+      "group": "Fixtures",
+      "position_m": [
+        0.41499999165534973,
+        -0.15800000727176666,
+        0.01600000075995922
+      ],
+      "dimensions_m": [
+        0.16500000655651093,
+        0.004000000189989805,
+        0.03099999949336052
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Water_control_card",
+      "classification": "static"
+    },
+    {
+      "name": "Water_bottle",
+      "group": "Fixtures",
+      "position_m": [
+        0.49000000953674316,
+        0.13699999451637268,
+        0.05400000140070915
+      ],
+      "dimensions_m": [
+        0.05000000074505806,
+        0.05000000074505806,
+        0.10199999809265137
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle",
+      "classification": "movable_candidate_currently_static"
+    },
+    {
+      "name": "Water_bottle_contents",
+      "group": "Fixtures",
+      "position_m": [
+        0.49000000953674316,
+        0.13699999451637268,
+        0.0430000014603138
+      ],
+      "dimensions_m": [
+        0.04600000008940697,
+        0.04600000008940697,
+        0.07500000298023224
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_contents",
+      "classification": "movable_candidate_currently_static"
+    },
+    {
+      "name": "Water_bottle_cap",
+      "group": "Fixtures",
+      "position_m": [
+        0.49000000953674316,
+        0.13699999451637268,
+        0.10999999940395355
+      ],
+      "dimensions_m": [
+        0.03200000151991844,
+        0.03200000151991844,
+        0.012000000104308128
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_cap",
+      "classification": "movable_candidate_currently_static"
+    },
+    {
+      "name": "Water_bottle_label",
+      "group": "Fixtures",
+      "position_m": [
+        0.49000000953674316,
+        0.1120000034570694,
+        0.057999998331069946
+      ],
+      "dimensions_m": [
+        0.041999999433755875,
+        0.0020000000949949026,
+        0.027000000700354576
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Water_bottle_label",
+      "classification": "movable_candidate_currently_static"
+    },
+    {
+      "name": "Stirrer_rest",
+      "group": "Fixtures",
+      "position_m": [
+        0.14499999582767487,
+        -0.1899999976158142,
+        0.012000000104308128
+      ],
+      "dimensions_m": [
+        0.12999999523162842,
+        0.023000000044703484,
+        0.024000000208616257
+      ],
+      "rotation_euler_rad": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Stirrer_rest",
+      "classification": "static"
+    },
+    {
+      "name": "Glass_stirring_rod",
+      "group": "Fixtures",
+      "position_m": [
+        0.16750000417232513,
+        -0.1899999976158142,
+        0.027000000700354576
+      ],
+      "dimensions_m": [
+        0.004999999888241291,
+        0.004999999888241291,
+        0.1550000011920929
+      ],
+      "rotation_euler_rad": [
+        1.5707963705062866,
+        -0.0,
+        1.5707963705062866
+      ],
+      "exported_prim_path": "/ClassicLab/ClassicLab/Fixtures/Glass_stirring_rod",
+      "classification": "movable_candidate_currently_static"
+    }
+  ],
+  "exported_prim_paths": [
+    "/ClassicLab",
+    "/ClassicLab/ClassicLab",
+    "/ClassicLab/ClassicLab/Bench",
+    "/ClassicLab/ClassicLab/Bench/Leg_002",
+    "/ClassicLab/ClassicLab/Bench/Leg_002/Cube_003",
+    "/ClassicLab/ClassicLab/Bench/Leg_003",
+    "/ClassicLab/ClassicLab/Bench/Leg_003/Cube_004",
+    "/ClassicLab/ClassicLab/Bench/Tabletop",
+    "/ClassicLab/ClassicLab/Bench/Tabletop/Cube",
+    "/ClassicLab/ClassicLab/Bench/Floor",
+    "/ClassicLab/ClassicLab/Bench/Floor/Cube_005",
+    "/ClassicLab/ClassicLab/Bench/Leg",
+    "/ClassicLab/ClassicLab/Bench/Leg/Cube_001",
+    "/ClassicLab/ClassicLab/Bench/Leg_001",
+    "/ClassicLab/ClassicLab/Bench/Leg_001/Cube_002",
+    "/ClassicLab/ClassicLab/Lighting",
+    "/ClassicLab/ClassicLab/Lighting/Fill",
+    "/ClassicLab/ClassicLab/Lighting/Fill/Fill",
+    "/ClassicLab/ClassicLab/Lighting/Key",
+    "/ClassicLab/ClassicLab/Lighting/Key/Key",
+    "/ClassicLab/ClassicLab/Lighting/Top",
+    "/ClassicLab/ClassicLab/Lighting/Top/Top",
+    "/ClassicLab/ClassicLab/Water_control",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_bottom",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_bottom/Cylinder_027",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_4",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_4/Cube_045",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_1",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_1/Cube_042",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker/Water_control_beaker",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_3",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_3/Cube_044",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_rim",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_rim/Torus_005",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_meniscus",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_meniscus/Cylinder_029",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_liquid",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_liquid/Cylinder_028",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_stir_bar",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_stir_bar/Cube_046",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_2",
+    "/ClassicLab/ClassicLab/Water_control/Water_control_beaker_graduation_2/Cube_043",
+    "/ClassicLab/ClassicLab/Fixtures",
+    "/ClassicLab/ClassicLab/Fixtures/Stand_foot",
+    "/ClassicLab/ClassicLab/Fixtures/Stand_foot/Cube_025",
+    "/ClassicLab/ClassicLab/Fixtures/Stirrer_rest",
+    "/ClassicLab/ClassicLab/Fixtures/Stirrer_rest/Cube_049",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_mixer_label",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_mixer_label/Reaction_mixer_label",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_004",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_004/Cube_019",
+    "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_overhead_label",
+    "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_overhead_label/Reactive_condition_overhead_label",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_drip_tray",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_drip_tray/Cube_006",
+    "/ClassicLab/ClassicLab/Fixtures/Control_mixer_label",
+    "/ClassicLab/ClassicLab/Fixtures/Control_mixer_label/Control_mixer_label",
+    "/ClassicLab/ClassicLab/Fixtures/B_dosing_collar",
+    "/ClassicLab/ClassicLab/Fixtures/B_dosing_collar/Torus_002",
+    "/ClassicLab/ClassicLab/Fixtures/Stand_rod",
+    "/ClassicLab/ClassicLab/Fixtures/Stand_rod/Cylinder_004",
+    "/ClassicLab/ClassicLab/Fixtures/Control_drip_tray",
+    "/ClassicLab/ClassicLab/Fixtures/Control_drip_tray/Cube_010",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_005",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_005/Cube_020",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_text",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_text/Water_bottle_text",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_mixing_station",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_mixing_station/Cube_007",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_backplate",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_backplate/Cube_014",
+    "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_print",
+    "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_print/Reactive_condition_print",
+    "/ClassicLab/ClassicLab/Fixtures/Rod_foot",
+    "/ClassicLab/ClassicLab/Fixtures/Rod_foot/Cylinder_005",
+    "/ClassicLab/ClassicLab/Fixtures/Control_mixing_station",
+    "/ClassicLab/ClassicLab/Fixtures/Control_mixing_station/Cube_011",
+    "/ClassicLab/ClassicLab/Fixtures/B_holder_arm",
+    "/ClassicLab/ClassicLab/Fixtures/B_holder_arm/Cylinder_016",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_006",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_006/Cube_021",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_vessel_seat",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_vessel_seat/Cylinder",
+    "/ClassicLab/ClassicLab/Fixtures/A_dosing_collar",
+    "/ClassicLab/ClassicLab/Fixtures/A_dosing_collar/Torus",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar/Cube_015",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_label",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_label/Cube_048",
+    "/ClassicLab/ClassicLab/Fixtures/Stand_rod_001",
+    "/ClassicLab/ClassicLab/Fixtures/Stand_rod_001/Cylinder_006",
+    "/ClassicLab/ClassicLab/Fixtures/Glass_stirring_rod",
+    "/ClassicLab/ClassicLab/Fixtures/Glass_stirring_rod/Cylinder_033",
+    "/ClassicLab/ClassicLab/Fixtures/Control_vessel_seat",
+    "/ClassicLab/ClassicLab/Fixtures/Control_vessel_seat/Cylinder_002",
+    "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_card",
+    "/ClassicLab/ClassicLab/Fixtures/Reactive_condition_card/Cube_041",
+    "/ClassicLab/ClassicLab/Fixtures/Water_control_print",
+    "/ClassicLab/ClassicLab/Fixtures/Water_control_print/Water_control_print",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_007",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_007/Cube_022",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop/Cube_008",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_001",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_001/Cube_016",
+    "/ClassicLab/ClassicLab/Fixtures/Rod_foot_001",
+    "/ClassicLab/ClassicLab/Fixtures/Rod_foot_001/Cylinder_007",
+    "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop",
+    "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop/Cube_012",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_cap",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_cap/Cylinder_032",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_008",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_008/Cube_023",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop_001",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_locating_stop_001/Cube_009",
+    "/ClassicLab/ClassicLab/Fixtures/Water_control_card",
+    "/ClassicLab/ClassicLab/Fixtures/Water_control_card/Cube_047",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_002",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_002/Cube_017",
+    "/ClassicLab/ClassicLab/Fixtures/Upper_crossbar",
+    "/ClassicLab/ClassicLab/Fixtures/Upper_crossbar/Cylinder_008",
+    "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop_001",
+    "/ClassicLab/ClassicLab/Fixtures/Control_locating_stop_001/Cube_013",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_009",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_009/Cube_024",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_speed_dial",
+    "/ClassicLab/ClassicLab/Fixtures/Reaction_speed_dial/Cylinder_001",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_contents",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle_contents/Cylinder_031",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle",
+    "/ClassicLab/ClassicLab/Fixtures/Water_bottle/Cylinder_030",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_003",
+    "/ClassicLab/ClassicLab/Fixtures/Reference_bar_003/Cube_018",
+    "/ClassicLab/ClassicLab/Fixtures/A_holder_arm",
+    "/ClassicLab/ClassicLab/Fixtures/A_holder_arm/Cylinder_009",
+    "/ClassicLab/ClassicLab/Fixtures/Water_control_overhead_label",
+    "/ClassicLab/ClassicLab/Fixtures/Water_control_overhead_label/Water_control_overhead_label",
+    "/ClassicLab/ClassicLab/Fixtures/Control_speed_dial",
+    "/ClassicLab/ClassicLab/Fixtures/Control_speed_dial/Cylinder_003",
+    "/ClassicLab/ClassicLab/Cameras",
+    "/ClassicLab/ClassicLab/Cameras/Front",
+    "/ClassicLab/ClassicLab/Cameras/Front/Front",
+    "/ClassicLab/ClassicLab/Cameras/Result",
+    "/ClassicLab/ClassicLab/Cameras/Result/Result",
+    "/ClassicLab/ClassicLab/Cameras/Overhead",
+    "/ClassicLab/ClassicLab/Cameras/Overhead/Overhead",
+    "/ClassicLab/ClassicLab/Reagent_A",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup/A_dosing_cup",
+    "/ClassicLab/ClassicLab/Reagent_A/A_valve_handle",
+    "/ClassicLab/ClassicLab/Reagent_A/A_valve_handle/Cylinder_013",
+    "/ClassicLab/ClassicLab/Reagent_A/A_valve_body",
+    "/ClassicLab/ClassicLab/Reagent_A/A_valve_body/Cylinder_012",
+    "/ClassicLab/ClassicLab/Reagent_A/A_identity",
+    "/ClassicLab/ClassicLab/Reagent_A/A_identity/A_identity",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_3",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_3/Cube_028",
+    "/ClassicLab/ClassicLab/Reagent_A/A_delivery_stem",
+    "/ClassicLab/ClassicLab/Reagent_A/A_delivery_stem/Cylinder_014",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_rim",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_rim/Torus_001",
+    "/ClassicLab/ClassicLab/Reagent_A/A_spout_tip",
+    "/ClassicLab/ClassicLab/Reagent_A/A_spout_tip/Cylinder_015",
+    "/ClassicLab/ClassicLab/Reagent_A/A_clear_reagent",
+    "/ClassicLab/ClassicLab/Reagent_A/A_clear_reagent/Cylinder_011",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_2",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_2/Cube_027",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_bottom",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_bottom/Cylinder_010",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_4",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_4/Cube_029",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_1",
+    "/ClassicLab/ClassicLab/Reagent_A/A_dosing_cup_graduation_1/Cube_026",
+    "/ClassicLab/ClassicLab/Reagent_A/A_identity_plate",
+    "/ClassicLab/ClassicLab/Reagent_A/A_identity_plate/Cube_030",
+    "/ClassicLab/ClassicLab/Reagent_B",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_1",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_1/Cube_031",
+    "/ClassicLab/ClassicLab/Reagent_B/B_identity",
+    "/ClassicLab/ClassicLab/Reagent_B/B_identity/B_identity",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup/B_dosing_cup",
+    "/ClassicLab/ClassicLab/Reagent_B/B_valve_body",
+    "/ClassicLab/ClassicLab/Reagent_B/B_valve_body/Cylinder_019",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_3",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_3/Cube_033",
+    "/ClassicLab/ClassicLab/Reagent_B/B_valve_handle",
+    "/ClassicLab/ClassicLab/Reagent_B/B_valve_handle/Cylinder_020",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_rim",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_rim/Torus_003",
+    "/ClassicLab/ClassicLab/Reagent_B/B_delivery_stem",
+    "/ClassicLab/ClassicLab/Reagent_B/B_delivery_stem/Cylinder_021",
+    "/ClassicLab/ClassicLab/Reagent_B/B_clear_reagent",
+    "/ClassicLab/ClassicLab/Reagent_B/B_clear_reagent/Cylinder_018",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_2",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_2/Cube_032",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_bottom",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_bottom/Cylinder_017",
+    "/ClassicLab/ClassicLab/Reagent_B/B_spout_tip",
+    "/ClassicLab/ClassicLab/Reagent_B/B_spout_tip/Cylinder_022",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_4",
+    "/ClassicLab/ClassicLab/Reagent_B/B_dosing_cup_graduation_4/Cube_034",
+    "/ClassicLab/ClassicLab/Reagent_B/B_identity_plate",
+    "/ClassicLab/ClassicLab/Reagent_B/B_identity_plate/Cube_035",
+    "/ClassicLab/ClassicLab/Reactive_condition",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_021",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_021/Icosphere_021",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_093",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_093/Icosphere_093",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_034",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_034/Icosphere_034",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_liquid",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_liquid/Cylinder_024",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_088",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_088/Icosphere_088",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_009",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_009/Icosphere_009",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_084",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_084/Icosphere_084",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_083",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_083/Icosphere_083",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_022",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_022/Icosphere_022",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_035",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_035/Icosphere_035",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_068",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_068/Icosphere_068",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_meniscus",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_meniscus/Cylinder_025",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_071",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_071/Icosphere_071",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_010",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_010/Icosphere_010",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_063",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_063/Icosphere_063",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_073",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_073/Icosphere_073",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_023",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_023/Icosphere_023",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_036",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_036/Icosphere_036",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_stir_bar",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_stir_bar/Cube_040",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_011",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_011/Icosphere_011",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_053",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_053/Icosphere_053",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_091",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_091/Icosphere_091",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_024",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_024/Icosphere_024",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_048",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_048/Icosphere_048",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_037",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_037/Icosphere_037",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_086",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_086/Icosphere_086",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_078",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_078/Icosphere_078",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_050",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_050/Icosphere_050",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_043",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_043/Icosphere_043",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_012",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_012/Icosphere_012",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_081",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_081/Icosphere_081",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_000",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_000/Icosphere",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_077",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_077/Icosphere_077",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_025",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_025/Icosphere_025",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_066",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_066/Icosphere_066",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_076",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_076/Icosphere_076",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_038",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_038/Icosphere_038",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_051",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_051/Icosphere_051",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_061",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_061/Icosphere_061",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_013",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_013/Icosphere_013",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_099",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_099/Icosphere_099",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_056",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_056/Icosphere_056",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_026",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_026/Icosphere_026",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_094",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_094/Icosphere_094",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_039",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_039/Icosphere_039",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_052",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_052/Icosphere_052",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_033",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_033/Icosphere_033",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_089",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_089/Icosphere_089",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_014",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_014/Icosphere_014",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_046",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_046/Icosphere_046",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_027",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_027/Icosphere_027",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_040",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_040/Icosphere_040",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_041",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_041/Icosphere_041",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_069",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_069/Icosphere_069",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_002",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_002/Icosphere_002",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_079",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_079/Icosphere_079",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_015",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_015/Icosphere_015",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_059",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_059/Icosphere_059",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_064",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_064/Icosphere_064",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_074",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_074/Icosphere_074",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_2",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_2/Cube_037",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_028",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_028/Icosphere_028",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker/Reactive_condition_beaker",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_bottom",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_bottom/Cylinder_023",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_058",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_058/Icosphere_058",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_003",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_003/Icosphere_003",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_016",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_016/Icosphere_016",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_054",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_054/Icosphere_054",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_097",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_097/Icosphere_097",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_092",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_092/Icosphere_092",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_029",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_029/Icosphere_029",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_049",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_049/Icosphere_049",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_rim",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_rim/Torus_004",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_087",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_087/Icosphere_087",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_096",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_096/Icosphere_096",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_004",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_004/Icosphere_004",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_017",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_017/Icosphere_017",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_082",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_082/Icosphere_082",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_001",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_001/Icosphere_001",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_030",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_030/Icosphere_030",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_067",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_067/Icosphere_067",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_1",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_1/Cube_036",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_005",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_005/Icosphere_005",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_062",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_062/Icosphere_062",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_018",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_018/Icosphere_018",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_072",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_072/Icosphere_072",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_057",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_057/Icosphere_057",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_031",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_031/Icosphere_031",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_095",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_095/Icosphere_095",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_044",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_044/Icosphere_044",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_006",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_006/Icosphere_006",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_019",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_019/Icosphere_019",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_047",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_047/Icosphere_047",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_090",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_090/Icosphere_090",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_032",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_032/Icosphere_032",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_085",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_085/Icosphere_085",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_045",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_045/Icosphere_045",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_042",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_042/Icosphere_042",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_070",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_070/Icosphere_070",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_007",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_007/Icosphere_007",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_080",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_080/Icosphere_080",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_sediment",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_sediment/Cylinder_026",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_020",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_020/Icosphere_020",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_065",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_065/Icosphere_065",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_075",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_075/Icosphere_075",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_3",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_3/Cube_038",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_4",
+    "/ClassicLab/ClassicLab/Reactive_condition/Reactive_condition_beaker_graduation_4/Cube_039",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_060",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_060/Icosphere_060",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_008",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_008/Icosphere_008",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_098",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_098/Icosphere_098",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_055",
+    "/ClassicLab/ClassicLab/Reactive_condition/Illustrative_particle_055/Icosphere_055",
+    "/ClassicLab/_materials",
+    "/ClassicLab/_materials/Fixture_gray",
+    "/ClassicLab/_materials/Fixture_gray/Principled_BSDF",
+    "/ClassicLab/_materials/Warm_white_bench",
+    "/ClassicLab/_materials/Warm_white_bench/Principled_BSDF",
+    "/ClassicLab/_materials/Floor_gray",
+    "/ClassicLab/_materials/Floor_gray/Principled_BSDF",
+    "/ClassicLab/_materials/Approximate_glass_12percent",
+    "/ClassicLab/_materials/Approximate_glass_12percent/Principled_BSDF",
+    "/ClassicLab/_materials/Matte_charcoal_print",
+    "/ClassicLab/_materials/Matte_charcoal_print/Principled_BSDF",
+    "/ClassicLab/_materials/Clear_liquid_5percent",
+    "/ClassicLab/_materials/Clear_liquid_5percent/Principled_BSDF",
+    "/ClassicLab/_materials/White_reference_panel",
+    "/ClassicLab/_materials/White_reference_panel/Principled_BSDF",
+    "/ClassicLab/_materials/Reagent_B_ochre_identifier",
+    "/ClassicLab/_materials/Reagent_B_ochre_identifier/Principled_BSDF",
+    "/ClassicLab/_materials/Brushed_stainless",
+    "/ClassicLab/_materials/Brushed_stainless/Principled_BSDF",
+    "/ClassicLab/_materials/Silicone_seats",
+    "/ClassicLab/_materials/Silicone_seats/Principled_BSDF",
+    "/ClassicLab/_materials/Reagent_A_blue_identifier",
+    "/ClassicLab/_materials/Reagent_A_blue_identifier/Principled_BSDF",
+    "/ClassicLab/_materials/Illustrative_enlarged_particles",
+    "/ClassicLab/_materials/Illustrative_enlarged_particles/Principled_BSDF",
+    "/ClassicLab/_materials/Illustrative_white_suspension",
+    "/ClassicLab/_materials/Illustrative_white_suspension/Principled_BSDF",
+    "/ClassicLab/_materials/Illustrative_settled_solid",
+    "/ClassicLab/_materials/Illustrative_settled_solid/Principled_BSDF"
+  ],
+  "static_vs_movable": {
+    "movable_after_runtime_setup": [
+      "/ClassicLab/ClassicLab/Fixtures/Glass_stirring_rod",
+      "/ClassicLab/ClassicLab/Fixtures/Water_bottle",
+      "/ClassicLab/ClassicLab/Reagent_A/A_valve_handle",
+      "/ClassicLab/ClassicLab/Reagent_B/B_valve_handle"
+    ],
+    "static": "Other geometry; entire current asset has no runtime articulation."
+  }
+}

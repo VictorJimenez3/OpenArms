@@ -1,0 +1,59 @@
+{
+  "usd_default_prim": "/ClassicLab",
+  "usd_meters_per_unit": 1.0,
+  "usd_up_axis": "Z",
+  "external_layer_dependencies": [],
+  "asset_paths": [],
+  "robot_prims": [],
+  "physics_prims": [],
+  "prim_count": 546,
+  "render_outputs": {
+    "Front.png": {
+      "exists": true,
+      "size_px": [
+        1600,
+        1000
+      ]
+    },
+    "Overhead.png": {
+      "exists": true,
+      "size_px": [
+        1600,
+        1000
+      ]
+    },
+    "Result.png": {
+      "exists": true,
+      "size_px": [
+        1600,
+        1000
+      ]
+    }
+  },
+  "output_existence": {
+    "build.py": true,
+    "Scene.blend": true,
+    "Environment.usdc": true,
+    "manifest.json": true,
+    "EXPERIMENT.md": true
+  },
+  "visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "note": "All three views inspected after translating the passive rig +0.10 m in Y. Static-arm/funnel overlap removed; no runtime collision qualification."
+  },
+  "all_usd_checks_pass": true,
+  "orchestrator_visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "note": "All three views inspected after translating the passive rig +0.10 m in Y. Static-arm/funnel overlap removed; no runtime collision qualification."
+  }
+}
