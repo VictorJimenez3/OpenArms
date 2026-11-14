@@ -26,6 +26,8 @@ async def test_duplicate_confirmation_input_cannot_approve_later_trial(lab):
     sid, first = await proposed(lab)
     await lab.present(sid, first['request_id'], first['proposal_version'])
     await lab.converse(sid, 'confirm', 'single-yes')
+    assert lab.backends[sid].executions == 0
+    await lab.confirm(sid, first['request_id'], first['proposal_version'])
     await lab.workers[first['task_id']]
     await lab.prepare(sid)
     _, second = await proposed(lab, sid)

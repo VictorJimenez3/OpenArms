@@ -52,7 +52,7 @@ def _affirmative(value):
 class Lab(TaskLoop):
     def __init__(self, data_dir: Path, *, backend_factory=None, registry=None,
                  execution_timeout=60, confirmation_ttl=120, expert_timeout=90,
-                 expert=None, perception=None, evaluator=None, auto_evaluate=False):
+                 expert=None, perception=None, evaluator=None, auto_evaluate=False, execution_scope=None):
         if min(execution_timeout, confirmation_ttl, expert_timeout) <= 0:
             raise ValueError('Execution and confirmation timeouts must be positive.')
         data_dir = Path(data_dir)
@@ -61,6 +61,8 @@ class Lab(TaskLoop):
         self.registry = registry or SkillRegistry(data_dir / 'task-skills.json')
         self.expert, self.perception, self.evaluator = expert, perception, evaluator
         self.auto_evaluate = auto_evaluate
+        self.execution_scope = execution_scope
+        self.evaluations = {}
         self.expert_timeout = expert_timeout
         self.backend_factory = backend_factory
         self.execution_timeout, self.confirmation_ttl = execution_timeout, confirmation_ttl
@@ -136,7 +138,8 @@ class Lab(TaskLoop):
             s['pending'] = None
             self._cancel_tasks(s, 'Server restarted; tasks are never replayed.')
             s['history_only'] = ((s.get('experiment') or {}).get('id') != EXPERIMENT['id'] or
-                                 s.get('backend') not in ('mock', 'mujoco'))
+                                 s.get('backend') not in ('mock', 'mujoco') or
+                                 (self.execution_scope is not None and s.get('execution_scope') != self.execution_scope))
             for r in s['requests']:
                 if r.get('status') not in TERMINAL:
                     was_active = r.get('status') in ACTIVE
@@ -173,10 +176,17 @@ class Lab(TaskLoop):
 
     def snapshot(self, sid):
         state = copy.deepcopy(self.get(sid))
+        owned = {version for task in state['tasks']
+                 for version in self.registry.data['validations'].get(task['task_id'], {})}
+        visible = owned | set(self.registry.data['active'].values())
         state['skills'] = [self.registry.get(entry['definition']['skill_id'], version)
-                           for version, entry in self.registry.data['versions'].items()]
-        state['evaluations'] = copy.deepcopy(self.registry.data['evaluations'])
-        state['skill_decisions'] = copy.deepcopy(self.registry.data['decisions'])
+                           for version, entry in self.registry.data['versions'].items() if version in visible]
+        evaluation_ids = {e['data']['decision']['evaluation_id'] for e in state['notebook']
+                          if e['kind'] == 'skill_evaluation' and 'decision' in e['data']}
+        state['evaluations'] = copy.deepcopy([e for e in self.registry.data['evaluations']
+                                              if e['evaluation_id'] in evaluation_ids])
+        state['skill_decisions'] = copy.deepcopy([d for d in self.registry.data['decisions']
+                                                 if d['evaluation_id'] in evaluation_ids])
         return state
 
     async def publish(self, s):
@@ -260,22 +270,44 @@ class Lab(TaskLoop):
         if self.evaluator is None:
             raise LabError('Independent skill evaluator unavailable.')
         s = self.get(sid)
+        self._editable(s)
+        generation = s['generation']
         candidate = self.registry.get(skill_id, version)
         if candidate['status'] != 'task_validated':
             raise LabError('Candidate must first pass task validation.')
-        if not any(t['status'] == 'completed' and any(o['skill_version'] == version for o in t['observations'])
-                   for t in s['tasks']):
-            raise LabError('Candidate must complete a consented task with independent observer feedback.')
+        completed = [t for t in s['tasks'] if t['status'] == 'completed' and any(
+            o['skill_version'] == version and o['status'] == 'observed' and o['checks'] and all(o['checks'].values())
+            and any(r['request_id'] == o['request_id'] and r['plan_hash'] == o['plan_hash']
+                    and r['skill_version'] == version and r['status'] == 'completed'
+                    and (r.get('result') or {}).get('controller_completed') is True for r in s['requests'])
+            for o in t['observations'])]
+        if not completed:
+            raise LabError('Candidate needs a consented successful execution and independently observed passing outcome.')
         try:
             baseline = self.registry.get(skill_id)
         except KeyError:
             baseline = None
-        raw = await asyncio.wait_for(self.evaluator.evaluate_candidate(sid, candidate, baseline), self.expert_timeout)
-        decision = self.registry.record_evaluation(skill_id, version, raw)
-        self._event(s, 'skill_evaluation', skill_id=skill_id, skill_version=version,
-                    decision=decision, provenance='EVALUATOR')
-        await self.publish(s)
-        return decision
+        improvement = next((t.get('improvement') for t in reversed(completed) if t.get('improvement')), None)
+        if improvement:
+            pinned = improvement['baseline_plan']
+            if not baseline or baseline['skill_id'] != pinned['skill_id'] or baseline['version'] != pinned['skill_version']:
+                raise LabError('The pinned improvement baseline changed; request a fresh comparison.')
+        evaluation = asyncio.create_task(self.evaluator.evaluate_candidate(sid, candidate, baseline))
+        running = self.evaluations.setdefault(sid, set())
+        running.add(evaluation)
+        try:
+            raw = await asyncio.wait_for(evaluation, self.expert_timeout)
+            async with self._lock(sid):
+                self._editable(s)
+                if s['generation'] != generation:
+                    raise LabError('Evaluation was revoked by STOP or reconnection; no skill was promoted.')
+                decision = self.registry.record_evaluation(skill_id, version, raw)
+                self._event(s, 'skill_evaluation', skill_id=skill_id, skill_version=version,
+                            decision=decision, provenance='EVALUATOR', execution_scope=self.execution_scope)
+                await self.publish(s)
+                return decision
+        finally:
+            running.discard(evaluation)
 
     async def _evaluate_completed(self, s, task):
         plan = task.get('plan') or {}
@@ -304,7 +336,8 @@ class Lab(TaskLoop):
         sid = str(uuid.uuid4())
         b = self._backend(sid)
         b.prepare()
-        s = {'session_id': sid, 'backend': b.mode, 'experiment': copy.deepcopy(EXPERIMENT),
+        s = {'session_id': sid, 'backend': b.mode, 'execution_scope': self.execution_scope,
+             'experiment': copy.deepcopy(EXPERIMENT),
              'revision': 0, 'generation': 0, 'connected': True, 'trial': self._trial(),
              'conditions': copy.deepcopy(list(CONDITIONS)), 'prediction': '', 'pending': None,
              'requests': [], 'tasks': [], 'scene': None, 'scene_images': [],
@@ -374,6 +407,10 @@ class Lab(TaskLoop):
         text = _text(text, 'prediction')
         if s['prediction'] == text:
             return
+        if any(t['status'] in ('executing', 'observing') for t in s['tasks']):
+            raise LabError('Save a prediction before execution or after this trial finishes.')
+        self._invalidate(s, 'Prediction changed; review a fresh proposal.')
+        self._cancel_tasks(s, 'Prediction changed during planning.')
         s['prediction'] = text
         self._event(s, 'prediction', text=text)
         self._message(s, 'assistant', 'Prediction saved.')
@@ -498,6 +535,9 @@ class Lab(TaskLoop):
             reason = 'Session disconnected.' if disconnect else 'STOP requested.'
             self._invalidate(s, reason)
             self._cancel_session_tasks(s, reason)
+            evaluations = tuple(self.evaluations.get(sid, ()))
+            for evaluation in evaluations:
+                evaluation.cancel()
             s['generation'] += 1
             if disconnect:
                 s['connected'] = False
@@ -505,7 +545,9 @@ class Lab(TaskLoop):
                 s['trial']['state'] = 'stopped'
             self._event(s, 'stop_requested', disconnect=disconnect)
             await self._stop_backend(sid)
-            return await self.publish(s)
+            snapshot = await self.publish(s)
+        await asyncio.gather(*evaluations, return_exceptions=True)
+        return snapshot
 
     async def reconnected(self, sid):
         # A new lease revokes even an approval issued just before the socket swap.
@@ -594,11 +636,7 @@ class Lab(TaskLoop):
                             await self._stop_backend(sid)
                         self._message(s, 'assistant', 'Task cancelled.')
                     elif _affirmative(text):
-                        r = s['pending']
-                        if r:
-                            self._confirm(s, r['request_id'], r['proposal_version'])
-                        else:
-                            self._message(s, 'assistant', 'There is no current presented proposal to confirm.')
+                        self._message(s, 'assistant', 'Use the Confirm button on the exact proposal, or confirm aloud after hearing it.')
                     elif re.search(r'\b(confirm|approve|go ahead|run it)\b', normalized):
                         self._message(s, 'assistant', 'Send a separate completed “confirm” after reviewing the current proposal.')
                     elif c:

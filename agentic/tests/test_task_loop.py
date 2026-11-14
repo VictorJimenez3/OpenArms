@@ -166,7 +166,18 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         events = frames[-1]['state']['notebook']
         self.assertTrue(any(e['kind'] == 'observation' and e['data']['task_id'] == task['task_id'] for e in events))
         self.assertTrue(any(e['kind'] == 'execution_result' and e['data']['task_id'] == task['task_id'] for e in events))
+        with self.assertRaises(LabError):
+            await self.lab.evaluate_candidate(self.sid, 'sample_color', version)
+        # UNKNOWN stays available for improvement; activation needs a separately
+        # consented trial whose controller and independent outcome both passed.
+        await self.lab.prepare(self.sid)
+        self.perception.unknown = False
+        await self.lab.start_task(self.sid, 'Test the prepared sample with a clear camera')
+        snap, _ = await self.wait_status('awaiting_confirmation')
+        await self.approve(snap)
+        await self.wait_status('completed')
         promotion = await self.lab.evaluate_candidate(self.sid, 'sample_color', version)
+        contexts_after_admission = len(self.expert.contexts)
         self.assertEqual(promotion['status'], 'promoted')
         await self.lab.prepare(self.sid)
         self.perception.unknown = False
@@ -176,7 +187,7 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(blocked['route'], 'expert')
         self.assertEqual(blocked['feedback'][-1]['type'], 'precondition_failed')
         self.assertTrue(self.expert.contexts[-1]['images'])
-        self.assertEqual(self.lab.backends[self.sid].executions, 1)
+        self.assertEqual(self.lab.backends[self.sid].executions, 2)
         self.perception.labels_visible = True
         await self.lab.converse(self.sid, 'Run prepared water', 'two')
         snap, warm = await self.wait_status('awaiting_confirmation')
@@ -184,7 +195,7 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(snap['pending']['skill_version'], version)
         self.assertEqual(snap['pending']['metrics']['model_calls'], 0)
         self.assertEqual(snap['pending']['plan']['steps'][1]['arguments']['condition_id'], 'water')
-        self.assertEqual(len(self.expert.contexts), 4)
+        self.assertEqual(len(self.expert.contexts), contexts_after_admission + 1)
         self.assertGreaterEqual(snap['pending']['metrics']['planning_ms'], 0)
         planning_frame = warm['images'][0]['evidence_id']
         self.lab.expert = None
@@ -195,7 +206,7 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(warm['observations'][0]['evidence'], [planning_frame])
         execution_frame = next(f['receipt']['evidence_id'] for f in warm['feedback'] if f['type'] == 'perception')
         self.assertIn(execution_frame, self.perception.localized)
-        self.assertEqual(self.lab.backends[self.sid].executions, 2)
+        self.assertEqual(self.lab.backends[self.sid].executions, 3)
         self.assertIsNone(snap['trial']['condition_id'])
         self.assertEqual(snap['prediction'], '')
 
@@ -209,14 +220,14 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         first = await self.approve(snap)
         snap, revised = await self.wait_status('awaiting_confirmation', failed['task_id'])
         feedback = self.expert.contexts[-1]
-        self.assertEqual(len(self.expert.contexts), 5)
+        self.assertEqual(len(self.expert.contexts), contexts_after_admission + 2)
         self.assertEqual(feedback['phase'], 'execution_feedback')
         self.assertEqual(feedback['images'][0]['evidence_id'], revised['observations'][0]['evidence'][0])
         self.assertTrue(feedback['task_context']['dispatched_action'])
         self.assertEqual(revised['replans'], 1)
         self.assertEqual(snap['pending']['plan']['steps'],
                          [{'operation': 'observe', 'arguments': {'view': 'secondary'}}])
-        self.assertEqual(self.lab.backends[self.sid].executions, 3)
+        self.assertEqual(self.lab.backends[self.sid].executions, 4)
         for proposal in (first, snap['pending']):
             with self.assertRaises(LabError):
                 await self.lab.confirm(self.sid, proposal['request_id'], proposal['proposal_version'])
@@ -225,7 +236,7 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         await self.approve(snap)
         _, revised = await self.wait_status('completed', failed['task_id'])
         self.assertEqual(revised['observations'][-1]['checks'], {'readable': True})
-        self.assertEqual(self.lab.backends[self.sid].executions, 3)
+        self.assertEqual(self.lab.backends[self.sid].executions, 4)
 
     async def test_image_revisions_require_fresh_consent_and_stop_at_two(self):
         self.expert.revise = True
@@ -283,7 +294,7 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         await self.lab.converse(self.sid, 'Do not confirm')
         self.assertEqual(self.lab.backends[self.sid].executions, 0)
         await self.lab.prediction(self.sid, 'purple')
-        self.assertEqual(self.lab.snapshot(self.sid)['pending']['request_id'], p['request_id'])
+        self.assertIsNone(self.lab.snapshot(self.sid)['pending'])
         await self.lab.choose_condition(self.sid, 'water')
         with self.assertRaises(LabError):
             await self.lab.confirm(self.sid, p['request_id'], p['proposal_version'])

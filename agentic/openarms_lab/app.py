@@ -2,6 +2,7 @@
 from __future__ import annotations
 import asyncio
 import contextlib
+import hashlib
 import os
 import re
 import secrets
@@ -14,7 +15,7 @@ from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -97,6 +98,15 @@ def allowed_host(host):
     return name in LOCAL_HOSTS | set(os.getenv('OPENARMS_ALLOWED_HOSTS', '').split(','))
 
 
+def evidence_hashes(value, evidence_id):
+    if isinstance(value, list):
+        return set().union(*(evidence_hashes(item, evidence_id) for item in value))
+    if not isinstance(value, dict):
+        return set()
+    found = {value['sha256']} if value.get('evidence_id') == evidence_id and value.get('sha256') else set()
+    return found.union(*(evidence_hashes(item, evidence_id) for item in value.values()))
+
+
 def trusted_origin(origin, host):
     if not origin:
         return True  # Native/CLI clients authenticate with their own session grant.
@@ -145,6 +155,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                                 registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,
                                 auto_evaluate=True,
+                                execution_scope=registry_scope,
                                 backend_factory=backend_factory, expert_timeout=240)
         else:
             app.state.lab = lab
@@ -219,7 +230,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.get('/api/sessions/{sid}/evidence/{evidence_id}')
     async def evidence(sid: str, evidence_id: str, request: Request):
         authorize(sid, request)
-        service().get(sid)
+        state = service().snapshot(sid)
         perception = getattr(service(), 'perception', None)
         if not re.fullmatch(r'[0-9a-f]{32}', evidence_id) or not hasattr(perception, 'artifact_dir'):
             raise HTTPException(404, 'Scene frame is unavailable.')
@@ -227,7 +238,11 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         path = (folder / (evidence_id + '.png')).resolve()
         if path.parent != folder or not path.is_file():
             raise HTTPException(404, 'Scene frame is unavailable.')
-        return FileResponse(path, media_type='image/png')
+        expected = evidence_hashes(state, evidence_id)
+        data = path.read_bytes()
+        if len(expected) != 1 or hashlib.sha256(data).hexdigest() not in expected:
+            raise HTTPException(409, 'Scene evidence no longer matches its published identity.')
+        return Response(data, media_type='image/png')
 
     @app.get('/api/sessions/{sid}/media/{name}')
     async def simulation_video(sid: str, name: str, request: Request):
@@ -292,7 +307,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.post('/api/sessions/{sid}/disconnect')
     async def disconnect(sid: str, request: Request):
         authorize(sid, request)
-        return await service().stop(sid, disconnect=True)
+        return public_state(await service().stop(sid, disconnect=True), sid)
 
     @app.websocket('/api/sessions/{sid}/live')
     async def session_socket(ws: WebSocket, sid: str):
