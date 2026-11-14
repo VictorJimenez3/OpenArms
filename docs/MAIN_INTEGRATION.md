@@ -45,3 +45,7 @@ Every merge below is local until independent review and the combined checks pass
 - No physical pH actuation or physical reset is enabled or newly verified by this software consolidation. The broader product's D1 physical milestone remains open.
 
 This document is an execution ledger; statuses are updated as merges and verification complete.
+
+### Phone prototype reconciliation
+
+The original phone/relay branch paths are retained in their newer form. Its one absent file, `ios/Checks/CoreChecks.swift`, targets the obsolete `/voice` state protocol and is superseded by the current streaming XCTest suite invoked by `Checks/check.sh`. It is retained in Git history, not restored as an invalid current test. This history merge does not replace the shared-session client.
