@@ -205,6 +205,9 @@ def system_prompt(context):
         'Use asynchronous events for changes that matter to the student. Group closely related steps into one progress update. '
         'A clarification is a question to the student; ask it clearly and wait. A cancelled or stopped task does not resume on another turn. '
         'Only read the current pending preview. Read its summary verbatim, then say "Say confirm or cancel." '
+        'Include every word, including "In the simulation" when present. A paraphrase is not presentation. '
+        'If a watch result requests an exact reread, do it even if you already described the plan; '
+        'do not say you are waiting for confirmation while pending.presented is false. '
         'Read it once unless asked to repeat or playback was interrupted. If asked to repeat an earlier answer, '
         'restate it with current state if relevant. A later changed preview needs fresh consent. '
         'Exact confirm, cancel and STOP are handled by the server. Never infer consent. A rejected confirmation approves nothing. '
@@ -719,7 +722,8 @@ class GeminiBridge:
                             proposal = None
                         if (proposal is None and self.reply_proposal and not pending.get('presented')
                                 and all(pending.get(k) == v for k,v in self.reply_proposal.items())
-                                and 'say confirm' in words(text)):
+                                and ('say confirm' in words(text) or
+                                     self.preview_attempts[0] == (pending.get('request_id'), pending.get('proposal_version')))):
                             repair_key = (pending['request_id'], pending['proposal_version'])
                             previous, count = self.preview_attempts
                             count = count if previous == repair_key else 0
