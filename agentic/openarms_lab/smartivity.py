@@ -567,6 +567,11 @@ class SmartivityRun:
 
         objective = ('Verify the first pick and lift only. Stop after observing the changed pose.'
                      if checkpoint else self.objective)
+        if self.require_registration:
+            # The expert transport repeats startup context on every model call.
+            # Keep it visibly distinct from the live state returned by tools.
+            images = observation.pop('images')
+            observation = {'images': images, 'initial_snapshot': observation}
         context = {
             'task_id': self.episode_id, 'request': objective, 'phase': 'confirmed_simulation',
             'manifest': self.manifest,
@@ -580,6 +585,9 @@ class SmartivityRun:
                 'Use execute_skill with the current overview evidence_id and one available skill. '
                 'The host returns updated frames after each skill. ' +
                 ('Before the first motion, call register_layout with the current overview evidence ID. '
+                 'After any tool call, use the latest host tool receipt for current joints, available skills, '
+                 'completed actions, and evidence. The initial_snapshot is historical. Each action receipt '
+                 'already includes a new scene inspection. Call inspect_scene again only if evidence is unclear. '
                  if self.require_registration else '') +
                 'After the requested sequence, use kind=complete with payload '
                 '{evidence_id: latest overview ID, observed_outcome: string}; cite what you actually see. '

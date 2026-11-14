@@ -97,3 +97,25 @@ Smartivity retains credit for the booklet, experiment names and recipe. OpenArms
 ## Next improvement
 
 The repeated expert calls are the largest measured delay. Prove a warm route through the existing registry for the validated pick, spout-aligned pour and placement sequence. Require fresh fixture and outcome checks between moves and invoke the expert when a check fails. Compare that path with the current five-call baseline on the same seeds before admitting it.
+
+## Randomized-layout experiment
+
+The opt-in layout study offsets the beaker dock and flask tray independently by up to 18 mm per horizontal axis. Compare the unchanged fixed station targets with a candidate that locates two visible fiducials using a calibrated overhead image. The candidate rebuilds the existing bounded IK targets from measured pixel centers and known marker offsets. The evaluator records exact positions for scoring. Unrecognized markers, invalid estimates and unreachable poses block the candidate before motion. This is a simulation-only test with purpose-built fiducials and a calibrated camera.
+
+```sh
+PYTHONPATH=simulation:. python -m openarms_sim.smartivity_trials \
+  --layout-study-mm 18 --seeds 1 7 18 24 39 57 2 3 4 5 6 8 9 31 \
+  --evidence-dir outputs/volcano-layout-images > outputs/volcano-layout-trials.json
+
+PYTHONPATH=simulation:agentic:. python -m agentic.openarms_lab.smartivity \
+  --scenario volcano --seed 1 --layout-spread-mm 18 --capture-only \
+  --out outputs/volcano-layout-fixed
+
+PYTHONPATH=simulation:agentic:. python -m agentic.openarms_lab.smartivity \
+  --scenario volcano --seed 1 --layout-spread-mm 18 --register-layout \
+  --capture-only --out outputs/volcano-layout-registered
+```
+
+In the 14 paired scripted trials, fixed coordinates passed 2 and camera registration passed 12. Registered successes delivered the full prepared portion without spilling. Seeds 2 and 3 localized but exceeded the IK error limit and were rejected before motion. With the authenticated expert on seed 1, the fixed target missed the beaker and the candidate delivered the entire 14.718 mL, returned the beaker, and retracted. Registration remains opt-in. The policy still chooses tools and skills while the host computes and validates motion.
+
+The first registered live run on seed 1 used 10 expert calls, including four redundant scene inspections. The transport repeats the initial context on every turn. The next iteration labels the startup snapshot as historical and directs the expert to the newest tool receipt for current state. On one repeat of the same seed, the candidate still delivered the entire portion while taking six calls and zero redundant inspections. Total live time fell from 96.4 s to 69.4 s in this pair. The evidence compares two runs and does not establish a stable latency distribution.
