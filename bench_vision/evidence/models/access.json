@@ -42,5 +42,9 @@
     "cuda_available": false,
     "remote_gpu": "No host supplied for this project; unrelated SSH aliases not used",
     "sam3_authorized_local_cache": "not established; anonymous download denied; no token inspection"
+  },
+  "local_credential_check": {
+    "local_huggingface_token_available": false,
+    "authenticated_sam3_request": "not_attempted_no_local_token"
   }
 }
