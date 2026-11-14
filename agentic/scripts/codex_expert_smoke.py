@@ -1,4 +1,4 @@
-"""Qualify the real Codex image/tool feedback path using historical bench frames.
+"""Qualify the selected expert image/tool feedback path using historical bench frames.
 
 This reads committed images only. It never opens a camera or robot connection.
 Run with PYTHONPATH=agentic python agentic/scripts/codex_expert_smoke.py --out PATH.
@@ -9,13 +9,13 @@ import hashlib
 import json
 from pathlib import Path
 
-from openarms_lab.codex_expert import CodexExpert
+from openarms_lab.expert_profiles import add_expert_arguments, expert_from_arguments
 
 
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
-    parser.add_argument('--executable', default='codex')
+    add_expert_arguments(parser)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     repository = Path(__file__).resolve().parents[2]
@@ -37,8 +37,8 @@ async def main():
         return {'source': 'committed historical bench recording', 'current_live_scene': False,
                 'images': [image('after-camera-0.jpg'), image('after-camera-1.jpg')]}
 
-    expert = CodexExpert(args.out/'calls', artifact_roots=[evidence], executable=args.executable, max_calls=4)
-    context = dict(task_id='codex-provider-image-feedback-qualification', session_id='offline-recorded-replay',
+    expert = expert_from_arguments(args, args.out/'calls', artifact_roots=[evidence], max_calls=4)
+    context = dict(task_id='expert-provider-image-feedback-qualification', session_id='offline-recorded-replay',
                    request='Check the outcome of the recorded transfer. The initial image is BEFORE the attempt. '
                            'Obtain the after views, inspect them, and decide whether the fruit was placed on the red card. '
                            'Report uncertainty; do not treat a completed controller command as proof.',

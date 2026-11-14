@@ -1,4 +1,4 @@
-"""Record an actual synthetic failure, ask Codex to revise, compare pinned versions."""
+"""Record an actual synthetic failure, ask the selected expert to revise, compare pinned versions."""
 import argparse
 import asyncio
 import copy
@@ -6,7 +6,7 @@ import json
 import shutil
 from pathlib import Path
 
-from openarms_lab.codex_expert import CodexExpert
+from openarms_lab.expert_profiles import add_expert_arguments, expert_from_arguments
 from openarms_lab.evaluation import SyntheticSkillEvaluator
 from openarms_lab.runtime import Lab
 from openarms_lab.scene import SceneService
@@ -25,13 +25,14 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--baseline', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
+    add_expert_arguments(parser)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     data = args.out/'sessions'
     data.mkdir()
     shutil.copyfile(args.baseline/'sessions/task-skills.json', data/'task-skills.json')
     scene = SceneService(args.out/'scene')
-    expert = CodexExpert(args.out/'expert', artifact_roots=[scene.artifact_dir])
+    expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
     lab = Lab(data, expert=expert, perception=scene, evaluator=evaluator,
               backend_factory=lambda: ObscuredAfterAction(scene, delay=.02), expert_timeout=240)
@@ -64,8 +65,10 @@ async def main():
         decision = await lab.evaluate_candidate(sid, plan['skill_id'], plan['skill_version'])
         receipt = lab.registry.data['evaluations'][-1]
         assert decision['baseline_hash'] == baseline['version']
-        summary = {'actual_expert': True, 'provider': expert.provider, 'model': expert.model,
-                   'reasoning_effort': expert.reasoning_effort, 'provenance': 'SYNTHETIC',
+        summary = {'actual_expert': True, 'expert_configuration': expert.describe(),
+                   'expert_runs': revision['expert_runs'],
+                   'provider': revision['expert_runs'][0]['provider'], 'model': revision['expert_runs'][0]['model'],
+                   'reasoning_effort': revision['expert_runs'][0]['reasoning_effort'], 'provenance': 'SYNTHETIC',
                    'limitation_task': task['task_id'], 'decision': decision, 'receipt': receipt,
                    'baseline_steps': baseline['steps'], 'candidate_steps': candidate['steps'],
                    'physical_hardware_used': False}
