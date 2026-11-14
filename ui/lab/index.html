@@ -165,7 +165,7 @@
 
           <!-- New/Edit Prediction Form -->
           <button type="button" id="btn-prepare-trial" class="btn-secondary">Prepare next mock trial</button>
-<form id="prediction-form" class="prediction-form">
+          <form id="prediction-form" class="prediction-form">
             <label for="prediction-input" style="font-size: 0.82rem; color: var(--text-muted);">
               Before the arm moves, predict what you expect to observe:
             </label>
@@ -188,6 +188,7 @@
             <form id="quiz-form">
               <div id="quiz-options-container" class="quiz-options-list"></div>
               <div id="quiz-freeform-container" style="display: none; margin-top: 10px;">
+                <label for="quiz-freeform-input" class="sr-only">Your scientific explanation</label>
                 <textarea id="quiz-freeform-input" class="prediction-textarea" rows="3" placeholder="Enter your scientific reasoning..."></textarea>
               </div>
               <button type="submit" id="btn-submit-quiz" class="btn-primary" style="margin-top: 12px; width: 100%;">
@@ -285,6 +286,12 @@
               <span class="station-name">Station A (Source)</span>
               <span id="station-a-contents" class="station-contents">mandarin</span>
               <span id="station-a-status" class="station-status-tag">Ready</span>
+            </div>
+
+            <div id="station-c-pod" class="station-pod">
+              <span class="station-name">Station C (Source)</span>
+              <span id="station-c-contents" class="station-contents">unknown</span>
+              <span id="station-c-status" class="station-status-tag">Unknown</span>
             </div>
 
             <div id="station-b-pod" class="station-pod">
@@ -393,6 +400,7 @@
             <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Registered Robot Skills</h3>
             <button type="button" id="btn-refresh-skills" class="btn-icon" style="padding: 2px 8px; min-height: 30px;">Refresh Skills</button>
           </div>
+          <div class="skills-table-scroll" tabindex="0" aria-label="Scrollable skills registry">
           <table class="skills-table" aria-label="Skills Registry">
             <thead>
               <tr>
@@ -408,6 +416,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
 
         <!-- Skill Composer (Expert Authoring Pathway) -->
@@ -416,7 +425,7 @@
           <p style="font-size: 0.8rem; color: var(--text-muted);">
             Compile high-level natural language instructions into reusable, parameterized robot skills:
           </p>
-          <div style="display: flex; gap: 8px;">
+          <div class="skill-compose-form" style="display: flex; gap: 8px;">
             <input type="text" id="skill-compose-input" class="command-input" placeholder="e.g. Pick mandarin with 35mm grip and transfer to receiver B..." aria-label="Skill compose instruction">
             <button type="button" id="btn-compose-skill" class="btn-primary" style="white-space: nowrap;">Compose Candidate</button>
           </div>
@@ -425,7 +434,7 @@
             <pre id="candidate-json-preview" class="json-viewer" style="max-height: 140px;"></pre>
             <div style="display: flex; gap: 8px;">
               <button type="button" id="btn-test-candidate" class="btn-secondary" style="font-size: 0.82rem; min-height: 36px;">Test Candidate</button>
-              <button type="button" id="btn-promote-candidate" class="btn-primary" style="font-size: 0.82rem; min-height: 36px; background: var(--accent-green);">Promote Candidate</button>
+              <button type="button" id="btn-promote-candidate" class="btn-primary" disabled style="font-size: 0.82rem; min-height: 36px; background: var(--accent-green);">Promote Candidate</button>
             </div>
           </div>
         </div>

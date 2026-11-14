@@ -62,6 +62,7 @@ export class LiveClient {
     // Speaker queue state
     this.activeSources = new Set();
     this.nextPlayTime = 0;
+    this.generation = 0;
   }
 
   _buildWsUrl() {
@@ -124,15 +125,20 @@ export class LiveClient {
   }
 
   async startVoice() {
+    if (['connecting', 'reconnecting', 'active', 'muted'].includes(this.status)) return;
+    const generation = ++this.generation;
     this.isUserInitiatedStop = false;
+    this.isMuted = false;
+    this.reconnectAttempts = 0;
     this._updateStatus('connecting', 'Requesting microphone and starting voice engine...');
 
     try {
       // 1. Initialize Audio Context (requires user gesture)
       await this._initAudioContext();
+      if (generation !== this.generation) return;
 
       // 2. Request user microphone with echo cancellation
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
           echoCancellation: true,
@@ -140,9 +146,15 @@ export class LiveClient {
           autoGainControl: true,
         },
       });
+      if (generation !== this.generation) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      this.mediaStream = stream;
 
       // 3. Load AudioWorklet
       await this._loadAudioWorklet();
+      if (generation !== this.generation) return;
 
       // 4. Build audio processing pipeline
       this.sourceNode = this.audioCtx.createMediaStreamSource(this.mediaStream);
@@ -166,6 +178,7 @@ export class LiveClient {
       // 5. Connect WebSocket
       this._connectWebSocket();
     } catch (err) {
+      if (generation !== this.generation) return;
       console.error('[LiveClient] Voice initialization error:', err);
       this.cleanup();
       this._updateStatus('error', err.message || 'Microphone access denied or audio initialization failed');
@@ -180,14 +193,17 @@ export class LiveClient {
     }
 
     const wsUrl = this._buildWsUrl();
-    this.ws = new WebSocket(wsUrl);
+    const socket = new WebSocket(wsUrl);
+    this.ws = socket;
 
     this.ws.onopen = () => {
+      if (this.ws !== socket) return;
       this.isLiveAvailable = true;
       this._updateStatus('connecting', 'Connecting to Gemini Live...');
     };
 
     this.ws.onmessage = (event) => {
+      if (this.ws !== socket) return;
       this._handleServerMessage(event.data);
     };
 
@@ -196,6 +212,12 @@ export class LiveClient {
     };
 
     this.ws.onclose = (event) => {
+      if (this.ws !== socket) return;
+      if (!this.isLiveAvailable || event.code === 1008) {
+        this.cleanup();
+        this._updateStatus('unavailable', 'Live voice unavailable. Use the text command field.');
+        return;
+      }
       if (!this.isUserInitiatedStop) {
         this._handleUnexpectedClose(event);
       } else {
@@ -277,6 +299,8 @@ export class LiveClient {
     if (!this.audioCtx) return;
 
     try {
+      // Bound queued speech during long responses or a stalled audio device.
+      if (this.nextPlayTime - this.audioCtx.currentTime > 10) this._flushSpeakerQueue();
       const bytes = base64ToUint8Array(base64Data);
       const int16 = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
       const float32 = new Float32Array(int16.length);
@@ -332,6 +356,7 @@ export class LiveClient {
         }
       }, delay);
     } else {
+      this.cleanup();
       this.isLiveAvailable = false;
       this._updateStatus('unavailable', 'Live voice unavailable. Falling back to deterministic local text pathway.');
     }
@@ -349,6 +374,7 @@ export class LiveClient {
 
   setMuted(muted) {
     this.isMuted = !!muted;
+    this.mediaStream?.getAudioTracks().forEach(track => { track.enabled = !this.isMuted; });
     if (this.workletNode) {
       this.workletNode.port.postMessage({ type: 'mute', muted: this.isMuted });
     }
@@ -372,6 +398,7 @@ export class LiveClient {
   }
 
   cleanup() {
+    ++this.generation;
     this.isUserInitiatedStop = true;
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
@@ -406,6 +433,12 @@ export class LiveClient {
         this.ws.close();
       } catch (e) {}
       this.ws = null;
+    }
+
+    if (this.audioCtx) {
+      this.audioCtx.close().catch(() => {});
+      this.audioCtx = null;
+      this.masterGainNode = null;
     }
 
     this._updateStatus('disconnected', 'Voice session stopped');

@@ -173,6 +173,7 @@ class OpenArmsApp {
   }
 
   _bindEvents() {
+    window.addEventListener('pagehide', () => this.liveClient?.cleanup());
     // Emergency STOP (Header, Mobile Bar, and Escape key)
     const handleStop = (e) => {
       e?.preventDefault();
@@ -187,10 +188,12 @@ class OpenArmsApp {
     });
 
     // Copy Session ID
-    this.dom.btnCopySession.addEventListener('click', () => {
+    this.dom.btnCopySession.addEventListener('click', async () => {
       if (this.sessionId) {
-        navigator.clipboard?.writeText(this.sessionId);
-        this._showToast(`Session ID copied: ${this.sessionId}`);
+        try {
+          await navigator.clipboard.writeText(this.sessionId);
+          this._showToast(`Session ID copied: ${this.sessionId}`);
+        } catch { this._showToast('Could not copy. Select the session ID in the header.', true); }
       }
     });
 
@@ -203,11 +206,14 @@ class OpenArmsApp {
 
     const prepareButton = document.getElementById('btn-prepare-trial');
     prepareButton.addEventListener('click', async () => {
+      if (prepareButton.disabled) return;
+      prepareButton.disabled = true;
       try {
         const snapshot = await this.api._request(`/api/sessions/${this.sessionId}/prepare`, {method:'POST',body:{}});
         this._updateSnapshot(snapshot);
         this._showToast('Mock apparatus prepared. Record a new prediction and choose the next sample.');
       } catch (err) { this._showToast(err.message,true); }
+      finally { prepareButton.disabled = false; }
     });
     // Offline banner retry
     this.dom.btnRetryNetwork.addEventListener('click', () => {
@@ -261,10 +267,10 @@ class OpenArmsApp {
       const text = this.dom.commandInput.value.trim();
       if (!text) return;
 
-      this.dom.commandInput.value = '';
       try {
         const clientReqId = this._generateRequestId('cmd');
         const updated = await this.api.sendRequest(this.sessionId, text, clientReqId);
+        if (this.dom.commandInput.value.trim() === text) this.dom.commandInput.value = '';
         this._updateSnapshot(updated);
       } catch (err) {
         this._showToast(`Command error: ${err.message}`, true);
@@ -584,7 +590,7 @@ class OpenArmsApp {
       });
     }
 
-    if (this.liveClient.status === 'active' || this.liveClient.status === 'connecting' || this.liveClient.status === 'muted') {
+    if (['active', 'connecting', 'reconnecting', 'muted'].includes(this.liveClient.status)) {
       this.liveClient.cleanup();
     } else {
       try {
@@ -596,6 +602,15 @@ class OpenArmsApp {
   }
 
   _handleLiveStatus(status, message, isLiveAvailable, isMuted) {
+    const connected = ['active', 'connecting', 'muted', 'reconnecting'].includes(status);
+    for (const button of [this.dom.btnToggleMic, this.dom.btnMobileMic]) {
+      button.setAttribute('aria-pressed', String(connected));
+      button.setAttribute('aria-label', connected ? 'Disconnect voice microphone' : 'Start voice microphone');
+    }
+    if (status === 'active' || status === 'muted') {
+      this.dom.liveFallbackBadge.style.display = 'none';
+      this.dom.liveNoticeText.textContent = 'Gemini Live connected. Review and confirm every proposed action below.';
+    }
     // Update Voice Badge in Header
     if (status === 'active') {
       this.dom.badgeVoice.className = 'pill pill-voice-active';
@@ -616,7 +631,7 @@ class OpenArmsApp {
       this.dom.btnToggleMute.disabled = false;
       this.dom.muteText.textContent = 'Unmute';
       this.dom.muteIcon.textContent = '🎙️';
-    } else if (status === 'connecting') {
+    } else if (status === 'connecting' || status === 'reconnecting') {
       this.dom.badgeVoice.className = 'pill pill-voice-connecting';
       this.dom.badgeVoiceText.textContent = 'Voice: Connecting...';
       this.dom.voiceStatusText.textContent = 'Connecting Voice...';
@@ -671,6 +686,9 @@ class OpenArmsApp {
 
   _updateSnapshot(snap) {
     if (!snap) return;
+    // In-flight responses and events from a retired session cannot restore it.
+    if (this.sessionId && snap.session_id !== this.sessionId) return;
+    const sessionChanged = this.snapshot?.session_id !== snap.session_id;
     this.snapshot = snap;
     document.getElementById('btn-prepare-trial').hidden = snap.backend !== 'mock';
 
@@ -690,7 +708,7 @@ class OpenArmsApp {
     this._renderExperiment(snap.experiment);
 
     // 5. Render Prediction
-    this._renderPrediction(snap.prediction);
+    this._renderPrediction(snap.prediction, sessionChanged);
 
     // 6. Render Arm State & Bench Pods
     this._renderBenchState(snap.state);
@@ -712,6 +730,10 @@ class OpenArmsApp {
   }
 
   _renderProposal(pending) {
+    if (this.proposalCountdownInterval) {
+      clearInterval(this.proposalCountdownInterval);
+      this.proposalCountdownInterval = null;
+    }
     if (!pending) {
       this.dom.proposalSection.style.display = 'none';
       if (this.proposalCountdownInterval) {
@@ -726,6 +748,7 @@ class OpenArmsApp {
     this.dom.proposalSkillId.textContent = pending.skill_id || 'unknown';
     this.dom.proposalParameters.textContent = JSON.stringify(pending.parameters || {}, null, 2);
     this.dom.proposalRequestId.textContent = pending.request_id || 'none';
+    this.dom.btnConfirmProposal.disabled = false;
 
     // Handle expiration countdown if present
     if (pending.expires_at) {
@@ -734,6 +757,7 @@ class OpenArmsApp {
         const remainingMs = epochDate(pending.expires_at).getTime() - Date.now();
         if (remainingMs <= 0) {
           this.dom.proposalExpiresVal.textContent = 'Expired';
+          this.dom.btnConfirmProposal.disabled = true;
           if (this.proposalCountdownInterval) {
             clearInterval(this.proposalCountdownInterval);
             this.proposalCountdownInterval = null;
@@ -811,7 +835,10 @@ class OpenArmsApp {
     });
   }
 
-  _renderPrediction(prediction) {
+  _renderPrediction(prediction, sessionChanged = false) {
+    // Keep unsaved writing and the edit form intact across streamed state updates.
+    if (!sessionChanged && this.renderedPrediction === prediction) return;
+    this.renderedPrediction = prediction;
     if (prediction && prediction.trim()) {
       this.dom.predictionSavedContainer.style.display = 'flex';
       this.dom.predictionSavedDisplay.textContent = `"${prediction.trim()}"`;
@@ -827,31 +854,27 @@ class OpenArmsApp {
     const s = state || {};
 
     // Stage
-    const stage = s.stage || 'pre_lab';
+    const stage = s.stage || this.snapshot?.requests?.at(-1)?.status || 'ready';
     this.dom.armStageTag.textContent = `Stage: ${stage}`;
 
     // Arm state metrics
     this.dom.armStatusVal.textContent = this.snapshot?.requests?.at(-1)?.status || 'idle';
-    this.dom.armGripperVal.textContent = s.gripper || (s.holding ? 'closed (holding)' : 'open');
-    this.dom.armPositionVal.textContent = s.at || s.arm_pose || s.position || 'home';
-    this.dom.armSafetyVal.textContent = s.armed === false ? 'disarmed' : 'armed';
+    const unverified = this.snapshot?.backend === 'physical' || this.snapshot?.state_provenance === 'UNKNOWN';
+    this.dom.armGripperVal.textContent = unverified ? 'unknown' : (s.gripper || (s.holding ? 'closed (holding)' : 'open'));
+    this.dom.armPositionVal.textContent = unverified ? 'unknown' : (s.at || s.arm_pose || s.position || 'unknown');
+    this.dom.armSafetyVal.textContent = s.armed === true ? 'armed' : s.armed === false ? 'disarmed' : 'unknown';
 
     // Station pods
-    const staContents = s.point_holds?.A || 'empty';
-    const stbContents = s.point_holds?.B || 'empty';
+    const staContents = unverified ? 'unknown' : (s.point_holds?.A || 'empty');
+    const stbContents = unverified ? 'unknown' : (s.point_holds?.B || 'empty');
 
     this.dom.stationAContents.textContent = staContents;
     this.dom.stationBContents.textContent = stbContents;
-
-    if (s.at === 'A' || s.target === 'A') {
-      this.dom.stationAPod.classList.add('active');
-      this.dom.stationBPod.classList.remove('active');
-    } else if (s.at === 'B' || s.target === 'B') {
-      this.dom.stationBPod.classList.add('active');
-      this.dom.stationAPod.classList.remove('active');
-    } else {
-      this.dom.stationAPod.classList.remove('active');
-      this.dom.stationBPod.classList.remove('active');
+    document.getElementById('station-c-contents').textContent = unverified ? 'unknown' : (s.point_holds?.C || 'empty');
+    for (const station of ['a', 'b', 'c']) {
+      const point = station.toUpperCase();
+      document.getElementById(`station-${station}-pod`).classList.toggle('active', !unverified && (s.at === point || s.target === point));
+      document.getElementById(`station-${station}-status`).textContent = unverified ? 'Unverified setup' : (s.point_holds?.[point] ? 'Occupied' : 'Empty');
     }
   }
 
@@ -877,7 +900,7 @@ class OpenArmsApp {
       let provClass = 'provenance-unknown';
       let provLabel = 'UNKNOWN PROVENANCE';
 
-      if (prov === 'MOCK') {
+      if (prov.startsWith('MOCK')) {
         provClass = 'provenance-model-predicted';
         provLabel = 'MOCK';
       } else if (prov.includes('PHYSICAL') || prov.includes('BENCH') || prov.includes('REAL')) {
@@ -891,7 +914,7 @@ class OpenArmsApp {
         provLabel = 'MODEL-PREDICTED';
       }
 
-      const timeFormatted = obs.timestamp ? new Date(obs.timestamp).toLocaleTimeString() : '';
+      const timeFormatted = obs.timestamp ? epochDate(obs.timestamp).toLocaleTimeString() : '';
 
       item.innerHTML = `
         <div class="observation-header">
@@ -919,6 +942,7 @@ class OpenArmsApp {
 
     if (this.renderedQuizId === quiz.id) return;
     this.renderedQuizId = quiz.id;
+    this.dom.quizFreeformInput.value = '';
     this.dom.quizOptionsContainer.innerHTML = '';
     if (quiz.type === 'multiple_choice' && Array.isArray(quiz.options)) {
       this.dom.quizOptionsContainer.style.display = 'flex';
@@ -1102,6 +1126,7 @@ class OpenArmsApp {
   }
 
   async _composeSkillCandidate() {
+    if (this.dom.btnComposeSkill.disabled) return;
     const instruction = this.dom.skillComposeInput.value.trim();
     if (!instruction) {
       this._showToast('Please type an instruction to compose.', true);
@@ -1109,6 +1134,10 @@ class OpenArmsApp {
     }
 
     try {
+      this.dom.btnComposeSkill.disabled = true;
+      this.composedCandidate = null;
+      this.candidateEvidenceId = null;
+      this.dom.composedCandidatePreview.style.display = 'none';
       this._showToast('Expert agent compiling skill candidate...');
       const candidate = await this.api.composeSkill(instruction);
       this.composedCandidate = {...candidate, id: candidate.skill_id || candidate.id};
@@ -1119,7 +1148,7 @@ class OpenArmsApp {
       this._showToast('Skill candidate compiled!');
     } catch (err) {
       this._showToast(`Composition failed: ${err.message}`, true);
-    }
+    } finally { this.dom.btnComposeSkill.disabled = false; }
   }
 
   async _testComposedCandidate() {
@@ -1128,10 +1157,14 @@ class OpenArmsApp {
       return;
     }
 
+    const candidateId = this.composedCandidate.id;
+    this.candidateEvidenceId = null;
+    this.dom.btnPromoteCandidate.disabled = true;
     try {
-      const res = await this.api.testSkill(this.composedCandidate.id);
+      const res = await this.api.testSkill(candidateId);
+      if (this.composedCandidate?.id !== candidateId) return;
       this.candidateEvidenceId = res.evidence_id;
-      this.dom.btnPromoteCandidate.disabled = !res.evidence_id;
+      this.dom.btnPromoteCandidate.disabled = !res.evidence_id || res.verdict !== 'passed';
       this._showToast(`Candidate test completed: ${JSON.stringify(res)}`);
     } catch (err) {
       this._showToast(`Candidate test error: ${err.message}`, true);
@@ -1174,6 +1207,8 @@ class OpenArmsApp {
     toast.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.5)';
     toast.style.padding = '8px 16px';
     toast.style.fontSize = '0.85rem';
+    toast.setAttribute('role', isError ? 'alert' : 'status');
+    toast.classList.add('app-toast');
     toast.textContent = msg;
 
     document.body.appendChild(toast);

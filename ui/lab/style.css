@@ -321,6 +321,11 @@ body {
   gap: 20px;
 }
 
+.dashboard-grid > *, .card, .command-input, .correction-input { min-width: 0; }
+[hidden] { display: none !important; }
+.skills-table-scroll { max-width: 100%; overflow-x: auto; }
+.app-toast { max-width: min(560px, calc(100vw - 32px)); white-space: normal; overflow-wrap: anywhere; }
+
 @media (min-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 360px 1fr;
@@ -706,7 +711,7 @@ body {
 /* Station Visualizer */
 .station-visualizer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 12px;
   background: rgba(0, 0, 0, 0.2);
@@ -1160,6 +1165,13 @@ body {
 
 /* Mobile Sticky Bottom Bar */
 @media (max-width: 768px) {
+  .skill-compose-form, .correction-box { flex-wrap: wrap; }
+  .skill-compose-form .command-input { flex-basis: 100%; }
+  .app-toast { bottom: 80px !important; right: 16px !important; }
+  .dev-panel-summary { flex-wrap: wrap; gap: 8px; }
+  .station-visualizer { padding: 8px; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #station-b-pod { grid-column: 1 / -1; }
+  .station-pod { padding: 8px 6px; overflow-wrap: anywhere; }
   .app-header {
     padding: 8px 12px;
   }
