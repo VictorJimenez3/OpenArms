@@ -1,0 +1,21 @@
+{
+  "calibration_id": "synthetic-calibration-not-for-robot",
+  "fixture_id": "synthetic-A-C",
+  "cup_id": "synthetic-cup",
+  "camera_mount_id": "synthetic-fixed-pair",
+  "robot_id": "FakeRobot",
+  "provenance": "synthetic",
+  "joint_limits": {
+    "shoulder_pan.pos": [-180, 180],
+    "shoulder_lift.pos": [-180, 180],
+    "elbow_flex.pos": [-180, 180],
+    "wrist_flex.pos": [-180, 180],
+    "wrist_roll.pos": [-180, 180]
+  },
+  "max_observation_age_s": 1,
+  "geometry": {
+    "status": "unavailable",
+    "mode": "taught_fixture_only",
+    "reason": "Synthetic software example. Actual cup, camera mapping, geometry and physical outcome are unverified."
+  }
+}
