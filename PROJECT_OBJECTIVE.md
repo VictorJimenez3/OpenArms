@@ -1,15 +1,27 @@
 # OpenArms project objective
 
-OpenArms aims to give students with limited hand or arm mobility or dexterity a way to direct their own science experiments. Supervised undergraduate science labs are the intended starting point. A physical activity requires adapting coursework to the learning goal, preparing and resetting equipment, and supervising trials.
+OpenArms is a HackPrinceton project to make science labs more accessible to students with limited hand or arm mobility or dexterity. The goal is for students to direct experiments with real materials and extend their investigations in simulated labs. Supervised undergraduate teaching labs are the starting point. Students are the primary users, and instructors, teaching assistants, and lab staff need to be able to run the activities within a course.
 
-An accessible lab also needs to preserve decisions that matter to the science, such as which sample to test, what variable to change, and whether the result warrants another trial. OpenArms aims to make those decisions and their consequences accessible even when a student needs help with physical handling.
+## Why this exists
 
-## Learning goal
+A student may understand a lab question and know exactly what they want to test, yet need help reaching a sample, steadying a vessel, or operating an instrument. A lab partner or assistant can carry out those steps under the student's direction. The student can still own the investigation if they choose what to test, have access to the reading, and decide how to respond. When those decisions fall to someone else, the student can lose a chance to practice the reasoning the lab was designed to teach.
 
-A student should be able to make a prediction, choose a condition, direct and confirm the action, and use an accessible observation or measurement to explain what happened and decide what to try next. A robot can carry out selected physical steps while the student directs the investigation. Simulated experiments let students test additional conditions or apply the same reasoning in another lab. Students should be able to tell whether a result came from a live trial, recorded data, or a model. Instructors determine which activities meet course goals and how to assess any required manual technique.
+That role has to be designed into the coursework. Instructors need to decide which choices the activity will give students and which observations they can use. Lab staff need to prepare the materials, supervise the physical work, and reset the station for another trial. An adaptation that works for a lesson about interpreting evidence may leave a separate requirement to demonstrate manual technique. The course determines what the student needs to demonstrate and what can be done under their direction.
 
-## Scope
+## What the student should be able to do
 
-- **Current milestone.** The mandarin transfer is a check of the student-directed action and confirmation flow. Simulation is deferred for that demo. [Current demo scope](docs/PROJECT.md)
-- **Tentative educational scope.** Aim for roughly one to three physical experiments with robot assistance, plus additional simulated labs. Each activity should give the student a meaningful choice and a result they can interpret. The mix should show how the same learning experience can adapt to different scientific questions and lab setups.
-- **Open decisions.** Select the first experiments and what students will observe or measure. Confirm how students will control the activity and access results, how the lessons fit existing coursework, and what preparation and supervision they require. Check with students and instructors whether the activities address barriers they encounter and meet the intended learning goals. [Research and feasibility notes](research/README.md)
+The student starts with a scientific question, makes a prediction, and chooses a sample or condition that could test it. They can review and correct the intended action before confirming it. A robot can perform selected manipulations on real materials while lab staff supervise the bench. The student can access the resulting observation or measurement, explain what it supports, and choose whether to repeat the trial or change a variable. Accessibility covers the whole activity, from directing or stopping an action to reading the evidence. For example, if a chemistry result appears as a color change, the student needs access to the observation in a form they can interpret.
+
+The educational milestone is a complete investigation in which the student's choice changes what gets tested and the result gives them a reason to decide what happens next. In a candidate buoyancy lab, a student could choose two samples of the same size and different masses, predict which will float, and direct the robot to release them one at a time. The student could use the observed results to explain the role of density and choose a third sample to test that explanation.
+
+## How physical and simulated labs fit together
+
+Physical trials give students evidence from actual materials, including variation and unexpected results they can investigate. Simulated labs let students repeat an inquiry with additional conditions or try an investigation the prepared bench cannot support. In the buoyancy example, a student could change the liquid density in simulation and explain whether they expect the same samples to behave differently. The approach should also carry across subjects. In a simulated dilution lab, for instance, a student could choose how much water to add, predict the new concentration, and use the modeled result to revise the next trial.
+
+A simulated experiment should respond to the student's choices using a scientific model or identified reference data, with assumptions made clear where they affect the result. An action preview helps students check what they are about to do. An experiment result helps them answer the scientific question. Label live observations, recorded measurements, and model predictions so students know what kind of evidence they are interpreting.
+
+## Current scope and open decisions
+
+The current bench milestone is a mandarin transfer to check the action and confirmation flow. Simulation is deferred for that demo. The educational prototype has a tentative target of roughly one to three robot-assisted physical experiments, with additional simulated labs to explore different conditions and applications. [Current demo scope](docs/PROJECT.md)
+
+The team still needs to select the first course and experiments, determine which decisions are meaningful in each lesson, and establish what staff need to prepare and supervise. Students and instructors need to help establish where existing accommodations leave a meaningful gap, whether students can use the controls and interpret the evidence, and whether the activity fits the course. [Accessibility research](research/victor/accessibility-market-validation.md) · [Educational simulation research](research/victor/educational-simulation.md) · [Experiment feasibility research](research/victor/laboratory-experiments-and-feasibility.md)
