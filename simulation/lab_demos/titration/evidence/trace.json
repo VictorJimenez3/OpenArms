@@ -1,0 +1,431 @@
+{
+  "events": [
+    {
+      "t_s": 2.504,
+      "event": "dose",
+      "trial": "small",
+      "dose_index": 1,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.12,
+      "normalized_base_added": 0.1,
+      "sample_ml": 5.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 4.166,
+      "event": "dose",
+      "trial": "small",
+      "dose_index": 2,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.24,
+      "normalized_base_added": 0.2,
+      "sample_ml": 5.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 5.828,
+      "event": "dose",
+      "trial": "small",
+      "dose_index": 3,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.36,
+      "normalized_base_added": 0.3,
+      "sample_ml": 5.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 7.49,
+      "event": "dose",
+      "trial": "small",
+      "dose_index": 4,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.48,
+      "normalized_base_added": 0.4,
+      "sample_ml": 5.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 9.152,
+      "event": "dose",
+      "trial": "small",
+      "dose_index": 5,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.6,
+      "normalized_base_added": 0.5,
+      "sample_ml": 5.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 10.814,
+      "event": "dose",
+      "trial": "small",
+      "dose_index": 6,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.72,
+      "normalized_base_added": 0.6,
+      "sample_ml": 5.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.98,
+        0.72,
+        0.82
+      ]
+    },
+    {
+      "t_s": 11.978,
+      "event": "trial_complete",
+      "trial": "small",
+      "success": true,
+      "drops": 6
+    },
+    {
+      "t_s": 16.546,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 1,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.12,
+      "normalized_base_added": 0.1,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 18.208,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 2,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.24,
+      "normalized_base_added": 0.2,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 19.87,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 3,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.36,
+      "normalized_base_added": 0.3,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 21.532,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 4,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.48,
+      "normalized_base_added": 0.4,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 23.194,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 5,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.6,
+      "normalized_base_added": 0.5,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 24.856,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 6,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.72,
+      "normalized_base_added": 0.6,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 26.518,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 7,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.84,
+      "normalized_base_added": 0.7,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 28.18,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 8,
+      "dose_ml": 0.12,
+      "cumulative_ml": 0.96,
+      "normalized_base_added": 0.8,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.72,
+        0.77,
+        0.83
+      ]
+    },
+    {
+      "t_s": 29.842,
+      "event": "dose",
+      "trial": "large",
+      "dose_index": 9,
+      "dose_ml": 0.12,
+      "cumulative_ml": 1.08,
+      "normalized_base_added": 0.9,
+      "sample_ml": 8.0,
+      "trigger": "geometric_gripper_paddle_engagement",
+      "engagement_distance_m": 0.0002,
+      "indicator_rgb": [
+        0.98,
+        0.72,
+        0.82
+      ]
+    },
+    {
+      "t_s": 31.006,
+      "event": "trial_complete",
+      "trial": "large",
+      "success": true,
+      "drops": 9
+    }
+  ],
+  "observations": [
+    {
+      "t_s": 2.504,
+      "trial": "small",
+      "dose": 1,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 4.166,
+      "trial": "small",
+      "dose": 2,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 5.828,
+      "trial": "small",
+      "dose": 3,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 7.49,
+      "trial": "small",
+      "dose": 4,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 9.152,
+      "trial": "small",
+      "dose": 5,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 10.814,
+      "trial": "small",
+      "dose": 6,
+      "normalized_excess": 0.1,
+      "label": "faint pink",
+      "persistent_count": 1
+    },
+    {
+      "t_s": 11.014,
+      "trial": "small",
+      "dose": 6,
+      "normalized_excess": 0.1,
+      "label": "faint pink",
+      "persistent_count": 2,
+      "dose_added": false
+    },
+    {
+      "t_s": 11.214,
+      "trial": "small",
+      "dose": 6,
+      "normalized_excess": 0.1,
+      "label": "faint pink",
+      "persistent_count": 3,
+      "dose_added": false
+    },
+    {
+      "t_s": 16.546,
+      "trial": "large",
+      "dose": 1,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 18.208,
+      "trial": "large",
+      "dose": 2,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 19.87,
+      "trial": "large",
+      "dose": 3,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 21.532,
+      "trial": "large",
+      "dose": 4,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 23.194,
+      "trial": "large",
+      "dose": 5,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 24.856,
+      "trial": "large",
+      "dose": 6,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 26.518,
+      "trial": "large",
+      "dose": 7,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 28.18,
+      "trial": "large",
+      "dose": 8,
+      "normalized_excess": 0.0,
+      "label": "blue-gray",
+      "persistent_count": 0
+    },
+    {
+      "t_s": 29.842,
+      "trial": "large",
+      "dose": 9,
+      "normalized_excess": 0.1,
+      "label": "faint pink",
+      "persistent_count": 1
+    },
+    {
+      "t_s": 30.042,
+      "trial": "large",
+      "dose": 9,
+      "normalized_excess": 0.1,
+      "label": "faint pink",
+      "persistent_count": 2,
+      "dose_added": false
+    },
+    {
+      "t_s": 30.242,
+      "trial": "large",
+      "dose": 9,
+      "normalized_excess": 0.1,
+      "label": "faint pink",
+      "persistent_count": 3,
+      "dose_added": false
+    }
+  ]
+}
