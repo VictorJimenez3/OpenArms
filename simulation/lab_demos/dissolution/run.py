@@ -30,13 +30,13 @@ def build_model():
     spec.modelname = "dissolution_lab"
     spec.visual.global_.offwidth = 1280
     spec.visual.global_.offheight = 720
-    spec.visual.headlight.ambient = [.33, .33, .33]
-    spec.visual.headlight.diffuse = [.40, .40, .40]
-    spec.visual.headlight.specular = [.12, .12, .12]
+    spec.visual.headlight.ambient = [.25, .25, .25]
+    spec.visual.headlight.diffuse = [.32, .32, .32]
+    spec.visual.headlight.specular = [.08, .08, .08]
     spec.add_texture(name="lab_sky",type=mujoco.mjtTexture.mjTEXTURE_SKYBOX,builtin=mujoco.mjtBuiltin.mjBUILTIN_GRADIENT,rgb1=[.91,.94,.96],rgb2=[.68,.75,.81],width=256,height=1536)
     wb = spec.worldbody
-    wb.add_light(name="key", pos=[.35, -.3, 1.2], dir=[-.2, .15, -1], diffuse=[.62, .62, .62], castshadow=True)
-    wb.add_light(name="fill", pos=[-.2, .4, .9], dir=[.2, -.2, -1], diffuse=[.32, .36, .42], castshadow=False)
+    wb.add_light(name="key", pos=[.35, -.3, 1.2], dir=[-.2, .15, -1], diffuse=[.42, .42, .42], castshadow=True)
+    wb.add_light(name="fill", pos=[-.2, .4, .9], dir=[.2, -.2, -1], diffuse=[.24, .27, .31], castshadow=False)
     # Clean white bench; both vessels share the same dimensions and initial contents.
     wb.add_geom(name="bench", type=mujoco.mjtGeom.mjGEOM_BOX, pos=[.24, 0, -.015], size=[.37, .31, .015], rgba=[.84,.86,.84,1])
     wb.add_geom(name="bench_edge", type=mujoco.mjtGeom.mjGEOM_BOX, pos=[.24, -.316, -.012], size=[.37,.006,.012], rgba=[.18,.23,.27,1])
@@ -45,17 +45,32 @@ def build_model():
     centers = {"STILL": (.17, .12), "STIRRED": (.42, .12)}
     vessel_geoms, water_geoms, bar_geoms, sugar_geoms = {}, {}, {}, {}
     for label, (x, y) in centers.items():
-        wb.add_geom(name=f"base_{label}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, pos=[x,y,.006], size=[.061,.006,0], rgba=[.78,.81,.80,1])
-        vessel_geoms[label] = wb.add_geom(name=f"glass_{label}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, pos=[x,y,.063], size=[.052,.057,0], rgba=[.78,.91,.95,.25], contype=0, conaffinity=0)
-        water_geoms[label] = wb.add_geom(name=f"water_{label}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, pos=[x,y,.050], size=[.044,.034,0], rgba=[.60,.82,.87,.30], contype=0, conaffinity=0)
+        wb.add_geom(name=f"base_{label}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, pos=[x,y,.006], size=[.057,.005,0], rgba=[.70,.73,.72,1])
+        # Clear glass is an open cage of fine edge lines. A full alpha cylinder
+        # sorts in front of the contents in MuJoCo and hides the sugar.
+        radius=.052; bottom=.012; top=.116
+        for j in range(12):
+            a=2*math.pi*j/12
+            px,py=x+radius*math.cos(a),y+radius*math.sin(a)
+            wb.add_geom(name=f"glass_{label}_post_{j}",type=mujoco.mjtGeom.mjGEOM_CAPSULE,fromto=[px,py,bottom,px,py,top],size=[.0012],rgba=[.49,.65,.68,1],contype=0,conaffinity=0)
+        for z,ring in ((bottom,"base"),(top,"rim")):
+            for j in range(16):
+                a=2*math.pi*j/16; b=2*math.pi*(j+1)/16
+                p1=[x+radius*math.cos(a),y+radius*math.sin(a),z]
+                p2=[x+radius*math.cos(b),y+radius*math.sin(b),z]
+                wb.add_geom(name=f"glass_{label}_{ring}_{j}",type=mujoco.mjtGeom.mjGEOM_CAPSULE,fromto=p1+p2,size=[.0012],rgba=[.53,.68,.71,1],contype=0,conaffinity=0)
+        vessel_geoms[label] = None
+        # A faint, thin surface suggests clear water without filling the cup
+        # with a translucent solid that occludes bottom details.
+        water_geoms[label] = wb.add_geom(name=f"water_{label}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, pos=[x,y,.076], size=[.047,.0008,0], rgba=[.48,.72,.77,.12], contype=0, conaffinity=0)
         bar_geoms[label] = wb.add_geom(name=f"bar_{label}", type=mujoco.mjtGeom.mjGEOM_CAPSULE, fromto=[x-.017,y,.019,x+.017,y,.019], size=[.004], rgba=[.19,.22,.25,1], contype=0, conaffinity=0)
         granules=[]
         for i in range(12):
             # Deterministic pile of visible sugar grains at the vessel floor.
             angle = i * 2.399963
-            radius = .006 * math.sqrt(i / 11)
+            radius = .022 * math.sqrt((i + .5) / 12)
             gx, gy = x + radius*math.cos(angle), y + radius*math.sin(angle)
-            granules.append(wb.add_geom(name=f"sugar_{label}_{i}", type=mujoco.mjtGeom.mjGEOM_SPHERE, pos=[gx,gy,.026+(i%3)*.0025], size=[.005], rgba=[.88,.66,.30,1], contype=0, conaffinity=0))
+            granules.append(wb.add_geom(name=f"sugar_{label}_{i}", type=mujoco.mjtGeom.mjGEOM_SPHERE, pos=[gx,gy,.019+(i%2)*.001], size=[.0042], rgba=[.90,.72,.43,1], contype=0, conaffinity=0))
         sugar_geoms[label] = granules
         wb.add_geom(name=f"label_{label}", type=mujoco.mjtGeom.mjGEOM_BOX, pos=[x,y-.076,.003], size=[.041,.009,.001], rgba=([.35,.38,.4,1] if label=="STILL" else [.12,.43,.66,1]), contype=0, conaffinity=0)
     # Low, reachable momentary switch, presented on the near edge of the bench.
@@ -75,7 +90,7 @@ def build_model():
         if "sts3215" in name:
             model.mat_rgba[i]=[.10,.12,.14,1]
         else:
-            model.mat_rgba[i]=[.91,.92,.93,1]
+            model.mat_rgba[i]=[.78,.80,.82,1]
     data=mujoco.MjData(model)
     qadr=np.array([model.joint(j).qposadr[0] for j in JOINTS],dtype=int)
     dofadr=np.array([model.joint(j).dofadr[0] for j in JOINTS],dtype=int)
@@ -158,7 +173,7 @@ def run(output_dir:Path,speed=4.,negative_control=False):
     # Match sugar dose and water amount exactly at t=0 (normalized fraction=1).
     activation_time=None; chem_activation=None; events=[]; trace=[]; success=False; missed=negative_control
     fps=24
-    out=Recorder(model,output_dir/"dissolution.mp4",fps,[.28,-.02,.13],1.07,155,-26,speed)
+    out=Recorder(model,output_dir/"dissolution.mp4",fps,[.29,.00,.16],.86,180,-54,speed)
     def update_vis(elapsed):
         rem=[]
         for label in ("STILL","STIRRED"):
@@ -166,9 +181,11 @@ def run(output_dir:Path,speed=4.,negative_control=False):
             rem.append(r)
             for i,g in enumerate(sugar_geoms[label]):
                 # Grains smoothly fade and shrink together to represent remaining solid mass.
-                scale=max(.00045,.005*(r**.40))
+                # Keep a readable crystalline grain silhouette while its
+                # diameter and opacity decrease with modeled remaining mass.
+                scale=max(.0018,.0042*(r**.38))
                 model.geom_size[g,0]=scale
-                model.geom_rgba[g,3]=min(1.,r*2.7)
+                model.geom_rgba[g,3]=min(1.,.60+r*.40)
         # The stir bar remains centered in its vessel and spins as a visual
         # indicator only after the switch event; no fluid flow is simulated.
         if success and not missed:
