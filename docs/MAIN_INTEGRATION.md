@@ -57,3 +57,7 @@ A separate Account 2 audit reviewed pinned MuJoCo, Isaac, fixture, legacy harnes
 ### Generic preview reconciliation
 
 The `stefanie/free-plans` branch contributes numeric holds, labels, explicit expected endpoints and cache identity to the reusable simulation preview. Integration rejects non-finite, negative, boolean or greater-than-60-second holds and preserves the original first-target gripper fallback. The fixed-pattern application dispatcher, old physical wiring and its tests are superseded; their original source remains in merged Git history. Labeled previews need an explicit expected endpoint to establish simulated delivery.
+
+### Complete ref accounting
+
+The [branch ledger](MAIN_BRANCH_LEDGER.md) accounts for every known local and remote head. Eleven earlier worker/merge branches had no unique patches by `git cherry` and were joined without changing the current tree. The kinematics branch’s unmatched duplicate teardown commit was reviewed directly: its cleanup file is identical and the newer smoke code preserves the diagnostic while adding mass conditions and gravity. Its history is now included too. All eight previously listed PR heads are ancestors of the integration branch. No active worktree or remote branch has been removed.
