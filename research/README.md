@@ -19,6 +19,7 @@ rg -ni -g '*.md' 'follower|teach.*pose|waypoint|teleop' research/
 | How could OpenArms fit the Education track? | The note assesses how OpenArms could make hands-on lab learning more accessible and interactive. | [Education track notes](victor/tracks/hackprinceton-education-track-openarms.md) |
 | How could OpenArms fit Amazon’s Best Practical AI Innovation track? | The note assesses how a voice-guided lab assistant could make hands-on experiments more accessible in everyday use. | [Amazon track notes](victor/tracks/hackprinceton-amazon-practical-ai-openarms.md) |
 | What should the OpenArms simulation help students learn? | Research recommends pairing one student-chosen physical observation with a modeled result and one additional virtual trial. Dilution is conditional on a comparable measurement. | [Educational simulation and competitor research](victor/educational-simulation.md) |
+| Which lab barriers remain after existing accommodations, and where might OpenArms help? | Published cases document barriers to manipulation and participation. The report compares student-directed assistance, adaptive equipment, remote labs and simulations, and identifies what needs validation with students and institutions. | [Accessibility and market validation](victor/accessibility-market-validation.md) |
 
 ## Research to-do
 
