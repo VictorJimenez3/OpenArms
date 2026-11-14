@@ -252,6 +252,12 @@ Safety is separate from the prediction and stays a list: only substances under `
 - **Liquid only: showing the predicted result.** The preview shows the predicted colour, while the agent prompt currently says not to tell the student the expected result before testing.
 - **Liquid only: `portions` greater than 1.** `add_sample` expands to several `pour` steps with the same cup, which is empty after the first. The simulation reports this as a note.
 
+## Robot appearance
+
+Render the OpenArms SO-101 with white structural plastic in every simulation, including policy cameras, student views, stills, and videos. The base, links, wrist, and printed gripper parts are white. Motor housings, fasteners, and grip pads may stay dark. Carry the same treatment into MuJoCo and Isaac. Use material edits that preserve the geometry and controller.
+
+Use the current white materials for new exports and re-renders. Retain historical observations and their original appearance in evidence records.
+
 ## Credits
 
-The arm model in `models/so101/` is from [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) (`Simulation/SO101`, commit `a758567`), Apache 2.0. See `models/so101/LICENSE`.
+The arm model in `models/so101/` is from [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) (`Simulation/SO101`, commit `a758567`), Apache 2.0. OpenArms applies a white printed-plastic finish in the shared model. See `models/so101/LICENSE`.
