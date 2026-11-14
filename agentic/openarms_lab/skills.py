@@ -10,16 +10,8 @@ import re
 import tempfile
 from pathlib import Path
 
-from .contracts import (EvaluationReceipt, InspectArguments, LocalizeArguments,
-                        MOCK_OPERATIONS, MockCupArguments, MockPourArguments,
-                        MockSampleArguments, ObserveArguments, PlanDraft, SkillDefinition, Step)
-
-PRIMITIVE_SCHEMAS = {
-    'inspect_scene': InspectArguments, 'localize_objects': LocalizeArguments,
-    'mock_prepared_sample': MockSampleArguments, 'mock_pick_up': MockCupArguments,
-    'mock_put_down': MockCupArguments, 'mock_pour': MockPourArguments,
-    'observe': ObserveArguments,
-}
+from .contracts import (EvaluationReceipt, MOCK_OPERATIONS, PRIMITIVE_SCHEMAS,
+                        PlanDraft, SkillDefinition, Step)
 TYPES = {'string': (str,), 'integer': (int,), 'number': (int, float), 'boolean': (bool,)}
 TOKEN = re.compile(r'\$([a-z][a-z0-9_]{0,63})\Z')
 SLOT = re.compile(r'\{([a-z][a-z0-9_]{0,63})\}')

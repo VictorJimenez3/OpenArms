@@ -4,9 +4,9 @@ import asyncio
 import copy
 import uuid
 import time
-from .contracts import ExecutionResult, SkillRequest
+from .contracts import ExecutionResult, PRIMITIVE_SCHEMAS, SkillRequest
 from .recipes import PH_SKILL
-from .skills import PRIMITIVE_SCHEMAS, compute_skill_hash
+from .skills import compute_skill_hash
 
 MOCK_PHASES = {
     'mock_prepared_sample': ('check_prepared_condition', 'mock_dose', 'return_home'),
@@ -44,6 +44,7 @@ class MockBackend:
     def capabilities():
         return {'experiment_id': 'indicator_ph', 'conditions': list(PH_SKILL.conditions),
                 'routes': [['A', 'C']], 'mock_execution': True, 'physical_execution': False,
+                'supported_operations': list(MOCK_PHASES),
                 'measurement': False, 'observation_provenance': 'independent_or_unknown',
                 'limitations': PH_SKILL.limitations}
 

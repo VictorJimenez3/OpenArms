@@ -4,6 +4,8 @@
 
 **Areas:** Accessible interaction, agent harness, skill evaluation, simulation. **Branch:** `victor/agentic-student-loop`. **Tracking:** [#10 connected loop](https://github.com/VictorJimenez3/OpenArms/issues/10) · [#19 delivery](https://github.com/VictorJimenez3/OpenArms/issues/19).
 
+**Current implementation handoff.** Use the [Devin handoff](devin-handoff.md) and [implementation plan](../../docs/superpowers/plans/2026-11-14-openarms-agentic-system.md) for branch state, reproducible checks, and simulator readiness. The rest of this page preserves the original design and baseline findings.
+
 Build a voice-interactive lab assistant that lets a student choose and direct individual actions, hear what happened, and decide what to try next. Use the SO-101 for one supervised live activity from the Smartivity kit once the activity is chosen and qualified. Show several simulated activities to convey the range of a teaching lab kit. The same student interaction should work in multiple validated setups. [Project objective](../../PROJECT_OBJECTIVE.md)
 
 ## Decisions to carry between chats

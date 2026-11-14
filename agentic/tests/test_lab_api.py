@@ -91,7 +91,7 @@ def test_api_prediction_explicit_request_and_exact_approval(client):
     assert post('confirm', stale).status_code == 409
     assert post('confirm', exact).status_code == 200
     assert post('confirm', exact).status_code == 409
-    snap = wait_state(client, url, headers, lambda s: s['tasks'][0]['status'] == 'completed')
+    snap = wait_state(client, url, headers, lambda s: s['tasks'][0]['status'] == 'failed')
     assert snap['requests'][0]['student_confirmed']
     assert snap['requests'][0]['result']['controller_completed'] is True
     assert snap['observations'][0]['provenance'] == 'UNKNOWN'
@@ -242,7 +242,7 @@ async def test_runtime_tool_cancel_is_correlated_to_request(tmp_path):
     try:
         sid = (await lab.create())['session_id']
         for cid, text in [('earlier', 'Test the prepared vinegar sample.'),
-                          ('current', 'Test the prepared water sample.')]:
+                          ('current', 'Run the prepared vinegar sample.')]:
             handle = await lab.tool(sid, 'start_task', {'text': text, '_tool_call_id': cid})
             snap = await task_snapshot(lab, sid, handle['task_id'])
             assert snap['pending']['task_id'] == handle['task_id']

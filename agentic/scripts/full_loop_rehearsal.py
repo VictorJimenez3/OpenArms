@@ -51,16 +51,18 @@ async def main():
     expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
     factory = lambda: SceneBackend(scene, delay=.02)
+    scope = 'mock'
     if args.execution == 'mujoco':
         from openarms_lab.mujoco_scene import MujocoSceneService
         from openarms_lab.mujoco_backend import MujocoBackend
-        from openarms_lab.simulation_evaluation import SimulationSkillEvaluator
+        from openarms_lab.simulation_evaluation import SimulationSkillEvaluator, simulation_scope
         scene = MujocoSceneService(args.out/'scene')
         expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
         evaluator = SimulationSkillEvaluator(args.out/'evaluations')
         factory = lambda: MujocoBackend(scene)
+        scope = simulation_scope()
     lab = Lab(args.out/'sessions', expert=expert, perception=scene, evaluator=evaluator,
-              backend_factory=factory, expert_timeout=240)
+              backend_factory=factory, execution_scope=scope, expert_timeout=240)
     sid = (await lab.create())['session_id']
     try:
         began = time.perf_counter()
@@ -86,11 +88,16 @@ async def main():
         task2 = warm['tasks'][-1]
         assert task2['status'] == 'completed' and task2['route'] == 'active_skill'
         assert not task2['expert_runs'], 'Warm successful skill invoked the expert'
+        assert task2['plan']['skill_version'] == plan['skill_version']
+        assert task2['plan']['bindings'] == plan['bindings']
+        assert warm['pending'] is None and task2['observations'][-1]['status'] == 'observed'
         summary = {'expert_configuration': expert.describe(), 'expert_runs': task['expert_runs'],
                    'provider': task['expert_runs'][0]['provider'], 'model': task['expert_runs'][0]['model'],
+                   'requested_model': task['expert_runs'][0].get('requested_model'),
+                   'actual_model': task['expert_runs'][0].get('actual_model'),
                    'reasoning_effort': task['expert_runs'][0]['reasoning_effort'],
                    'provenance': 'SIMULATED' if args.execution == 'mujoco' else 'SYNTHETIC',
-                   'execution_backend': args.execution,
+                   'execution_backend': args.execution, 'execution_scope': scope,
                    'actual_expert': True, 'audible_voice_verified': False,
                    'cold_model_calls': sum(run['calls'] for run in task['expert_runs']),
                    'warm_model_calls': 0, 'warm_request': request, 'promotion': decision,

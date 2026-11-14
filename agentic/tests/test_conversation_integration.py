@@ -145,7 +145,8 @@ async def test_sample_correction_regenerates_proposal_and_requires_fresh_consent
     lab = Lab(tmp_path, expert=TestExpert(), perception=TestPerception())
     try:
         sid = (await lab.create())['session_id']
-        await lab.converse(sid, 'Test the prepared vinegar sample.')
+        request = 'Test the prepared vinegar sample and check the indicator color.'
+        await lab.converse(sid, request)
         await asyncio.wait_for(asyncio.shield(lab.workers[lab.get(sid)['tasks'][-1]['task_id']]), 5)
         first = lab.snapshot(sid)['pending']
         await lab.present(sid, first['request_id'], first['proposal_version'])
@@ -156,6 +157,8 @@ async def test_sample_correction_regenerates_proposal_and_requires_fresh_consent
         assert (await lab.converse(sid, 'Actually, use water instead.', 'correction'))['tasks'][-1]['task_id'] == corrected['tasks'][-1]['task_id']
         await asyncio.wait_for(asyncio.shield(lab.workers[corrected['tasks'][-1]['task_id']]), 5)
         second = lab.snapshot(sid)['pending']
+        assert lab.expert.contexts[-1]['request'] == request
+        assert lab.expert.contexts[-1]['task_context']['condition_id'] == 'water'
         assert second['condition_id'] == 'water'
         assert second['proposal_version'] != first['proposal_version']
         assert not second['presented'] and not second['student_confirmed']

@@ -68,6 +68,19 @@ async def test_unbound_typed_confirmation_cannot_approve_a_replacement(lab):
 
 
 @pytest.mark.asyncio
+async def test_setup_revision_change_revokes_presented_proposal(lab):
+    lab.execution_scope = 'setup-v1'
+    sid, proposal = await proposed(lab)
+    exact = (sid, proposal['request_id'], proposal['proposal_version'])
+    await lab.present(*exact)
+    lab.execution_scope = 'setup-v2'
+    with pytest.raises(LabError, match='Proposal binding changed'):
+        await lab.confirm(*exact)
+    assert lab.snapshot(sid)['pending'] is None
+    assert lab.backends[sid].executions == 0
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('method', ['text', 'tool', 'task', 'request'])
 @pytest.mark.parametrize('suppress_cancel', [False, True])
 async def test_cancel_revokes_pending_promotion_even_if_evaluator_ignores_cancel(lab, method, suppress_cancel):

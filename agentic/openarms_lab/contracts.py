@@ -60,6 +60,17 @@ class ExecutionBackend(Protocol):
     async def stop(self) -> None: ...
 
 
+class LabExecutor(Protocol):
+    mode: str
+    def capabilities(self) -> dict: ...
+    def state(self) -> dict: ...
+    def prepare(self) -> None: ...
+    def check_step(self, operation: str, arguments: dict) -> Any: ...
+    async def execute_step(self, request_id: str, arguments: dict, progress, *, operation: str) -> dict: ...
+    async def stop(self) -> None: ...
+    async def wait_idle(self) -> None: ...
+
+
 # These operations are bounded mock actions and read-only observations.
 PreparedCondition = Literal['vinegar', 'baking_soda', 'water']
 MockOperation = Literal['mock_prepared_sample', 'mock_pick_up', 'mock_put_down', 'mock_pour']
@@ -144,6 +155,17 @@ class MockPourArguments(FrozenModel):
     fixture: Literal['sample_cup']
     station: Literal['C']
     portions: int = Field(default=1, ge=1, le=1)
+
+
+PRIMITIVE_SCHEMAS = {
+    'inspect_scene': InspectArguments,
+    'localize_objects': LocalizeArguments,
+    'observe': ObserveArguments,
+    'mock_prepared_sample': MockSampleArguments,
+    'mock_pick_up': MockCupArguments,
+    'mock_put_down': MockCupArguments,
+    'mock_pour': MockPourArguments,
+}
 
 
 class ImageReference(FrozenModel):
