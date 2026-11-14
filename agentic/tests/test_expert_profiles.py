@@ -145,15 +145,15 @@ async def test_offline_claude_cli_images_isolation_and_metadata(tmp_path, monkey
 args=sys.argv[1:]
 assert '--bare' in args and '--print' in args and '--strict-mcp-config' in args
 assert args[args.index('--tools')+1] == ''
-assert args[args.index('--disallowedTools')+1] == '*'
+assert '--disallowedTools' not in args  # a blanket deny also blocks the CLI's own structured reply
 assert '--no-session-persistence' in args and '--json-schema' in args
 assert 'OPENAI_API_KEY' not in os.environ and 'CODEX_HOME' not in os.environ
 message=json.loads(sys.stdin.read())
 content=message['message']['content']
 assert content[1]['type']=='image' and content[1]['source']['media_type']=='image/png'
 assert base64.b64decode(content[1]['source']['data']).endswith(b'pixels')
-print(json.dumps({'type':'system','subtype':'init','tools':[],'mcp_servers':[]}))
-print(json.dumps({'type':'assistant','message':{'model':'claude-sonnet-fixture-id','content':[]}}))
+print(json.dumps({'type':'system','subtype':'init','tools':['StructuredOutput'],'mcp_servers':[]}))
+print(json.dumps({'type':'assistant','message':{'model':'claude-sonnet-fixture-id','content':[{'type':'tool_use','name':'StructuredOutput'}]}}))
 print(json.dumps({'type':'result','subtype':'success','usage':{'input_tokens':3},'modelUsage':{'claude-sonnet-fixture-id':{}},'structured_output':dict(kind='complete',tool_name=None,arguments_json='{}',summary='Seen',payload_json='{}')}))
 ''')
     image = tmp_path/'frame.png'

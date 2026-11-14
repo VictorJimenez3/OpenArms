@@ -91,6 +91,10 @@ class Bench:
     receiver_capacity: int = 4
     tip_angle_deg: float = 115.0
     pour_clearance: float = 0.050
+    # Taken from a pour recorded on the real arm, so the solved poses resemble what the arm really does:
+    wrist_roll_deg: float = 0.0  # which way up the gripper holds the cup; 180 is the other of its two level grips
+    pour_offset: float = 0.0  # the cup's mouth pours this far (m) from the receiver's centre, toward the cup
+    tip_direction: int = 0  # which way the wrist rolls to tip: +1, -1, or 0 for whichever reaches better
     release_tolerance: float = 0.012  # how far from a mark a released thing may be
     grasp_tolerance: float = 0.015  # how far the gripper may be from the grasp point and still pick up
     docks: Docks | None = None
@@ -121,11 +125,44 @@ def _read_yaml(path: Path) -> dict:
         return yaml.safe_load(f)
 
 
+def ruler_to_arm(point_cm, frame: dict) -> tuple[float, float]:
+    """A point read off the two bench rulers, in centimetres, as metres in the arm's frame.
+
+    The rulers form an L. The ruler frame's origin is their inner corner, X runs along one
+    ruler and Y along the other, with Y a quarter turn clockwise from X seen from above
+    (X to the right and Y toward you, standing at the bottom of the L). `frame` says where
+    the arm's base axis sits in that frame (`arm_cm`) and which way the arm points
+    (`arm_heading_deg`: 0 along +X, 90 along +Y, -90 along -Y). Arm frame: +x forward, +y left."""
+    import math
+
+    try:  # hand-edited numbers: "4,6" or a missing space must fail clearly, not as arithmetic on text
+        ax, ay = (float(v) for v in frame["arm_cm"])
+        point_cm = [float(v) for v in point_cm]
+        h = math.radians(float(frame["arm_heading_deg"]))
+    except (TypeError, ValueError) as e:
+        raise ValueError(f"ruler positions must be two numbers in centimetres, like [4.6, 4.2]: {e}") from None
+    if len(point_cm) != 2:
+        raise ValueError("a ruler position is two numbers in centimetres, like [4.6, 4.2]")
+    fx, fy = math.cos(h), math.sin(h)
+    dx, dy = (point_cm[0] - ax) / 100.0, (point_cm[1] - ay) / 100.0
+    # Seen from above with Y toward the viewer, the arm's left is its forward turned counter-clockwise.
+    return round(dx * fx + dy * fy, 4), round(dx * fy - dy * fx, 4)
+
+
+def _station_pos(name: str, spec: dict, frame: dict | None) -> tuple[float, float]:
+    if "ruler" in spec:
+        if not frame:
+            raise ValueError(f"station {name} is given in ruler centimetres, but bench.yaml has no ruler_frame")
+        return ruler_to_arm(spec["ruler"], frame)
+    return tuple(spec["pos"])
+
+
 def load_bench(setup: str | None = None) -> Bench:
     raw = _read_yaml(setup_dir(setup) / "bench.yaml")
     grasp = raw["grasp"]
+    frame = raw.get("ruler_frame")
     stations = {
-        name: Station(name, s["kind"], tuple(s["pos"]), dict(s.get("contents") or {}))
+        name: Station(name, s["kind"], _station_pos(name, s, frame), dict(s.get("contents") or {}))
         for name, s in raw["stations"].items()
     }
     objects = {
@@ -143,7 +180,7 @@ def load_bench(setup: str | None = None) -> Bench:
         extra.update(
             receiver_radius=rec["radius"], receiver_height=rec["height"], receiver_capacity=rec["capacity_portions"]
         )
-    for key in ("tip_angle_deg", "pour_clearance", "release_tolerance", "grasp_tolerance"):
+    for key in ("tip_angle_deg", "pour_clearance", "release_tolerance", "grasp_tolerance", "wrist_roll_deg", "pour_offset", "tip_direction"):
         if key in grasp:
             extra[key] = grasp[key]
     return Bench(

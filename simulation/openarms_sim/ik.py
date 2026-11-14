@@ -79,6 +79,7 @@ def make_poses(scene: Scene) -> tuple[dict[str, list[float]], dict[str, float]]:
     poses: dict[str, list[float]] = {"HOME": list(HOME_MODEL)}
     errors: dict[str, float] = {}
     theta = math.radians(b.tip_angle_deg)
+    level = math.radians(b.wrist_roll_deg)  # the wrist roll that holds the cup upright
 
     def add(name, target, roll, seed=None):
         q, err = solve(scene, np.asarray(target, dtype=float), roll, seed)
@@ -88,8 +89,8 @@ def make_poses(scene: Scene) -> tuple[dict[str, list[float]], dict[str, float]]:
     for s in b.sources + b.points:
         x, y = b.stations[s].pos
         grip_height = b.grasp_height + b.dock_height
-        grasp = add(f"GRASP_{s}", [x, y, grip_height], 0.0)
-        above = add(f"ABOVE_{s}", [x, y, grip_height + b.lift], 0.0, seed=grasp)
+        grasp = add(f"GRASP_{s}", [x, y, grip_height], level)
+        above = add(f"ABOVE_{s}", [x, y, grip_height + b.lift], level, seed=grasp)
         poses[f"LIFT_{s}"], errors[f"LIFT_{s}"] = list(poses[f"ABOVE_{s}"]), errors[f"ABOVE_{s}"]
         del above
 
@@ -101,14 +102,20 @@ def make_poses(scene: Scene) -> tuple[dict[str, list[float]], dict[str, float]]:
         approach /= np.linalg.norm(approach)
         tangent = np.cross(UP, approach)
         best = None
-        for direction in (-1.0, 1.0):  # which way the wrist rolls to tip the cup
-            roll = direction * theta
+        for direction in ((float(b.tip_direction),) if b.tip_direction else (-1.0, 1.0)):  # which way the wrist rolls to tip the cup
+            roll = level + direction * theta
             # Cup axis after rolling about the approach axis.
             axis = math.cos(theta) * UP + direction * math.sin(theta) * np.cross(approach, UP)
-            g = np.array([rx, ry, 0.0]) - mouth * np.array([axis[0], axis[1], 0.0])
+            side = np.array([axis[0], axis[1], 0.0])
+            if b.pour_offset and np.linalg.norm(side) > 1e-6:
+                side_unit = side / np.linalg.norm(side)
+            else:
+                side_unit = np.zeros(3)
+            # The mouth ends up `pour_offset` short of the centre, on the side the cup comes from.
+            g = np.array([rx, ry, 0.0]) - b.pour_offset * side_unit - mouth * side
             g[2] = b.dock_height + b.receiver_height + b.pour_clearance - mouth * axis[2]
             q_tip, e_tip = solve(scene, g, roll)
-            q_above, e_above = solve(scene, g, 0.0, seed=[*q_tip[:4], 0.0])
+            q_above, e_above = solve(scene, g, level, seed=[*q_tip[:4], q_tip[4] - direction * theta])
             score = e_tip + e_above
             if best is None or score < best[0]:
                 best = (score, q_tip, e_tip, q_above, e_above)

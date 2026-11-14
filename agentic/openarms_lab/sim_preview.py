@@ -81,6 +81,9 @@ class MujocoPreview:
 
     def describe(self, backend, request):
         """The simulation request for this proposal, or a reason there is none."""
+        if 'sim' in request:
+            # A composed plan arrives with its own targets (free_plan.FreePlans.sim_request).
+            return {**request['sim'], '_poses_file': os.environ.get('OPENARMS_POSES', 'firmware/openarms_executor/poses.json'), '_note': None}, None
         p = request['parameters']
         if request.get('skill_id') == POUR_SKILL:
             if (p.get('source'), p.get('destination')) != ('A', 'C') or p.get('portions', 1) != 1:
