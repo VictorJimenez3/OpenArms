@@ -52,7 +52,7 @@ def _affirmative(value):
 class Lab(TaskLoop):
     def __init__(self, data_dir: Path, *, backend_factory=None, registry=None,
                  execution_timeout=60, confirmation_ttl=120, expert_timeout=90,
-                 expert=None, perception=None, evaluator=None):
+                 expert=None, perception=None, evaluator=None, auto_evaluate=False):
         if min(execution_timeout, confirmation_ttl, expert_timeout) <= 0:
             raise ValueError('Execution and confirmation timeouts must be positive.')
         data_dir = Path(data_dir)
@@ -60,6 +60,7 @@ class Lab(TaskLoop):
         # The existing registry file remains historical; new entries use the validated format.
         self.registry = registry or SkillRegistry(data_dir / 'task-skills.json')
         self.expert, self.perception, self.evaluator = expert, perception, evaluator
+        self.auto_evaluate = auto_evaluate
         self.expert_timeout = expert_timeout
         self.backend_factory = backend_factory
         self.execution_timeout, self.confirmation_ttl = execution_timeout, confirmation_ttl
@@ -160,7 +161,12 @@ class Lab(TaskLoop):
         return self.sessions[sid]
 
     def snapshot(self, sid):
-        return copy.deepcopy(self.get(sid))
+        state = copy.deepcopy(self.get(sid))
+        state['skills'] = [self.registry.get(entry['definition']['skill_id'], version)
+                           for version, entry in self.registry.data['versions'].items()]
+        state['evaluations'] = copy.deepcopy(self.registry.data['evaluations'])
+        state['skill_decisions'] = copy.deepcopy(self.registry.data['decisions'])
+        return state
 
     async def publish(self, s):
         if self._closed:
@@ -219,11 +225,14 @@ class Lab(TaskLoop):
             prior = next((t for t in s['tasks'] if t['task_id'] == task_id), None)
             if not prior or prior['status'] not in TASK_TERMINAL or not prior['observations']:
                 raise LabError('Improvement requires a completed task with independent feedback.')
-            observed = prior['observations'][-1]
-            if observed['status'] != 'unknown' and (not observed['checks'] or all(observed['checks'].values())):
+            observed = next((o for o in prior['observations'] if o['status'] == 'unknown' or
+                             (o['checks'] and not all(o['checks'].values()))), None)
+            if not observed:
                 raise LabError('Improvement requires a recorded unknown outcome or failed outcome check.')
+            original = next((r['plan'] for r in s['requests'] if r.get('task_id') == task_id and
+                             (r.get('plan') or {}).get('skill_id')), prior['plan'])
             improvement = {'task_id': task_id, 'limitation': limitation, 'feedback': copy.deepcopy(prior['feedback']),
-                           'baseline_plan': copy.deepcopy(prior['plan']),
+                           'baseline_plan': copy.deepcopy(original), 'failure_observation': copy.deepcopy(observed),
                            'baseline_task_request': prior['request']}
             task = self._queue_task(s, prior['request'], None, improvement=improvement)
             task['feedback'].extend(copy.deepcopy(prior['feedback']))
@@ -251,6 +260,27 @@ class Lab(TaskLoop):
                     decision=decision, provenance='EVALUATOR')
         await self.publish(s)
         return decision
+
+    async def _evaluate_completed(self, s, task):
+        plan = task.get('plan') or {}
+        if not self.auto_evaluate or not self.evaluator or not plan.get('skill_id'):
+            return
+        skill = self.registry.get(plan['skill_id'], plan['skill_version'])
+        if skill['status'] != 'task_validated':
+            return
+        self._event(s, 'skill_evaluation_started', task_id=task['task_id'],
+                    skill_id=plan['skill_id'], skill_version=plan['skill_version'])
+        await self.publish(s)
+        try:
+            decision = await self.evaluate_candidate(s['session_id'], plan['skill_id'], plan['skill_version'])
+            self._message(s, 'assistant', 'Skill evaluation '+decision['status']+'. '+
+                          ('Equivalent supported requests can now reuse it.' if decision['status'] == 'promoted'
+                           else 'The existing active skill remains unchanged.'))
+        except (ValueError, RuntimeError, TimeoutError) as exc:
+            self._event(s, 'skill_evaluation_failed', task_id=task['task_id'],
+                        reason=str(exc), skill_id=plan['skill_id'], skill_version=plan['skill_version'])
+            self._message(s, 'assistant', 'Skill registration is incomplete: '+str(exc))
+        await self.publish(s)
 
     async def create(self):
         if self._closed:
@@ -578,6 +608,7 @@ class Lab(TaskLoop):
             raise LabError('Tool arguments must be an object.')
         schemas = {'get_lab_state': set(), 'choose_condition': {'condition_id'},
                    'record_prediction': {'text'}, 'request_action': {'text'}, 'start_task': {'text'},
+                   'improve_skill': {'limitation'},
                    'student_confirm': {'request_id', 'proposal_version'}, 'cancel_request': {'request_id'},
                    'prepare_next_trial': set(), 'record_reflection': {'text'}, 'stop_lab': set(),
                    '_record_transcript': {'role', 'text', 'turn_id', 'final'},
@@ -592,11 +623,18 @@ class Lab(TaskLoop):
         if '_voice_generation' in args and (type(args['_voice_generation']) is not int or args['_voice_generation'] != s['generation']):
             raise LabError('Stale voice generation; start a fresh turn.')
         clean = {key: value for key, value in args.items() if key in schemas[name]}
-        required = schemas[name] if name in ('choose_condition', 'record_prediction', 'request_action', 'start_task', 'student_confirm', 'record_reflection', '_record_transcript') else set()
+        required = schemas[name] if name in ('choose_condition', 'record_prediction', 'request_action', 'start_task', 'improve_skill', 'student_confirm', 'record_reflection', '_record_transcript') else set()
         if required - set(clean):
             raise LabError('Required pH tool argument missing.')
         if name == 'get_lab_state':
             return self.snapshot(sid)
+        if name == 'improve_skill':
+            target = next((task for task in reversed(s['tasks']) if task['status'] in TASK_TERMINAL and
+                           any(o['status'] == 'unknown' or (o['checks'] and not all(o['checks'].values()))
+                               for o in task['observations'])), None)
+            if target is None:
+                raise LabError('No recorded skill limitation is available for improvement.')
+            return await self.start_improvement(sid, target['task_id'], clean['limitation'])
         if name == 'choose_condition':
             return await self.choose_condition(sid, clean['condition_id'])
         if name == 'record_prediction':

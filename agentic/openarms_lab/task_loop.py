@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import re
 import time
 import uuid
 
@@ -13,7 +14,7 @@ TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
-    'localize_objects': ('Localize labels in a frame already received by this task.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
+    'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
     'list_skills': ('List active definitions.', {}, []),
     'get_skill': ('Read a registered version.', {'skill_id': {'type': 'string'}, 'version': {'type': 'string'}}, ['skill_id']),
     'validate_plan': ('Independently validate a PlanDraft.', {'plan': PlanDraft.model_json_schema()}, ['plan']),
@@ -24,6 +25,28 @@ TOOLS = {
 
 class ExpertMissing(ValueError):
     code = 'unavailable'
+
+
+def describe_step(step):
+    args, operation = step['arguments'], step['operation']
+    if operation == 'inspect_scene':
+        return 'inspect the '+args['view']+' camera view'
+    if operation == 'localize_objects':
+        return 'locate '+', '.join(args['labels'])+' in the image'
+    if operation == 'mock_prepared_sample':
+        return 'test the prepared '+args['condition_id'].replace('_', ' ')+' sample from station A with the indicator at station C'
+    if operation == 'mock_pick_up':
+        return 'pick up the sample cup at station '+args['station']
+    if operation == 'mock_put_down':
+        return 'put the sample cup down at station '+args['station']
+    if operation == 'mock_pour':
+        return 'pour one prepared portion into the receiver at station C'
+    if operation == 'observe':
+        text = 'check the result using the '+args['view']+' camera'
+        if args.get('fallback_view'):
+            text += ', trying the '+args['fallback_view']+' camera if the first view is unreadable'
+        return text
+    raise ValueError('Unsupported proposal operation.')
 
 
 class TaskLoop:
@@ -106,7 +129,7 @@ class TaskLoop:
                 raise ValueError('Localization requires evidence already received by this task.')
             pending = self.perception.localize_objects(sid, **arguments)
         else:
-            pending = self.perception.observe(sid, copy.deepcopy({**receipt, 'view': arguments['view']}))
+            pending = self.perception.observe(sid, copy.deepcopy({**receipt, **arguments}))
         result = await asyncio.wait_for(pending, self.execution_timeout)
         self._guard_task(s, task)
         if not isinstance(result, dict):
@@ -123,6 +146,8 @@ class TaskLoop:
             prior = task['evidence'].get(evidence_id, {})
             if operation == 'localize_objects':
                 merged = {**prior, **result, 'images': images or prior.get('images', [])}
+                merged['verified_labels'] = sorted((set(prior.get('verified_labels', [])) -
+                                                   set(arguments['labels'])) | set(result.get('verified_labels', [])))
             else:
                 previous_images = {image['evidence_id']: image['sha256'] for image in prior.get('images', [])}
                 if any(image['evidence_id'] in previous_images and
@@ -174,7 +199,10 @@ class TaskLoop:
                 self._check_context(task, plan)
             except (ValueError, KeyError) as exc:
                 return {'valid': False, 'error': str(exc)}
-            return {'valid': True, 'plan': plan}
+            return {'valid': True, 'validated_draft': draft.model_dump(mode='json', exclude_none=True),
+                    'instruction': 'For the final plan/revision decision, return validated_draft unchanged as payload.',
+                    'compiled_summary': {'skill_id': plan['skill_id'], 'skill_version': plan['skill_version'],
+                                         'operations': [step['operation'] for step in plan['steps']]}}
 
         async def emit(event):
             # Adapter events are nested so untrusted fields cannot replace host correlation.
@@ -201,6 +229,14 @@ class TaskLoop:
                              'A prepared sample requires an explicit condition in its arguments. Use the requested sample '
                              'or the selected condition. Ask which sample when neither is specified. '
                              'Prediction is optional notebook context. '
+                             'For a repeatable supported task, author a parameterized skill_definition with useful '
+                             'retrieval_examples, preconditions, independent outcome checks and explicit limitations. '
+                             'Each declared parameter must be used as $parameter in step arguments and as {parameter} '
+                             'in every retrieval example. Use only scene.observable_features for outcome checks. '
+                             'Every action plan needs an inspect_scene step before its action and an observe step last. '
+                             'Use localize_objects on the current image when object identity matters. '
+                             'An observe step may specify fallback_view to try one alternate view only when the first '
+                             'is unreadable. Do not add recovery without evidence of a relevant limitation. '
                              'At execution checkpoints return complete with payload {"continue": true} to continue '
                              'the exact existing steps, or revision for a fresh proposal and consent. '
                              'If a mock action has been dispatched, revise only the remaining observation steps.'),
@@ -214,7 +250,7 @@ class TaskLoop:
                                         timeout=self.expert_timeout)
         self._guard_task(s, task)
         metadata = {key: copy.deepcopy(result.get(key)) for key in
-                    ('kind', 'summary', 'provider', 'model', 'reasoning_effort', 'calls',
+                    ('kind', 'summary', 'payload', 'provider', 'model', 'reasoning_effort', 'calls',
                      'usage', 'elapsed_ms', 'tool_receipts')}
         metadata['host_elapsed_ms'] = (time.perf_counter() - started) * 1000
         compute_skill_hash(metadata)
@@ -236,8 +272,24 @@ class TaskLoop:
 
     def _check_context(self, task, plan):
         scene = task['scene'] or {}
+        if any(step['operation'] in MOCK_OPERATIONS for step in plan['steps']):
+            # These capabilities have no executor/observer in this software
+            # delivery. A model may not silently execute a supported subset of
+            # a request that also asks for one of them.
+            unsupported = re.search(r'\b(?:dilut(?:e|ion)|concentration|buoyancy|mandarin|'
+                                    r'numeric(?:al)? ph|exact ph|measure (?:the )?ph|'
+                                    r'heat(?:ing)?|temperature measurement)\b', task['request'], re.I)
+            if unsupported:
+                raise ValueError('This request includes an unsupported capability: '+unsupported.group(0)+
+                                 '. Ask for the supported action separately; no partial action was approved.')
+        feature_schema = getattr(self.perception, 'feature_schema', None)
+        if feature_schema is not None and any(rule['feature'] not in feature_schema for rule in plan['outcome_checks']):
+            raise ValueError('Use supported observer features: '+', '.join(feature_schema))
         known_labels = set()
-        for receipt in task['evidence'].values():
+        current_ids = {image['evidence_id'] for image in task['images']}
+        for evidence_id, receipt in task['evidence'].items():
+            if evidence_id not in current_ids:
+                continue
             if not set(i['evidence_id'] for i in task['images']).intersection(
                     [receipt.get('evidence_id'), *(i['evidence_id'] for i in receipt.get('images', []))]):
                 continue
@@ -312,18 +364,18 @@ class TaskLoop:
                 task['execution'].append({'request_id': task['request_id'], 'backend': 'mock',
                                           'status': 'failed', 'reason': summary})
                 s['trial']['state'] = 'stopped'
-            await self._set_status(s, task, 'failed', summary, code=code)
+            details = exc.errors(include_input=False, include_url=False) if hasattr(exc, 'errors') else None
+            await self._set_status(s, task, 'failed', summary, code=code, validation_errors=details)
 
     async def _propose_task(self, s, task, draft, plan, began, *, prior_request=None, prior_receipt=None):
         self._guard_task(s, task)
+        await self._verify_labels(s, task, plan)
         self._check_context(task, plan)
         if draft.skill_definition:
             version = self.registry.validate_for_task(task['task_id'], draft.skill_definition)
             self.registry.authorize(task['task_id'], plan['skill_id'], version)
         s['proposal_sequence'] += 1
-        steps = ' → '.join(f"{step['operation']}({', '.join(f'{k}={v}' for k, v in step['arguments'].items())})"
-                           for step in plan['steps'])
-        summary = 'Mock or observation-only plan: ' + steps
+        summary = 'In the simulation, I will '+', then '.join(describe_step(step) for step in plan['steps'])+'.'
         request_id = str(uuid.uuid4())
         bound_plan = {**plan, 'scene_hash': self._scene_hash(s), 'generation': s['generation'],
                       'trial_id': task['trial_id'], 'task_id': task['task_id']}
@@ -403,7 +455,7 @@ class TaskLoop:
                 observed = await self._observe_step(s, task, request, operation, arguments, receipt, index,
                                                     previous_evidence)
                 fresh = self._fresh_checkpoint(observed, previous_evidence)
-                if warm and operation in ('inspect_scene', 'observe') and fresh:
+                if operation in ('inspect_scene', 'observe') and fresh:
                     try:
                         await self._verify_labels(s, task, plan)
                     except (ValueError, OSError, RuntimeError, TimeoutError) as exc:
@@ -435,6 +487,8 @@ class TaskLoop:
             if status == 'failed':
                 summary = f"{receipt.get('reason') or 'Mock executor reported failure.'} {summary}"
             await self._set_status(s, task, status, summary)
+            if status == 'completed':
+                await self._evaluate_completed(s, task)
         except asyncio.CancelledError:
             if task['status'] not in TASK_TERMINAL and task['generation'] == s['generation']:
                 await self._fail_task(s, task, RuntimeError('Adapter cancelled unexpectedly.'))
@@ -444,8 +498,15 @@ class TaskLoop:
     async def _verify_labels(self, s, task, plan):
         labels = sorted({label for rule in plan['preconditions'] for label in rule['labels']})
         if labels and task['images'] and self._fresh(task['scene'] or {}):
-            await self._capture(s, task, 'localize_objects',
-                                {'evidence_id': task['images'][0]['evidence_id'], 'labels': labels})
+            evidence_id = (task['scene'] or {}).get('frame_id', task['images'][-1]['evidence_id'])
+            found = await self._capture(s, task, 'localize_objects',
+                                        {'evidence_id': evidence_id, 'labels': labels})
+            alternate = next((step['arguments'].get('fallback_view') for step in plan['steps']
+                              if step['operation'] == 'observe' and step['arguments'].get('fallback_view')), None)
+            if not set(labels).issubset(found.get('verified_labels') or []) and alternate:
+                frame = await self._capture(s, task, 'inspect_scene', {'view': alternate})
+                await self._capture(s, task, 'localize_objects',
+                                    {'evidence_id': frame['images'][-1]['evidence_id'], 'labels': labels})
 
     async def _execution_feedback(self, s, task, request, receipt, failure, *, is_final=False):
         if failure:

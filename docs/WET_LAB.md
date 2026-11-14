@@ -1,5 +1,7 @@
 # Wet-lab bring-up and training
 
+> **Application boundary:** the student app is pH-only and currently mock-only. This runbook retains supervised hardware procedures and historical baseline evidence; none of these commands is dispatched by the student app. Normal successful return to the taught HOME may be automatic. Replenishing materials and recovery after faults are separate readiness checks.
+
 Start with one fixed-fixture water pour. Reuse the same robot calibration, leader/follower link, and saved-pose executor that moved the mandarin. The only geometry to teach is the cup, receiver, and clear travel path on the actual bench. Use the planned fixed webcam views for evidence: one wide view of the arm and fixtures, one close view of the stream and receiver. Camera calibration can follow after the first pour.
 
 ## Minimum working demo

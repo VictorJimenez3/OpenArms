@@ -1,10 +1,10 @@
 # OpenArms
 
-A HackPrinceton project for accessible, student-directed lab work. The [student lab runbook](docs/LAB_RUNBOOK.md) is the primary setup: continuous Gemini Live voice, text controls, experiment lessons, confirmed mock actions, quizzes, and a persistent notebook. Start it with `.venv/bin/python -m agentic.openarms_lab`, then open <http://127.0.0.1:8000>.
+A conversational, camera-aware lab assistant that learns reusable skills. **Red-cabbage indicator pH is the demonstration scenario.** Choose vinegar, mild baking-soda solution, or water; predict, review and confirm a trial; examine clearly labeled evidence; then explain the result.
 
-The [mandarin phone demo](research/joseph/mandarin-transfer-handoff.md) documents the older SwiftUI/Whisper path. Physical bench work and its separate operator approval remain in the [wet-lab guide](docs/WET_LAB.md). Simulation is deferred.
+The [student app](docs/LAB_RUNBOOK.md) uses a shared Mac/iPhone session, Gemini Live voice, text controls, and a persistent notebook. This release runs **mock trials only**; reference colors are MODEL-PREDICTED, not physical measurements. Hardware execution is disabled. The [full delivery contract](docs/FULL_SYSTEM_DELIVERY.md) requires background expert planning, perception, execution feedback to both agents, skill registration and measured improvement. Current local components are not yet a completed architecture. The [session contract](docs/INTERFACES.md) records compatible transport repairs.
 
-**Physical result:** On November 14 the SO-101 picked up a mandarin from C and placed it at B on the red card. The [run evidence, actual poses, logs and camera frames](research/joseph/mandarin-transfer-2026-11-14/README.md) document the successful supervised, camera-assisted transfer using local `bench-a.json` checkpoints and staged corrections. Phone-to-physical integration and the packaged replay have separate verification status.
+Mandarin transfer is historical hardware evidence, not a student experiment. A supervised C→B transfer succeeded once; its [poses, logs and camera evidence](research/joseph/mandarin-transfer-2026-11-14/README.md) remain preserved. Actual pH bench qualification is separate in the [wet-lab guide](docs/WET_LAB.md).
 
 ## Where to start
 

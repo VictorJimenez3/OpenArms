@@ -1,63 +1,61 @@
-# Demo interfaces
+# Shared conversational lab session contract
 
-## Canonical student application
+> **Architecture correction:** [FULL_SYSTEM_DELIVERY.md](FULL_SYSTEM_DELIVERY.md) is the authoritative R1–R6 responsibility map, domain contract and acceptance checklist. The transport details below are the compatible implementation seam, not the complete product. pH is the demonstration scenario; background expert planning, image/perception tools, two-agent feedback, reusable candidates and evaluated improvement are required. Physical actuation alone is excluded.
 
-The primary app is `agentic/openarms_lab/` and `ui/lab/`; see the [runbook](LAB_RUNBOOK.md). Browser REST mutations and `/api/sessions/{sid}/events` share one `Lab` lifecycle with `/api/sessions/{sid}/live`. Gemini audio streams continuously after one microphone gesture. Live tools select experiments, record predictions, propose/correct actions, cancel, prepare the next MOCK trial, answer quizzes, read state/instructions, and request STOP. No tool supplies motor targets.
+The student app has one experiment: qualitative red-cabbage indicator pH. Browser and SwiftUI use the same Python service, notebook, trial rules and server-owned Gemini Live connection. The current product runs mock trials; physical dispatch is disabled. Historical mandarin and dilution demonstrations are research evidence, not selectable experiments.
 
-Concrete cross-area example: select `buoyancy_trial`, record a prediction, then `request_action {"text":"test sample at A in B"}` produces a pending `request_id`, `transfer.v1`, and `{"source":"A","destination":"B","object":"sample"}`. Nothing executes until UI confirmation or a fresh explicit input “confirm” bound to that exact current request. `student_confirm {"request_id":"<current-id>"}` is independently gated by the server's input transcription; a model cannot manufacture consent fields. Correction cancels the old proposal and creates a new ID. Replays, expiry, disconnect and STOP revoke old requests. Selection, prediction and preparation never imply confirmation.
+## Trial authority
 
-The current-checkout `TransferRunnerAdapter` maps `request_id` to legacy `plan_id` and obtains separate `authorize(plan)` approval before execution. It serializes physical ownership, rejects mismatched results, and preserves cancellation/STOP without blind motion retries. Physical setup assumptions and completion without independent placement evidence remain UNKNOWN. Mock execution uses the existing agentic catalog/validator and no hardware import. Dilution binds existing `add_sample` primitives only in mock mode; the physical bench receiver C differs from the lesson receiver B and is not connected here.
+The student chooses vinegar, mild baking-soda solution, or the water control and records a prediction. The server freezes one exact proposal, binding session, trial, request, proposal version, immutable skill version, condition, source fixture A and receiver C. Only a fresh confirmation after presentation consumes that proposal. Changing the condition or prediction revokes the previous proposal. Cancellation, STOP, reconnect, expiry and reuse cannot grant approval.
 
-Notebook events correlate requests, state, transcripts, model usage, controller receipts, observations and quiz feedback. Observations retain `MOCK`, `MODEL-PREDICTED`, `REAL`, `SIMULATED` or `UNKNOWN` provenance. A generated transfer→observe skill remains a candidate until independent mock testing and explicit promotion. Physical approval is a separate scope. Future simulators implement the backend Protocol without changing this lifecycle.
+The mock controller returns to HOME automatically on successful completion. Controller completion and the separately labeled reference observation are distinct records. A reference color is MODEL-PREDICTED, never measured pH or physical camera evidence. Missing evidence remains UNKNOWN. Reflection and preparation of another trial preserve the notebook. No operator acknowledgment is needed for mock preparation. Future physical readiness must distinguish automatic normal return, replenished materials, and recovery after faults.
 
-## Legacy phone demo
+## HTTP
 
-The current demo transfers one mandarin from named station A to B. Simulation is deferred. The phone displays the interpreted transfer before confirmation; this is a text proposal, not a motion simulation.
+`POST /api/sessions` returns a snapshot and an access token. A remote deployment requires `OPENARMS_DEMO_TOKEN` as the creation bearer credential. All subsequent session HTTP requests use `Authorization: Bearer <access_token>`. Tokens do not belong in URLs, logs or screenshots. Native clients and browsers use the same grant. Saved history reads must not initialize hardware.
 
-## Voice and planning
+`GET /api/sessions/{sid}` restores a snapshot. POST endpoints under that session:
 
-The SwiftUI phone sends PCM audio to the Mac WebSocket relay. Local Whisper produces a transcript. Headless AGY (`gemini-3.8-flash-high`) interprets intent and invokes the local MCP tool `submit_plan` with:
+| Endpoint | JSON body |
+| --- | --- |
+| `condition` | `condition_id`: `vinegar`, `baking_soda`, or `water` |
+| `prediction` | `text` |
+| `request` | `text`, optional `client_request_id` |
+| `present` | `request_id`, `proposal_version`, `channel: text` |
+| `confirm` | `request_id`, `proposal_version` |
+| `cancel` | optional `request_id` |
+| `reflection` | `text` |
+| `prepare`, `stop`, `disconnect` | empty object |
 
-```json
-{"object":"mandarin","source":"A","destination":"B"}
-```
+Snapshots contain session ID, monotonically increasing revision, generation, trial, condition choices, prediction, pending proposal, requests, observations, conversation and notebook. Clients reject older revisions. Session and evidence IDs are distinct; the backend/provenance is explicit throughout.
 
-Natural phrasing and synonyms are interpreted by the agent. There is no sentence-matching gate for movement commands. The tool validates the fixed action and returns:
+## Streaming connection
 
-```json
-{"plan_id":"plan-<uuid>","object":"mandarin","source":"A","destination":"B","status":"preview_ready","preview":"placeholder","coordinates":null,"execution":"mock_only"}
-```
+Both clients connect to `/api/sessions/{sid}/live`. The first frame is `hello` with protocol version 1, a fresh connection ID and the session access token. Only one connection owns session cleanup. A replacement revokes previous approval and prevents the old socket's cleanup from modifying the new connection.
 
-`execution: mock_only` describes the planning tool's capability: it never moves hardware. A separately selected runner owns execution. Each revised instruction clears the pending proposal and requires a new plan ID and confirmation. Exact `confirm` / `I confirm` consumes the current session's pending plan once. `confirm <plan_id>` must match; an old ID never executes the new plan. `cancel` and `stop` bypass the model. Reconnect creates fresh state.
+The socket remains useful for state and text when voice is off or the provider is unavailable. Client `ping` frames every five seconds receive matching `pong` sequence numbers. A 15-second missing heartbeat revokes pending work and ends the connection. Reconnect restores history, drops queued audio, and never replays commands or consent.
 
-## Robotics runner handoff
+| Client frames | Purpose |
+| --- | --- |
+| `start_voice`, `stop_voice` | Start/stop provider speech while keeping the application session |
+| `audio` | Base64 PCM16 little-endian, mono 16 kHz, at most 200 ms, current `epoch`/generation |
+| `mute` | Explicit microphone state; discard partial input |
+| `text` | Student message and optional idempotency ID |
+| `present` | Acknowledgment after the exact proposal is displayed |
+| `played` | Reply ID acknowledged after actual speaker playback completes |
+| `interrupt` | Cancel playback of a particular reply |
+| `stop`, `close` | Immediate direct control, independent of provider reasoning |
 
-Implement `TransferRunner` from [runner.py](../research/joseph/iphone-voice-bridge/relay/runner.py). Expose a zero-argument factory in your robotics module. Start the demo with `--runner your_module:create_runner`; Python must be able to import that module. Without this flag, every execution is mocked.
+Server frames include `hello`, `state`, `pong`, `status`, `transcript`, `reply_start`, `audio`, `reply_end`, `interrupted`, and `error`. Transcript fragments share a turn ID and a final marker. Reply audio is PCM16 mono 24 kHz with a reply ID. `reply_start` may bind a proposal ID/version. Model generation finishing is not proof of playback: only matching completed playback of an exact canonical preview may acknowledge audio presentation. Interrupted or stale replies cannot do so.
 
-- Declare `mode = "physical"`.
-- `async authorize(plan) -> bool` obtains bench operator approval for this exact plan ID before motion. False means zero calls to `execute`.
-- `async execute(plan) -> ExecutionResult` performs the taught A-to-B motion once, checks reachability/current station state locally, and returns the same plan ID, `mode="physical"`, `status` (`completed`, `failed`, `stopped`, or `unknown`), `operator_authorized=True`, and observed `placement` or `None`.
-- `async stop()` is idempotent and promptly stops/holds safely. It is called on cancellation, disconnect, shutdown, and execution failure. The runner must propagate cancellation and must not leave an untracked background motion running.
+Microphone permission, provider readiness, and active speaker playback are separate states. Muted speech cannot become consent. Spoken STOP depends on speech recognition; the direct STOP control bypasses Gemini. A lost provider connection does not remove text controls.
 
-The relay does not retry motion. A completion report is not proof of placement; return `placement=None` unless independently observed. Keep serial configuration, motor limits, taught poses, and operator approval in the robotics module. The LLM never gets joint targets or motor access. The canonical student application now supplies a current-checkout adapter; this historical relay description does not establish bench verification.
+## Voice and intent
 
-Voice is half-duplex: speech is not captured while processing or playing a reply. Spoken `stop` is therefore not a hard real-time emergency stop. The physical operator must retain the bench stop; phone End/disconnect cancels the task and calls the runner's stop hook.
+Gemini may interpret a condition, record a prediction, explain reference evidence and guide reflection. It never supplies motor targets, operator authorization or trusted consent. The server independently handles completed confirmation/cancel/STOP input; a delayed model tool call cannot execute again. Updates reach Gemini through correlated tool outcomes, not fabricated student turns.
 
-## Acceptance checks
+The positive integration fixture is: vinegar → prediction pink → exact proposal → presentation → new explicit confirmation → one mock execution → automatic HOME → separately labeled pink/acidic reference → reflection → fresh trial. The correction fixture changes water to baking soda, rejects the old proposal, disconnects before confirming the replacement, restores the notebook and requires a fresh proposal.
 
-The [rehearsal](../research/joseph/mandarin-verification/voice_rehearsal.py) covers generated speech through actual Whisper, AGY MCP invocation, proposal, confirm or cancel, and mock result. Tests also cover changed destinations, stale IDs, duplicate confirmation, subprocess cleanup, operator rejection, and wrong result identity. Physical success remains unverified until the real runner is connected and bench-tested.
+## Evidence and release
 
-## Local water bench
-
-The supervised CLI uses the existing agentic plan and shares the physical pose executor. With source fixture A and receiver C fixed, the minimum request is:
-
-```json
-{
-  "plan_id": "bench-pour",
-  "steps": [
-    {"action": "add_sample", "args": {"source": "A", "into": "C", "portions": 1}}
-  ]
-}
-```
-
-The catalog expands this to `pick → pour → return_cup → home`. The local operator approves the start and confirms visible lift before the pour. Receipts log the controller's result and the separate operator observation. The phone relay still dispatches mandarin transfers. [Bench setup and demo tiers](WET_LAB.md)
+Automated checks cover state, permissions, stale/negated/duplicate confirmation, client reconnect, microphone/playback lifecycle and grounded reference outcomes. Actual Mac and unplugged iPhone rehearsals must separately establish audible speech and real-device recovery. Neither browser emulation nor generated microphone input proves that someone heard the physical device.

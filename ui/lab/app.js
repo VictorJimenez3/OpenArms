@@ -313,15 +313,18 @@ function renderScene() {
 
 function renderSkills() {
   const skills = snapshot.active_skills || snapshot.skills?.filter?.(skill => skill.status === 'active' || skill.lifecycle === 'active') || [];
-  const labels = skills.map(skill => {
-    const name = skill.name || skill.label || skill.skill_id;
-    const version = skill.version || skill.skill_version;
-    return name && (version ? `${name} · ${version}` : name);
-  }).filter(Boolean);
-  $('#active-skills').hidden = !labels.length;
-  $('#skill-labels').replaceChildren(...labels.map(label => {
+  $('#active-skills').hidden = !skills.length;
+  $('#skill-labels').replaceChildren(...skills.map(skill => {
     const item = document.createElement('li');
-    item.textContent = label;
+    item.textContent = skill.name || skill.label || skill.skill_id;
+    const details = document.createElement('details');
+    const summary = document.createElement('summary'); summary.textContent = 'Skill details';
+    const version = document.createElement('p'); version.textContent = `Version: ${skill.version || skill.skill_version}`;
+    details.append(summary, version);
+    for (const example of skill.retrieval_examples || []) {
+      const text = document.createElement('p'); text.textContent = `Try: ${example}`; details.append(text);
+    }
+    item.append(details);
     return item;
   }));
 }

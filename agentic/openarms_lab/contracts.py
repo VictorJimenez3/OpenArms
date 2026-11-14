@@ -120,6 +120,10 @@ class InspectArguments(FrozenModel):
     view: SceneView = 'primary'
 
 
+class ObserveArguments(InspectArguments):
+    fallback_view: SceneView | None = None
+
+
 class LocalizeArguments(FrozenModel):
     evidence_id: str = Field(min_length=1, max_length=128)
     labels: list[str] = Field(min_length=1, max_length=12)

@@ -19,7 +19,12 @@ private enum SessionVault {
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if status == errSecItemNotFound { return nil }
-        guard status == errSecSuccess, let data = item as? Data else { throw VoiceError.message("Unlock this iPhone to restore your private lab session.") }
+        if status == errSecInteractionNotAllowed {
+            throw VoiceError.message("Unlock this iPhone to restore your private lab session.")
+        }
+        guard status == errSecSuccess, let data = item as? Data else {
+            throw VoiceError.message("Private session storage is unavailable (\\(status)). Reinstall a signed app build before connecting.")
+        }
         return try JSONDecoder().decode(SessionCredential.self, from: data)
     }
     static func save(_ credential: SessionCredential) throws {

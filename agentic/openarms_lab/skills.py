@@ -11,13 +11,13 @@ from pathlib import Path
 
 from .contracts import (EvaluationReceipt, InspectArguments, LocalizeArguments,
                         MOCK_OPERATIONS, MockCupArguments, MockPourArguments,
-                        MockSampleArguments, PlanDraft, SkillDefinition, Step)
+                        MockSampleArguments, ObserveArguments, PlanDraft, SkillDefinition, Step)
 
 PRIMITIVE_SCHEMAS = {
     'inspect_scene': InspectArguments, 'localize_objects': LocalizeArguments,
     'mock_prepared_sample': MockSampleArguments, 'mock_pick_up': MockCupArguments,
     'mock_put_down': MockCupArguments, 'mock_pour': MockPourArguments,
-    'observe': InspectArguments,
+    'observe': ObserveArguments,
 }
 TYPES = {'string': (str,), 'integer': (int,), 'number': (int, float), 'boolean': (bool,)}
 TOKEN = re.compile(r'\$([a-z][a-z0-9_]{0,63})\Z')
@@ -141,6 +141,11 @@ class SkillRegistry:
                 raise ValueError(f'Invalid parameter schema for {key}.')
         if any(len(example) > 300 for example in definition.retrieval_examples):
             raise ValueError('Retrieval examples must be at most 300 characters.')
+        if any(set(SLOT.findall(example)) != set(definition.parameter_schema) for example in definition.retrieval_examples):
+            raise ValueError('Every retrieval example must contain each declared {parameter}.')
+        used = set(re.findall(r'"\$([a-z][a-z0-9_]{0,63})"', json.dumps([s.arguments for s in definition.steps])))
+        if set(definition.parameter_schema) - used:
+            raise ValueError('Every declared parameter must be used as $parameter in step arguments.')
 
     def candidate(self, definition):
         version = compute_skill_hash(definition)
@@ -212,7 +217,8 @@ class SkillRegistry:
             'expected_state': expected_state,
             'outcome_checks': [check.model_dump(mode='json') for check in checks],
             'limitations': definition.limitations if definition else [],
-            'evidence_ids': list(dict.fromkeys(draft.evidence_ids + (definition.evidence_ids if definition else []))),
+            'evidence_ids': list(dict.fromkeys(draft.evidence_ids)),
+            'source_evidence_ids': list(definition.evidence_ids) if definition else [],
         }
 
     @staticmethod
@@ -220,7 +226,7 @@ class SkillRegistry:
         if step.operation not in PRIMITIVE_SCHEMAS:
             raise ValueError('Composition requires an enclosing skill definition.')
         args = PRIMITIVE_SCHEMAS[step.operation].model_validate(step.arguments)
-        return Step(operation=step.operation, arguments=args.model_dump(mode='json'))
+        return Step(operation=step.operation, arguments=args.model_dump(mode='json', exclude_none=True))
 
     def _expand(self, definition, bindings, preconditions, checks, *, depth):
         if depth > 2:
