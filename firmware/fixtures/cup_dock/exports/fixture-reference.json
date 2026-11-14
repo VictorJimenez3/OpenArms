@@ -1,78 +1,595 @@
 {
-  "design_id": "openarms-one-color-four-cups-v0.5-PROVISIONAL",
-  "platform_count": 1,
-  "cup_slot_count": 4,
-  "material_count": 1,
-  "applied_graphics": false,
+  "schema_version": 1,
+  "design_id": "openarms-two-vessel-fixture-v1",
   "units": "mm",
-  "frame": "whole platform; origin front-left underside; X right, Y rear, Z up",
-  "platform_dimensions_mm": [
-    200,
-    200,
-    9
-  ],
-  "base_thickness_mm": 3,
-  "guide_height_mm": 6,
-  "radial_clearance_mm": 0.8,
-  "slot_geometry": [
+  "frame": {
+    "origin": "front-left corner of fixture footprint at underside plane",
+    "x": "right",
+    "y": "rear",
+    "z": "up",
+    "handedness": "right"
+  },
+  "plate": {
+    "file": "two-vessel-base.stl",
+    "size_mm": [
+      170,
+      156,
+      8.5
+    ],
+    "deck_thickness_mm": 4,
+    "minimum_guide_wall_mm": 2.6,
+    "design_bed_mm": [
+      180,
+      180
+    ],
+    "reserved_bed_margin_mm": 4,
+    "cross_tie_width_mm": 20,
+    "pad_rib_width_mm": 15,
+    "mount_bar_width_mm": 14
+  },
+  "vessel_source": {
+    "directory_name": "measured_2026_11_14",
+    "revision": 2,
+    "status": "photo-derived reconstruction with unmeasured interior assumptions"
+  },
+  "docks": [
     {
-      "slot": "A",
-      "cup_bottom_top_height_mm": [
-        38,
-        48,
-        51
-      ],
+      "dock_id": "A",
+      "role": "donor",
       "seat_center_mm": [
-        55,
-        78,
-        3
-      ]
+        42,
+        76,
+        4
+      ],
+      "seat_plane_normal": [
+        0,
+        0,
+        1
+      ],
+      "seat_radius_mm": 22.0738,
+      "guide_height_mm": 3.5,
+      "guide_outer_radius_mm": 19.7738,
+      "guide_inner_radius_by_height_mm": [
+        [
+          0,
+          16.15
+        ],
+        [
+          1,
+          16.15
+        ],
+        [
+          2.1,
+          16.15
+        ],
+        [
+          3,
+          16.7929
+        ],
+        [
+          3.5,
+          17.1738
+        ]
+      ],
+      "guide_opening_center_deg_from_x": -90,
+      "guide_opening_width_deg": 110,
+      "nominal_radial_clearance_mm": 0.65,
+      "entry_chamfer_height_mm": 1.4,
+      "entry_chamfer_relief_mm": 1,
+      "label_center_mm": [
+        42,
+        47.5,
+        4
+      ],
+      "vessel": {
+        "asset": "donor_A.stl",
+        "asset_units": "m",
+        "outside_height_mm": 51,
+        "rim_od_mm": 41,
+        "opening_id_mm": 34,
+        "base_envelope_od_mm": 31,
+        "outer_profile_height_radius_mm": [
+          [
+            0,
+            14.5
+          ],
+          [
+            1,
+            15.2
+          ],
+          [
+            3,
+            15.5
+          ],
+          [
+            45,
+            17.5
+          ],
+          [
+            48.5,
+            17.5
+          ],
+          [
+            50,
+            20.5
+          ],
+          [
+            51,
+            20.5
+          ]
+        ],
+        "spout_extension_mm": 4,
+        "dimensions_status": {
+          "height": {
+            "value_mm": 51,
+            "plausible_range_mm": [
+              47,
+              56
+            ],
+            "evidence": [
+              "IMG_9257",
+              "IMG_9265"
+            ],
+            "method": "image-derived",
+            "note": "Ruler-edge scales disagree; side view favoured over handheld overhead view."
+          },
+          "rim_diameter_excluding_spout": {
+            "value_mm": 41,
+            "plausible_range_mm": [
+              38,
+              44
+            ],
+            "evidence": [
+              "IMG_9259",
+              "IMG_9260"
+            ],
+            "method": "image-derived",
+            "note": "9259 apparent diameter 41.8 mm; depth-plane correction unresolved."
+          },
+          "body_diameter_below_lip": {
+            "value_mm": 35,
+            "plausible_range_mm": [
+              32,
+              38
+            ],
+            "evidence": [
+              "IMG_9257",
+              "IMG_9265"
+            ],
+            "method": "image-derived",
+            "note": ""
+          },
+          "base_diameter": {
+            "value_mm": 31,
+            "plausible_range_mm": [
+              28,
+              34
+            ],
+            "evidence": [
+              "IMG_9259",
+              "IMG_9265"
+            ],
+            "method": "image-derived",
+            "note": ""
+          },
+          "opening_diameter": {
+            "value_mm": 34,
+            "plausible_range_mm": [
+              31,
+              37
+            ],
+            "evidence": [
+              "IMG_9259",
+              "IMG_9260"
+            ],
+            "method": "image-derived",
+            "note": "Transparent overlapping edges; low confidence."
+          },
+          "spout_extension_beyond_circular_rim": {
+            "value_mm": 4,
+            "plausible_range_mm": [
+              2,
+              6
+            ],
+            "evidence": [
+              "IMG_9259",
+              "IMG_9260"
+            ],
+            "method": "image-derived",
+            "note": "Approximate tip projection; local rim crease simplified."
+          },
+          "interior_floor_above_support": {
+            "value_mm": 2,
+            "plausible_range_mm": [
+              1,
+              4
+            ],
+            "evidence": [],
+            "method": "assumed",
+            "note": "Unmeasured stand-off including base structure; not claimed material thickness."
+          },
+          "interior_bottom_diameter": {
+            "value_mm": 28,
+            "plausible_range_mm": [
+              25,
+              31
+            ],
+            "evidence": [],
+            "method": "assumed",
+            "note": "Hidden internal radius; conditional cavity model."
+          },
+          "straight_wall_thickness": {
+            "value_mm": 0.8,
+            "plausible_range_mm": [
+              0.4,
+              1.5
+            ],
+            "evidence": [],
+            "method": "assumed",
+            "note": "Nominal simplification; lip is thicker and flared."
+          },
+          "graduation_25ml_above_exterior_base": {
+            "value_mm": 34,
+            "plausible_range_mm": [
+              29,
+              39
+            ],
+            "evidence": [
+              "IMG_9257",
+              "IMG_9258",
+              "IMG_9265"
+            ],
+            "method": "image-derived",
+            "note": "Outer scale line; subtract assumed floor datum for interior height."
+          },
+          "grip_band_z": {
+            "range_mm": [
+              10,
+              40
+            ],
+            "method": "image-derived candidate only",
+            "evidence": [
+              "IMG_9257",
+              "IMG_9265"
+            ],
+            "note": "Smooth body region; not a qualified grasp."
+          }
+        },
+        "candidate_grip_height_range_mm": [
+          10,
+          40
+        ],
+        "spout_azimuth_deg_from_x": 3.09406,
+        "asset_yaw_deg": -86.90594,
+        "orientation_method": "manual alignment with engraved arrow toward C"
+      }
     },
     {
-      "slot": "B",
-      "cup_bottom_top_height_mm": [
-        38,
-        48,
-        51
-      ],
+      "dock_id": "C",
+      "role": "receiver",
       "seat_center_mm": [
-        145,
-        78,
-        3
-      ]
-    },
-    {
-      "slot": "C",
-      "cup_bottom_top_height_mm": [
-        38,
-        48,
-        51
+        116,
+        80,
+        4
       ],
-      "seat_center_mm": [
-        55,
-        160,
-        3
-      ]
-    },
-    {
-      "slot": "D",
-      "cup_bottom_top_height_mm": [
-        38,
-        48,
-        51
+      "seat_plane_normal": [
+        0,
+        0,
+        1
       ],
-      "seat_center_mm": [
-        145,
-        160,
-        3
-      ]
+      "seat_radius_mm": 37.6827,
+      "guide_height_mm": 4.5,
+      "guide_outer_radius_mm": 35.3827,
+      "guide_inner_radius_by_height_mm": [
+        [
+          0,
+          30.25
+        ],
+        [
+          1.2,
+          30.25
+        ],
+        [
+          3,
+          31.25
+        ],
+        [
+          4.5,
+          32.7827
+        ]
+      ],
+      "guide_opening_center_deg_from_x": -90,
+      "guide_opening_width_deg": 60,
+      "nominal_radial_clearance_mm": 0.75,
+      "entry_chamfer_height_mm": 1.5,
+      "entry_chamfer_relief_mm": 1.1,
+      "label_center_mm": [
+        116,
+        33,
+        4
+      ],
+      "vessel": {
+        "asset": "receiver_C.stl",
+        "asset_units": "m",
+        "outside_height_mm": 32,
+        "rim_od_mm": 78,
+        "opening_id_mm": 75,
+        "base_envelope_od_mm": 59,
+        "outer_profile_height_radius_mm": [
+          [
+            0,
+            29.5
+          ],
+          [
+            1.2,
+            29.5
+          ],
+          [
+            3,
+            30.5
+          ],
+          [
+            29,
+            38
+          ],
+          [
+            30.5,
+            39
+          ],
+          [
+            32,
+            39
+          ]
+        ],
+        "spout_extension_mm": 0,
+        "dimensions_status": {
+          "height": {
+            "value_mm": 32,
+            "plausible_range_mm": [
+              30,
+              35
+            ],
+            "evidence": [
+              "IMG_9270",
+              "IMG_9271"
+            ],
+            "method": "image-derived",
+            "note": "Replaces earlier oblique36mm estimate. Upright/inverted axial plane-centre readings about33 and31mm; same-camera systematic error retained."
+          },
+          "rim_diameter": {
+            "value_mm": 78,
+            "plausible_range_mm": [
+              75,
+              82
+            ],
+            "evidence": [
+              "IMG_9269",
+              "IMG_9261",
+              "IMG_9263"
+            ],
+            "method": "image-derived",
+            "note": "9269 near-central ruler chord77.2mm supports about78mm circularOD. Earlier apparent76/83mm views have parallax; not independently averaged."
+          },
+          "opening_diameter": {
+            "value_mm": 75,
+            "plausible_range_mm": [
+              70,
+              79
+            ],
+            "evidence": [
+              "IMG_9261"
+            ],
+            "method": "image-derived",
+            "note": "Opening edge ambiguous; low confidence."
+          },
+          "base_diameter": {
+            "value_mm": 59,
+            "plausible_range_mm": [
+              54,
+              66
+            ],
+            "evidence": [
+              "IMG_9261",
+              "IMG_9264"
+            ],
+            "method": "image-derived",
+            "note": "Base circle partly seen through tapered walls; low confidence."
+          },
+          "interior_floor_above_support": {
+            "value_mm": 1.2,
+            "plausible_range_mm": [
+              0.5,
+              2.5
+            ],
+            "evidence": [],
+            "method": "assumed",
+            "note": "Includes unmeasured bottom stand-off."
+          },
+          "interior_bottom_diameter": {
+            "value_mm": 56,
+            "plausible_range_mm": [
+              51,
+              63
+            ],
+            "evidence": [],
+            "method": "assumed",
+            "note": ""
+          },
+          "straight_wall_thickness": {
+            "value_mm": 0.7,
+            "plausible_range_mm": [
+              0.3,
+              1.2
+            ],
+            "evidence": [],
+            "method": "assumed",
+            "note": ""
+          }
+        }
+      }
     }
   ],
-  "cup_dimensions_status": "ALL provisional; use actual store-bought cups; bottom diameter unmeasured",
-  "references": "Recessed slot letters and 100 mm ruler, same printed material as platform",
+  "mounting": {
+    "hole_diameter_mm": 3.6,
+    "through_hole_centers_at_underside_mm": [
+      [
+        79,
+        48,
+        0
+      ],
+      [
+        79,
+        111,
+        0
+      ]
+    ]
+  },
+  "fiducials": {
+    "dictionary": "DICT_4X4_50",
+    "black_edge_mm": 27,
+    "white_quiet_zone_per_edge_mm": 4.5,
+    "tile_size_mm": 36.0,
+    "pad_size_mm": 40,
+    "pocket_size_mm": 37,
+    "nominal_pad_plane_z_mm": 3.6,
+    "artwork": "aruco-markers.pdf",
+    "top_edge_points_toward": "+Y",
+    "corner_order": [
+      "top_left",
+      "top_right",
+      "bottom_right",
+      "bottom_left"
+    ],
+    "corners_status": "CAD nominal at bare pocket floor; measure after attaching labels",
+    "markers": [
+      {
+        "id": 20,
+        "pad_center_mm": [
+          20,
+          20,
+          3.6
+        ],
+        "black_corners_nominal_mm": [
+          [
+            6.5,
+            33.5,
+            3.6
+          ],
+          [
+            33.5,
+            33.5,
+            3.6
+          ],
+          [
+            33.5,
+            6.5,
+            3.6
+          ],
+          [
+            6.5,
+            6.5,
+            3.6
+          ]
+        ]
+      },
+      {
+        "id": 21,
+        "pad_center_mm": [
+          150,
+          20,
+          3.6
+        ],
+        "black_corners_nominal_mm": [
+          [
+            136.5,
+            33.5,
+            3.6
+          ],
+          [
+            163.5,
+            33.5,
+            3.6
+          ],
+          [
+            163.5,
+            6.5,
+            3.6
+          ],
+          [
+            136.5,
+            6.5,
+            3.6
+          ]
+        ]
+      },
+      {
+        "id": 22,
+        "pad_center_mm": [
+          20,
+          136,
+          3.6
+        ],
+        "black_corners_nominal_mm": [
+          [
+            6.5,
+            149.5,
+            3.6
+          ],
+          [
+            33.5,
+            149.5,
+            3.6
+          ],
+          [
+            33.5,
+            122.5,
+            3.6
+          ],
+          [
+            6.5,
+            122.5,
+            3.6
+          ]
+        ]
+      },
+      {
+        "id": 23,
+        "pad_center_mm": [
+          150,
+          136,
+          3.6
+        ],
+        "black_corners_nominal_mm": [
+          [
+            136.5,
+            149.5,
+            3.6
+          ],
+          [
+            163.5,
+            149.5,
+            3.6
+          ],
+          [
+            163.5,
+            122.5,
+            3.6
+          ],
+          [
+            136.5,
+            122.5,
+            3.6
+          ]
+        ]
+      }
+    ]
+  },
+  "provisional": true,
+  "physical_fit_verified": false,
+  "camera_detection_verified": false,
+  "robot_clearance_verified": false,
   "physical_fixture_id": null,
   "calibration_id": null,
-  "robot_from_platform_transform": null,
-  "mode": "taught_fixture_only",
-  "warning": "CAD coordinates are not robot coordinates. Recessed ruler marks do not independently qualify camera localization or depth."
+  "robot_from_fixture_transform": null,
+  "mode": "taught_fixture_only"
 }
