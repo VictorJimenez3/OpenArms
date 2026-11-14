@@ -21,6 +21,9 @@ The current `demo-speed-v2` product correction also applies: D1 reliable direct 
 November 14 provider compatibility correction: Joseph requested shared Codex/Claude agents and hot model selection. [Expert profiles](EXPERT_MODELS.md) own configuration and qualification details; a task retains its selection through confirmation/checkpoints. This does not alter the shared tools, registry, consent or supported hardware-disabled execution.
 
 ## Responsibility map
+
+The [root ownership rules](../AGENTS.md#ownership) name the current area owners. The roles below describe how components connect. Victor handles integration into `main` and coordinates shared changes with the affected owners.
+
 | Accountable owner / isolated lane | Requirements and owned connection | Dependencies | Required evidence / remaining gap |
 | --- | --- | --- | --- |
 | Integrator, shared service and contracts | R1/R4 and architecture acceptance; HTTP/WS authentication, session lease, voice bridge, asynchronous task/event delivery to both agents, shared docs and full-loop test | Runtime task API; perception/evaluation artifacts; both clients | Real provider conversation remains usable during expert work; progress and delayed observations are spoken/displayed; no fake student turns; final cross-lane evidence. Shared session repairs are integrated; replacement voice remains open. |
