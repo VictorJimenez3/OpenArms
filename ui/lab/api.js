@@ -34,4 +34,22 @@ export class LabApiClient {
   }
   snapshot() { return this.request(`/api/sessions/${encodeURIComponent(this.sessionId)}`); }
   action(name, body = {}) { return this.request(`/api/sessions/${encodeURIComponent(this.sessionId)}/${name}`, body); }
+  async evidenceImage(frame, signal) {
+    const { session_id: sessionId, access_token: token } = this.#credentials || {};
+    if (!sessionId || !token || typeof frame.evidence_id !== 'string' || !frame.evidence_id ||
+        typeof frame.artifact_url !== 'string') throw new Error('Image unavailable');
+    const url = new URL(frame.artifact_url, location.href);
+    const path = `/api/sessions/${encodeURIComponent(sessionId)}/evidence/${encodeURIComponent(frame.evidence_id)}`;
+    if (url.origin !== location.origin || !/^https?:$/.test(url.protocol) || url.username || url.password ||
+        url.pathname !== path || url.search || url.hash) throw new Error('Image unavailable');
+
+    const response = await fetch(path, {
+      headers: { Accept: 'image/*', Authorization: `Bearer ${token}` },
+      signal: AbortSignal.any([signal, AbortSignal.timeout(12000)]),
+      redirect: 'error', cache: 'no-store', credentials: 'same-origin',
+    });
+    const type = response.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase();
+    if (!response.ok || !/^image\/(png|jpeg|webp|gif|avif|bmp)$/.test(type)) throw new Error('Image unavailable');
+    return response.blob();
+  }
 }

@@ -10,6 +10,7 @@ let connection = 'connecting';
 let pendingKey = '';
 let acknowledgedKey = '';
 let proposalGeneration = 0;
+let sceneView;
 const attemptedPresentations = new Set();
 const invalidatedProposals = new Set();
 const liveTurns = new Map();
@@ -25,6 +26,7 @@ const currentObservation = () => (snapshot?.observations || []).filter(observati
 function notify(message) { text('#notice-text', message); $('#notice').hidden = false; }
 function fail(error) { notify(error.message || 'Something interrupted the request. Check your notebook before trying again.'); }
 function credentialsNeeded() {
+  releaseScene();
   $('#pairing').hidden = false;
   $('#pairing-code').focus();
   text('#connection-label', 'Pairing required');
@@ -36,6 +38,7 @@ async function boot(pairingCode) {
     $('#pairing-code').value = '';
     client?.close();
     if (snapshot?.session_id !== state.session_id) {
+      releaseScene();
       snapshot = undefined;
       liveTurns.clear();
       attemptedPresentations.clear();
@@ -61,7 +64,10 @@ async function act(action, body = {}, onSuccess) {
   busy = true; controls();
   try {
     const result = await api.action(action, body);
-    client?.acceptState(result);
+    if (!client?.acceptState(result) && action === 'request' && result?.task_id) {
+      // An enqueue receipt can precede its first state update.
+      void resync();
+    }
     onSuccess?.();
     $('#notice').hidden = true;
     return true;
@@ -82,7 +88,7 @@ function controls() {
   const ready = Boolean(snapshot) && !busy;
   const complete = Boolean(currentObservation());
   $('#conditions').disabled = !ready || complete;
-  $('#prediction').disabled = !ready || !snapshot.trial?.condition_id || complete;
+  $('#prediction').disabled = !ready || complete;
   $('#save-prediction').disabled = $('#prediction').disabled;
   $('#message').disabled = !ready;
   $('#send').disabled = !ready;
@@ -99,20 +105,14 @@ function expired(proposal) {
 }
 function render() {
   const trial = snapshot.trial || {};
-  const complete = Boolean(currentObservation());
-  const priorTrials = new Set((snapshot.observations || []).map(o => o.trial_id));
-  text('#trial-number', `YOUR ${priorTrials.size && !complete ? 'NEXT' : priorTrials.size > 1 ? 'CURRENT' : 'FIRST'} TRIAL`);
-  text('#trial-title', complete ? 'Make sense of the color.' : snapshot.pending ? 'Your idea. Your decision.' : 'Follow your curiosity.');
   for (const element of document.querySelectorAll('[data-condition]')) {
     const chosen = element.dataset.condition === trial.condition_id;
     element.setAttribute('aria-pressed', String(chosen));
     element.querySelector('.choice-mark').textContent = chosen ? '✓' : '+';
   }
-  for (const element of document.querySelectorAll('.steps li')) element.removeAttribute('aria-current');
-  $(complete ? '#step-reflect' : trial.condition_id ? '#step-predict' : '#step-choose').setAttribute('aria-current', 'step');
   // Keep a student's in-progress correction intact while state updates arrive.
   if (document.activeElement !== $('#prediction') && !$('#prediction').dataset.dirty) $('#prediction').value = snapshot.prediction || '';
-  text('#prediction-saved', snapshot.prediction ? 'Prediction saved in your notebook.' : trial.condition_id ? 'Your prediction comes before the result.' : 'Choose a sample to begin.');
+  text('#prediction-saved', snapshot.prediction ? 'Prediction saved in your notebook.' : '');
   text('#save-prediction', snapshot.prediction ? 'Update prediction ↗' : 'Save prediction ↗');
   renderMessages();
   renderProposal();
@@ -140,12 +140,6 @@ function renderMessages() {
   const log = $('#messages');
   const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 70;
   const fragment = document.createDocumentFragment();
-  if (!turns.size) {
-    const welcome = document.createElement('div'); welcome.className = 'welcome';
-    const mark = document.createElement('span'); mark.className = 'companion-mark'; mark.textContent = '✳'; mark.setAttribute('aria-hidden','true');
-    const paragraph = document.createElement('p'); paragraph.textContent = 'Start with a sample and a prediction. We’ll review the trial together before anything runs.';
-    welcome.append(mark, paragraph); fragment.append(welcome);
-  }
   for (const [key, turn] of turns) {
     const element = document.createElement('article'); element.className = `message ${turn.role}${turn.final === false ? ' draft' : ''}`; element.dataset.turn = key;
     const speaker = document.createElement('span'); speaker.className = 'speaker'; speaker.textContent = turn.role === 'user' ? 'You' : 'OpenArms';
@@ -180,9 +174,10 @@ function renderProposal() {
     pendingKey = key; acknowledgedKey = ''; proposalGeneration++;
   }
   $('#proposal').hidden = !proposal;
+  $('#jump-to-proposal').hidden = !proposal;
   if (!proposal) return;
   text('#proposal-summary', proposal.summary);
-  text('#proposal-status', expired(proposal) ? 'This proposal has expired. Ask for a fresh trial.' : invalidatedProposals.has(key) ? 'Connection changed. Ask for a fresh proposal before confirming.' : acknowledgedKey === key ? 'Reviewed on screen. Ready for your decision.' : 'Displaying the exact proposal before confirmation…');
+  text('#proposal-status', expired(proposal) ? 'This proposal has expired. Send a new request.' : invalidatedProposals.has(key) ? 'Connection changed. Ask for a fresh proposal before confirming.' : acknowledgedKey === key ? 'Reviewed on screen. Ready for your decision.' : 'Displaying the exact proposal before confirmation…');
   $('#review-again').hidden = !attemptedPresentations.has(key) || acknowledgedKey === key || invalidatedProposals.has(key);
   schedulePresentation();
 }
@@ -213,65 +208,105 @@ function schedulePresentation(force = false) {
   }));
 }
 const taskLabels = {
-  queued: 'Waiting for review', running: 'Expert reviewing your request',
-  needs_clarification: 'The expert has a question', awaiting_confirmation: 'Waiting for your decision',
+  queued: 'Request queued', running: 'Reviewing your request',
+  needs_clarification: 'A question about your request', awaiting_confirmation: 'Waiting for your decision',
   executing: 'Running the confirmed plan', observing: 'Checking the result',
   completed: 'Task complete', failed: 'Task could not finish', cancelled: 'Task canceled',
 };
+const routeLabels = { active_skill: 'Reused an active skill', expert: 'Background expert' };
 
 function renderTask() {
   const trialId = snapshot.trial?.trial_id;
-  const task = snapshot.task || snapshot.tasks?.findLast?.(item => !item.trial_id || item.trial_id === trialId);
+  const task = snapshot.tasks?.findLast(item => !item.trial_id || item.trial_id === trialId);
   const label = Object.hasOwn(taskLabels, task?.status) ? taskLabels[task.status] : '';
   const question = task?.status === 'needs_clarification';
-  const step = task?.progress?.step ?? task?.feedback?.findLast?.(event => event.type === 'execution_progress')?.step;
-  const clarification = typeof task?.clarification === 'string' ? task.clarification : task?.clarification?.question;
-  const detail = (question && clarification) || task?.progress?.summary || task?.summary || task?.reason ||
+  const step = task?.feedback?.findLast(event => event.type === 'execution_progress')?.step;
+  const detail = task?.summary || task?.reason ||
     (task?.status === 'executing' && Number.isInteger(step) && step >= 0 ? `Step ${step + 1}` : '');
+  const route = Object.hasOwn(routeLabels, task?.route) ? routeLabels[task.route] : '';
   $('#task-progress').hidden = !label;
   $('#answer-clarification').hidden = !question;
   text('#task-status', label);
   text('#task-detail', detail);
+  text('#task-reason', task?.reason !== detail ? task?.reason : '');
+  $('#task-context').hidden = !task?.request && !route;
+  text('#task-request', task?.request);
+  text('#task-route', route);
 }
 
-function sceneArtifact(url) {
-  if (typeof url !== 'string') return null;
+function releaseScene() {
+  if (!sceneView) return;
+  sceneView.controller.abort();
+  for (const url of sceneView.urls) URL.revokeObjectURL(url);
+  sceneView = undefined;
+  $('#scene-frames').replaceChildren();
+}
+
+async function loadFrame(frame, view, figure, status) {
+  let url;
   try {
-    const parsed = new URL(url, location.href);
-    if (parsed.origin === location.origin && /^https?:$/.test(parsed.protocol) && !parsed.username && !parsed.password) return parsed.href;
-  } catch { /* A scene may supply artifact metadata without a display URL. */ }
-  return null;
+    const blob = await api.evidenceImage(frame, view.controller.signal);
+    if (sceneView !== view) return;
+    url = URL.createObjectURL(blob);
+    view.urls.add(url);
+    const image = document.createElement('img');
+    image.alt = frame.description || 'Scene evidence frame';
+    image.src = url;
+    await image.decode();
+    if (sceneView !== view) return;
+    figure.prepend(image);
+    status.remove();
+  } catch {
+    if (sceneView !== view) return;
+    if (url) {
+      URL.revokeObjectURL(url);
+      view.urls.delete(url);
+    }
+    status.textContent = 'Image unavailable.';
+  }
+}
+
+function captureTime(value) {
+  if (value == null) return '';
+  const date = typeof value === 'number' ? new Date(value * (value < 1e12 ? 1000 : 1)) : new Date(value);
+  return Number.isFinite(date.getTime()) ? `Captured ${date.toLocaleString()}` : '';
 }
 
 function renderScene() {
   const scene = snapshot.scene;
-  const frames = snapshot.scene_images || scene?.images || [];
-  const detail = [scene?.summary, scene?.provenance, scene?.fresh === false ? 'Stale scene' : ''].filter(Boolean).join(' · ');
+  const frames = snapshot.scene_images || [];
+  const detail = [scene?.summary, provenanceName(scene?.provenance), scene?.fresh === false ? 'Stale scene' : ''].filter(Boolean).join(' · ');
   $('#scene').hidden = !detail && !frames.length;
   text('#scene-detail', detail);
   const container = $('#scene-frames');
-  const signature = JSON.stringify(frames.map(frame => [frame.evidence_id, frame.captured_at, frame.provenance, frame.sha256, frame.artifact_url, frame.description]));
-  if (container.dataset.signature === signature) return;
-  container.dataset.signature = signature;
+  const signature = JSON.stringify([snapshot.session_id, snapshot.generation,
+    frames.map(frame => [frame.evidence_id, frame.captured_at, frame.provenance, frame.sha256, frame.artifact_url, frame.description])]);
+  if (sceneView?.signature === signature) return;
+  releaseScene();
+  if (!frames.length) return;
+  const view = { signature, controller: new AbortController(), urls: new Set() };
+  sceneView = view;
   container.replaceChildren(...frames.map(frame => {
     const figure = document.createElement('figure');
     const caption = document.createElement('figcaption');
-    caption.textContent = [frame.provenance, frame.captured_at != null ? `Captured ${frame.captured_at}` : '', frame.evidence_id].filter(Boolean).join(' · ');
-    if (frame.sha256) caption.title = `SHA-256 ${frame.sha256}`;
-    const url = sceneArtifact(frame.artifact_url);
-    if (url) {
-      const image = document.createElement('img');
-      image.alt = frame.description || 'Scene evidence frame';
-      image.loading = 'lazy';
-      image.referrerPolicy = 'no-referrer';
-      image.addEventListener('error', () => {
-        image.remove();
-        caption.append(' · Image unavailable');
-      }, { once: true });
-      image.src = url;
-      figure.append(image);
+    caption.textContent = [provenanceName(frame.provenance), captureTime(frame.captured_at)].filter(Boolean).join(' · ');
+    if (frame.evidence_id || frame.sha256) {
+      const details = document.createElement('details');
+      details.className = 'lab-details';
+      const summary = document.createElement('summary');
+      summary.textContent = 'Frame details';
+      details.append(summary);
+      for (const field of [frame.evidence_id && `Evidence ID: ${frame.evidence_id}`, frame.sha256 && `SHA-256: ${frame.sha256}`].filter(Boolean)) {
+        const line = document.createElement('p');
+        line.textContent = field;
+        details.append(line);
+      }
+      caption.append(details);
     }
-    figure.append(caption);
+    const status = document.createElement('p');
+    status.textContent = 'Loading image…';
+    figure.append(status, caption);
+    void loadFrame(frame, view, figure, status);
     return figure;
   }));
 }
@@ -291,21 +326,52 @@ function renderSkills() {
   }));
 }
 
+const provenanceLabels = {
+  SYNTHETIC: 'Synthetic',
+  SIMULATED: 'Simulated',
+  RECORDED_REAL: 'Recorded physical evidence',
+  UNKNOWN: 'Unknown',
+  'MODEL-PREDICTED': 'Model-predicted reference',
+};
+
+function provenanceName(provenance) {
+  return Object.hasOwn(provenanceLabels, provenance) ? provenanceLabels[provenance] : '';
+}
+
 function observationLabel(observation) {
+  if (observation.status === 'unknown') return 'UNKNOWN · NO VERIFIED OBSERVATION';
   if (observation.provenance === 'MODEL-PREDICTED') return 'MODEL-PREDICTED · REFERENCE OUTCOME';
-  if (observation.status === 'unknown' || !observation.provenance || observation.provenance === 'UNKNOWN') return 'UNKNOWN · NO VERIFIED OBSERVATION';
-  return observation.provenance;
+  const provenance = provenanceName(observation.provenance);
+  return observation.status === 'observed' && provenance && observation.provenance !== 'UNKNOWN'
+    ? `OBSERVED · ${provenance.toUpperCase()}` : 'UNKNOWN · NO VERIFIED OBSERVATION';
+}
+
+function renderObservationDetails(observation) {
+  const fields = Object.entries(observation.features || {})
+    .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
+    .map(([name, value]) => `${name.replaceAll('_', ' ')}: ${value}`);
+  const evidenceIds = (observation.evidence || []).filter(id => typeof id === 'string');
+  if (evidenceIds.length) fields.push(`Evidence IDs: ${evidenceIds.join(', ')}`);
+  $('#observation-details').hidden = !fields.length;
+  $('#observation-fields').replaceChildren(...fields.map(field => {
+    const item = document.createElement('li');
+    item.textContent = field;
+    return item;
+  }));
 }
 
 function renderEvidence() {
   const observation = currentObservation();
-  $('#evidence').hidden = !observation; $('#reflection-form').hidden = !observation;
+  $('#evidence').hidden = !observation;
+  $('#reflection-panel').hidden = !observation;
+  $('#new-trial').hidden = !observation;
   if (!observation) return;
-  const reference = observation.provenance === 'MODEL-PREDICTED';
+  const reference = observation.status !== 'unknown' && observation.provenance === 'MODEL-PREDICTED';
   text('#evidence-provenance', observationLabel(observation));
   text('#evidence-text', observation.text || 'No independent observation is available.');
   text('#evidence-source', typeof observation.source === 'string' ? `Source: ${observation.source}` : '');
-  text('#evidence-limit', reference ? 'This is a mock reference, not a measured pH or a physical observation.' : '');
+  text('#evidence-limit', reference ? 'This mock reference gives an expected color.' : '');
+  renderObservationDetails(observation);
   const color = typeof observation.display_color === 'string' && /^#[0-9a-f]{6}$/i.test(observation.display_color) ? observation.display_color : '';
   $('.evidence-swatch').hidden = !reference || !color;
   if (reference && color) $('#evidence').style.setProperty('--result-color', color);
@@ -354,12 +420,15 @@ function audioStatus(status) {
   text('#voice-title', title);
   text('#voice-detail', status.detail || (status.voiceOn ? 'Ask, predict, or change your mind.' : 'Voice is optional. Your notebook is always here.'));
   text('#mute', status.muted ? 'Unmute' : 'Mute');
-  $('#mute').disabled = !status.voiceOn;
+  $('#mute').hidden = !status.voiceOn;
   $('#mute').setAttribute('aria-pressed', String(status.muted));
   $('#voice-end').hidden = !status.voiceOn;
   $('#interrupt').hidden = !['queued','playing'].includes(status.playback);
   $('#voice-toggle').disabled = status.mic === 'requesting' || connection !== 'connected';
   $('#voice-toggle').setAttribute('aria-label', status.voiceOn ? status.muted ? 'Unmute voice' : 'Mute voice' : status.mic === 'denied' ? 'Retry microphone' : 'Start voice');
+  $('#voice-request').disabled = $('#voice-toggle').disabled;
+  text('#voice-request', status.voiceOn ? status.muted ? 'Unmute microphone' : 'Mute microphone' : 'Speak a request');
+  $('.voice-dock').dataset.voiceOn = String(status.voiceOn);
   $('.voice-dock').dataset.speaking = String(status.playback === 'playing');
   controls();
   if (connection === 'connected') schedulePresentation();
@@ -371,38 +440,45 @@ $('#reconnect').onclick = async () => {
   if (!api.sessionId) return boot();
   await resync(); client?.reconnect();
 };
-$('#conditions').addEventListener('click', async event => {
+$('#conditions').addEventListener('click', event => {
   const button = event.target.closest('[data-condition]');
-  if (button && await act('condition', { condition_id: button.dataset.condition })) $('#prediction').focus();
+  if (button) void act('condition', { condition_id: button.dataset.condition });
 });
 $('#prediction').oninput = () => { $('#prediction').dataset.dirty = 'true'; };
 $('#prediction-form').onsubmit = async event => {
   event.preventDefault(); const value = $('#prediction').value.trim(); if (!value) return;
-  if (await act('prediction', { text: value }, () => { delete $('#prediction').dataset.dirty; })) {
-    if (snapshot.pending) $('#proposal-summary').scrollIntoView({ block: 'center' });
-  }
+  await act('prediction', { text: value }, () => { delete $('#prediction').dataset.dirty; });
 };
 $('#message-form').onsubmit = async event => {
   event.preventDefault(); const value = $('#message').value.trim(); if (!value) return;
   await act('request', { text: value, client_request_id: crypto.randomUUID() }, () => { $('#message').value = ''; });
-  if (snapshot.pending) $('#proposal-summary').scrollIntoView({block:'center'});
 };
 $('#message').onkeydown = event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); $('#message-form').requestSubmit(); } };
 $('#answer-clarification').onclick = () => $('#message').focus();
 $('#confirm').onclick = () => {
   if ($('#confirm').disabled) return;
   const proposal = snapshot.pending;
-  act('confirm', {request_id:proposal.request_id,proposal_version:proposal.proposal_version}, () => $('#evidence').scrollIntoView({block:'center'}));
+  act('confirm', {request_id:proposal.request_id,proposal_version:proposal.proposal_version});
 };
 $('#cancel').onclick = () => act('cancel', {request_id:snapshot.pending?.request_id});
 $('#review-again').onclick = () => { attemptedPresentations.delete(pendingKey); schedulePresentation(true); };
 $('#reflection-form').onsubmit = event => {
   event.preventDefault(); const value = $('#reflection').value.trim(); if (value) act('reflection', {text:value}, () => { text('#reflection-saved','Reflection saved.'); $('#reflection').value = ''; });
 };
-$('#new-trial').onclick = () => act('prepare', {}, () => {
-  $('#prediction').value = ''; delete $('#prediction').dataset.dirty; $('#reflection').value = ''; text('#reflection-saved','');
-  render(); $('#workspace').focus(); $('#workspace').scrollIntoView({block:'start'});
-});
+$('#new-trial').onclick = async () => {
+  const prepared = await act('prepare', {}, () => {
+    $('#prediction').value = '';
+    delete $('#prediction').dataset.dirty;
+    $('#reflection').value = '';
+    text('#reflection-saved', '');
+    $('#reflection-panel').open = false;
+    render();
+  });
+  if (prepared) {
+    $('#message').focus({ preventScroll: true });
+    $('#workspace').scrollIntoView({ block: 'start' });
+  }
+};
 async function stop() {
   if (pendingKey) invalidatedProposals.add(pendingKey);
   acknowledgedKey = '';
@@ -414,10 +490,12 @@ async function stop() {
 }
 $('#stop').onclick = stop;
 document.addEventListener('keydown', event => { if (event.key === 'Escape' && !event.isComposing) stop(); });
-$('#voice-toggle').onclick = () => {
+function toggleVoice() {
   if (!client) return;
   if (client.status.voiceOn) client.setMuted(!client.status.muted); else client.startVoice();
-};
+}
+$('#voice-toggle').onclick = toggleVoice;
+$('#voice-request').onclick = toggleVoice;
 $('#mute').onclick = () => client?.setMuted(!client.status.muted);
 $('#voice-end').onclick = () => client?.stopVoice();
 $('#interrupt').onclick = () => client?.interrupt();
@@ -426,7 +504,7 @@ window.addEventListener('scroll', () => schedulePresentation(), { passive:true }
 window.addEventListener('resize', () => schedulePresentation(), { passive:true });
 window.visualViewport?.addEventListener('resize', () => schedulePresentation(), { passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) schedulePresentation(); });
-setInterval(() => { controls(); if (snapshot?.pending && expired(snapshot.pending)) text('#proposal-status','This proposal has expired. Ask for a fresh trial.'); }, 1000);
-window.addEventListener('pagehide', () => client?.close());
+setInterval(() => { controls(); if (snapshot?.pending && expired(snapshot.pending)) text('#proposal-status','This proposal has expired. Send a new request.'); }, 1000);
+window.addEventListener('pagehide', () => { releaseScene(); client?.close(); });
 window.addEventListener('pageshow', event => { if (event.persisted) boot(); });
 boot();

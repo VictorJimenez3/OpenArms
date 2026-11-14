@@ -3,30 +3,90 @@ import AxeBuilder from '@axe-core/playwright';
 async function session(page) { return page.evaluate(()=>JSON.parse(sessionStorage.getItem('openarms.ph.session')).session_id); }
 async function fixture(page,request,body={}) { return (await request.post(`/fixture/${await session(page)}`,{data:body})).json(); }
 async function ready(page) { await page.goto('/'); await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible(); }
-async function predict(page, condition='Vinegar') {
-  await page.getByRole('button',{name:new RegExp(`^${condition}`)}).click();
-  await page.getByLabel('What do you think will happen?').fill('I predict pink because vinegar is acidic.');
-  await page.getByRole('button',{name:/Save prediction/}).click();
-  await expect(page.getByRole('button',{name:'Confirm this trial'})).toBeEnabled();
+async function sendRequest(page, text) {
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill(text);
+  await page.getByRole('button',{name:'Send request'}).click();
 }
+async function openContext(page) {
+  await page.getByText('Optional sample and prediction', {exact:true}).click();
+}
+async function predict(page, prediction='I predict pink because vinegar is acidic.') {
+  await page.getByLabel('What do you think will happen?').fill(prediction);
+  await page.getByRole('button',{name:/Save prediction/}).click();
+  await expect(page.locator('#prediction-saved')).toHaveText('Prediction saved in your notebook.');
+}
+async function reviewProposal(page) {
+  await page.getByRole('link', {name:'Review proposed action'}).click();
+  await expect(page.getByRole('button',{name:'Confirm this action'})).toBeEnabled();
+}
+async function propose(page, request, condition='vinegar') {
+  await sendRequest(page, `Check the color of the ${condition} sample.`);
+  await expect(page.locator('#task-status')).toHaveText('Request queued');
+  await fixture(page,request,{propose:condition});
+  await reviewProposal(page);
+}
+
+test('a direct request queues without a sample or prediction while typing and voice stay available', async ({page, request}) => {
+  await ready(page);
+  await expect(page.locator('#trial-context')).not.toHaveAttribute('open');
+  const command = 'Check the color of the vinegar sample.';
+  await sendRequest(page, command);
+  await expect(page.locator('#task-status')).toHaveText('Request queued');
+  await expect(page.locator('#messages')).toContainText(command);
+  const {state, trace} = await fixture(page, request);
+  expect(state.trial.condition_id).toBeNull();
+  expect(state.prediction).toBe('');
+  expect(state.pending).toBeNull();
+  expect(state.tasks).toEqual([expect.objectContaining({status:'queued', request:command})]);
+  expect(trace.filter(entry => entry.action === 'request')).toEqual([
+    expect.objectContaining({body:{text:command, client_request_id:expect.any(String)}}),
+  ]);
+  await fixture(page, request, {state:{tasks:[{...state.tasks[0], status:'running', route:'expert'}]}});
+  await expect(page.locator('#task-status')).toHaveText('Reviewing your request');
+  const draft = page.getByRole('textbox', {name:'What would you like to do?'});
+  await draft.fill('Compare with water next.');
+  await page.getByRole('button',{name:'Speak a request'}).click();
+  await expect(page.locator('#provider-state')).toHaveText('Voice listening');
+  await expect(draft).toHaveValue('Compare with water next.');
+  await expect(page.locator('#proposal')).toBeHidden();
+  await expect(page.locator('#evidence')).toBeHidden();
+});
+
+test('an optional prediction saves without a selected sample or a proposal', async ({page, request}) => {
+  await ready(page);
+  await openContext(page);
+  await predict(page);
+  const {state, trace} = await fixture(page, request);
+  expect(state.trial.condition_id).toBeNull();
+  expect(state.prediction).toContain('I predict pink');
+  expect(state.pending).toBeNull();
+  expect(state.tasks).toEqual([]);
+  await expect(page.locator('#proposal')).toBeHidden();
+  expect(trace.filter(entry => ['request','present'].includes(entry.action))).toHaveLength(0);
+});
 
 test('complete a pH trial with text, reflection, history and a new sample',async({page,request})=>{
   const errors=[]; page.on('pageerror',error=>errors.push(error.message));
   await ready(page);
+  await openContext(page);
+  await page.getByRole('button',{name:/^Vinegar/}).click();
   await predict(page);
+  await propose(page, request);
   await expect(page.locator('#proposal-summary')).toContainText('Vinegar');
-  await page.getByRole('button',{name:'Confirm this trial'}).click();
+  await page.getByRole('button',{name:'Confirm this action'}).click();
   await expect(page.locator('#evidence')).toContainText('MODEL-PREDICTED');
-  await expect(page.locator('#evidence')).toContainText('not a measured pH');
-  await page.getByLabel('How does this compare with your prediction?').fill('The pink reference supports my prediction of an acidic sample.');
+  await expect(page.locator('#evidence')).toContainText('expected color');
+  await page.getByText('Add a reflection (optional)',{exact:true}).click();
+  await page.getByLabel('What did you learn?').fill('The pink reference supports my prediction of an acidic sample.');
   await page.getByRole('button',{name:'Save reflection'}).click();
   await expect(page.getByText('Reflection saved.',{exact:true})).toBeVisible();
-  await page.getByLabel('Message your science companion').fill('Why does cabbage change color?');
-  await page.getByRole('button',{name:'Send message'}).click();
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Why does cabbage change color?');
+  await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('acid–base conditions');
   await page.getByText('Your lab notebook',{exact:true}).click();
   await expect(page.locator('#history-list')).toContainText('supports my prediction');
-  await page.getByRole('button',{name:/Try another sample/}).click();
+  await page.getByRole('button',{name:'Start a new notebook entry'}).click();
+  await expect(page.getByRole('textbox', {name:'What would you like to do?'})).toBeFocused();
   await expect(page.getByRole('button',{name:/^Water/})).toHaveAttribute('aria-pressed','false');
   await expect(page.locator('#evidence')).toBeHidden();
   await expect(page.locator('#history-count')).toHaveText('1 trial recorded');
@@ -37,30 +97,29 @@ test('complete a pH trial with text, reflection, history and a new sample',async
   expect(errors).toEqual([]);
 });
 
-test('exact proposal must actually be visible before presentation, correction replaces it',async({page,request})=>{
+test('exact proposal must be visible before presentation and a newer server proposal replaces it',async({page,request})=>{
   await ready(page);
-  await page.getByRole('button',{name:/^Vinegar/}).click();
-  await page.getByLabel('What do you think will happen?').fill('Pink');
-  // Disable scrolling to verify delivery alone cannot acknowledge an offscreen proposal.
-  await page.evaluate(()=>Element.prototype.scrollIntoView=()=>{});
-  await page.getByRole('button',{name:/Save prediction/}).click();
+  await sendRequest(page, 'Check the vinegar sample.');
+  await expect(page.locator('#task-status')).toHaveText('Request queued');
+  // Place the proposal below the viewport to verify state delivery alone cannot acknowledge it.
+  await page.locator('#message-form').evaluate(form => form.style.marginBottom = '110vh');
+  const first = await fixture(page,request,{propose:'vinegar'});
+  await expect(page.locator('#proposal-summary')).toContainText('Vinegar');
   await page.waitForTimeout(150);
-  let result=await fixture(page,request);
-  expect(result.trace.filter(t=>t.action==='present')).toHaveLength(0);
-  await expect(page.getByRole('button',{name:'Confirm this trial'})).toBeDisabled();
-  await page.locator('#proposal').evaluate(el=>window.scrollTo(0,scrollY+el.getBoundingClientRect().top-20));
-  await expect(page.getByRole('button',{name:'Confirm this trial'})).toBeEnabled();
-  result=await fixture(page,request);
-  const original=result.state.pending.request_id;
-  await page.getByRole('button',{name:/^Water/}).click();
+  expect((await fixture(page,request)).trace.filter(t=>t.action==='present')).toHaveLength(0);
+  await expect(page.getByRole('button',{name:'Confirm this action'})).toBeDisabled();
+  await reviewProposal(page);
+  const second = await fixture(page,request,{propose:'water'});
   await expect(page.locator('#proposal-summary')).toContainText('Water');
-  await page.locator('#proposal').evaluate(el=>window.scrollTo(0,scrollY+el.getBoundingClientRect().top-20));
-  await expect(page.getByRole('button',{name:'Confirm this trial'})).toBeEnabled();
-  result=await fixture(page,request);
-  expect(result.state.pending.request_id).not.toBe(original);
+  await reviewProposal(page);
+  expect(second.state.pending.request_id).not.toBe(first.state.pending.request_id);
   await page.getByRole('button',{name:'Cancel',exact:true}).click();
   await expect(page.locator('#proposal')).toBeHidden();
-  expect((await fixture(page,request)).trace.filter(t=>t.action==='confirm')).toHaveLength(0);
+  const {trace} = await fixture(page,request);
+  expect(trace.filter(t=>t.action==='present').map(t=>t.body.request_id)).toEqual([
+    first.state.pending.request_id, second.state.pending.request_id,
+  ]);
+  expect(trace.filter(t=>t.action==='confirm')).toHaveLength(0);
 });
 
 test('voice outage preserves the socket, coalesces turns and permits text',async({page,request})=>{
@@ -74,8 +133,8 @@ test('voice outage preserves the socket, coalesces turns and permits text',async
   await expect(page.locator('.message.assistant')).toContainText('Let’s compare the color.');
   await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
   await expect(page.locator('#provider-state')).toHaveText('Voice unavailable');
-  await page.getByLabel('Message your science companion').fill('Can I compare with water?');
-  await page.getByRole('button',{name:'Send message'}).click();
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Can I compare with water?');
+  await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('Can I compare with water?');
   expect((await fixture(page,request)).trace.filter(t=>t.frame?.type==='hello')).toHaveLength(1);
 });
@@ -83,11 +142,13 @@ test('voice outage preserves the socket, coalesces turns and permits text',async
 test('network error preserves draft and reconnect never replays a command or approval',async({page,request})=>{
   await ready(page);
   await fixture(page,request,{fail:'request'});
-  await page.getByLabel('Message your science companion').fill('A question that must not replay');
-  await page.getByRole('button',{name:'Send message'}).click();
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('A question that must not replay');
+  await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.getByRole('alert')).toContainText('temporarily unavailable');
-  await expect(page.getByLabel('Message your science companion')).toHaveValue('A question that must not replay');
-  await predict(page);
+  await expect(page.getByRole('textbox', {name:'What would you like to do?'})).toHaveValue('A question that must not replay');
+  await fixture(page,request,{state:{tasks:[{status:'queued', request:'Check vinegar.'}]}});
+  await fixture(page,request,{propose:'vinegar'});
+  await reviewProposal(page);
   await fixture(page,request,{close:true});
   await expect(page.locator('#confirm')).toBeDisabled();
   await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
@@ -101,6 +162,7 @@ test('network error preserves draft and reconnect never replays a command or app
 test('older snapshots cannot replace newer trial state and credentials are private',async({page,request})=>{
   await ready(page);
   const earlier=(await fixture(page,request)).state;
+  await openContext(page);
   await page.getByRole('button',{name:/^Water/}).click();
   await fixture(page,request,{frame:{type:'state',state:earlier}});
   await expect(page.getByRole('button',{name:/^Water/})).toHaveAttribute('aria-pressed','true');
@@ -109,10 +171,11 @@ test('older snapshots cannot replace newer trial state and credentials are priva
   expect(page.url()).not.toContain(token);
   await page.reload();
   await expect(page.getByText('Notebook connected',{exact:true})).toBeVisible();
+  await openContext(page);
   await expect(page.getByRole('button',{name:/^Water/})).toHaveAttribute('aria-pressed','true');
 });
 
-test('layout fits the viewport, touch controls and accessibility at every stage',async({page},testInfo)=>{
+test('layout fits the viewport, touch controls and accessibility at every stage',async({page,request},testInfo)=>{
   await ready(page);
   async function check(name) {
     const violations=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations;
@@ -121,9 +184,13 @@ test('layout fits the viewport, touch controls and accessibility at every stage'
     await page.screenshot({path:testInfo.outputPath(`${name}.png`),fullPage:true});
   }
   await check('welcome');
-  await predict(page);
+  expect(await page.locator('#voice-request').evaluate(button => {
+    const rect = button.getBoundingClientRect();
+    return button.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+  })).toBe(true);
+  await propose(page, request);
   await check('proposal');
-  await page.getByRole('button',{name:'Confirm this trial'}).click();
+  await page.getByRole('button',{name:'Confirm this action'}).click();
   await check('result');
   const tiny=await page.locator('button:visible').evaluateAll(elements=>elements.filter(el=>{const r=el.getBoundingClientRect();return r.height<44 || r.width<44}).map(el=>el.id));
   expect(tiny).toEqual([]);
@@ -135,8 +202,8 @@ test('microphone denial is recoverable and cannot block text',async({page,reques
   await page.getByRole('button',{name:'Start voice',exact:true}).click();
   await expect(page.locator('#mic-state')).toHaveText('Mic blocked');
   await expect(page.getByRole('button',{name:'Retry microphone'})).toBeEnabled();
-  await page.getByLabel('Message your science companion').fill('I prefer typing.');
-  await page.getByRole('button',{name:'Send message'}).click();
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('I prefer typing.');
+  await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('I prefer typing.');
   expect((await fixture(page,request)).trace.filter(t=>t.frame?.type==='start_voice')).toHaveLength(0);
 });
@@ -157,17 +224,23 @@ test('optional task, scene, observation and active skill evidence stays server-o
   for (const id of ['task-progress', 'scene', 'active-skills', 'evidence']) await expect(page.locator(`#${id}`)).toBeHidden();
   const { state } = await fixture(page, request);
   const trialId = state.trial.trial_id;
+  const evidenceUrl = `/api/sessions/${state.session_id}/evidence/frame-a`;
+  const token = await page.evaluate(() => JSON.parse(sessionStorage.getItem('openarms.ph.session')).access_token);
+  const evidenceRequests = [];
+  page.on('request', req => { if (req.url().includes('/evidence/')) evidenceRequests.push(req.url()); });
+  const imageRequest = page.waitForRequest(req => new URL(req.url()).pathname === evidenceUrl);
   const task = { task_id: 'task-1', trial_id: trialId };
   await fixture(page, request, { state: { tasks: [{ ...task, status: 'running', summary: 'Reviewing the prepared samples.' }] } });
-  await expect(page.getByText('Expert reviewing your request')).toBeVisible();
+  await expect(page.getByText('Reviewing your request')).toBeVisible();
   await expect(page.locator('#evidence')).toBeHidden();
 
   await fixture(page, request, { state: {
     tasks: [{ ...task, status: 'needs_clarification', summary: 'Which sample is in the left holder?' }],
     scene: { fresh: false },
     scene_images: [
-      { evidence_id: 'frame-a', captured_at: '2026-11-14T16:00:00Z', provenance: 'recorded simulation', sha256: 'a'.repeat(64), artifact_url: '/fixture/scene.png', description: 'Prepared sample holders' },
-      { evidence_id: 'frame-b', provenance: 'synthetic', path: '/internal/frame.png', artifact_url: 'https://example.invalid/scene.png' },
+      { evidence_id: 'frame-a', captured_at: '2026-11-14T16:00:00Z', provenance: 'SIMULATED', sha256: 'a'.repeat(64), artifact_url: evidenceUrl, description: 'Prepared sample holders' },
+      { evidence_id: 'frame-b', provenance: 'SYNTHETIC', path: '/internal/frame.png', artifact_url: 'https://example.invalid/scene.png' },
+      { evidence_id: 'frame-c', artifact_url: `${evidenceUrl.replace('frame-a', 'frame-c')}?token=${token}` },
     ],
     skills: [
       { name: 'Compare sample conditions', version: 'v2', status: 'active' },
@@ -176,15 +249,25 @@ test('optional task, scene, observation and active skill evidence stays server-o
   } });
   await expect(page.getByText('Which sample is in the left holder?')).toBeVisible();
   await expect(page.getByText('Stale scene')).toBeVisible();
-  await expect(page.locator('#scene')).toContainText('recorded simulation · Captured 2026-11-14T16:00:00Z · frame-a');
+  await expect(page.locator('#scene')).toContainText('Simulated · Captured');
+  await expect(page.getByText('Image unavailable.', {exact:true})).toHaveCount(2);
+  expect(await page.locator('#scene').innerText()).not.toContain('frame-a');
+  expect(await page.locator('#scene').innerText()).not.toContain('a'.repeat(64));
   const image = page.getByRole('img', { name: 'Prepared sample holders' });
   await image.scrollIntoViewIfNeeded();
   await expect(image).toHaveJSProperty('naturalWidth', 1);
+  await expect(image).toHaveAttribute('src', /^blob:/);
+  const authenticated = await imageRequest;
+  expect(authenticated.url()).toBe(new URL(evidenceUrl, page.url()).href);
+  expect(await authenticated.headerValue('authorization')).toBe(`Bearer ${token}`);
+  expect(evidenceRequests).toEqual([authenticated.url()]);
+  expect((await request.get(evidenceUrl)).status()).toBe(401);
+  expect(await page.content()).not.toContain(token);
   await expect(page.locator('#scene img')).toHaveCount(1);
   await expect(page.locator('#scene')).not.toContainText('/internal/frame.png');
   await expect(page.locator('#skill-labels')).toHaveText('Compare sample conditions · v2');
   await page.getByRole('button', { name: 'Reply to the question' }).press('Enter');
-  const composer = page.getByLabel('Message your science companion');
+  const composer = page.getByRole('textbox', {name:'What would you like to do?'});
   await expect(composer).toBeFocused();
   await composer.fill('The left holder has the water control.');
   await composer.press('Enter');
@@ -193,16 +276,64 @@ test('optional task, scene, observation and active skill evidence stays server-o
   await fixture(page, request, { state: { tasks: [{ ...task, status: 'executing', feedback: [{ type: 'execution_progress', step: 1 }] }] } });
   await expect(page.locator('#task-detail')).toHaveText('Step 2');
   await expect(page.locator('#evidence')).toBeHidden();
-  await fixture(page, request, { state: { tasks: [{ ...task, status: 'completed' }] } });
+  await fixture(page, request, { state: { tasks: [{ ...task, status: 'completed', route: 'active_skill', request: 'Inspect the holder.' }] } });
   await expect(page.locator('#task-status')).toHaveText('Task complete');
+  await page.getByText('Task details', {exact:true}).click();
+  await expect(page.locator('#task-route')).toHaveText('Reused an active skill');
+  await expect(page.locator('#task-request')).toHaveText('Inspect the holder.');
   await expect(page.locator('#evidence')).toBeHidden();
-  await fixture(page, request, { state: { observations: [{ trial_id: trialId, provenance: 'recorded simulation', status: 'observed', source: 'Frame observer', text: 'The indicator is visible in the marked holder.' }] } });
-  await expect(page.locator('#evidence')).toContainText('recorded simulation');
+  await fixture(page, request, { state: { observations: [{ trial_id: trialId, provenance: 'SIMULATED', status: 'observed', source: 'Frame observer', features: { indicator_color: 'purple' }, evidence: ['frame-a'], text: 'The indicator is visible in the marked holder.' }] } });
+  await expect(page.locator('#evidence-provenance')).toHaveText('OBSERVED · SIMULATED');
+  expect(await page.locator('#evidence').innerText()).not.toContain('frame-a');
+  await page.getByText('Observation details', {exact:true}).click();
+  await expect(page.locator('#observation-fields')).toContainText('indicator color: purple');
+  await expect(page.locator('#observation-fields')).toContainText('frame-a');
   await expect(page.locator('#evidence')).toContainText('Frame observer');
   await expect(page.locator('.evidence-swatch')).toBeHidden();
   await fixture(page, request, { state: { observations: [{ trial_id: trialId, provenance: 'UNKNOWN', status: 'unknown', text: 'The receiver was occluded.' }] } });
   await expect(page.locator('#evidence')).toContainText('UNKNOWN');
   await expect(page.locator('#evidence')).toContainText('The receiver was occluded.');
+});
+
+test('a replaced frame revokes its blob and a late decode leaves the new scene intact', async ({page, request}) => {
+  await page.addInitScript(() => {
+    const decode = HTMLImageElement.prototype.decode;
+    const revoke = URL.revokeObjectURL.bind(URL);
+    window.revokedFrames = [];
+    URL.revokeObjectURL = url => { window.revokedFrames.push(url); revoke(url); };
+    HTMLImageElement.prototype.decode = function () {
+      if (this.alt !== 'Old frame') return decode.call(this);
+      const url = this.src;
+      return new Promise(resolve => {
+        window.oldFrame = { url, finish: resolve };
+      });
+    };
+  });
+  await ready(page);
+  const sid = await session(page);
+  const frame = (evidence_id, description) => ({
+    evidence_id, description, provenance:'SYNTHETIC',
+    artifact_url:`/api/sessions/${sid}/evidence/${evidence_id}`,
+  });
+  await fixture(page, request, {state:{scene_images:[frame('old', 'Old frame')]}});
+  await page.waitForFunction(() => Boolean(window.oldFrame));
+  await page.locator('#scene-frames figure').evaluate(figure => { window.oldFrame.figure = figure; });
+  await fixture(page, request, {state:{scene_images:[frame('new', 'New frame')]}});
+  const current = page.getByRole('img', {name:'New frame'});
+  await expect(current).toHaveJSProperty('naturalWidth', 1);
+  expect(await page.evaluate(() => window.revokedFrames)).toContain(await page.evaluate(() => window.oldFrame.url));
+  expect(await page.evaluate(async () => {
+    window.oldFrame.finish();
+    await Promise.resolve();
+    return window.oldFrame.figure.querySelector('img') === null;
+  })).toBe(true);
+  await expect(page.locator('#scene img')).toHaveCount(1);
+  await expect(current).toHaveJSProperty('naturalWidth', 1);
+  await expect(page.getByText('Image unavailable.', {exact:true})).toBeHidden();
+  const currentUrl = await current.getAttribute('src');
+  await fixture(page, request, {state:{scene_images:[]}});
+  await expect(page.locator('#scene')).toBeHidden();
+  expect(await page.evaluate(() => window.revokedFrames)).toContain(currentUrl);
 });
 
 test('fresh mic packets follow provider and STOP generations while stale state is ignored', async ({page, request}) => {

@@ -15,10 +15,8 @@ const snapshot = session => { const { token, ...state } = session; return clone(
 const send = (socket, frame) => socket?.readyState === 1 && socket.send(JSON.stringify(frame));
 function publish(session) { session.revision++; send(clients.get(session.session_id), {type:'state',state:snapshot(session)}); return snapshot(session); }
 function stop(session) { session.pending = null; session.state = 'STOPPED'; session.generation++; }
-function proposal(session) {
-  if (session.prediction && session.trial.condition_id) {
-    session.pending = {request_id:randomUUID(),proposal_version:1,skill_id:'red_cabbage_ph',skill_version:'1',summary:`Run one mock red-cabbage indicator trial with ${conditions.find(c => c.id === session.trial.condition_id).title}. Use the reference color to discuss whether the sample is acidic, basic, or near neutral.`,condition_id:session.trial.condition_id,status:'pending',expires_at:new Date(Date.now()+300000).toISOString(),presented:false};
-  }
+function proposal(session, condition) {
+  session.pending = {request_id:randomUUID(),proposal_version:1,skill_id:'red_cabbage_ph',skill_version:'1',summary:`Run one mock red-cabbage indicator trial with ${condition.title}. Use the reference color to discuss whether the sample is acidic, basic, or near neutral.`,condition_id:condition.id,status:'requested',expires_at:new Date(Date.now()+300000).toISOString(),presented:false};
 }
 function message(session, role, text, turnId=randomUUID()) { session.messages.push({id:randomUUID(),role,text,turn_id:turnId}); }
 const server = http.createServer(async (request, response) => {
@@ -26,14 +24,10 @@ const server = http.createServer(async (request, response) => {
   let body = {};
   if (request.method === 'POST') { let raw=''; for await (const part of request) raw+=part; body = JSON.parse(raw || '{}'); }
   const json = (status, value) => { response.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'}); response.end(JSON.stringify(value)); };
-  if (path === '/fixture/scene.png') {
-    response.writeHead(200,{'Content-Type':'image/png'});
-    return response.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNdcAAAAASUVORK5CYII=', 'base64'));
-  }
   if (path === '/api/sessions' && request.method === 'POST') {
     if (request.headers['x-fixture-pairing'] && request.headers.authorization !== 'Bearer pair-test') return json(401,{detail:'Pairing required'});
     const sid=randomUUID();
-    const session={session_id:sid,token:`secret-${sid}`,backend:'mock',experiment:{id:'red_cabbage_ph',title:'Red-cabbage pH',question:'What does the color tell you?'},revision:1,generation:1,connected:true,trial:{trial_id:randomUUID(),condition_id:null,state:'prepare'},conditions,prediction:'',pending:null,requests:[],observations:[],messages:[],notebook:[],state:'HOME',capabilities:{voice:true}};
+    const session={session_id:sid,token:`secret-${sid}`,backend:'mock',experiment:{id:'red_cabbage_ph',title:'Red-cabbage pH',question:'What does the color tell you?'},revision:1,generation:1,connected:true,trial:{trial_id:randomUUID(),condition_id:null,state:'prepare'},conditions,prediction:'',pending:null,requests:[],tasks:[],scene_images:[],observations:[],messages:[],notebook:[],state:'HOME',capabilities:{voice:true}};
     sessions.set(sid,session); traces.set(sid,[]);
     return json(200,{...snapshot(session),access_token:session.token});
   }
@@ -44,30 +38,51 @@ const server = http.createServer(async (request, response) => {
     if (body.close) clients.get(sid)?.close(1012,'Fixture restart');
     if (body.fail) session.failNext=body.fail;
     if (body.state) { Object.assign(session,body.state); publish(session); }
+    if (body.propose) {
+      proposal(session, conditions.find(condition => condition.id === body.propose));
+      session.tasks.at(-1).status = 'awaiting_confirmation';
+      publish(session);
+    }
     return json(200,{trace:traces.get(sid),state:snapshot(session)});
   }
   if (path.startsWith('/api/sessions/')) {
-    const [, , , sid, action] = path.split('/');
+    const [, , , sid, action, evidenceId] = path.split('/');
     const session=sessions.get(sid);
     if (!session) return json(404,{detail:'Session not found'});
     if (request.headers.authorization !== `Bearer ${session.token}`) return json(401,{detail:'Invalid session credential'});
     traces.get(sid).push({channel:'rest',action:action || 'snapshot',body});
     if (!action) return json(200,snapshot(session));
     if (session.failNext===action) { delete session.failNext; return json(503,{detail:'The lab is temporarily unavailable. Your draft has been kept.'}); }
+    if (action === 'evidence' && request.method === 'GET') {
+      if (!session.scene_images.some(frame => frame.evidence_id === evidenceId)) return json(404,{});
+      response.writeHead(200,{'Content-Type':'image/png'});
+      return response.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNdcAAAAASUVORK5CYII=', 'base64'));
+    }
     switch(action) {
-      case 'condition': session.trial.condition_id=body.condition_id; session.pending=null; proposal(session); break;
-      case 'prediction': session.prediction=body.text; message(session,'user',body.text); session.notebook.push({type:'prediction',trial_id:session.trial.trial_id,text:body.text}); proposal(session); break;
+      case 'condition': session.trial.condition_id=body.condition_id; session.pending=null; break;
+      case 'prediction': session.prediction=body.text; session.pending=null; session.notebook.push({type:'prediction',trial_id:session.trial.trial_id,text:body.text}); break;
       case 'present':
         if (!session.pending || body.request_id!==session.pending.request_id || body.proposal_version!==session.pending.proposal_version) return json(409,{detail:'Stale proposal'});
         session.pending.presented=true; break;
       case 'confirm': {
         if (!session.pending?.presented || body.request_id!==session.pending.request_id || body.proposal_version!==session.pending.proposal_version) return json(409,{detail:'Stale or unpresented proposal'});
         const outcomes={vinegar:'The expected reference color is pink: consistent with an acidic sample.',baking_soda:'The expected reference color is blue-green: consistent with a basic sample.',water:'The expected reference color is purple: consistent with a near-neutral control.'};
-        const observation={trial_id:session.trial.trial_id,request_id:session.pending.request_id,condition_id:session.trial.condition_id,provenance:'MODEL-PREDICTED',text:outcomes[session.trial.condition_id],source:'Prepared cabbage-indicator mock reference',evidence:[]};
+        const conditionId=session.pending.condition_id;
+        const observation={trial_id:session.trial.trial_id,request_id:session.pending.request_id,condition_id:conditionId,provenance:'MODEL-PREDICTED',text:outcomes[conditionId],source:'Prepared cabbage-indicator mock reference',evidence:[]};
+        session.tasks.at(-1).status='completed';
         session.observations.push(observation); session.pending=null; session.trial.state='complete'; session.state='HOME'; message(session,'assistant',observation.text); break;
       }
-      case 'cancel': session.pending=null; message(session,'assistant','That proposal is canceled. You can change your sample or prediction.'); break;
-      case 'request': message(session,'user',body.text); message(session,'assistant','Red-cabbage indicator changes color with acid–base conditions. Compare the mock reference with your prediction.'); break;
+      case 'cancel': session.pending=null; session.tasks.at(-1).status='cancelled'; message(session,'assistant','That proposal is canceled.'); break;
+      case 'request':
+        message(session,'user',body.text);
+        if (body.text === 'Why does cabbage change color?') {
+          message(session,'assistant','Red-cabbage indicator changes color with acid–base conditions.');
+          break;
+        }
+        session.pending=null;
+        session.tasks.push({task_id:randomUUID(),trial_id:session.trial.trial_id,status:'queued',request:body.text});
+        publish(session);
+        return json(202,{task_id:session.tasks.at(-1).task_id,status:'queued'});
       case 'reflection': session.notebook.push({type:'reflection',trial_id:session.trial.trial_id,text:body.text}); message(session,'user',body.text); break;
       case 'prepare': session.trial={trial_id:randomUUID(),condition_id:null,state:'prepare'}; session.prediction=''; session.pending=null; break;
       case 'stop': case 'disconnect': stop(session); break;
