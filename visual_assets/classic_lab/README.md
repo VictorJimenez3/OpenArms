@@ -1,4 +1,6 @@
-# Six classic laboratory experiment scenes
+# Classic laboratory design references
+
+**Current video scope:** four simplified MuJoCo experiments—color comparison, single-step dilution, stirred-versus-still dissolution, and titration. See [the runnable video package](../../simulation/lab_demos/README.md). Filtration and precipitation remain archived design candidates, outside this video scope. The original five-stage dilution artwork is a reference, not the simplified one-dose implementation.
 
 One experiment per practical bench. These editable Blender assets supersede the earlier friction, lever and simple sorting candidates. They are **ART PREVIEW** assets: colored liquids, endpoints, particles and scientific readouts show illustrative outcomes, not executed chemistry or measurements.
 

@@ -764,5 +764,20 @@
         "Actual execution and held-out evaluation"
       ]
     }
-  ]
+  ],
+  "current_video_scope": {
+    "engine": "MuJoCo",
+    "source": "../../simulation/lab_demos/",
+    "selected": [
+      "colorimetry",
+      "dilution",
+      "dissolution",
+      "titration"
+    ],
+    "excluded": [
+      "filtration",
+      "precipitation"
+    ],
+    "note": "This manifest describes archived static Blender assets; runtime evidence belongs to each MuJoCo demo."
+  }
 }

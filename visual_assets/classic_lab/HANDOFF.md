@@ -1,5 +1,7 @@
 # Classic laboratory asset handoff
 
+**Scope update:** use the four simplified MuJoCo experiments in `simulation/lab_demos/` for the presentation videos. The six Blender scenes below are retained design references; filtration and precipitation are excluded from the selected four. Their structural/import evidence does not establish execution of a MuJoCo policy.
+
 Six independent practical experiment scenes replace the earlier simple manipulation/mechanics candidates. Each has an editable Blender project, source generator, robot-free USD, and three actual 1600×1000 Blender views: front, overhead, and result close-up. Each experiment has two proposed conditions and a scientific observation, not just a prop-transfer goal.
 
 Import `NN_name/Environment.usdc` beneath your scene as one environment reference. Default prim `/ClassicLab`; meters; Z-up; tabletop z=0; bench 1.00×0.75 m centered at (0.12,0), 44 mm thick below the plane. Exact exported camera prim paths/matrices are in `MANIFEST.json`; per-scene manifests contain object transforms, dimensions, static/movable intentions, source/target positions and proposed grasp interfaces. Reuse the authoritative white SO-101 without a mounted camera. No environment USD includes robot geometry or physics APIs.
