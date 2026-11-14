@@ -33,7 +33,7 @@ class TransferCheck:
             raise ValueError('Acceptance thresholds must be positive')
         if math.dist(initial_position[:2],destination[:2]) < 2*xy_tolerance_m:
             raise ValueError('Source and destination acceptance regions overlap')
-        self.initial, self.destination = tuple(initial_position), tuple(destination)
+        self.initial, self.destination = tuple(map(float, initial_position)), tuple(map(float, destination))
         self.lift_m,self.lift_hold_s,self.settle_s=lift_m,lift_hold_s,settle_s
         self.xy_tol,self.z_tol=xy_tolerance_m,z_tolerance_m
         self.retreat_m,self.max_linear,self.max_angular=retreat_m,max_linear_speed,max_angular_speed
@@ -52,14 +52,14 @@ class TransferCheck:
         if self.last_time is not None and (s.time_s<=self.last_time or s.time_s-self.last_time>.05):
             raise ValueError('Samples must be strictly increasing with at most 50 ms gaps')
         self.last_time=s.time_s
-        held = min(s.finger_forces)>.05 and s.position[2]>=self.initial[2]+self.lift_m
+        held = bool(min(s.finger_forces)>.05 and s.position[2]>=self.initial[2]+self.lift_m)
         self.lift_since = (s.time_s if self.lift_since is None else self.lift_since) if held else None
         if self.lift_since is not None and s.time_s-self.lift_since>=self.lift_hold_s:
             self.verified_lift=True
-        in_receiver = (math.dist(s.position[:2],self.destination[:2])<=self.xy_tol
+        in_receiver = bool(math.dist(s.position[:2],self.destination[:2])<=self.xy_tol
                        and abs(s.position[2]-self.destination[2])<=self.z_tol)
-        released = s.release_commanded and max(s.finger_forces)<.02 and s.gripper_distance>self.retreat_m
-        stable = s.linear_speed<self.max_linear and s.angular_speed<self.max_angular
+        released = bool(s.release_commanded and max(s.finger_forces)<.02 and s.gripper_distance>self.retreat_m)
+        stable = bool(s.linear_speed<self.max_linear and s.angular_speed<self.max_angular)
         valid=self.verified_lift and in_receiver and released and stable and placement_valid
         self.settle_since=(s.time_s if self.settle_since is None else self.settle_since) if valid else None
         self.success=(self.settle_since is not None and s.time_s-self.settle_since>=self.settle_s)
