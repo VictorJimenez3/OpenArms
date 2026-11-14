@@ -18,7 +18,7 @@ Where local `TODO.md` and `.openarms/` lane tooling are installed, pick one fold
 
 | Owner | Area |
 | --- | --- |
-| Victor | [`agentic/`](agentic/), including the AI harness, expert routing, skills and student-loop behavior. Active branch is `victor/student`. |
+| Victor | [`agentic/`](agentic/), including the AI harness, expert routing, skills and student-loop behavior. Active branch is `victor/agentic-student-loop`. |
 | Joe (Joseph) | [`ui/`](ui/), including the browser UI, and the [native iPhone UI](research/joseph/iphone-voice-bridge/ios/), plus lab scans and [fixture CAD](firmware/fixtures/). Joe can take AI tasks after coordinating the specific files with Victor. |
 | Stefanie | [Simulation](simulation/) scenes, robot and lab assets, and simulated motion. |
 | Duc | [Firmware controls](firmware/openarms_executor/), [calibration](calibration/) and simulation feedback tests. |
