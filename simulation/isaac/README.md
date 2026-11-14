@@ -117,3 +117,59 @@ The workshop is Apache-2.0; assets are fetched without relicensing or replacing
 the original notices. The current upstream Dockerfile uses Isaac Lab 2.3.2;
 this minimal Core API smoke isolates Isaac 5.1 and does not install that Docker
 stack, LeRobot, GR00T or training dependencies.
+
+## Dedicated Linux host and simulation request interface
+
+A separate, explicitly authorized host is supported without fabricating a Slurm
+identity. The default remains Slurm. `execution_context.py` requires the exact
+configured dedicated hostname and rejects Rutgers managed hosts in that mode.
+The verified IGVC machine is `igvc-NUC12DCMi9`, RTX 3060 12 GB, driver 595.99.02.
+Its isolated environment is `/home/igvc/openarms-isaac-5.1`; no IGVC code, services,
+robot calibration or physical devices are changed. Installation/launch outcomes
+must be read from evidence, not inferred from this host inventory.
+
+```bash
+export OPENARMS_EXECUTION_CONTEXT=dedicated
+export OPENARMS_DEDICATED_HOST=igvc-NUC12DCMi9
+export OPENARMS_ISAAC_ROOT=/home/igvc/openarms-isaac-5.1
+export OPENARMS_EVIDENCE_ROOT=/home/igvc/openarms-isaac-evidence
+bash simulation/isaac/runtime_host.sh                   # articulation
+bash simulation/isaac/runtime_host.sh --task cube       # unvalidated contact trial
+```
+
+`cube_plan.py` extracts reachable waypoints using the actual USD articulation.
+`cube_scene.py` creates a dynamic 20 mm / 10 g block, a fixed broad receiver,
+contact sensors and measurements. Its TCP offset is derived from the distal
+finger geometry; closing preload is a drive target, not an achieved pose or a
+weld. The proposed 24-second trial has not yet passed live physics. The older
+vial candidate is retained for failure provenance and should not be promoted.
+
+`skill.py` is an integration entry point, not a registered application backend.
+The student application must retain confirmation and request deduplication.
+Supported request envelopes carry `request_id`, `session_id`, `skill_id`, and
+`parameters`. An articulation probe uses `isaac.articulation.v1` with `{}`.
+The bounded transfer example uses the application's existing request shape:
+
+```json
+{"request_id":"trial-001","session_id":"student-session-001",
+ "skill_id":"known_station_transfer.v1",
+ "parameters":{"object":"sample","source":"A","destination":"B"}}
+```
+
+```bash
+"$OPENARMS_ISAAC_ROOT/venv/bin/python" simulation/isaac/skill.py \
+  --request request.json --workshop "$OPENARMS_ISAAC_ROOT/workshop" \
+  --output "$OPENARMS_EVIDENCE_ROOT/skill-trial-001" \
+  --allow-unvalidated-transfer
+```
+
+The experimental opt-in is required until a transfer is runtime-qualified.
+There is one simulator lock per evidence root; integration must use the same
+root for all student sessions. `recording/events.jsonl` reports request ID,
+SIMULATED provenance, phases, observation completion and process completion.
+`result.json` follows the application's execution-result fields; physical success
+is always null. Send SIGTERM to the skill process for STOP; it requests simulator
+interruption and escalates to process-group termination after 30 seconds. Each
+new invocation creates a new stage/reset and refuses to reuse an output directory.
+The interface, lock and STOP mechanism remain host-side implementation until
+verified against an actual running simulator; they are not physical-robot APIs.

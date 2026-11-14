@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--workshop', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--seconds', type=float, default=8)
-parser.add_argument('--task', choices=['articulation','vial'], default='articulation')
+parser.add_argument('--task', choices=['articulation','vial','cube'], default='articulation')
 parser.add_argument('--request-id', default=None)
 args = parser.parse_args()
 if not math.isfinite(args.seconds) or args.seconds <= 0:
@@ -24,7 +24,7 @@ if not math.isfinite(args.seconds) or args.seconds <= 0:
 args.output.mkdir(parents=True, exist_ok=False)
 receipt = {
     'schema_version': 1, 'provenance': 'SIMULATED',
-    'request_id': args.request_id or str(uuid.uuid4()), 'backend': 'simulated', 'kind': 'articulation_smoke' if args.task=='articulation' else 'vial_to_rack',
+    'request_id': args.request_id or str(uuid.uuid4()), 'backend': 'simulated', 'kind': {'articulation':'articulation_smoke','vial':'vial_to_rack','cube':'cube_to_receiver'}[args.task],
     'status': 'started', 'manipulation_success': False,
     'command': sys.argv, 'utc_started': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
     'slurm_job_id': os.environ.get('SLURM_JOB_ID'),
@@ -47,6 +47,8 @@ def save():
 
 app = None
 writer = None
+trial = None
+frame_count = 0
 try:
     save()
     event('started', task=args.task)
@@ -107,6 +109,9 @@ try:
     if args.task == 'vial':
         from vial_scene import VialTrial
         trial = VialTrial(world, stage, asset.parent)
+    elif args.task == 'cube':
+        from cube_scene import CubeTrial
+        trial = CubeTrial(world, stage, asset.parent)
     world.reset()
     camera.initialize()
     names = ['Rotation','Pitch','Elbow','Wrist_Pitch','Wrist_Roll','Jaw']
@@ -148,6 +153,9 @@ try:
                 previous_phase = phase
             states.write(json.dumps({'sim_time_s':float(world.current_time-start_sim_time),
                 'joint_command_rad':target_q.tolist(),'joint_measured_rad':actual,**observed})+'\n')
+            states.flush()
+            if trial is not None and hasattr(trial, 'check_after_sample'):
+                trial.check_after_sample()
             if step%4==0:
                 world.render()
                 frame = camera.get_rgba()
@@ -168,15 +176,17 @@ try:
     if not np.isfinite(measured).all() or not math.isfinite(motion) or (trial is None and motion < .1):
         raise RuntimeError(f'Insufficient measured articulation motion: {motion} rad')
     if trial is not None and not trial.success:
-        raise RuntimeError('Vial transfer failed live contact/lift/release/slot/settling criteria')
+        raise RuntimeError('Transfer failed live contact/lift/release/receiver/settling criteria')
     receipt['manipulation_success'] = bool(trial is not None and trial.success)
     receipt.update(status='passed', frames=frame_count, measured_rotation_span_rad=motion,
                    video='camera.mp4', visual_review='required', result=('Robot rendered and articulation moved; grasp/place not attempted' if trial is None
-                   else 'Vial contact/lift/release/slot/settling checks passed; video review required'))
+                   else 'Contact/lift/release/receiver/settling checks passed; video review required'))
     receipt['sha256'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
 except BaseException as exc:
     receipt.update(status='failed', error_type=type(exc).__name__, error=str(exc))
+    if trial is not None and hasattr(trial, 'last_observation'):
+        (args.output/'failure-state.json').write_text(json.dumps(trial.last_observation, indent=2))
     traceback.print_exc()
     raise
 finally:
@@ -187,6 +197,7 @@ finally:
             receipt.update(status='failed', video_close_error=str(close_error))
             traceback.print_exc()
     receipt['observation_status'] = receipt['status']
+    receipt['frames'] = frame_count
     receipt['shutdown_status'] = 'pending'
     receipt['status'] = 'failed' if receipt['observation_status']=='failed' else 'awaiting_shutdown'
     event('observations_finished',status=receipt['observation_status'],manipulation_success=receipt['manipulation_success'])
