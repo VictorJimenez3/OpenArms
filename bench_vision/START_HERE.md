@@ -4,6 +4,8 @@
 
 **What is not qualified:** real camera capture, actual-cup handling, pouring, unseen-position pickup and physical policy execution. No arm or camera was actuated during this work. The complete runnable teaching example is explicitly synthetic.
 
+**Earlier physical bench result:** Joseph's November 14 session did pick up and move the mandarin from C to B using saved poses and camera-assisted staged corrections. Its [committed logs, poses and camera frames](../research/joseph/mandarin-transfer-2026-11-14/README.md) are separate from this package's offline validation; the qualification limits above apply to this package.
+
 ## Run in a fresh checkout
 
 ```sh

@@ -2,6 +2,10 @@
 
 Run the setup and arm commands below from the repository root unless a step changes directories. The shared [calibration files](../calibration/) are loaded by [env.sh](../env.sh).
 
+## Recorded physical result
+
+The November 14 supervised C→B run physically picked up and placed the mandarin on the red card. Its [poses, logs, calibration snapshots and camera evidence](../research/joseph/mandarin-transfer-2026-11-14/README.md) are committed for teammates to inspect. The successful staged run loaded local `outputs/mandarin-bench/bench-a.json` plus pickup/lift corrections, not the default `firmware/openarms_executor/poses.json`. The preserved pose snapshot is historical evidence; keep the current bench configuration explicit when running a new trial.
+
 ## Setup (macOS)
 
 You need [conda](https://github.com/conda-forge/miniforge) and git. Run these once, from the root of this repo:

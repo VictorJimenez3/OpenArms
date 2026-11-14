@@ -88,7 +88,7 @@ Joseph's, in `firmware/`, on LeRobot 0.6.2 (Feetech servos) with the calibration
 
 - [harness.md](harness.md) v3: Part B (layers, catalog, validator rules), Part C (poses, file map), Part D (brain tools).
 - Astranomy (Yang, Khetan, Zhang, CoRL 2026 LBR): Claude as a direct policy 25.3%; 20.2% of failures were wrong target or plan; optional tools didn't help.
-- [firmware/README.md](../../firmware/README.md): LeRobot pinned at `e0d50211` (0.6.2) with Feetech, leader and follower calibrated. `firmware/` holds no executor yet, so every firmware path above is a proposal.
+- [firmware/README.md](../../firmware/README.md): LeRobot pinned at `e0d50211` (0.6.2) with Feetech, leader and follower calibrated. the executor now exists in `firmware/openarms_executor/`. This tool-layer sketch remains a proposal where its paths differ from the implementation. The [November 14 physical mandarin evidence](../joseph/mandarin-transfer-2026-11-14/README.md) records the successful bench transfer and its actual pose input.
 
 ## Open question
 
