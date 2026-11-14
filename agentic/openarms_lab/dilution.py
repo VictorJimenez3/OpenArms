@@ -22,8 +22,8 @@ EXPERIMENT: dict[str, Any] = {
         "1. Fixed stock dye (5 mL at relative concentration 1.0) is in receiver vessel B.\n"
         "2. Choose premeasured water source: Station A (5 mL) or Station C (15 mL).\n"
         "3. Predict final concentration: C_final = C_stock * V_stock / (V_stock + V_water).\n"
-        "4. Command mock portion transfer; observe qualitatively lighter appearance without faking sensors.\n"
-        "5. Compare analytical model prediction (0.50 vs 0.25) with empirical observations."
+        "4. Command a mock portion addition, then review the labeled model prediction.\n"
+        "5. Compare the analytical concentrations (0.50 vs 0.25). Real color observations require a validated pour and independent observation."
     ),
     "independent_variable": "added water volume",
     "controlled_variables": [
@@ -102,7 +102,7 @@ def model_observation(parameters: Optional[dict[str, Any] | str] = None, *args: 
     text = (
         f"Model predicts adding {v_water:.1f} mL water to {v_stock:.1f} mL stock dye (rel. conc. {c_stock:.1f}) yields "
         f"{v_total:.1f} mL solution at relative concentration {c_final:.2f} (qualitatively {qualitative} under controlled "
-        f"path/lighting). NEVER fake measured RGB or real optical sensor readings."
+        f"path/lighting). No measured color or RGB value is available."
     )
     assumptions = [
         "Conservation of solute moles: C_stock * V_stock = C_final * V_total (OpenStax Chemistry 2e, Sec 3.3)",
@@ -236,13 +236,13 @@ def evaluate_answer(
         has_calc = any(w in lower for w in ("0.5", "0.25", "half", "quarter", "equation", "c1*v1", "c1v1", "inverse", "doubl", "quadrupl"))
         has_color = any(w in lower for w in ("light", "color", "intensity", "absorb", "dilut", "pale"))
         has_solute = any(w in lower for w in ("conserv", "moles", "molecules", "solute", "amount of dye", "unchanged", "constant"))
-        is_correct = sum([has_calc, has_color, has_solute]) >= 2
+        is_correct = has_calc and has_color and has_solute
         feedback = (
-            "Excellent synthesis! You connected added water volume to final concentration (0.50 vs 0.25), noted qualitative color lightening, and recognized solute conservation."
+            "Your explanation connects added water volume to final concentration (0.50 vs 0.25), noted qualitative color lightening, and recognized solute conservation."
             if is_correct else
             "Partially complete explanation. Be sure to address concentration values (0.50 vs 0.25), qualitative color lightening, and solute conservation."
         )
-        follow_up = "Inquiry complete. You have demonstrated rigorous dilution principles." if is_correct else "Review C_final = C_stock * V_stock / (V_stock + V_water)."
+        follow_up = "How would you test whether the actual color follows this concentration model?" if is_correct else "Review C_final = C_stock * V_stock / (V_stock + V_water)."
         return {"feedback": feedback, "correct": is_correct, "follow_up": follow_up, "provenance": "RULE-BASED-RUBRIC"}
 
     return {"feedback": "Unrecognized quiz format.", "correct": None, "follow_up": "Check quiz type.", "provenance": "RULE-BASED-RUBRIC"}

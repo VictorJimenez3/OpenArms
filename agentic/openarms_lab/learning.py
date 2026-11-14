@@ -32,8 +32,8 @@ Academic & Field Research Citations:
 4. OpenArms Experiment Feasibility & Simulation Architecture:
    - Victor (2026), 'HackPrinceton Research: Educational Simulation & Feasibility',
      research/victor/educational-simulation.md & research/victor/laboratory-experiments-and-feasibility.md:
-     Controlled buoyancy feasibility using matched sample pairs: Sample A (0.8 g/mL)
-     and Sample C (1.2 g/mL) in water (1.0 g/mL), identical 20 mL volume.
+     Controlled buoyancy motivates this lesson. The application chooses hypothetical sample
+     densities 0.8 and 1.2 g/mL with identical 20 mL volume; no physical samples were measured.
      Archimedes' principle: F_b = rho_fluid * g * V_displaced; submerged fraction
      rho_object / rho_fluid.
    - Joseph (2026), 'OpenArms Canonical Notion Snapshot',
@@ -57,7 +57,9 @@ from typing import Any, Optional
 # Seeded Experiments Curriculum
 # ==============================================================================
 
-EXPERIMENTS: list[dict[str, Any]] = [
+from .dilution import EXPERIMENT as DILUTION_EXPERIMENT
+
+EXPERIMENTS: list[dict[str, Any]] = [DILUTION_EXPERIMENT,
     {
         "id": "buoyancy_trial",
         "title": "Buoyancy and Density: Comparative Float/Sink Trial",
@@ -207,6 +209,9 @@ def model_observation(experiment_id: str, parameters: Optional[dict[str, Any]] =
     Raises:
         ValueError: If experiment_id is unknown.
     """
+    if experiment_id=='color_dilution':
+        from .dilution import model_observation as dilution_model
+        return dilution_model(parameters)
     exp = get_experiment(experiment_id)
     target_id = exp["id"]
 
@@ -357,6 +362,9 @@ def make_quiz(
     Raises:
         ValueError: If experiment_id is unknown.
     """
+    if experiment_id=='color_dilution':
+        from .dilution import make_quiz as dilution_quiz
+        return dilution_quiz(observations,trial_count)
     exp = get_experiment(experiment_id)
     target_id = exp["id"]
     obs_list = observations or []
@@ -763,6 +771,9 @@ def evaluate_answer(
     Raises:
         ValueError: If experiment_id is unknown or quiz is malformed.
     """
+    if experiment_id=='color_dilution':
+        from .dilution import evaluate_answer as dilution_answer
+        return dilution_answer(quiz,answer,observations)
     exp = get_experiment(experiment_id)
     target_id = exp["id"]
     obs_list = observations or []

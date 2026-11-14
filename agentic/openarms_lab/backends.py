@@ -23,26 +23,39 @@ class MockBackend:
                        'point_holds': {'A': 'sample', 'C': 'sample', 'B': None}}
     def capabilities(self):
         return {'routes': [['A','B'], ['C','B']], 'objects': ['mandarin','sample'],
-                'controller': 'transfer', 'observation_provenance': 'MOCK'}
+                'controller': 'transfer', 'controllers':['transfer','add_sample'], 'observation_provenance': 'MOCK'}
     def state(self):
         import copy
         return copy.deepcopy(self._state)
     async def authorize(self, request):
         return True  # mock has no physical operator; result does not claim one
-    def prepare(self, obj='sample'):
+    def prepare(self, obj='sample', experiment_id=None):
         if not self._state['armed']:
             raise ValueError('Start a new mock session after a stop or fault.')
         self._state['point_holds'] = {'A': obj, 'C': obj, 'B': None}
-        self._state.update(at='HOME', holding=None)
+        self._state.update(at='HOME', holding=None,portions_left={},receiver_load={})
+        if experiment_id=='color_dilution':
+            self._state.update(portions_left={'A':1,'C':1},receiver_load={'B':0},
+                point_holds={'A':'5 mL water cup','C':'15 mL water cup','B':'5 mL stock dye'})
     async def execute(self, request, progress):
         p = request.parameters
         if request.request_id in self._consumed:
             raise ValueError('Execution request already consumed.')
         if [p.source,p.destination] not in self.capabilities()['routes']:
             raise ValueError('Unsupported route.')
+        dilution=request.skill_id=='premeasured_dilution.v1'
+        from agentic.openarms_agent.validator import validate
+        if dilution:
+            stations={'A':{'kind':'source','portions':1},'C':{'kind':'source','portions':1},'B':{'kind':'receiver','capacity':1}}
+            steps=[{'action':'add_sample','args':{'source':p.source,'into':p.destination,'portions':1}}]
+        else:
+            stations={k:{'kind':'point','holds':v} for k,v in self._state['point_holds'].items()}
+            steps=[{'action':'move_block','args':{'from':p.source,'to':p.destination}}]
+        checked=validate({'plan_id':request.request_id,'student_instruction':'Bound skill','steps':steps},self.state(),stations)
+        if not checked['ok']:raise ValueError(checked['reason'])
         self._consumed.add(request.request_id)
         self._stopped.clear()
-        for phase in ('approaching_source', 'grasping', 'carrying', 'placing', 'returning_home'):
+        for phase in ('approaching_source', 'grasping', 'carrying', 'pouring' if dilution else 'placing', 'returning_home'):
             await progress(phase)
             if self.fault == 'timeout':
                 await self._stopped.wait()
@@ -58,12 +71,14 @@ class MockBackend:
             if self.fault == 'failure' and phase == 'grasping':
                 self._state['armed'] = False
                 return ExecutionResult(request_id=request.request_id,backend=self.mode,status='failed',reason='Injected mock grasp failure.')
-        self._state['point_holds'][p.source] = None
-        self._state['point_holds'][p.destination] = p.object
+        self._state=checked['end_state']
+        if dilution:
+            self._state['point_holds'][p.source]='empty cup returned'
+            self._state['point_holds']['B']='mock diluted solution'
         unknown = self.fault == 'unknown'
         return ExecutionResult(request_id=request.request_id,backend=self.mode,status='completed',controller_completed=True,
             observation=Observation(provenance='UNKNOWN' if unknown else 'MOCK',
-                text='Controller finished; placement was not observed.' if unknown else f'Mock controller reports {p.object} at station {p.destination}.',
+                text='Controller finished; placement was not observed.' if unknown else (f'Mock dose counter reports one prepared water portion from {p.source} added to {p.destination}; no color sensor is connected.' if dilution else f'Mock controller reports {p.object} at station {p.destination}.'),
                 source='mock fault scenario' if unknown else 'mock state inspection',value=None if unknown else p.destination))
     async def stop(self):
         self._stopped.set()

@@ -54,6 +54,7 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
     seen={}
     resumable=None
     cancelled=set()
+    proposals={}
     pending={}
     send_lock=asyncio.Lock()
     async def emit(data):
@@ -101,12 +102,17 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                     async def run_tool(call):
                         cid=call.id
                         try:
+                            if cid in cancelled:return
                             if cid in seen:result=seen[cid]
                             elif call.name not in {f['name'] for f in TOOLS[0]['function_declarations']}:
                                 result={'error':'Tool is not allowed.'}
                             else:
-                                try:result=await asyncio.wait_for(tool_call(call.name,dict(call.args or {})),timeout=35)
-                                except Exception as exc:result={'error':str(exc)[:500]}
+                                try:result=await asyncio.wait_for(tool_call(call.name,{**dict(call.args or {}),**({'_tool_call_id':cid} if call.name=='request_action' else {})}),timeout=35)
+                                except Exception as exc:
+                                    if call.name=='request_action':await tool_call('_cancel_tool_request',{'tool_call_id':cid})
+                                    result={'error':str(exc)[:500]}
+                                if call.name=='request_action' and result.get('pending'):
+                                    proposals[cid]=result['pending']['request_id']
                                 seen[cid]=result
                             if cid not in cancelled:
                                 # Live requires explicit responses; SDK auto function calling is not supported.
@@ -124,10 +130,11 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                                         cancelled.add(cid)
                                         task=pending.get(cid)
                                         if task:task.cancel()
+                                        await tool_call('_cancel_tool_request',{'tool_call_id':cid,'request_id':proposals.get(cid)})
                                     await emit({'type':'interrupted'})
                                 if response.tool_call:
                                     for call in response.tool_call.function_calls:
-                                        if call.id not in pending:
+                                        if call.id not in pending and call.id not in cancelled:
                                             pending[call.id]=asyncio.create_task(run_tool(call))
                                 sc=response.server_content
                                 if sc:
@@ -163,6 +170,7 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
             except (WebSocketDisconnect,RuntimeError) as exc:
                 if isinstance(exc,WebSocketDisconnect):return
                 if attempt==3:raise
+                await on_disconnect()
                 await emit({'type':'status','status':'reconnecting','message':'Provider connection interrupted.'})
             except asyncio.CancelledError:raise
             except Exception as exc:
@@ -188,7 +196,7 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
         try:await websocket.close()
         except Exception:pass
 
-async def text_reply(text,context,tool_call):
+async def _text_generate_reply(text,context,tool_call):
     """Same grounded Gemini tools for text-only clients, with bounded tool rounds."""
     if not key():raise ValueError('Gemini credentials are not configured.')
     c=genai.Client(api_key=key())
@@ -212,3 +220,38 @@ async def text_reply(text,context,tool_call):
             messages.append(types.Content(role='tool',parts=responses))
         return 'Please review the current proposal or clarify your instruction.'
     finally:await c.aio.aclose()
+
+async def text_reply(text,context,tool_call):
+    """Text uses the same supported Live model; ordinary generateContent is opt-in."""
+    if os.getenv('OPENARMS_TEXT_TRANSPORT','live')=='generate':
+        return await _text_generate_reply(text,context,tool_call)
+    if not key():raise ValueError('Gemini credentials are not configured.')
+    client=genai.Client(api_key=key(),http_options={'api_version':'v1beta'})
+    try:
+        config=types.LiveConnectConfig(response_modalities=['AUDIO'],system_instruction=system_prompt(context),
+            tools=TOOLS,output_audio_transcription={})
+        async with client.aio.live.connect(model=os.getenv('GEMINI_LIVE_MODEL','gemini-3.8-live'),config=config) as session:
+            await session.send_client_content(turns=types.Content(role='user',parts=[types.Part(text=text)]),turn_complete=True)
+            transcript=[];tool_ids=set();rounds=0
+            while rounds<6:
+                rounds+=1
+                async for response in session.receive():
+                    if response.usage_metadata:
+                        await tool_call('_record_usage',{'usage':response.usage_metadata.model_dump(mode='json',exclude_none=True)})
+                    if response.tool_call:
+                        replies=[]
+                        for call in response.tool_call.function_calls:
+                            if call.id in tool_ids:continue
+                            tool_ids.add(call.id)
+                            if call.name not in {f['name'] for f in TOOLS[0]['function_declarations']}:
+                                result={'error':'Tool is not allowed.'}
+                            else:
+                                try:result=await tool_call(call.name,dict(call.args or {}))
+                                except Exception as exc:result={'error':str(exc)[:500]}
+                            replies.append(types.FunctionResponse(id=call.id,name=call.name,response={'result':result}))
+                        if replies:await session.send_tool_response(function_responses=replies)
+                    sc=response.server_content
+                    if sc and sc.output_transcription and sc.output_transcription.text:transcript.append(sc.output_transcription.text)
+                    if sc and sc.turn_complete and transcript:return ''.join(transcript)
+            return ''.join(transcript) or 'Please review your lab state and try a shorter question.'
+    finally:await client.aio.aclose()

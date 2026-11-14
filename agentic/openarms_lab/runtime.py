@@ -21,6 +21,8 @@ class Lab:
         from .skills import SkillRegistry
         self.store=Store(data_dir/'lab.sqlite3')
         self.registry=registry or SkillRegistry(data_dir/'skills.json')
+        from .recipes import install_recipes
+        install_recipes(self.registry)
         self.sessions={}
         self.backends={}
         self.tasks={}
@@ -29,6 +31,9 @@ class Lab:
         self.backend_factory=backend_factory
         self.physical=None
         self.motion_lock=asyncio.Lock()
+        self.physical_owner=None
+        self.physical_unavailable=False
+        self.model_tasks={}
         self.locks={}
     def _backend(self,sid):
         if sid not in self.backends:
@@ -92,10 +97,10 @@ class Lab:
         if b.mode=='physical':
             exp=next(x for x in EXPERIMENTS if 'transfer' in x['id'])
         obj='mandarin' if 'transfer' in exp['id'] else 'sample'
-        if isinstance(b,MockBackend): b.prepare(obj)
+        if isinstance(b,MockBackend): b.prepare(obj,exp['id'])
         s={'session_id':sid,'experiment':exp,'prediction':'','backend':b.mode,'state':b.state(),
            'pending':None,'requests':[],'observations':[],'quiz':None,'notebook':[],
-           'messages':[],'skills':self.registry.list(),'connected':True,'dedupe':{}}
+           'messages':[],'skills':self.registry.list(),'connected':True,'dedupe':{},'generation':0}
         self.sessions[sid]=s
         self._event(s,'session_created',backend=b.mode,experiment=exp['id'])
         self._message(s,'assistant',f"Welcome. {exp['question']} Choose your prediction before requesting a trial. Backend: {b.mode.upper()}.")
@@ -119,7 +124,7 @@ class Lab:
             raise LabError('The physical adapter currently supports mandarin transfer only; this lesson has no validated apparatus.')
         self._invalidate(s,'Experiment changed.')
         s.update(experiment=e,prediction='',quiz=None)
-        if isinstance(self._backend(sid),MockBackend): self._backend(sid).prepare('mandarin' if 'transfer' in e['id'] else 'sample')
+        if isinstance(self._backend(sid),MockBackend): self._backend(sid).prepare('mandarin' if 'transfer' in e['id'] else 'sample',e['id'])
         self._event(s,'experiment_selected',experiment=e)
         return await self.publish(s)
     async def prediction(self,sid,text):
@@ -139,7 +144,9 @@ class Lab:
         # Only these high-level bindings are executable. Generated trajectories never enter this runtime.
         transfer={'action':'transfer','args':{'source':'$source','destination':'$destination','object':'$object'}}
         observe={'action':'observe','args':{'station':'$destination'}}
-        if skill.get('steps') not in ([transfer],[transfer,observe]):
+        dilution=s['experiment']['id']=='color_dilution' and skill_id=='premeasured_dilution.v1'
+        dose=[{'action':'add_sample','args':{'source':'$source','into':'$destination','portions':1}}]
+        if skill.get('steps') not in ([transfer],[transfer,observe]) and not (dilution and skill.get('steps')==dose):
             raise LabError('Skill definition has unsupported steps or parameter bindings.')
         b=self._backend(s['session_id'])
         if b.mode=='physical' and skill.get('approval_scopes',{}).get('physical') not in ('approved','team_reported_baseline_only'):
@@ -153,8 +160,11 @@ class Lab:
         legacy={'plan_id':'validation','student_instruction':'Validated skill invocation',
                 'steps':[{'action':'move_block','args':{'from':p.source,'to':p.destination}}]}
         state=b.state()
+        if dilution:
+            legacy['steps']=[{'action':'add_sample','args':{'source':p.source,'into':p.destination,'portions':1}}]
         # The existing independent validator owns station occupancy and empty-gripper invariants.
         stations={name:{'kind':'point','holds':value} for name,value in state['point_holds'].items()}
+        if dilution:stations={'A':{'kind':'source','portions':1},'C':{'kind':'source','portions':1},'B':{'kind':'receiver','capacity':1}}
         v=validate_legacy(legacy,state,stations)
         if not v['ok']: raise LabError(v['reason'])
         return p,v
@@ -176,7 +186,16 @@ class Lab:
         if not s['prediction']:
             self._message(s,'assistant','What do you predict will happen, and why? Record your prediction before a trial.')
             return await self.publish(s)
-        routed=self.registry.resolve(text)
+        route_text=text
+        if s['experiment']['id']=='color_dilution':
+            # Lesson-specific nouns map to the same bounded parameter resolver.
+            import re
+            route_text=re.sub(r'\b(?:one premeasured water portion|water portion|water|a portion)\b','sample',text,flags=re.I)
+            route_text=re.sub(r'\b(?:add|pour|dilute)\b','transfer',route_text,flags=re.I)
+        routed=self.registry.resolve(route_text)
+        if s['experiment']['id']=='color_dilution' and routed['status']=='resolved':
+            routed['skill_id']='premeasured_dilution.v1'
+            # Keep the recognized object: an orange request cannot silently become a water dose.
         self._event(s,'routing',instruction=text,result=routed)
         if routed['status']!='resolved':
             self._message(s,'assistant',routed.get('message','Please name the source A or C and destination B.'))
@@ -188,8 +207,8 @@ class Lab:
             self._message(s,'assistant',str(exc))
             return await self.publish(s)
         request=SkillRequest(request_id=str(uuid.uuid4()),session_id=sid,skill_id=routed['skill_id'],parameters=params)
-        r={**request.model_dump(),'status':'requested','expires_at':time.time()+self.confirmation_ttl,
-           'summary':f'Transfer {params.object} from {params.source} to {params.destination}',
+        r={**request.model_dump(),'client_request_id':cid,'status':'requested','expires_at':time.time()+self.confirmation_ttl,
+           'summary':(f'Add the premeasured water cup at {params.source} into dye receiver {params.destination} (MOCK)' if s['experiment']['id']=='color_dilution' else f'Transfer {params.object} from {params.source} to {params.destination}'),
            'student_confirmed':False,'operator_authorized':False,'validation':v,'metrics':routed.get('metrics',{})}
         s['requests'].append(r)
         s['pending']=r
@@ -206,7 +225,18 @@ class Lab:
         from .live import text_reply,key
         if key():
             try:
-                reply=await asyncio.wait_for(text_reply(text,lambda:self.snapshot(sid),lambda n,a:self.tool(sid,n,a)),timeout=40)
+                generation=s.get('generation',0)
+                async def guarded(name,args):
+                    if name in ('request_action','record_prediction','answer_question') and s.get('generation',0)!=generation:
+                        raise LabError('This model turn was cancelled. Start a fresh instruction.')
+                    return await self.tool(sid,name,args)
+                task=asyncio.create_task(text_reply(text,lambda:self.snapshot(sid),guarded))
+                self.model_tasks.setdefault(sid,set()).add(task)
+                try:reply=await asyncio.wait_for(task,timeout=40)
+                finally:self.model_tasks[sid].discard(task)
+                if s.get('generation',0)!=generation:return await self.publish(s)
+            except asyncio.CancelledError:
+                return await self.publish(s)
             except Exception as exc:
                 reply=f"The Gemini text service is unavailable ({type(exc).__name__}). You can still select a sample, record a prediction and run the mock trial."
         else:
@@ -236,6 +266,16 @@ class Lab:
             self._event(s,'student_confirmed',request_id=request_id)
             self.tasks[sid]=asyncio.create_task(self._execute(s,r))
             return await self.publish(s)
+    async def _safe_stop_backend(self,s,backend):
+        if backend.mode=='physical' and self.physical_owner!=s['session_id']:
+            return
+        try:
+            await backend.stop()
+        except Exception as exc:
+            if backend.mode=='physical':self.physical_unavailable=True
+            self._event(s,'stop_failed',reason=type(exc).__name__,outcome='UNKNOWN',operator_recovery_required=True)
+            raise LabError('Controller STOP failed; outcome UNKNOWN. Operator recovery is required.') from exc
+
     async def _execute(self,s,r):
         sid=s['session_id'];b=self._backend(sid)
         request=SkillRequest.model_validate({k:r[k] for k in ('request_id','session_id','skill_id','parameters')})
@@ -247,8 +287,12 @@ class Lab:
         try:
             # Never queue physical commands behind another session's motion.
             if b.mode=='physical':
-                if self.motion_lock.locked(): raise LabError('Another physical session owns the arm.')
+                if self.motion_lock.locked() or self.physical_unavailable:
+                    r.update(status='rejected',reason='Another physical session owns the arm, or operator recovery is required.')
+                    self._event(s,'execution_rejected',request_id=r['request_id'],reason=r['reason'])
+                    return
                 await self.motion_lock.acquire();acquired=True
+                self.physical_owner=sid
             if r['status']!='approved': return
             if b.mode=='physical':
                 r['status']='awaiting_operator'
@@ -286,23 +330,29 @@ class Lab:
                         modeled={**modeled,'request_id':r['request_id'],'experiment_id':s['experiment']['id']}
                         s['observations'].append(modeled);self._event(s,'observation',**modeled)
                 obs=[o for o in s['observations'] if o.get('experiment_id')==s['experiment']['id']]
-                s['quiz']=make_quiz(s['experiment']['id'],obs,len([x for x in s['requests'] if x['status']=='completed']))
+                s['quiz']=make_quiz(s['experiment']['id'],obs,len([x for x in s['notebook'] if x['kind']=='observation' and x['data'].get('experiment_id')==s['experiment']['id'] and x['data'].get('provenance') in ('MOCK','REAL','SIMULATED','UNKNOWN')]))
+                s['quiz']['template_id']=s['quiz']['id']
+                s['quiz']['id']=s['quiz']['id']+'-'+r['request_id']
                 self._event(s,'question',question=s['quiz'])
                 self._message(s,'assistant',f"Controller completed ({b.mode.upper()}). "+(result.observation.text if result.observation else 'The experimental outcome is UNKNOWN.')+' '+s['quiz']['prompt'])
             else:
                 await b.stop()
                 self._message(s,'assistant',f"The action ended: {result.status}. {result.reason or 'Check the apparatus before another trial.'}")
         except asyncio.CancelledError:
-            await b.stop()
-            r.update(status='stopped',reason='Cancelled, disconnected or STOP requested; physical outcome may be unknown.')
+            try:await self._safe_stop_backend(s,b)
+            except LabError:pass
+            r.update(status='unknown' if b.mode=='physical' and self.physical_unavailable else 'stopped',reason='Controller STOP failed; operator recovery required.' if b.mode=='physical' and self.physical_unavailable else 'Cancelled, disconnected or STOP requested; physical outcome may be unknown.')
             self._event(s,'execution_stopped',request_id=r['request_id'],reason=r['reason'])
         except Exception as exc:
-            await b.stop()
+            try:await self._safe_stop_backend(s,b)
+            except LabError:pass
             r.update(status='unknown',reason=f'{type(exc).__name__}: {exc}')
             self._event(s,'execution_error',request_id=r['request_id'],reason=r['reason'])
             self._message(s,'assistant','Execution did not produce a verified outcome. '+r['reason'])
         finally:
-            if acquired: self.motion_lock.release()
+            if acquired:
+                self.physical_owner=None
+                self.motion_lock.release()
             await self.publish(s)
     async def cancel(self,sid,request_id=None):
         s=self.get(sid)
@@ -318,13 +368,19 @@ class Lab:
         if active:
             for r in s['requests']:
                 if r['status'] in ('approved','awaiting_operator','executing'): r['status']='stopping'
+        s['generation']=s.get('generation',0)+1
+        for model_task in tuple(self.model_tasks.get(sid,())):
+            if model_task is not asyncio.current_task():model_task.cancel()
         self._event(s,'stop_requested',disconnect=disconnect)
         if disconnect: s['connected']=False
         await self.publish(s)  # acknowledge STOP without waiting for motion thread shutdown
         # The stop hook is called BEFORE cancellation. Legacy threaded motion remains tracked.
         # Never stop another student's physical execution when this session does not own it.
         if active or self._backend(sid).mode!='physical':
-            await self._backend(sid).stop()
+            try:await self._safe_stop_backend(s,self._backend(sid))
+            except LabError:
+                for request in s['requests']:
+                    if request['status']=='stopping':request.update(status='unknown',reason='Controller STOP failed. Operator recovery required.')
         if active:
             t.cancel()
             try: await t
@@ -340,7 +396,7 @@ class Lab:
         b=self._backend(sid)
         if not isinstance(b,MockBackend): raise LabError('Physical apparatus reset belongs to the bench operator.')
         self._invalidate(s,'Mock apparatus reset.')
-        b.prepare('mandarin' if 'transfer' in s['experiment']['id'] else 'sample')
+        b.prepare('mandarin' if 'transfer' in s['experiment']['id'] else 'sample',s['experiment']['id'])
         s.update(prediction='',quiz=None)
         self._event(s,'mock_apparatus_prepared',text='Samples reset to A and C; receiver B cleared. This is a MOCK reset.')
         return await self.publish(s)
@@ -359,10 +415,15 @@ class Lab:
         return await self.publish(s)
     async def tool(self,sid,name,args):
         if name=='get_lab_state': return self.snapshot(sid)
-        if name=='request_action': return await self.request(sid,args['text'])
+        if name=='request_action': return await self.request(sid,args['text'],('live:'+args['_tool_call_id']) if args.get('_tool_call_id') else None)
         if name=='record_prediction': return await self.prediction(sid,args['text'])
         if name=='answer_question': return await self.answer(sid,args['question_id'],args['answer'])
         if name=='stop_lab': return await self.stop(sid)
+        if name=='_cancel_tool_request':
+            s=self.get(sid)
+            if s['pending'] and ((args.get('request_id') and s['pending']['request_id']==args['request_id']) or (args.get('tool_call_id') and s['pending'].get('client_request_id')=='live:'+args['tool_call_id'])):
+                self._invalidate(s,'Gemini tool call cancelled/interrupted.')
+            return await self.publish(s)
         if name=='_record_transcript':
             s=self.get(sid)
             role=args['role'];text=args['text']

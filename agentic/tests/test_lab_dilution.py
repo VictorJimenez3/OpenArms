@@ -61,7 +61,7 @@ def test_model_observation_sample_a_and_c():
     assert obs_a["value"] == 0.5
     assert obs_a["units"] == "relative concentration"
     assert "0.50" in obs_a["text"]
-    assert "NEVER fake measured RGB or real optical sensor readings" in obs_a["text"]
+    assert "No measured color or RGB value is available" in obs_a["text"]
     assert any("Conservation of solute moles" in a for a in obs_a["assumptions"])
     assert any("NEVER fake" in a for a in obs_a["assumptions"])
     assert "OpenStax" in obs_a["source"]
@@ -152,7 +152,7 @@ def test_evaluate_answer_free_response_comparative():
     )
     res_good = dilution.evaluate_answer(quiz, good_answer)
     assert res_good["correct"] is True
-    assert "Excellent synthesis" in res_good["feedback"]
+    assert "0.50 vs 0.25" in res_good["feedback"]
 
     # Incomplete answer: only mentions color without values or conservation
     poor_answer = "It just becomes a little bit light blue."
@@ -187,3 +187,30 @@ def test_citations_in_module_docstring():
     assert "docs/WET_LAB.md" in doc
     assert "MOCK portion addition" in doc
     assert "receiver C" in doc
+
+
+@pytest.mark.asyncio
+async def test_integrated_dilution_two_water_volumes_and_capacity(tmp_path):
+    from agentic.openarms_lab.runtime import Lab
+    from agentic.openarms_lab.backends import MockBackend
+    lab=Lab(tmp_path,backend_factory=lambda:MockBackend(delay=.001))
+    sid=(await lab.create())['session_id']
+    await lab.select_experiment(sid,'color_dilution')
+    for n,(station,value) in enumerate([('A',.5),('C',.25)]):
+        if n:await lab.prepare(sid)
+        await lab.prediction(sid,'More water should lower concentration and conserve dye.')
+        s=await lab.request(sid,f'add water from {station} to B',str(n))
+        assert s['pending']['skill_id']=='premeasured_dilution.v1'
+        assert [x['action'] for x in s['pending']['validation']['expanded']]==['pick','pour','return_cup','home']
+        await lab.confirm(sid,s['pending']['request_id']);await lab.tasks[sid]
+        s=lab.snapshot(sid)
+        assert s['observations'][-1]['provenance']=='MODEL-PREDICTED'
+        assert s['observations'][-1]['value']==value
+        assert s['state']['receiver_load']['B']==1
+        assert s['state']['holding'] is None and s['state']['at']=='HOME'
+        s=await lab.request(sid,'add water from A to B','overflow'+str(n))
+        assert s['pending'] is None
+    evidence=lab.registry.test_candidate('premeasured_dilution.v1')
+    assert evidence['verdict']=='passed' and evidence['provenance']=='MOCK'
+    assert evidence['approval_scopes']['physical']=='unsupported'
+    await lab.shutdown()

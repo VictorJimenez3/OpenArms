@@ -1,6 +1,7 @@
 """Run: python -m agentic.openarms_lab (local-first, one server worker)."""
 from __future__ import annotations
 import asyncio
+import anyio
 from contextlib import asynccontextmanager
 import os
 from pathlib import Path
@@ -34,6 +35,11 @@ class Compose(BaseModel):
     instruction:str=Field(min_length=1,max_length=4000)
 class Promote(BaseModel):
     evidence_id:str
+
+def allowed_host(host):
+    try:hostname=urlsplit('//'+host).hostname
+    except ValueError:return False
+    return hostname in ({'localhost','127.0.0.1','::1','testserver'}|set(os.getenv('OPENARMS_ALLOWED_HOSTS','').split(',')))
 
 def trusted_origin(origin,host):
     if not origin:return True  # CLI clients; browser clients always send Origin for WS/mutations
@@ -111,14 +117,17 @@ def create_app(lab=None):
     async def skills():return service().registry.list()
     @app.post('/api/skills/compose')
     async def compose(b:Compose):
-        return await asyncio.wait_for(service().registry.compose(b.instruction),timeout=45)
+        try:return await asyncio.wait_for(service().registry.compose(b.instruction),timeout=45)
+        except TimeoutError:return JSONResponse({'detail':'Expert planning timed out. The existing skill catalog remains usable.'},status_code=504)
+        except (ValueError,KeyError):raise
+        except Exception as exc:return JSONResponse({'detail':f'Expert provider unavailable ({type(exc).__name__}). Retry later or use approved skills.'},status_code=503)
     @app.post('/api/skills/{skill_id}/test')
     async def test_candidate(skill_id):return service().registry.test_candidate(skill_id)
     @app.post('/api/skills/{skill_id}/promote')
     async def promote(skill_id,b:Promote):return service().registry.promote(skill_id,b.evidence_id)
     @app.websocket('/api/sessions/{sid}/events')
     async def events(ws:WebSocket,sid:str):
-        if not trusted_origin(ws.headers.get('origin'),ws.headers.get('host')):
+        if not allowed_host(ws.headers.get('host','')) or not trusted_origin(ws.headers.get('origin'),ws.headers.get('host')):
             await ws.close(code=1008);return
         await ws.accept()
         lab=service()
@@ -138,23 +147,29 @@ def create_app(lab=None):
         try:
             done,_=await asyncio.wait((sender,receiver),return_when=asyncio.FIRST_COMPLETED)
             for t in done: t.result()
-        except (WebSocketDisconnect,RuntimeError):pass
+        except (WebSocketDisconnect,RuntimeError,asyncio.CancelledError):pass
         finally:
-            sender.cancel();receiver.cancel()
-            await asyncio.gather(sender,receiver,return_exceptions=True)
-            lab.subscribers[sid].discard(q)
-            # Browser transport loss revokes pending permission and requests stop.
-            await lab.stop(sid,disconnect=True)
+            # ASGI servers may cancel the connection scope during close; cleanup must finish.
+            with anyio.CancelScope(shield=True):
+                sender.cancel();receiver.cancel()
+                await asyncio.gather(sender,receiver,return_exceptions=True)
+                lab.subscribers[sid].discard(q)
+                if not lab.subscribers[sid]:await lab.stop(sid,disconnect=True)
     @app.websocket('/api/sessions/{sid}/live')
     async def live(ws:WebSocket,sid:str):
-        if not trusted_origin(ws.headers.get('origin'),ws.headers.get('host')):
+        if not allowed_host(ws.headers.get('host','')) or not trusted_origin(ws.headers.get('origin'),ws.headers.get('host')):
             await ws.close(code=1008);return
         await ws.accept()
         lab=service()
         try:lab.get(sid)
         except KeyError:await ws.close(code=1008);return
         from .live import serve_live
-        await serve_live(ws,lambda:lab.snapshot(sid),lambda name,args:lab.tool(sid,name,args),lambda:lab.stop(sid,disconnect=True))
+        generation=lab.get(sid).get('generation',0)
+        async def guarded(name,args):
+            if name in ('request_action','record_prediction','answer_question') and lab.get(sid).get('generation',0)!=generation:
+                raise LabError('This voice turn was revoked by STOP/disconnect. Reconnect before proposing another action.')
+            return await lab.tool(sid,name,args)
+        await serve_live(ws,lambda:lab.snapshot(sid),guarded,lambda:lab.stop(sid,disconnect=True))
     static=ROOT/'ui/lab'
     if static.is_dir():
         @app.get('/')

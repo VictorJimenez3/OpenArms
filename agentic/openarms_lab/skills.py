@@ -296,6 +296,20 @@ class SkillRegistry:
                     pass
             raise
 
+    def install_builtin(self, skill):
+        """Install a fixed application-authored mock recipe without overwriting versions."""
+        from .recipes import DILUTION_SKILL
+        if skill != DILUTION_SKILL:
+            raise ValueError('Only the reviewed application recipe can be installed as a builtin.')
+        sid=skill['skill_id']
+        if sid in self._skills:
+            if compute_skill_hash(self._skills[sid])!=compute_skill_hash(skill):
+                raise ValueError('Stored builtin differs; review a new version rather than overwriting.')
+            return
+        self._skills[sid]=copy.deepcopy(skill)
+        self._skills[sid]['content_hash']=compute_skill_hash(skill)
+        self._save()
+
     def list(self) -> List[Dict[str, Any]]:
         """Return list of all registered skills in the catalog."""
         return [copy.deepcopy(skill) for skill in self._skills.values()]
@@ -488,6 +502,13 @@ class SkillRegistry:
             raise KeyError(f"Skill '{skill_id}' not found in registry.")
 
         skill = self._skills[skill_id]
+        if skill_id=='premeasured_dilution.v1':
+            from .recipes import test_recipe
+            evidence=test_recipe(skill)
+            self._evidence[evidence['evidence_id']]=copy.deepcopy(evidence)
+            skill['evidence_id']=evidence['evidence_id']
+            self._save()
+            return evidence
         if not isinstance(skill, dict) or skill.get("skill_id") != skill_id:
             raise ValueError("Skill artifact identity does not match the registry key.")
         tests_passed: List[str] = []
