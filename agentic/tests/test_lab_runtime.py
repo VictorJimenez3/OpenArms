@@ -208,17 +208,18 @@ async def test_individual_warm_mock_commands_keep_fixture_state(lab):
         evaluation = await FakeEvaluator().evaluate_candidate(sid, candidate, None)
         evaluation['evaluation_id'] += '-' + op
         lab.registry.record_evaluation(op, version, evaluation)
+        if op == 'mock_pick_up':
+            await lab.prediction(sid, 'purple')
         queued = await lab.converse(sid, text)
         await lab.workers[queued['tasks'][-1]['task_id']]
         snap = lab.snapshot(sid)
         p = snap['pending']
         if op == 'mock_pick_up':
-            # Optional settings remain usable without changing this proposal's consent.
+            # Pickup does not depend on the selected prepared-sample condition.
             await lab.choose_condition(sid, 'water')
-            await lab.prediction(sid, 'purple')
             assert lab.snapshot(sid)['pending']['request_id'] == p['request_id']
         await lab.present(sid, p['request_id'], p['proposal_version'])
-        await lab.converse(sid, 'confirm')
+        await lab.confirm(sid, p['request_id'], p['proposal_version'])
         await lab.workers[p['task_id']]
         snap = lab.snapshot(sid)
         assert snap['tasks'][-1]['status'] == 'completed'
