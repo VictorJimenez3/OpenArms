@@ -8,6 +8,7 @@ import asyncio
 import importlib
 import sys
 import types
+import uuid
 from pathlib import Path
 from .contracts import ExecutionResult, Observation, SkillRequest
 
@@ -72,13 +73,21 @@ class TransferRunnerAdapter:
     def __init__(self, runner):
         if runner.mode != 'physical':
             raise ValueError('Transfer bridge requires a physical runner.')
+        robot = getattr(runner, 'robot', None)
+        if any(base.__name__ in ('FakeRobot', 'FakeLeader') for base in type(robot).__mro__):
+            raise ValueError('FakeRobot is not a physical backend. Use the mock backend.')
         self.runner = runner
         self._authorization = None
+        self._authorizing = False
         self._revoked = set()
-        self._authorized = set()
+        self._authorized = {}
+        self._seen_requests = set()
+        self._executing = False
         self._inflight_id = None
         self._state = {'at':'HOME','holding':None,'armed':True,'portions_left':{},'receiver_load':{},
-                       'point_holds':{'A':'mandarin','C':'mandarin','B':None}}
+                       'point_holds':{'A':'mandarin','C':'mandarin','B':None},
+                       'state_provenance':'UNKNOWN',
+                       'setup_assumptions':'HOME, empty gripper, source loaded and B clear are operator-checked preconditions, not sensor observations.'}
     @classmethod
     def load(cls, checkout: str, factory: str):
         """Import under a private namespace so this checkout's firmware cannot shadow it."""
@@ -91,7 +100,9 @@ class TransferRunnerAdapter:
         module, sep, name = factory.partition(':')
         if not sep or not module.startswith('firmware.'):
             raise ValueError('Runner factory must be firmware.module:create_runner.')
-        namespace = '_openarms_hardware'
+        # Each load gets fresh modules, including relative imports and the runner singleton.
+        # A shared namespace would silently reuse the first checkout's firmware.
+        namespace = '_openarms_hardware_' + uuid.uuid4().hex
         pkg = types.ModuleType(namespace)
         pkg.__path__ = [str(root)]
         sys.modules[namespace] = pkg
@@ -112,37 +123,67 @@ class TransferRunnerAdapter:
     def plan(request):
         return {'plan_id':request.request_id, **request.parameters.model_dump()}
     async def authorize(self, request):
-        if self._authorization is not None and not self._authorization.done():
+        if self._authorizing or (self._authorization is not None and not self._authorization.done()):
             raise ValueError('A previous operator prompt is still open. Answer it before another request.')
+        if self._authorized or self._executing:
+            raise ValueError('A physical request is already authorized or executing.')
+        if not self._state['armed']:
+            raise ValueError('Check the bench and restart the physical backend before another request.')
         pid=request.request_id
+        if pid in self._seen_requests or pid in self._revoked:
+            raise ValueError('Physical request already consumed. Request a new action.')
+        p=request.parameters
+        caps=self.capabilities()
+        if [p.source,p.destination] not in caps['routes'] or p.object not in caps['objects']:
+            raise ValueError('Unsupported physical object or route.')
+        self._seen_requests.add(pid)
         self._inflight_id=pid
         self._authorization=asyncio.create_task(self.runner.authorize(self.plan(request)))
+        self._authorizing = True
         try:
             ok=await asyncio.shield(self._authorization)
         except asyncio.CancelledError:
             self._revoked.add(pid)
+            self._state['armed'] = False
             # Retain the underlying input thread/future; a late yes cannot execute.
             def drain(task):
                 try: task.result()
                 except BaseException: pass
             self._authorization.add_done_callback(drain)
             raise
+        finally:
+            self._authorizing = False
         if ok is True and pid not in self._revoked:
-            self._authorized.add(pid)
+            # Bind permission to the entire request, not only its caller-supplied ID.
+            self._authorized[pid] = request.model_dump()
             return True
         return False
     async def execute(self, request, progress):
-        if request.request_id not in self._authorized or request.request_id in self._revoked:
+        pid=request.request_id
+        approved=self._authorized.pop(pid,None)  # every attempted invocation consumes permission
+        if (approved != request.model_dump() or pid in self._revoked
+                or not self._state['armed'] or self._executing):
             raise ValueError('Physical request was not authorized, or permission was revoked.')
-        self._authorized.remove(request.request_id)
-        await progress('controller_running')
-        result = await self.runner.execute(self.plan(request))
-        if result.plan_id != request.request_id or result.mode != 'physical' or result.operator_authorized is not True:
+        self._executing = True
+        self._state['armed'] = False
+        try:
+            await progress('controller_running')
+            # STOP may arrive while progress is being published, before motion starts.
+            if pid in self._revoked:
+                raise ValueError('Physical permission was revoked before execution.')
+            result = await self.runner.execute(self.plan(request))
+            if (getattr(result,'plan_id',None) != pid or getattr(result,'mode',None) != 'physical'
+                    or getattr(result,'operator_authorized',None) is not True
+                    or getattr(result,'status',None) not in ('completed','failed','stopped','unknown')):
+                raise ValueError('Runner result identity/mode/status/operator authorization mismatch.')
+            status = result.status
+        except BaseException:
             await self.stop()
-            raise ValueError('Runner result identity/mode/operator authorization mismatch.')
-        status = result.status if result.status in ('completed','failed','stopped','unknown') else 'unknown'
+            raise
+        finally:
+            self._executing = False
         # Legacy placement has no independent evidence attached. Do not turn it into REAL success.
-        self._state['armed'] = False  # require a new bench setup/observation, never assume post-run state
+        # Require a new bench setup/observation; never assume post-run placement.
         return ExecutionResult(request_id=request.request_id,backend='physical',status=status,
             operator_authorized=True,controller_completed=status=='completed',physical_success=None,
             observation=Observation(provenance='UNKNOWN',text='Controller finished; independent physical placement evidence is not available.'
@@ -152,5 +193,5 @@ class TransferRunnerAdapter:
         self._state['armed'] = False
         if self._inflight_id:
             self._revoked.add(self._inflight_id)
-            self._authorized.discard(self._inflight_id)
+            self._authorized.pop(self._inflight_id,None)
         await self.runner.stop()
