@@ -5,7 +5,8 @@ import re
 import time
 import uuid
 
-MUTATING_TOOLS = {'request_action', 'improve_skill', 'choose_condition', 'record_prediction', 'record_reflection',
+TASK_TEXT = {'request_action': 'text', 'start_task': 'text', 'improve_skill': 'limitation'}
+MUTATING_TOOLS = {*TASK_TEXT, 'choose_condition', 'record_prediction', 'record_reflection',
                   'prepare_next_trial', 'student_confirm', 'cancel_request'}
 CONFIRMATIONS = {'yes', 'yes please', 'confirm', 'yes confirm', 'yes i confirm', 'i confirm',
                  'confirm it', 'confirm the request', 'confirm this request', 'confirm that request',
@@ -16,6 +17,12 @@ STOPS = {'stop', 'stop now', 'emergency stop'}
 
 def normalized(text):
     return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9 ]', '', text.lower())).strip()
+
+
+def quoted_words(text):
+    # Ignore transcription casing, outer punctuation, and whitespace, but keep
+    # all words and internal punctuation (including decimal points).
+    return ' '.join(text.strip().rstrip('.!?').casefold().split())
 
 
 class VoiceControls:
@@ -59,6 +66,7 @@ class VoiceControls:
     def revoke(self):
         self.consumed = True
         self.finished.clear()
+        self.turn_id = str(uuid.uuid4())
         self.started = 0
         self.text = ''
         self.last_confirmation = None
@@ -78,23 +86,44 @@ class VoiceControls:
             return await self.dispatch('student_confirm', {'request_id': self.request_id, 'proposal_version': self.proposal_version})
         return None
 
-    async def dispatch(self, name, arguments):
+    async def dispatch(self, name, arguments, *, turn_id=None):
         args = {k: v for k, v in arguments.items() if not k.startswith('_')}
-        if name == 'student_confirm':
+        if name in MUTATING_TOOLS:
+            bound_turn = turn_id if turn_id is not None else self.turn_id
+            if bound_turn != self.turn_id or not self.started:
+                raise ValueError('Wait for a completed student turn.')
             await asyncio.wait_for(self.finished.wait(), timeout=4)
+            if bound_turn != self.turn_id or not self.finished.is_set():
+                raise ValueError('This input was revoked. Please give a new instruction.')
+        if name == 'student_confirm':
             async with self.confirmation_lock:
+                if bound_turn != self.turn_id or not self.finished.is_set():
+                    raise ValueError('This input was revoked. Please give a new instruction.')
                 return await self._confirm(args)
         if name in MUTATING_TOOLS:
-            await asyncio.wait_for(self.finished.wait(), timeout=4)
             if not self.text.strip():
                 raise ValueError('Wait for a completed student turn.')
-            if self.generation != self.context().get('generation', 0):
+            if name == 'cancel_request' and normalized(self.text) in CANCELLATIONS:
+                # The deterministic completed-input handler owns cancellation.
+                return self.context()
+            if self.generation != self.context().get('generation', 0) or time.monotonic() - self.started > 30:
                 raise ValueError('This input was revoked. Please give a new instruction.')
             if normalized(self.text) in CONFIRMATIONS | CANCELLATIONS | STOPS:
                 # Model interpretation cannot turn control speech into another operation.
-                if name == 'cancel_request' and normalized(self.text) in CANCELLATIONS:
-                    return self.context()
                 raise ValueError('That control cannot create or change a trial.')
+            if self.consumed:
+                raise ValueError('This student turn already used its mutation. Wait for a new instruction.')
+            if name in TASK_TEXT:
+                field = TASK_TEXT[name]
+                supplied = args.get(field)
+                if not isinstance(supplied, str) or quoted_words(supplied) != quoted_words(self.text):
+                    raise ValueError('Use the completed student request verbatim.')
+                if (normalized(self.text) in {'thanks', 'thank you', 'okay', 'ok', 'hello', 'hi'} or
+                        re.match(r'^(?:why\b|what (?:is|are|does|did|happened)\b|'
+                                 r'how (?:does|did|is|are)\b|explain\b)', normalized(self.text))):
+                    raise ValueError('Answer this conversational turn without starting a task.')
+                args[field] = self.text.strip()
+            # Claim before awaiting the callback, including if it fails after dispatch.
             self.consumed = True
             args['_voice_generation'] = self.generation
             args['_voice_turn_id'] = self.turn_id
@@ -113,6 +142,7 @@ class VoiceControls:
             return snap
         if (self.consumed or time.monotonic() - self.started > 30 or
                 isinstance(version, bool) or
+                not re.fullmatch(r'[a-zA-Z ,.!]+', self.text.strip()) or
                 normalized(self.text) not in CONFIRMATIONS or not self.presented or
                 not rid or rid != self.request_id or rid != pending.get('request_id') or
                 version != self.proposal_version or version != pending.get('proposal_version') or

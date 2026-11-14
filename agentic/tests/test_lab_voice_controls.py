@@ -151,6 +151,7 @@ async def test_voice_action_waits_for_final_correlated_student_transcript(voice_
     args = {'text': text}
     with pytest.raises(LabError, match='completed user turn'):
         await controls.dispatch('request_action', args)
+    controls.input(text, finished=True)
     await lab.tool(sid, '_record_transcript',
                    {'role': 'assistant', 'text': text, 'turn_id': controls.turn_id, 'final': True})
     with pytest.raises(LabError, match='completed user turn'):
@@ -187,3 +188,66 @@ async def test_provider_integral_float_uses_server_version_and_concurrent_confir
     assert type(seen[0]['_voice_consent']['proposal_version']) is int
     with pytest.raises(ValueError):
         await controls.dispatch('student_confirm', {**exact, 'proposal_version': True})
+
+
+@pytest.mark.parametrize('name', ['request_action', 'start_task'])
+async def test_mutation_uses_completed_transcript_and_claims_turn_once(voice_lab, name):
+    lab, sid, controls, _ = voice_lab
+    text = 'How about testing the prepared vinegar and checking the indicator?'
+    controls.input(text, finished=True)
+    await lab.tool(sid, '_record_transcript',
+                   {'role': 'user', 'text': text, 'turn_id': controls.turn_id, 'final': True})
+    with pytest.raises(ValueError, match='verbatim'):
+        await controls.dispatch(name, {'text': 'Test the prepared water sample.'})
+    assert not lab.snapshot(sid)['tasks']
+
+    alt = 'start_task' if name == 'request_action' else 'request_action'
+    results = await asyncio.gather(
+        controls.dispatch(name, {'text': text.lower().rstrip('?'), '_tool_call_id': 'a'}),
+        controls.dispatch(alt, {'text': text, '_tool_call_id': 'b'}),
+        return_exceptions=True)
+    accepted = [result for result in results if isinstance(result, dict)]
+    rejected = [result for result in results if isinstance(result, ValueError)]
+    assert len(accepted) == len(rejected) == 1
+    assert 'already used' in str(rejected[0])
+    snapshot = await controls.dispatch('get_lab_state', {})
+    assert len(snapshot['tasks']) == 1
+    assert snapshot['tasks'][0]['request'] == text
+    assert snapshot['tasks'][0]['turn_id'] == controls.turn_id
+
+
+@pytest.mark.parametrize('text', ['Thanks!', 'Why does cabbage indicator turn pink?'])
+async def test_conversation_is_not_a_task_even_if_model_quotes_it(voice_lab, text):
+    lab, sid, controls, _ = voice_lab
+    controls.input(text, finished=True)
+    with pytest.raises(ValueError, match='conversational'):
+        await controls.dispatch('request_action', {'text': text})
+    assert not (await controls.dispatch('get_lab_state', {}))['tasks']
+
+
+async def test_correction_keeps_its_own_turn_without_granting_task_consent(voice_lab):
+    lab, sid, controls, backend = voice_lab
+    _, proposal = await propose(voice_lab, presented=True)
+    text = 'Actually, use water instead.'
+    controls.input(text, finished=True)
+    await controls.dispatch('choose_condition', {'condition_id': 'water'})
+    assert lab.snapshot(sid)['trial']['condition_id'] == 'water'
+    with pytest.raises(ValueError):
+        await controls.dispatch('start_task', {'text': text})
+    with pytest.raises(ValueError):
+        await controls.dispatch('student_confirm', proposal)
+    assert not backend.executions
+
+
+async def test_waiting_mutation_cannot_inherit_a_later_turn(voice_lab):
+    lab, sid, controls, _ = voice_lab
+    controls.input('Test the prepared ')
+    stale_id = controls.turn_id
+    task = asyncio.create_task(controls.dispatch('request_action', {'text': 'Test the prepared vinegar.'},
+                                                 turn_id=stale_id))
+    await asyncio.sleep(0)
+    controls.revoke()
+    controls.input('Test the prepared vinegar.', finished=True)
+    with pytest.raises(ValueError, match='revoked'):
+        await task
+    assert not lab.snapshot(sid)['tasks']

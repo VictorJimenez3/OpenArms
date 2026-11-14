@@ -105,6 +105,22 @@ def tool_call(cid, name, **args):
     return NS(id=cid, name=name, args=args)
 
 
+def function_calls(*calls):
+    return response(tool_call=NS(function_calls=calls))
+
+
+def output_reply(text):
+    return response(server_content=content(output_transcription=NS(text=text),
+        model_turn=NS(parts=[NS(inline_data=NS(data=b'\0\0'))]), turn_complete=True))
+
+
+def add_event(state, kind, **data):
+    notebook = state.setdefault('notebook', [])
+    seq = len(notebook) + 1
+    notebook.append({'kind': kind, 'event_id': f'event-{seq}', 'sequence': seq,
+                     **live.brief(data, live.EVENT_FIELDS), 'data': data})
+
+
 async def test_missing_credentials_keeps_text_fallback_without_constructing_client(monkeypatch):
     for name in ('GEMINI_API_KEY', 'GOOGLE_API_KEY'):
         monkeypatch.delenv(name, raising=False)
@@ -215,15 +231,13 @@ async def test_provider_cancels_only_matching_pending_callback():
         pass
 
     async def tool(name, args):
-        if name != 'request_action':
-            return
-        if args['_tool_call_id'] == 'cancel-me':
+        if name == 'request_action':
             entered.set()
             try:
                 await asyncio.Future()
             finally:
                 cancelled.set()
-        else:
+        elif name == 'get_lab_state':
             other_entered.set()
             await release.wait()
 
@@ -236,7 +250,7 @@ async def test_provider_cancels_only_matching_pending_callback():
         session.incoming.put_nowait(transcript(text))
         session.incoming.put_nowait(response(tool_call=NS(function_calls=[
             tool_call('cancel-me', 'request_action', text=text),
-            tool_call('leave-alone', 'request_action', text=text)])))
+            tool_call('leave-alone', 'get_lab_state')])))
         await asyncio.wait_for(asyncio.gather(entered.wait(), other_entered.wait()), 2)
         session.incoming.put_nowait(response(tool_call_cancellation=NS(ids=['cancel-me'])))
         await asyncio.wait_for(cancelled.wait(), 2)
@@ -300,8 +314,7 @@ async def test_spoken_preview_is_only_presented_after_matching_playback():
         session = client.sessions[0]
 
         async def reply(text, index):
-            session.incoming.put_nowait(response(server_content=content(
-                output_transcription=NS(text=text), turn_complete=True)))
+            session.incoming.put_nowait(output_reply(text))
             await until(lambda: sum(m['type'] == 'reply_end' for m in sent) == index)
             return [m['reply_id'] for m in sent if m['type'] == 'reply_end'][-1]
 
@@ -319,3 +332,196 @@ async def test_spoken_preview_is_only_presented_after_matching_playback():
     finally:
         await finish(bridge, runner)
     await assert_clean(bridge, client)
+
+
+@pytest.mark.parametrize('resumed', [True, False])
+async def test_reconnect_recovers_subscription_and_replays_real_correlated_feedback(resumed):
+    state = {**context(), 'generation': 0, 'notebook': []}
+    client = Client()
+    correlation = {'task_id': 't1', 'request_id': 'r1', 'trial_id': 'trial1',
+                   'skill_version': 'skill-v', 'turn_id': 'student-1'}
+    add_event(state, 'task_status', status='executing', **correlation)
+
+    async def emit(_):
+        pass
+
+    async def tool(name, _):
+        if name == 'stop_lab':
+            state['generation'] += 1
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client,
+                               reconnect_delay=0)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        first = client.sessions[0]
+        first.incoming.put_nowait(function_calls(tool_call('watch-1', 'watch_lab_events')))
+        await until(lambda: len(first.tools) == 1)
+        assert first.tools[0].response['through_sequence'] == 1
+        if resumed:
+            first.incoming.put_nowait(response(session_resumption_update=NS(resumable=True, new_handle='resume-1')))
+            await until(lambda: bridge.resume_handle == 'resume-1')
+        add_event(state, 'execution_progress', step=1, operation='mock_prepared_sample', phase='metered_dose',
+                  provenance='SIMULATED', **correlation)
+        add_event(state, 'message', role='assistant', text='Internal conversation')
+        add_event(state, 'execution_result', provenance='SIMULATED', **correlation,
+                  receipt={**correlation, 'receipt_id': 'controller-1', 'plan_hash': 'plan-1',
+                           'backend': 'mujoco', 'status': 'completed', 'controller_completed': True,
+                           'physical_execution': False, 'simulation': {'path': '/tmp/private'}})
+        add_event(state, 'observation', provenance='UNKNOWN', evidence_ids=['frame-1'], **correlation,
+                  observation={**correlation, 'observation_id': 'observed-1', 'plan_hash': 'plan-1',
+                               'status': 'unknown', 'provenance': 'UNKNOWN', 'evidence': ['frame-1'],
+                               'reason': 'Image unreadable', 'receipt': {'images': [{'path': '/tmp/private'}]}})
+        add_event(state, 'task_status', status='failed', code='authentication', **correlation)
+        await bridge.state_changed()
+        await until(lambda: len(first.tools) == 2)  # Change sent after latest resumption handle.
+        first.incoming.put_nowait(response(go_away=NS()))
+        await until(lambda: len(client.sessions) == 2 and bridge.ready)
+        second = client.sessions[1]
+        if not resumed:
+            second.incoming.put_nowait(function_calls(tool_call('watch-1', 'watch_lab_events')))
+        await until(lambda: len(second.tools) == 1)
+        replay, = second.tools
+        assert replay.id == 'watch-1' and replay.will_continue
+        assert replay.response['subscription'] == ('resumed' if resumed else 'current')
+        assert replay.response['state']['generation'] == 1
+        assert not second.turns
+        assert replay.response['after_sequence'] == (1 if resumed else 0)
+        assert replay.response['through_sequence'] == 6
+        events = replay.response['events'][-4:]
+        assert [e['sequence'] for e in events] == [2, 4, 5, 6]
+        assert all(e['request_id'] == 'r1' and e['task_id'] == 't1' for e in events)
+        assert events[0]['phase'] == 'metered_dose'
+        assert events[1]['receipt']['receipt_id'] == 'controller-1'
+        assert events[1]['receipt']['controller_completed'] is True
+        assert events[2]['observation']['plan_hash'] == events[1]['receipt']['plan_hash'] == 'plan-1'
+        assert events[2]['observation']['status'] == 'unknown'
+        assert events[2]['observation']['evidence'] == ['frame-1']
+        assert events[3]['code'] == 'authentication'
+        assert '/tmp/private' not in str(replay.response)
+        add_event(state, 'task_status', status='cancelled', **correlation)
+        await bridge.state_changed()
+        await until(lambda: len(second.tools) == 2)
+        assert second.tools[-1].response['after_sequence'] == 6
+        assert [e['sequence'] for e in second.tools[-1].response['events']] == [7]
+    finally:
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
+
+
+async def test_global_interruption_revokes_completed_reply_and_allows_fresh_confirmation():
+    pending = {'request_id': 'proposal', 'proposal_version': 1, 'presented': False,
+               'summary': 'Inspect the prepared sample.'}
+    state = {**context(), 'pending': pending}
+    client, sent, actions = Client(), [], []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(name, args):
+        if name == '_present_audio':
+            pending['presented'] = True
+            actions.append((name, args['reply_id']))
+        if name == 'student_confirm':
+            state['pending'] = None
+            actions.append((name, args['_voice_consent']['turn_id']))
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(output_reply(pending['summary']))
+        await until(lambda: any(m['type'] == 'reply_end' for m in sent))
+        stale = sent[-1]['reply_id']
+        assert bridge.reply_id is None and stale in bridge.replies
+        session.incoming.put_nowait(response(server_content=content(interrupted=True)))
+        await until(lambda: sent[-1]['type'] == 'interrupted')
+        assert sent[-1]['reply_id'] is None and bridge._playback_idle()
+        await bridge.played(stale)
+        assert not pending['presented'] and not actions
+
+        session.incoming.put_nowait(output_reply(pending['summary']))
+        await until(lambda: sum(m['type'] == 'reply_end' for m in sent) == 2)
+        fresh = sent[-1]['reply_id']
+        assert fresh != stale
+        await bridge.played(fresh)
+        await bridge.played(stale)
+        session.incoming.put_nowait(transcript('Confirm.'))
+        await until(lambda: state['pending'] is None)
+        assert actions == [('_present_audio', fresh), ('student_confirm', bridge.controls.turn_id)]
+    finally:
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
+
+
+async def test_back_to_back_progress_cannot_replace_proposal_on_either_client():
+    pending = {'request_id': 'proposal', 'proposal_version': 1, 'presented': False,
+               'summary': 'Inspect the prepared sample.'}
+    state = {**context(), 'pending': pending, 'requests': [dict(pending)]}
+    client, sent, confirmed = Client(), [], []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(name, args):
+        if name == '_present_audio':
+            pending['presented'] = state['requests'][0]['presented'] = True
+            await bridge.state_changed()
+        if name == 'student_confirm':
+            confirmed.append(args)
+            state['pending'] = None
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(function_calls(tool_call('watch', 'watch_lab_events')))
+        await until(lambda: len(session.tools) == 1)
+        session.incoming.put_nowait(output_reply(pending['summary']))
+        await until(lambda: sent[-1]['type'] == 'reply_end')
+        rid = sent[-1]['reply_id']
+        add_event(state, 'execution_progress', phase='checking')
+        await bridge.state_changed()
+        add_event(state, 'execution_progress', phase='finished_checking')
+        await bridge.state_changed()
+        # Model already had a progress reply scheduled. A second reply_start
+        # would make iOS drop the preview, while the browser queues both replies.
+        session.incoming.put_nowait(output_reply('Still checking.'))
+        session.incoming.put_nowait(function_calls(tool_call('read', 'get_lab_state')))
+        await until(lambda: any(r.id == 'read' for r in session.tools))
+        assert [m['reply_id'] for m in sent if m['type'] == 'reply_start'] == [rid]
+        assert len([r for r in session.tools if r.id == 'watch']) == 1
+
+        await bridge.played(rid)
+        await until(lambda: len([r for r in session.tools if r.id == 'watch']) == 2)
+        watch = [r for r in session.tools if r.id == 'watch'][-1]
+        assert watch.scheduling.value == 'SILENT'
+        assert [e['phase'] for e in watch.response['events']] == ['checking', 'finished_checking']
+        session.incoming.put_nowait(transcript('Confirm.'))
+        await until(lambda: len(confirmed) == 1)
+        assert confirmed[0]['request_id'] == 'proposal'
+    finally:
+        await finish(bridge, runner)
+    await assert_clean(bridge, client)
+
+
+async def test_missing_play_ack_expires_without_presenting(monkeypatch):
+    clock = NS(monotonic=lambda: 1.)
+    monkeypatch.setattr(live, 'time', clock)
+    actions = []
+
+    async def tool(name, args):
+        actions.append((name, args))
+
+    async def emit(_):
+        pass
+
+    bridge = live.GeminiBridge(context, tool, emit)
+    bridge.replies['old'] = {'complete': True, 'proposal': {}, 'expires': 1 + live.PLAYBACK_ACK_TIMEOUT}
+    assert not bridge._playback_idle()
+    clock.monotonic = lambda: 2 + live.PLAYBACK_ACK_TIMEOUT
+    assert bridge._playback_idle()
+    await bridge.played('old')
+    assert not actions
