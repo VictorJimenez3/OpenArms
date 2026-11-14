@@ -17,5 +17,5 @@ export OMNI_KIT_ACCEPT_EULA=YES
 bash "$repo/simulation/isaac/preflight.sh"
 printf 'git_commit=%s\n' "$(git rev-parse HEAD)"
 git status --short
-"$OPENARMS_ISAAC_ROOT/venv/bin/python" "$repo/simulation/isaac/smoke.py" \
+"$OPENARMS_ISAAC_ROOT/venv/bin/python" "$repo/simulation/isaac/run_recording.py" \
   --workshop "$OPENARMS_ISAAC_ROOT/workshop" --output "$run/smoke"

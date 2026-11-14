@@ -86,7 +86,8 @@ class ActualAssetTests(unittest.TestCase):
         model = self.model
         stage = Usd.Stage.Open(str(ASSET))
         meshes = model.geometry_evidence["collider_meshes"]
-        self.assertEqual(len(meshes), 4)
+        expected = 3 if ASSET.name == 'SO-ARM101-USD-NO-CAMERA.usd' else 4
+        self.assertEqual(len(meshes), expected)
         self.assertTrue(all(stage.GetPrimAtPath(path).IsInstanceProxy() for path in meshes))
         np.testing.assert_array_equal(model.tool_transform[:3, 3], [0, 0, -.1])
         self.assertAlmostEqual(model.geometry_evidence["nominal_jaw_zero_inner_gap_m"], .0158, places=6)

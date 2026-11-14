@@ -10,17 +10,21 @@ import subprocess
 import sys
 import time
 import traceback
+import uuid
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--workshop', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--seconds', type=float, default=8)
+parser.add_argument('--task', choices=['articulation','vial'], default='articulation')
+parser.add_argument('--request-id', default=None)
 args = parser.parse_args()
 if not math.isfinite(args.seconds) or args.seconds <= 0:
     parser.error('--seconds must be positive and finite')
 args.output.mkdir(parents=True, exist_ok=False)
 receipt = {
-    'schema_version': 1, 'provenance': 'SIMULATED', 'kind': 'articulation_smoke',
+    'schema_version': 1, 'provenance': 'SIMULATED',
+    'request_id': args.request_id or str(uuid.uuid4()), 'backend': 'simulated', 'kind': 'articulation_smoke' if args.task=='articulation' else 'vial_to_rack',
     'status': 'started', 'manipulation_success': False,
     'command': sys.argv, 'utc_started': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
     'slurm_job_id': os.environ.get('SLURM_JOB_ID'),
@@ -33,6 +37,11 @@ receipt = {
 def git(repo, *arguments):
     return subprocess.check_output(['git', '-C', str(repo), *arguments], text=True).strip()
 
+def event(kind, **data):
+    with (args.output/'events.jsonl').open('a') as stream:
+        stream.write(json.dumps({'request_id':receipt['request_id'],'backend':'simulated',
+            'provenance':'SIMULATED','event':kind,**data})+'\n')
+
 def save():
     (args.output / 'receipt.json').write_text(json.dumps(receipt, indent=2))
 
@@ -40,6 +49,7 @@ app = None
 writer = None
 try:
     save()
+    event('started', task=args.task)
     if not receipt['slurm_job_id']:
         raise RuntimeError('This Rutgers runner requires a Slurm allocation.')
     receipt['git_commit'] = git(Path(__file__).resolve().parents[2], 'rev-parse', 'HEAD')
@@ -49,7 +59,7 @@ try:
     receipt['isaac_version'] = version
     if version.split('.')[:3] != ['5', '1', '0']:
         raise RuntimeError(f'Expected Isaac 5.1.0, found {version}')
-    asset = args.workshop.resolve() / 'source/sim_to_real_so101/assets/usd/SO-ARM101-USD.usd'
+    asset = args.workshop.resolve() / 'source/sim_to_real_so101/assets/usd/SO-ARM101-USD-NO-CAMERA.usd'
     raw = asset.read_bytes()
     if raw.startswith(b'version https://git-lfs'):
         raise RuntimeError('Robot is an LFS pointer; run git lfs pull.')
@@ -78,6 +88,8 @@ try:
     world.scene.add_default_ground_plane()
     add_reference_to_stage(str(asset), '/World/Robot')
     stage = omni.usd.get_context().get_stage()
+    from appearance import apply_white_plastic
+    receipt['scene']['appearance'] = apply_white_plastic(stage)
     light = UsdLux.DomeLight.Define(stage, '/World/Light')
     light.CreateIntensityAttr(1200)
     robot = world.scene.add(SingleArticulation('/World/Robot', name='so101'))
@@ -91,11 +103,15 @@ try:
     camera.set_vertical_aperture(.027)
     camera.set_focal_length(.024)
     camera.set_clipping_range(.01, 20)
+    trial = None
+    if args.task == 'vial':
+        from vial_scene import VialTrial
+        trial = VialTrial(world, stage, asset.parent)
     world.reset()
     camera.initialize()
     names = ['Rotation','Pitch','Elbow','Wrist_Pitch','Wrist_Roll','Jaw']
     indices = np.array([robot.get_dof_index(n) for n in names])
-    q0 = np.array([-.2736,-.6109,-.0745,1.5148,-1.6034,-.1465])
+    q0 = np.array([-.2736,-.6109,-.0745,1.5148,-1.6034,-.1465]) if trial is None else trial.initial_q
     robot.set_joint_positions(q0, joint_indices=indices)  # Reset only.
     robot.set_joint_velocities(np.zeros(6), joint_indices=indices)
     robot.apply_action(ArticulationAction(joint_positions=q0, joint_indices=indices))
@@ -105,18 +121,33 @@ try:
     for _ in range(120):
         world.step(render=False)
         world.render()
+    if trial is not None:
+        trial.initialize(robot.get_joint_positions()[indices])
+        receipt['trial_configuration'] = trial.config
+        args.seconds = trial.duration_s
+        (args.output/'trial-configuration.json').write_text(json.dumps(trial.config, indent=2))
     start_sim_time = world.current_time
     writer = imageio.get_writer(args.output/'camera.mp4', fps=30, codec='libx264', quality=8,
                                macro_block_size=1, ffmpeg_log_level='error')
     frame_count = 0
     measured = []
+    previous_phase = None
     with (args.output/'state.jsonl').open('w') as states:
         for step in range(int(args.seconds*120)):
             t = step/120
-            target_q = q0.copy()
-            target_q[0] += .18*np.sin(2*np.pi*t/args.seconds)
+            target_q = q0.copy() if trial is None else trial.command(t)
+            if trial is None:
+                target_q[0] += .18*np.sin(2*np.pi*t/args.seconds)
             robot.apply_action(ArticulationAction(joint_positions=target_q, joint_indices=indices))
             world.step(render=False)
+            actual = robot.get_joint_positions()[indices].tolist()
+            observed = {} if trial is None else trial.observe(float(world.current_time-start_sim_time))
+            phase = 'articulation' if trial is None else trial.phase
+            if phase != previous_phase:
+                event('phase', phase=phase, sim_time_s=float(world.current_time-start_sim_time))
+                previous_phase = phase
+            states.write(json.dumps({'sim_time_s':float(world.current_time-start_sim_time),
+                'joint_command_rad':target_q.tolist(),'joint_measured_rad':actual,**observed})+'\n')
             if step%4==0:
                 world.render()
                 frame = camera.get_rgba()
@@ -129,16 +160,19 @@ try:
                 frame_count += 1
                 actual = robot.get_joint_positions()[indices].tolist()
                 measured.append(actual)
-                states.write(json.dumps({'sim_time_s':float(world.current_time-start_sim_time),'joint_command_rad':target_q.tolist(),
-                                         'joint_measured_rad':actual})+'\n')
+
     writer.close()
     writer = None
     measured = np.asarray(measured)
     motion = float(np.ptp(measured[:,0]))
-    if not np.isfinite(measured).all() or not math.isfinite(motion) or motion < .1:
+    if not np.isfinite(measured).all() or not math.isfinite(motion) or (trial is None and motion < .1):
         raise RuntimeError(f'Insufficient measured articulation motion: {motion} rad')
+    if trial is not None and not trial.success:
+        raise RuntimeError('Vial transfer failed live contact/lift/release/slot/settling criteria')
+    receipt['manipulation_success'] = bool(trial is not None and trial.success)
     receipt.update(status='passed', frames=frame_count, measured_rotation_span_rad=motion,
-                   video='camera.mp4', visual_review='required', result='Robot rendered and articulation moved; grasp/place not attempted')
+                   video='camera.mp4', visual_review='required', result=('Robot rendered and articulation moved; grasp/place not attempted' if trial is None
+                   else 'Vial contact/lift/release/slot/settling checks passed; video review required'))
     receipt['sha256'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
 except BaseException as exc:
@@ -147,8 +181,21 @@ except BaseException as exc:
     raise
 finally:
     if writer is not None:
-        writer.close()
+        try:
+            writer.close()
+        except Exception as close_error:
+            receipt.update(status='failed', video_close_error=str(close_error))
+            traceback.print_exc()
+    receipt['observation_status'] = receipt['status']
+    receipt['shutdown_status'] = 'pending'
+    receipt['status'] = 'failed' if receipt['observation_status']=='failed' else 'awaiting_shutdown'
+    event('observations_finished',status=receipt['observation_status'],manipulation_success=receipt['manipulation_success'])
     receipt['utc_finished'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    receipt['sha256'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                        for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
     save()
     if app is not None:
         app.close()
+    receipt['shutdown_status'] = 'completed'
+    receipt['status'] = receipt['observation_status']
+    save()
