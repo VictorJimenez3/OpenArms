@@ -13,12 +13,18 @@ from .voice_controls import MUTATING_TOOLS
 from agentic.openarms_agent.validator import validate as validate_legacy
 
 TERMINAL={'completed','failed','stopped','unknown','cancelled','rejected','expired'}
+# With a simulation preview on, the student types or says one of these to run the previewed plan.
+EXECUTE_WORDS={'execute','execute it','execute that','execute this','run it','run it for real','do it for real','go ahead','confirm','yes'}
 
 class LabError(ValueError):
     pass
 
+def normalized_words(text):
+    import re
+    return re.sub(r'[^a-z ]','',text.lower()).strip()
+
 class Lab:
-    def __init__(self, data_dir:Path, *, backend_factory=None, registry=None, execution_timeout=60, confirmation_ttl=120):
+    def __init__(self, data_dir:Path, *, backend_factory=None, registry=None, execution_timeout=60, confirmation_ttl=120, previewer=None):
         from .skills import SkillRegistry
         self.store=Store(data_dir/'lab.sqlite3')
         self.registry=registry or SkillRegistry(data_dir/'skills.json')
@@ -35,6 +41,9 @@ class Lab:
         self.physical_owner=None
         self.physical_unavailable=False
         self.model_tasks={}
+        # Optional simulation preview (sim_preview.MujocoPreview): runs on every proposal, before execution.
+        self.previewer=previewer
+        self.preview_tasks={}
         self.locks={}
     def _backend(self,sid):
         if sid not in self.backends:
@@ -71,7 +80,13 @@ class Lab:
                     r['reason']='Server restarted; motion is never resumed automatically.'
             self.sessions[sid]=s
             self._event(s,'recovery',text='History restored. Establish a new session before another trial.')
-            self._backend(sid)._state['armed']=False
+            backend=self._backend(sid)
+            if backend is self.physical:
+                # One arm connection is shared by every session. Disarming it here would block
+                # fresh sessions until a restart, so only this restored session is retired.
+                s['recovered']=True
+            else:
+                backend._state['armed']=False
         return self.sessions[sid]
     def snapshot(self,sid):
         s=self.get(sid)
@@ -140,6 +155,8 @@ class Lab:
         self._event(s,'prediction',text=text.strip(),experiment_id=s['experiment']['id'])
         return await self.publish(s)
     def _validate(self,s,skill_id,params):
+        if s.get('recovered'):
+            raise LabError('This session was restored after a restart. Start a new session before another trial.')
         try: p=Parameters.model_validate(params)
         except Exception as exc: raise LabError(f'Unsupported parameters: {exc}') from exc
         skill=self.registry.get(skill_id)
@@ -183,6 +200,17 @@ class Lab:
             if s['dedupe'][cid]['text']!=text: raise LabError('Idempotency key was reused for different input.')
             return await self.publish(s)
         if self._busy(s): raise LabError('An action is active. Stop or wait before requesting another.')
+        if self.previewer and normalized_words(text) in EXECUTE_WORDS:
+            # "execute" runs the plan that was just simulated; it never creates a new proposal.
+            self._message(s,'user',text)
+            s['dedupe'][cid]={'text':text}
+            if s['pending'] is None:
+                self._message(s,'assistant','There is no simulated plan waiting. Ask for an action first.')
+                return await self.publish(s)
+            try:return await self.confirm(sid,s['pending']['request_id'])
+            except LabError as exc:
+                self._message(s,'assistant',str(exc))
+                return await self.publish(s)
         self._invalidate(s,'New instruction superseded the proposal.')
         self._message(s,'user',text)
         s['dedupe'][cid]={'text':text}
@@ -198,8 +226,16 @@ class Lab:
             route_text=re.sub(r'\b(?:add|pour|dilute)\b','transfer',route_text,flags=re.I)
         routed=self.registry.resolve(route_text)
         if s['experiment']['id']=='color_dilution' and routed['status']=='resolved':
-            routed['skill_id']='premeasured_dilution.v1'
-            # Keep the recognized object: an orange request cannot silently become a water dose.
+            # Only a single transfer maps to this dose-only recipe. A composite
+            # request must not lose its observation or any other requested step.
+            if routed['skill_id']=='known_station_transfer.v1':
+                routed['skill_id']='premeasured_dilution.v1'
+                # Keep the recognized object: an orange request cannot silently become a water dose.
+            else:
+                routed={**routed,'status':'unsupported','message':(
+                    'This dilution recipe can add one premeasured water portion only. '
+                    'It cannot carry out the additional steps in your request. '
+                    'Please revise your request; nothing has started.')}
         self._event(s,'routing',instruction=text,result=routed)
         if routed['status']!='resolved':
             self._message(s,'assistant',routed.get('message','Please name the source A or C and destination B.'))
@@ -217,8 +253,45 @@ class Lab:
         s['requests'].append(r)
         s['pending']=r
         self._event(s,'request_proposed',request_id=r['request_id'],request=r)
+        if self.previewer:
+            r['preview']={'status':'running','provenance':'SIMULATED'}
+            self._message(s,'assistant',f"I understood: {r['summary']}. Simulating it first. No real motion has started.")
+            task=asyncio.create_task(self._preview(s,r))
+            self.preview_tasks.setdefault(sid,set()).add(task)
+            task.add_done_callback(self.preview_tasks[sid].discard)
+            return await self.publish(s)
         self._message(s,'assistant',f"I understood: {r['summary']}. Review it, then confirm or correct it. No motion has started.")
         return await self.publish(s)
+    async def _preview(self,s,r):
+        """Simulate the proposal. Only a cleared (or unsimulatable) proposal can then be executed."""
+        b=self._backend(s['session_id'])
+        try:
+            out=await asyncio.to_thread(self.previewer,b,copy.deepcopy({k:r[k] for k in ('request_id','skill_id','parameters')}))
+        except Exception as exc:
+            out={'status':'error','provenance':'SIMULATED','reason':f'{type(exc).__name__}: {exc}'}
+        r['preview']=out
+        self._event(s,'simulation_preview',request_id=r['request_id'],preview=out)
+        if s['pending'] is r and r['status']=='requested':
+            target='real arm' if b.mode=='physical' else f'{b.mode} controller'
+            p=r['parameters']
+            if out['status']=='ready':
+                # The student gets the full window to watch the preview.
+                r['expires_at']=time.time()+self.confirmation_ttl
+                notes=len(out.get('warnings',[]))
+                self._message(s,'assistant',f"Simulation finished (SIMULATED): the {p['object']} ends at {p['destination']}"
+                    +(f", with {notes} note{'s' if notes!=1 else ''} to read" if notes else '')
+                    +f". Watch the preview, then say or type \"execute\" to run it on the {target}, or correct or cancel it. No real motion has started.")
+            elif out['status']=='blocked':
+                self._message(s,'assistant','The simulation stopped this plan (SIMULATED): '+' '.join(out.get('blocks') or ['it did not complete.'])
+                    +' It will not be executed. Correct the request or fix the setup, then ask again.')
+            elif out['status']=='unavailable':
+                r['expires_at']=time.time()+self.confirmation_ttl
+                self._message(s,'assistant',f"No simulation preview for this action: {out.get('reason','not modelled')} "
+                    f"Say or type \"execute\" to run it on the {target} without a preview, or cancel it.")
+            else:
+                self._message(s,'assistant','The simulation preview did not run: '+out.get('reason','unknown error')
+                    +' Nothing will be executed without it. Ask again to retry.')
+        await self.publish(s)
     async def converse(self,sid,text,client_request_id=None):
         import re
         if not re.search(r"^\s*(?:what|why|how|explain|help me understand|tell me about|compare)\b",text,re.I):
@@ -264,6 +337,12 @@ class Lab:
                 self._event(s,'confirmation_rejected',request_id=request_id,reason='expired or disconnected')
                 await self.publish(s)
                 raise LabError('Confirmation expired. Please request a fresh action.')
+            preview=r.get('preview')
+            if self.previewer and preview is not None:
+                if preview['status']=='running':
+                    raise LabError('The simulation preview is still running. Wait for it to finish, then say execute.')
+                if preview['status'] not in ('ready','unavailable'):
+                    raise LabError('The simulation did not clear this plan, so it will not be executed. Ask again or correct the request.')
             self._validate(s,r['skill_id'],r['parameters'])
             r.update(status='approved',student_confirmed=True)
             s['pending']=None
@@ -453,5 +532,7 @@ class Lab:
             return {'recorded':True}
         raise LabError('Unknown lab tool.')
     async def shutdown(self):
+        for tasks in self.preview_tasks.values():
+            for task in tuple(tasks):task.cancel()
         for sid in list(self.sessions): await self.stop(sid,disconnect=True)
         self.store.db.close()

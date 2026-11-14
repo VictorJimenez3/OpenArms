@@ -1,0 +1,43 @@
+# What the simulation knows about the substances on the bench.
+# This file drives the "rule table" chemistry model. It predicts what the
+# student should expect to see; it is not a measurement.
+
+model: rule_table
+
+substances:
+  cabbage_indicator: {kind: indicator, name: red cabbage indicator}
+  vinegar:           {kind: acid,    strength: 1, name: vinegar}
+  lemon_juice:       {kind: acid,    strength: 1, name: lemon juice}
+  baking_soda:       {kind: base,    strength: 1, name: baking soda solution}
+  water:             {kind: neutral, name: water}
+  bleach:            {kind: base,    strength: 2, name: bleach}
+  ammonia:           {kind: base,    strength: 2, name: ammonia}
+
+# Colour of the indicator by (acid portions - base portions), weighted by strength.
+indicator_scale:
+  - {min: 2,    color: [0.86, 0.12, 0.25], label: red}
+  - {min: 1,    color: [0.93, 0.35, 0.62], label: pink}
+  - {min: 0,    color: [0.47, 0.22, 0.62], label: purple}
+  - {min: -1,   color: [0.18, 0.38, 0.78], label: blue}
+  - {min: -99,  color: [0.20, 0.62, 0.42], label: green}
+
+# Shown when there is no indicator in the container.
+plain_colors:
+  acid:    [0.93, 0.90, 0.70]
+  base:    [0.85, 0.92, 0.95]
+  neutral: [0.70, 0.85, 0.95]
+
+# Things the student would notice besides colour.
+observations:
+  - {when_all: [acid, base], text: fizzing}
+
+# SAFETY. This list is deliberately explicit and separate from the colour
+# prediction. Only substances listed under real_bench may ever be poured by
+# the real arm; everything else is simulation-only. Any combination under
+# hazards is blocked from the real arm even if each substance is allowed.
+real_bench: [cabbage_indicator, vinegar, lemon_juice, baking_soda, water]
+
+hazards:
+  - {mix: [bleach, ammonia], reason: bleach and ammonia release toxic chloramine gas}
+  - {mix: [bleach, vinegar], reason: bleach and an acid release chlorine gas}
+  - {mix: [bleach, lemon_juice], reason: bleach and an acid release chlorine gas}

@@ -63,7 +63,7 @@ The relay's terminal asks the operator `y/n` before every transfer. It won't ask
 
 ## Evidence
 
-- `teleop_record.py` runs on the simulated robots and writes the pose file shown above. It has not run on the real arms.
+- Updated November 14: guided recording ran on the real arms and produced `bench-a.json` plus a continuous A demonstration trace. A subsequent camera-assisted C→B mandarin transfer succeeded. See the [actual poses, logs and images](../joseph/mandarin-transfer-2026-11-14/README.md). The cup/pour procedure above still needs validation with the actual fixtures.
 - LeRobot class names (`SO101Follower`, `SO101Leader`) and `<motor>.pos` keys were checked in LeRobot's source at the pinned commit `e0d50211`.
 - Why our own loop and not `lerobot-teleoperate` plus `record_pose`: teleop holds the follower's serial port, and stopping it switches torque off, so the arm sags before it can be read.
 

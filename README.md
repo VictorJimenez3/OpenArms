@@ -4,6 +4,8 @@ A HackPrinceton project for accessible, student-directed lab work. The [student 
 
 The [mandarin phone demo](research/joseph/mandarin-transfer-handoff.md) documents the older SwiftUI/Whisper path. Physical bench work and its separate operator approval remain in the [wet-lab guide](docs/WET_LAB.md). Simulation is deferred.
 
+**Physical result:** On November 14 the SO-101 picked up a mandarin from C and placed it at B on the red card. The [run evidence, actual poses, logs and camera frames](research/joseph/mandarin-transfer-2026-11-14/README.md) document the successful supervised, camera-assisted transfer using local `bench-a.json` checkpoints and staged corrections. Phone-to-physical integration and the packaged replay have separate verification status.
+
 ## Where to start
 
 Pull `main`, create a branch for your work, and start in your area. Ownership is provisional.
