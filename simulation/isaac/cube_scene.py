@@ -18,7 +18,6 @@ class CubeTrial:
         self.success = False
         self.failure = None
         self.lost_since = None
-        self.settle_since = None
         self.body_initial = {}
         self.phases = []
         from cube_plan import make_plan
@@ -49,7 +48,8 @@ class CubeTrial:
                                           reset_xform_properties=False)
                        for path in self.model.authored_body_poses}
         self.check = TransferCheck(self.source, self.destination, xy_tolerance_m=.020,
-                                   z_tolerance_m=.002, lift_m=.04)
+                                   z_tolerance_m=.002, lift_m=.04, retreat_m=.05,
+                                   max_linear_speed=.01, max_angular_speed=.1)
         self.config = {'kind': 'cube_to_receiver_candidate', 'source_m': self.source.tolist(),
                        'destination_m': self.destination.tolist(), 'cube_edge_m': .02,
                        'cube_mass_kg': .01, 'cube_yaw_rad': yaw,
@@ -60,9 +60,13 @@ class CubeTrial:
 
     def initialize(self, measured_q):
         poses = {}
+        self.last_observation = {'phase': 'initialize', 'joint_measured_rad': measured_q.tolist(),
+                                 'body_poses': {}}
         for path, body in self.bodies.items():
             body.initialize()
             position, quaternion = body.get_world_pose()
+            self.last_observation['body_poses'][path] = {
+                'position_m': position.tolist(), 'quaternion_wxyz': quaternion.tolist()}
             transform = np.eye(4)
             transform[:3, 3] = position
             transform[:3, :3] = Rotation.from_quat(np.asarray(quaternion)[[1, 2, 3, 0]]).as_matrix()
@@ -86,10 +90,14 @@ class CubeTrial:
         return (1-u)*np.array(phase['from_rad'])+u*np.array(phase['to_rad'])
 
     def observe(self, t):
+        self.last_observation = {'sim_time_s': t, 'phase': self.phase}
         pos, quat = self.cube.get_world_pose()
+        self.last_observation.update(object_position_m=pos.tolist(), object_quaternion_wxyz=quat.tolist())
         linear = float(np.linalg.norm(self.cube.get_linear_velocity()))
         angular = float(np.linalg.norm(self.cube.get_angular_velocity()))
         matrix = np.asarray(self.contact.get_contact_force_matrix(dt=1/120))
+        self.last_observation.update(contact_matrix_N=matrix.tolist(), linear_speed_m_s=linear,
+                                     angular_speed_rad_s=angular)
         if matrix.shape != (1, 3, 3):
             raise RuntimeError(f'Unexpected contact matrix {matrix.shape}')
         forces = np.linalg.norm(matrix[0], axis=1)
@@ -105,7 +113,9 @@ class CubeTrial:
                                  'linear_speed_m_s': linear, 'angular_speed_rad_s': angular}
         sample = Sample(t, tuple(pos), linear, angular, tuple(forces[:2]), distance,
                         self.phase in ('retreat', 'settle'))
-        checks = self.check.update(sample)
+        supported = bool(forces[2] > .05)
+        upright = float(Rotation.from_quat(np.asarray(quat)[[1, 2, 3, 0]]).apply([0, 0, 1])[2]) > .98
+        checks = self.check.update(sample, placement_valid=supported and upright)
         lost = self.check.verified_lift and self.phase in ('lift', 'hold', 'carry', 'lower') and min(forces[:2]) <= .02
         self.lost_since = (t if self.lost_since is None else self.lost_since) if lost else None
         if self.lost_since is not None and t-self.lost_since > .1:
@@ -114,16 +124,10 @@ class CubeTrial:
             self.failure = 'Fixed robot base moved'
         if np.linalg.norm(receiver_pos-self.body_initial['receiver']) > .001:
             self.failure = 'Fixed receiver moved'
-        for name, quat in [('base', base_quat), ('receiver', receiver_quat)]:
-            if abs(np.dot(quat, self.body_initial[name+'_quat'])) < np.cos(.01/2):
+        for name, fixture_quat in [('base', base_quat), ('receiver', receiver_quat)]:
+            if abs(np.dot(fixture_quat, self.body_initial[name+'_quat'])) < np.cos(.01/2):
                 self.failure = f'Fixed {name} rotated'
-        supported = bool(forces[2] > .05)
-        upright = float(Rotation.from_quat(np.asarray(quat)[[1, 2, 3, 0]]).apply([0, 0, 1])[2]) > .98
-        strict_valid = (checks['verified_lift'] and checks['in_receiver'] and
-                        self.phase in ('retreat', 'settle') and max(forces[:2]) < .02 and
-                        distance > .05 and supported and upright and linear < .01 and angular < .1)
-        self.settle_since = (t if self.settle_since is None else self.settle_since) if strict_valid else None
-        self.success = bool(self.settle_since is not None and t-self.settle_since >= 1.)
+        self.success = bool(checks['success'] and self.failure is None)
         return {'phase': self.phase, 'object_position_m': pos.tolist(),
                 'object_quaternion_wxyz': quat.tolist(), 'linear_speed_m_s': linear,
                 'angular_speed_rad_s': angular, 'contact_vectors_N': matrix[0].tolist(),

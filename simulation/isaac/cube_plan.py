@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation
 
 
 def make_plan(model):
+    authored_lower, authored_upper = model.lower.copy(), model.upper.copy()
     source = np.array([.23, 0., .01])
     phases = []
     # Triangle-clipped distal collider geometry: fixed inner face x=-7.9mm.
@@ -57,4 +58,5 @@ def make_plan(model):
         previous = q.copy()
         start += duration
     duration_s = start
+    model.lower, model.upper = authored_lower, authored_upper
     return initial_q, phases, duration_s, orientation, yaw, contact_jaw, closed_jaw

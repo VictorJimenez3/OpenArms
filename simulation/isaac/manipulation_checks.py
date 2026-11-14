@@ -21,25 +21,29 @@ class Sample:
 class TransferCheck:
     def __init__(self, initial_position, destination, *, lift_m=.03,
                  lift_hold_s=.25, settle_s=1., xy_tolerance_m=.025,
-                 z_tolerance_m=.008):
+                 z_tolerance_m=.008, retreat_m=.07, max_linear_speed=.03,
+                 max_angular_speed=.3):
         values = [*initial_position, *destination, lift_m, lift_hold_s,
-                  settle_s, xy_tolerance_m, z_tolerance_m]
+                  settle_s, xy_tolerance_m, z_tolerance_m, retreat_m,
+                  max_linear_speed, max_angular_speed]
         if len(initial_position)!=3 or len(destination)!=3 or not all(map(math.isfinite, values)):
             raise ValueError('Expected finite 3D initial and destination positions')
-        if min(lift_m,lift_hold_s,settle_s,xy_tolerance_m,z_tolerance_m)<=0:
+        if min(lift_m,lift_hold_s,settle_s,xy_tolerance_m,z_tolerance_m,
+               retreat_m,max_linear_speed,max_angular_speed)<=0:
             raise ValueError('Acceptance thresholds must be positive')
         if math.dist(initial_position[:2],destination[:2]) < 2*xy_tolerance_m:
             raise ValueError('Source and destination acceptance regions overlap')
         self.initial, self.destination = tuple(initial_position), tuple(destination)
         self.lift_m,self.lift_hold_s,self.settle_s=lift_m,lift_hold_s,settle_s
         self.xy_tol,self.z_tol=xy_tolerance_m,z_tolerance_m
+        self.retreat_m,self.max_linear,self.max_angular=retreat_m,max_linear_speed,max_angular_speed
         self.last_time=None
         self.lift_since=None
         self.verified_lift=False
         self.settle_since=None
         self.success=False
 
-    def update(self, s: Sample):
+    def update(self, s: Sample, *, placement_valid=True):
         values=[s.time_s,*s.position,s.linear_speed,s.angular_speed,*s.finger_forces,s.gripper_distance]
         if len(s.position)!=3 or len(s.finger_forces)!=2 or not all(map(math.isfinite,values)):
             raise ValueError('Incomplete or nonfinite physics measurement')
@@ -54,9 +58,9 @@ class TransferCheck:
             self.verified_lift=True
         in_receiver = (math.dist(s.position[:2],self.destination[:2])<=self.xy_tol
                        and abs(s.position[2]-self.destination[2])<=self.z_tol)
-        released = s.release_commanded and max(s.finger_forces)<.02 and s.gripper_distance>.07
-        stable = s.linear_speed<.03 and s.angular_speed<.3
-        valid=self.verified_lift and in_receiver and released and stable
+        released = s.release_commanded and max(s.finger_forces)<.02 and s.gripper_distance>self.retreat_m
+        stable = s.linear_speed<self.max_linear and s.angular_speed<self.max_angular
+        valid=self.verified_lift and in_receiver and released and stable and placement_valid
         self.settle_since=(s.time_s if self.settle_since is None else self.settle_since) if valid else None
         self.success=(self.settle_since is not None and s.time_s-self.settle_since>=self.settle_s)
         return {'verified_lift':self.verified_lift,'in_receiver':in_receiver,

@@ -127,8 +127,10 @@ try:
         world.step(render=False)
         world.render()
     if trial is not None:
-        trial.initialize(robot.get_joint_positions()[indices])
         receipt['trial_configuration'] = trial.config
+        (args.output/'trial-configuration.json').write_text(json.dumps(trial.config, indent=2))
+        save()
+        trial.initialize(robot.get_joint_positions()[indices])
         args.seconds = trial.duration_s
         (args.output/'trial-configuration.json').write_text(json.dumps(trial.config, indent=2))
     start_sim_time = world.current_time
@@ -187,6 +189,7 @@ except BaseException as exc:
     receipt.update(status='failed', error_type=type(exc).__name__, error=str(exc))
     if trial is not None and hasattr(trial, 'last_observation'):
         (args.output/'failure-state.json').write_text(json.dumps(trial.last_observation, indent=2))
+        (args.output/'trial-configuration.json').write_text(json.dumps(trial.config, indent=2))
     traceback.print_exc()
     raise
 finally:
