@@ -1,0 +1,1 @@
+"""Colorimetry MuJoCo video demonstration."""
