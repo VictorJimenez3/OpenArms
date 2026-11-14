@@ -1,0 +1,18 @@
+{
+  "base_ml": 20.0,
+  "delivered_ml": 20.0,
+  "treated_final_ml": 40.0,
+  "control_final_ml": 20.0,
+  "treated_concentration_relative": 0.5,
+  "control_concentration_relative": 1.0,
+  "solute_initial_relative_mass": 20.0,
+  "solute_final_relative_mass": 20.0,
+  "mass_conserved": true,
+  "button_engaged": true,
+  "actuator_state_home_error_rad": 0.00071,
+  "negative_control": {
+    "enabled": false,
+    "delivered_ml": 0.0,
+    "concentration_unchanged": true
+  }
+}
