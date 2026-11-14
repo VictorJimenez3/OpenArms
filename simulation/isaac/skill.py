@@ -35,13 +35,14 @@ def main():
     parser.add_argument('--request', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--workshop', type=Path, required=True)
-    parser.add_argument('--allow-unvalidated-transfer', action='store_true')
+    parser.add_argument('--allow-unvalidated-transfer', action='store_true',
+                        help='Legacy flag; the bounded transfer no longer requires it')
+    parser.add_argument('--cleanup', choices=('full', 'sensors'), default='sensors',
+                        help='Sensor teardown passed the Rutgers Isaac 5.1 recording runs')
     args = parser.parse_args()
     request = json.loads(args.request.read_text())
     task = validate_request(request)
     condition = 'heavy' if request['skill_id'] == 'isaac.mass_weight.heavy.v1' else 'light'
-    if task == 'cube' and not args.allow_unvalidated_transfer:
-        parser.error('Transfer is not yet runtime-qualified; experimental opt-in is required')
     from execution_context import validate_context
     validate_context()
     args.output.mkdir(parents=True, exist_ok=False)
@@ -53,7 +54,7 @@ def main():
         command = [sys.executable, str(Path(__file__).with_name('run_recording.py')),
                    '--workshop', str(args.workshop), '--output', str(args.output/'recording'),
                    '--request-id', request['request_id'], '--task', task,
-                   '--condition', condition]
+                   '--condition', condition, '--cleanup', args.cleanup]
         stopped = False
         with (args.output/'startup.log').open('w') as log:
             process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
