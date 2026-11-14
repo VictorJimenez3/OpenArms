@@ -1,0 +1,96 @@
+{
+  "success": false,
+  "mode": "actuated position-controlled MuJoCo SO-101 with mj_step; geometric grasp gate then mocap attachment",
+  "simulation_time_s": 36.84,
+  "video": {
+    "file": "colorimetry.mp4",
+    "fps": 30,
+    "width": 1280,
+    "height": 720,
+    "frames": 286,
+    "playback_speed": 4.0
+  },
+  "model": {
+    "name": "Beer-Lambert teaching model",
+    "assumptions": "A=epsilon*c*l; epsilon=ln(10) L mol^-1 cm^-1, c=0.30/0.52 mol L^-1, l=1 cm; illustrative, uncalibrated.",
+    "sensor": "rendered vial material RGB proxy converted to optical density; separate from analytical prediction, not physical photometer or camera pixel read."
+  },
+  "observations": {
+    "unknown": {
+      "beer_lambert_prediction_A": 1.1973,
+      "sensor_A": 0.74,
+      "rgb": [
+        46,
+        110,
+        209
+      ],
+      "measurement_type": "rendered-material RGB sensor proxy"
+    }
+  },
+  "negative_control": {
+    "requested": true,
+    "result": "reference pickup disabled; measurement withheld and comparison not claimed"
+  },
+  "events": [
+    {
+      "t_sim_s": 3.0,
+      "event": "negative_control_missed_pick",
+      "sample": "reference"
+    },
+    {
+      "t_sim_s": 9.24,
+      "event": "grasp_attempt",
+      "sample": "unknown",
+      "error_m": 0.00995,
+      "engaged": true
+    },
+    {
+      "t_sim_s": 18.54,
+      "event": "measurement_gate",
+      "sample": "unknown",
+      "reader_error_m": 0.001,
+      "site_z_m": 0.173,
+      "placed": true
+    },
+    {
+      "t_sim_s": 18.54,
+      "event": "sample_measured",
+      "sample": "unknown",
+      "prediction_A": 1.1973,
+      "sensor_proxy_A": 0.74,
+      "rgb": [
+        46,
+        110,
+        209
+      ]
+    },
+    {
+      "t_sim_s": 18.84,
+      "event": "release",
+      "sample": "unknown",
+      "location": "reader"
+    },
+    {
+      "t_sim_s": 24.84,
+      "event": "regrasp_attempt",
+      "sample": "unknown",
+      "error_m": 0.0059,
+      "engaged": true
+    },
+    {
+      "t_sim_s": 33.84,
+      "event": "returned_to_station",
+      "sample": "unknown"
+    }
+  ],
+  "joint_trace": {
+    "samples": 15,
+    "all_finite": true,
+    "all_within_bounds": true
+  },
+  "limitations": [
+    "Geometric 18 mm grasp gate then mocap attachment; contact forces and slip are not validated.",
+    "RGB is a rendered material proxy, not a camera or physical sensor measurement.",
+    "Poses and bench coordinates are illustrative, not physically calibrated."
+  ]
+}

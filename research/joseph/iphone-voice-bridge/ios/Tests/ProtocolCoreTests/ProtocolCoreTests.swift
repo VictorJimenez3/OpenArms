@@ -3,136 +3,385 @@ import XCTest
 @testable import VoiceProtocol
 
 final class ProtocolCoreTests: XCTestCase {
-    func testEndpointDefaultsAndValidation() throws {
-        XCTAssertEqual(try RelayEndpoint.resolve(" MAC-HOST.local ").absoluteString, "ws://MAC-HOST.local:8765/voice")
-        XCTAssertEqual(try RelayEndpoint.resolve("wss://example.org/voice").absoluteString, "wss://example.org/voice")
-        for invalid in ["", "http://host", "ws://user:secret@host/voice", "ws://host:0", "ws://host/voice?secret=x", "ws://host/#fragment", "bad host"] {
-            XCTAssertThrowsError(try RelayEndpoint.resolve(invalid), invalid)
+    func testTrustedOriginAndSessionURLs() throws {
+        let origin = try AppEndpoint.resolve(" HTTPS://Lab.Example.org/ ")
+        XCTAssertEqual(origin.absoluteString, "https://lab.example.org")
+        XCTAssertEqual(try AppEndpoint.liveURL(origin, id: "session-1").absoluteString,
+                       "wss://lab.example.org/api/sessions/session-1/live")
+        XCTAssertThrowsError(try AppEndpoint.sessionURL(origin, id: "../other"))
+        for address in ["", "lab.example.org", "ws://lab.local", "http://lab.local",
+                        "https://user:pass@host", "https://host?token=x", "https://host/#fragment",
+                        "https://host/path", "https://host:0", "https://bad host"] {
+            XCTAssertThrowsError(try AppEndpoint.resolve(address), address)
+        }
+        for address in ["http://lab.local:8765", "http://127.0.0.1:8765", "http://[::1]:8765", "http://192.168.1.2"] {
+            XCTAssertNoThrow(try AppEndpoint.resolve(address, allowLocalDebug: true))
+        }
+        XCTAssertThrowsError(try AppEndpoint.resolve("http://example.org", allowLocalDebug: true))
+    }
+
+    func testStreamingControlFramesUseHelloCredentialAndReplyID() throws {
+        let connection = UUID()
+        let hello = try fields(ClientFrame.hello(id: connection, token: "fixture-token").json)
+        XCTAssertEqual(hello, ["type": .string("hello"), "protocol_version": .number(1),
+                               "connection_id": .string(connection.uuidString), "access_token": .string("fixture-token")])
+        let reply = "reply-\"\\\n"
+        XCTAssertEqual(try fields(ClientFrame.reply("played", id: reply).json),
+                       ["type": .string("played"), "reply_id": .string(reply)])
+        let event = try decode(ServerEvent.self, """
+        {"type":"reply_start","reply_id":"r1","proposal":{"request_id":"p1","proposal_version":3}}
+        """)
+        XCTAssertEqual(event.replyID, "r1")
+        XCTAssertEqual(event.proposal?.requestID, "p1")
+        XCTAssertEqual(event.proposal?.proposalVersion, 3)
+    }
+
+    func testProposalVersionsNormalizeToAnExactJSONInteger() throws {
+        let exact = 9_007_199_254_740_993
+        for token in [String(exact), "\"\(exact)\""] {
+            let lab = try LabWire.snapshot(proposalSnapshot(version: token))
+            let proposal = try XCTUnwrap(lab.pending)
+            XCTAssertEqual(proposal.proposalVersion, exact)
+            var present = proposal.fields
+            present["channel"] = .string("text")
+            for fields in [proposal.fields, present] {
+                let payload = String(decoding: try JSONEncoder().encode(fields), as: UTF8.self)
+                XCTAssertTrue(payload.contains("\"proposal_version\":\(exact)"))
+                XCTAssertEqual(try self.fields(payload)["request_id"], .string("request"))
+            }
+            let reply = try LabWire.event(replyStart(version: token))
+            XCTAssertEqual(reply.replyID, "reply")
+            XCTAssertEqual(reply.proposal?.requestID, proposal.requestID)
+            XCTAssertEqual(reply.proposal?.proposalVersion, proposal.proposalVersion)
+        }
+        for token in ["true", "false", "1.5", "1.0", "1e0", "1.0000000000000000001", "0", "-2",
+                      #""0""#, #""02""#, #""+2""#, #""2.0""#, #""2 ""#, #""１２""#, #""12345678901234567""#] {
+            let state = proposalSnapshot(version: token)
+            XCTAssertThrowsError(try LabWire.snapshot(state), token)
+            XCTAssertThrowsError(try LabWire.event(replyStart(version: token)), token)
+            XCTAssertThrowsError(try LabWire.event(Data(("{\"type\":\"state\",\"state\":" +
+                String(decoding: state, as: UTF8.self) + "}").utf8)), token)
         }
     }
 
-    func testCaptureRequiresServerListeningAndLocalConsent() throws {
-        var gate = CaptureGate()
-        XCTAssertFalse(gate.canCapture)
-        try gate.receiveState("listening")
-        XCTAssertTrue(gate.canCapture)
-        gate.setMuted(true)
-        try gate.receiveState("listening") // Delayed state cannot override local mute.
-        XCTAssertFalse(gate.canCapture)
-        gate.setMuted(false)
-        XCTAssertFalse(gate.canCapture)
-        try gate.receiveState("listening")
-        gate.beginReply()
-        try gate.receiveState("listening") // Reply still owns the speaker.
-        XCTAssertFalse(gate.canCapture)
-        gate.finishReply()
-        XCTAssertFalse(gate.canCapture)
-        try gate.receiveState("listening")
-        XCTAssertTrue(gate.canCapture)
-        try gate.receiveState("processing")
-        XCTAssertFalse(gate.canCapture)
-        XCTAssertThrowsError(try gate.receiveState("unexpected"))
+    func testEvidencePathIsBoundToTheTrustedOriginSessionAndFrame() throws {
+        let origin = try AppEndpoint.resolve("https://lab.example.org:8443")
+        let id = "0123456789abcdef0123456789abcdef"
+        let path = "/api/sessions/current/evidence/\(id)"
+        let url = try AppEndpoint.evidenceURL(origin, sessionID: "current", evidenceID: id, artifactPath: path)
+        XCTAssertEqual(url.absoluteString, "https://lab.example.org:8443\(path)")
+        XCTAssertNil(url.query)
+        let credential = SessionCredential(origin: origin.absoluteString, sessionID: "current", accessToken: "test-token")
+        let request = try AppEndpoint.evidenceRequest(origin, credential: credential, evidenceID: id, artifactPath: path)
+        XCTAssertEqual(request.url, url)
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer test-token")
+        XCTAssertThrowsError(try AppEndpoint.evidenceRequest(URL(string: "https://other.example")!,
+                                                             credential: credential, evidenceID: id, artifactPath: path))
+        for unsafe in [
+            "https://lab.example.org:8443\(path)", "https://other.example\(path)",
+            "//other.example\(path)", "\(path)?token=do-not-send", "\(path)#preview",
+            "/api/sessions/other/evidence/\(id)", "/api/sessions/current/evidence/../\(id)",
+            "/api/sessions/current/evidence/%30\(id.dropFirst())",
+            "/api/sessions/current/evidence/\(String(repeating: "a", count: 32))"
+        ] {
+            XCTAssertThrowsError(try AppEndpoint.evidenceURL(origin, sessionID: "current", evidenceID: id, artifactPath: unsafe))
+        }
+        XCTAssertThrowsError(try AppEndpoint.evidenceURL(origin, sessionID: "current", evidenceID: "../frame", artifactPath: "/api/sessions/current/evidence/../frame"))
     }
 
-    func testMuteDiscardsAudioPreservesControlsAndRejectsStaleCallbacks() throws {
-        let fifo = OutboundFIFO()
-        let old = fifo.beginCapture()
-        fifo.enqueueAudio(Data([1, 2]), token: old)
-        fifo.enqueue(.played("t-1"))
-        fifo.enqueueAudio(Data([3, 4]), token: old)
-        fifo.stopCaptureAndDiscardAudio()
-        fifo.enqueue(.mute(true))
-        fifo.enqueueAudio(Data([5, 6]), token: old)
-        fifo.fail("stale conversion", captureToken: old)
-        XCTAssertNil(fifo.failure)
-        XCTAssertEqual(try control(fifo.pop())["type"] as? String, "played")
-        XCTAssertEqual(try control(fifo.pop())["muted"] as? Bool, true)
-        XCTAssertNil(fifo.pop())
-        let fresh = fifo.beginCapture()
-        fifo.enqueueAudio(Data([7, 8]), token: old)
-        fifo.enqueueAudio(Data([9, 10]), token: fresh)
-        guard case let .audio(bytes)? = fifo.pop() else { return XCTFail("Missing current audio") }
-        XCTAssertEqual(bytes, Data([9, 10]))
-        fifo.close()
-        fifo.enqueue(.end)
-        fifo.enqueueAudio(Data([11, 12]), token: fresh)
-        XCTAssertNil(fifo.pop())
-        XCTAssertEqual(fifo.byteCount, 0)
+    func testARevisedExpiredOrRegeneratedProposalRequiresFreshReview() throws {
+        let current = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(version: "3")).pending)
+        let revised = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(version: "4")).pending)
+        XCTAssertTrue(current.matchesCurrent(current, generation: 0, now: 100))
+        XCTAssertFalse(current.matchesCurrent(revised, generation: 0, now: 100))
+        XCTAssertFalse(current.matchesCurrent(current, generation: 1, now: 100))
+        XCTAssertFalse(current.matchesCurrent(current, generation: 0, now: 200))
+        XCTAssertFalse(current.matchesCurrent(nil, generation: 0, now: 100))
+        XCTAssertEqual(current.reviewSteps, ["Locate cup"])
     }
 
-    func testConcurrentMuteInvalidatesProducer() {
-        let fifo = OutboundFIFO(maxFrames: 20_000, maxBytes: 100_000)
-        let token = fifo.beginCapture()
+    func testDirectRequestNeedsOnlyTheStudentsMessage() throws {
+        let id = UUID()
+        let request = try XCTUnwrap(DirectLabRequest("  Inspect the scene and describe the labeled samples.\n", id: id))
+        XCTAssertEqual(request.fields, [
+            "text": .string("Inspect the scene and describe the labeled samples."),
+            "client_request_id": .string(id.uuidString)
+        ])
+        XCTAssertNil(DirectLabRequest("   "))
+        XCTAssertNil(DirectLabRequest(String(repeating: "x", count: 4001)))
+        let queued = try snapshot(extra: """
+        ,"trial":{"trial_id":"t1","condition_id":null,"state":"choosing_condition"},
+        "tasks":[{"task_id":"t","status":"queued","request":"Inspect the scene and describe the labeled samples.",
+                  "request_id":null,"condition_id":null,"prediction":""}]
+        """)
+        XCTAssertNil(queued.trial.conditionID)
+        XCTAssertTrue(queued.prediction.isEmpty)
+        XCTAssertNil(queued.pending)
+        XCTAssertEqual(queued.taskRecords.first?["request"], .string(request.text))
+    }
+
+    func testAcceptedSnapshotRotatesCaptureEpochWithoutSocketHello() throws {
+        var snapshots = SnapshotStore()
+        var transcript = TranscriptStore()
+        let queue = OutboundFIFO()
+        XCTAssertTrue(snapshots.acceptHello(generation: 2))
+        XCTAssertEqual(snapshots.accept(try snapshot(revision: 10, generation: 2)), .sameGeneration)
+        let oldTap = queue.beginCapture(epoch: try XCTUnwrap(snapshots.audioGeneration))
+        queue.enqueueAudio(Data([1, 0]), token: oldTap)
+        queue.enqueue(ClientFrame(type: "ping"))
+        transcript.update(role: "user", text: "finished", turnID: "u1", final: true)
+        transcript.update(role: "user", text: "unsent", turnID: "u2", final: false)
+        transcript.reconcile([])
+
+        // The client performs this invalidation before starting the replacement tap.
+        XCTAssertEqual(snapshots.accept(try snapshot(revision: 11, generation: 3)), .newGeneration)
+        queue.stopCaptureAndDiscardAudio()
+        transcript.discardPartialInput()
+        transcript.reconcile(try snapshot(extra: """
+        ,"messages":[{"role":"user","text":"unsent","turn_id":"u2","final":false}]
+        """).messages)
+        XCTAssertEqual(transcript.turns.map(\.text), ["finished"])
+        let freshTap = queue.beginCapture(epoch: try XCTUnwrap(snapshots.audioGeneration))
+        queue.enqueueAudio(Data([2, 0]), token: oldTap)
+        queue.enqueueAudio(Data([3, 0]), token: freshTap)
+        XCTAssertEqual(try fields(XCTUnwrap(queue.pop()).json)["type"], .string("ping"))
+        XCTAssertEqual(try fields(XCTUnwrap(queue.pop()).json),
+                       ["type": .string("audio"), "data": .string("AwA="), "epoch": .number(3)])
+        XCTAssertNil(queue.pop())
+
+        XCTAssertNil(snapshots.accept(try snapshot(revision: 10, generation: 4)))
+        XCTAssertNil(snapshots.accept(try snapshot(revision: 12, generation: 2)))
+        XCTAssertNil(snapshots.accept(try snapshot(revision: 12, generation: 4, id: "different")))
+        XCTAssertFalse(snapshots.acceptHello(generation: 2))
+        XCTAssertEqual(snapshots.audioGeneration, 3)
+        XCTAssertTrue(snapshots.acceptHello(generation: 4))
+        XCTAssertNil(snapshots.accept(try snapshot(revision: 12, generation: 3)))
+    }
+
+    func testTranscriptFinalReplacesPartialAndIgnoresDelayedUpdate() {
+        var transcript = TranscriptStore()
+        transcript.update(role: "user", text: "Which", turnID: "u", final: false)
+        transcript.reconcile([])
+        transcript.update(role: "user", text: "Which color?", turnID: "u", final: true)
+        transcript.reconcile([])
+        transcript.update(role: "user", text: "Which", turnID: "u", final: false)
+        transcript.discardPartialInput()
+        XCTAssertEqual(transcript.turns.map(\.text), ["Which color?"])
+    }
+
+    func testPlayedRequiresEndAndEveryPlaybackCallback() throws {
+        var ledger = PlaybackLedger()
+        ledger.begin("r1")
+        let first = try XCTUnwrap(ledger.schedule("r1"))
+        let second = try XCTUnwrap(ledger.schedule("r1"))
+        XCTAssertNil(ledger.played(first, reply: "r1"))
+        XCTAssertNil(ledger.finish("r1"))
+        XCTAssertNil(ledger.schedule("r1"))
+        XCTAssertNil(ledger.played(first, reply: "r1"))
+        XCTAssertEqual(ledger.played(second, reply: "r1"), "r1")
+        XCTAssertNil(ledger.finish("r1"))
+
+        ledger.begin("r2")
+        let early = try XCTUnwrap(ledger.schedule("r2"))
+        XCTAssertNil(ledger.played(early, reply: "r2"))
+        XCTAssertEqual(ledger.finish("r2"), "r2")
+        ledger.begin("r3")
+        let interrupted = try XCTUnwrap(ledger.schedule("r3"))
+        ledger.invalidate()
+        XCTAssertNil(ledger.played(interrupted, reply: "r3"))
+        XCTAssertNil(ledger.finish("r3"))
+        ledger.begin("empty")
+        XCTAssertNil(ledger.finish("empty"))
+    }
+
+    func testMuteAndCloseRejectStaleCaptureCallbacks() throws {
+        let queue = OutboundFIFO()
+        let oldTap = queue.beginCapture(epoch: 1)
+        queue.enqueue(ClientFrame.reply("played", id: "r1"))
+        queue.enqueueAudio(Data([1, 0]), token: oldTap)
+        queue.stopCaptureAndDiscardAudio()
+        queue.enqueue(.mute(true))
+        queue.enqueueAudio(Data([2, 0]), token: oldTap)
+        queue.fail("stale conversion", token: oldTap)
+        XCTAssertNil(queue.failure)
+        XCTAssertEqual(try fields(XCTUnwrap(queue.pop()).json)["type"], .string("played"))
+        XCTAssertEqual(try fields(XCTUnwrap(queue.pop()).json)["muted"], .bool(true))
+        XCTAssertNil(queue.pop())
+        queue.close()
+        queue.enqueue(ClientFrame(type: "stop"))
+        XCTAssertNil(queue.pop())
+    }
+
+    func testConcurrentMuteDiscardsOldTapAudio() {
+        let queue = OutboundFIFO(maxFrames: 3000, maxBytes: 20_000)
+        let token = queue.beginCapture(epoch: 1)
         DispatchQueue.concurrentPerform(iterations: 2000) { index in
-            if index == 500 { fifo.stopCaptureAndDiscardAudio() }
-            fifo.enqueueAudio(Data([0, 0]), token: token)
+            if index == 500 { queue.stopCaptureAndDiscardAudio() }
+            queue.enqueueAudio(Data([0, 0]), token: token)
         }
-        XCTAssertEqual(fifo.count, 0)
-        XCTAssertNil(fifo.failure)
+        XCTAssertEqual(queue.count, 0)
+        XCTAssertNil(queue.failure)
     }
 
-    func testQueueOverflowFailsClosedRatherThanDroppingArbitraryAudio() {
-        let fifo = OutboundFIFO(maxFrames: 1, maxBytes: 4)
-        let token = fifo.beginCapture()
-        fifo.enqueueAudio(Data([0, 0]), token: token)
-        fifo.enqueueAudio(Data([0, 0]), token: token)
-        XCTAssertNotNil(fifo.failure)
-        XCTAssertEqual(fifo.count, 0)
-        XCTAssertNil(fifo.pop())
+    func testBoundedQueueFailsClosedAndCoalescesWakeups() async {
+        for queue in [OutboundFIFO(maxFrames: 1), OutboundFIFO(maxBytes: 4)] {
+            let token = queue.beginCapture(epoch: 1)
+            queue.enqueueAudio(Data([0, 0]), token: token)
+            queue.enqueueAudio(Data([0, 0]), token: token)
+            XCTAssertNotNil(queue.failure)
+            XCTAssertNil(queue.pop())
+            queue.close()
+            var signals = 0
+            for await _ in queue.wakeups { signals += 1 }
+            XCTAssertEqual(signals, 1)
+        }
     }
 
-    func testControlOrderAndEscapedTurnIdentifiers() throws {
-        let fifo = OutboundFIFO()
-        let token = fifo.beginCapture()
-        fifo.enqueue(.ping)
-        fifo.enqueueAudio(Data([0, 0]), token: token)
-        fifo.enqueue(.played("t-\"\\\n"))
-        fifo.enqueue(.end)
-        XCTAssertEqual(try control(fifo.pop())["type"] as? String, "ping")
-        guard case .audio? = fifo.pop() else { return XCTFail("Audio order changed") }
-        XCTAssertEqual(try control(fifo.pop())["turn_id"] as? String, "t-\"\\\n")
-        guard case let .control(_, ends)? = fifo.pop() else { return XCTFail("Missing end") }
-        XCTAssertTrue(ends)
-    }
-
-    func testSignedLittleEndianPCM() {
+    func testStreamedLittleEndianPCMAndMalformedChunks() throws {
         let samples: [Int16] = [0, 1, -1, .min, .max, 0x1234]
-        XCTAssertEqual(samples.withUnsafeBufferPointer(PCMBytes.littleEndian),
-                       Data([0, 0, 1, 0, 255, 255, 0, 128, 255, 127, 0x34, 0x12]))
-    }
-
-    func testCompleteMonoPCMAndMalformedWAVs() throws {
-        let valid = wave()
-        try WaveFile.validate(valid)
-        XCTAssertThrowsError(try WaveFile.validate(valid.dropLast()))
-        var stereo = valid; stereo[22] = 2
-        XCTAssertThrowsError(try WaveFile.validate(stereo))
-        var compressed = valid; compressed[20] = 3
-        XCTAssertThrowsError(try WaveFile.validate(compressed))
-        var badRate = valid; badRate[28] = 0
-        XCTAssertThrowsError(try WaveFile.validate(badRate))
-        var oversizedChunk = valid; oversizedChunk[43] = 255
-        XCTAssertThrowsError(try WaveFile.validate(oversizedChunk))
-        var badAlignment = valid; badAlignment[32] = 1
-        XCTAssertThrowsError(try WaveFile.validate(badAlignment))
-        XCTAssertThrowsError(try WaveFile.validate(Data()))
-    }
-
-    private func control(_ frame: OutboundFIFO.Frame?) throws -> [String: Any] {
-        guard case let .control(text, _)? = frame else {
-            XCTFail("Expected control frame")
-            return [:]
+        let wire = samples.withUnsafeBufferPointer(PCMBytes.littleEndian)
+        XCTAssertEqual(wire, Data([0, 0, 1, 0, 255, 255, 0, 128, 255, 127, 0x34, 0x12]))
+        XCTAssertEqual(try PCMBytes.floats(wire), samples.map { Float($0) / 32768 })
+        for bytes in [Data(), Data([1]), Data(repeating: 0, count: 480_002)] {
+            XCTAssertThrowsError(try PCMBytes.floats(bytes))
         }
-        return try XCTUnwrap(JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any])
     }
 
-    private func wave() -> Data {
-        var result = Data("RIFF".utf8)
-        func u16(_ value: UInt16) { result.append(UInt8(truncatingIfNeeded: value)); result.append(UInt8(truncatingIfNeeded: value >> 8)) }
-        func u32(_ value: UInt32) { u16(UInt16(truncatingIfNeeded: value)); u16(UInt16(truncatingIfNeeded: value >> 16)) }
-        u32(38); result.append(Data("WAVEfmt ".utf8)); u32(16)
-        u16(1); u16(1); u32(16_000); u32(32_000); u16(2); u16(16)
-        result.append(Data("data".utf8)); u32(2); u16(0)
-        return result
+    func testHeartbeatRejectsUnsolicitedAndReplayedPongs() {
+        var heartbeat = Heartbeat(now: 0)
+        let seq = heartbeat.ping()
+        heartbeat.pong(seq + 1, now: 14)
+        XCTAssertTrue(heartbeat.expired(now: 15))
+        heartbeat.pong(seq, now: 16)
+        XCTAssertFalse(heartbeat.expired(now: 30))
+        heartbeat.pong(seq, now: 18)
+        XCTAssertTrue(heartbeat.expired(now: 31))
+    }
+
+    func testOptionalRecordsPreserveIndependentProvenanceAndAssociations() throws {
+        let legacy = try snapshot(state: #""ready""#)
+        XCTAssertEqual(legacy.state, .string("ready"))
+        XCTAssertTrue(legacy.taskRecords.isEmpty)
+        XCTAssertTrue(legacy.sceneRecords.isEmpty)
+        XCTAssertTrue(legacy.skillRecords.isEmpty)
+
+        let lab = try snapshot(extra: """
+        ,"task":null,"tasks":[
+          {"task_id":"clarify","status":"needs_clarification","summary":"Which labeled sample?","request_id":null},
+          {"task_id":"t","status":"executing","request_id":"p2","execution":[{"status":"completed","backend":"mock"}]}],
+        "scene":{"fresh":false,"provenance":"recorded_simulation"},
+        "scene_images":[{"evidence_id":"e1","captured_at":123,"sha256":"fixture-hash","provenance":"recorded_simulation"}],
+        "outcomes":[{"status":"unknown","provenance":"UNKNOWN","evidence_ids":["e1"]}],
+        "skills":[{"skill_id":"ph","version":"fixture-version","status":"task_validated"}],
+        "notebook":[
+          {"kind":"execution_progress","data":{"task_id":"t","request_id":"p2","phase":"prepared"}},
+          {"kind":"execution_progress","data":{"task_id":"t","request_id":"p1","phase":"superseded"}},
+          {"kind":"skill_evaluation","data":{"skill_id":"ph","decision":{"decision":"rejected"}}}],
+        "observations":[
+          {"observation_id":"o1","request_id":"p2","trial_id":"t1","provenance":"UNKNOWN","source":"observer","text":"Unreadable","evidence":[]},
+          {"observation_id":"o2","request_id":"p2","trial_id":"t1","provenance":"recorded_simulation","source":"observer","text":"Observed","evidence":["e1"]}]
+        """)
+        let task = try XCTUnwrap(lab.taskRecords.first)
+        XCTAssertEqual(task["request_id"], .null)
+        XCTAssertEqual(RecordPresentation.clarification(task), "Which labeled sample?")
+        XCTAssertEqual(lab.latestProgress(for: lab.taskRecords[1])?["phase"], .string("prepared"))
+        XCTAssertEqual(lab.imageRecords.first?["captured_at"], .number(123))
+        XCTAssertEqual(lab.sceneRecords.first?["fresh"], .bool(false))
+        XCTAssertEqual(lab.executionRecords.first?["status"], .string("completed"))
+        XCTAssertEqual(lab.outcomeRecords.first?["status"], .string("unknown"))
+        XCTAssertEqual(lab.observations.map(\.id), ["o1", "o2"])
+        XCTAssertEqual(lab.observations.map(\.provenance), ["UNKNOWN", "recorded_simulation"])
+        XCTAssertEqual(lab.skillRecords.first?["status"], .string("task_validated"))
+        XCTAssertEqual(lab.evaluationRecords.first?["decision"]?["decision"], .string("rejected"))
+    }
+
+    func testTaskMetricsAndIndependentImageAssociationFollowGatewaySnapshot() throws {
+        let lab = try snapshot(extra: """
+        ,"tasks":[{"task_id":"render","request_id":"r2","status":"completed","route":"active_skill",
+          "images":[{"evidence_id":"new","artifact_url":"/frame"}],
+          "execution":[{"request_id":"r2","status":"completed","backend":"mock"}]}],
+        "scene_images":[],"requests":[
+          {"request_id":"old","metrics":{"planning_ms":999}},
+          {"request_id":"r2","metrics":{"dispatch":"active_skill","planning_ms":13.5,"model_calls":0}}],
+        "observations":[
+          {"request_id":"r2","trial_id":"t1","status":"unknown","provenance":"UNKNOWN","source":"observer",
+           "text":"Unreadable","evidence":[],"receipt":{"images":[{"evidence_id":"unverified"}]}},
+          {"request_id":"r2","trial_id":"t1","status":"observed","provenance":"SIMULATED","source":"observer",
+           "text":"Observed","evidence":["used"],"checks":{"color":false},
+           "receipt":{"images":[{"evidence_id":"used"},{"evidence_id":"unrelated"}]}}]
+        """)
+        let task = try XCTUnwrap(lab.taskRecords.last)
+        XCTAssertEqual(lab.metrics(for: task)?["planning_ms"]?.numericValue, 13.5)
+        XCTAssertEqual(lab.imageRecords.first?["evidence_id"]?.string, "new")
+        XCTAssertEqual(lab.executionRecords.first?["status"]?.string, "completed")
+        XCTAssertEqual(lab.observations.first?.status, "unknown")
+        XCTAssertTrue(try XCTUnwrap(lab.observations.first).images.isEmpty)
+        XCTAssertEqual(lab.observations.last?.images.compactMap { $0["evidence_id"]?.string }, ["used"])
+        XCTAssertEqual(lab.observations.last?.checks?.failedChecks, true)
+    }
+
+    func testSimulationFrameUsesOnlyTheCurrentSessionsEvidenceRoute() throws {
+        let id = "0123456789abcdef0123456789abcdef"
+        let path = "/api/sessions/s/evidence/\(id)"
+        func lab(backend: String = "mujoco", engine: String = "MuJoCo", frame: String) throws -> LabSnapshot {
+            try snapshot(state: """
+            {"simulation":{"engine":"\(engine)","status":"running","frame_url":"\(frame)"}}
+            """, extra: """
+            ,"backend":"\(backend)"
+            """)
+        }
+        let current = try lab(frame: path)
+        XCTAssertEqual(current.simulationFrame?.id, id)
+        XCTAssertEqual(current.simulationFrame?.path, path)
+        XCTAssertEqual(current.simulationStatus, "running")
+        XCTAssertNil(try lab(backend: "mock", frame: path).simulationFrame)
+        XCTAssertNil(try lab(engine: "unknown", frame: path).simulationFrame)
+        for unsafe in ["/api/sessions/other/evidence/\(id)", "https://example.org\(path)",
+                       "\(path)?token=unsafe", "\(path)#preview", "/private/\(id).png",
+                       "/api/sessions/s/media/\(id).mp4"] {
+            XCTAssertNil(try lab(frame: unsafe).simulationFrame)
+        }
+    }
+
+    private func proposalSnapshot(version: String) -> Data {
+        Data("""
+        {"session_id":"s","backend":"mock","revision":2,"generation":0,"connected":true,
+        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "trial":{"trial_id":"t1","state":"awaiting_confirmation"},"conditions":[],"prediction":"",
+        "observations":[],"messages":[],"notebook":[],"state":{},
+        "pending":{"request_id":"request","proposal_version":\(version),"summary":"Inspect the scene",
+                   "status":"requested","presented":false,"generation":0,"expires_at":200,
+                   "plan":{"steps":[{"operation":"localize_objects","arguments":{"evidence_id":"internal","labels":["cup"]}}]}}}
+        """.utf8)
+    }
+
+    private func replyStart(version: String) -> Data {
+        Data("""
+        {"type":"reply_start","reply_id":"reply","proposal":{"request_id":"request","proposal_version":\(version)}}
+        """.utf8)
+    }
+
+    private func snapshot(revision: Int = 0, generation: Int = 0, id: String = "s",
+                          state: String = #"{"at":"HOME","state_provenance":"MOCK"}"#,
+                          extra: String = "") throws -> LabSnapshot {
+        let base = """
+        {"session_id":"\(id)","backend":"mock","revision":\(revision),"generation":\(generation),"connected":true,
+        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "trial":{"trial_id":"t1","state":"ready"},"conditions":[],"prediction":"",
+        "observations":[],"messages":[],"notebook":[],"state":\(state)}
+        """
+        var fields = try self.fields(base)
+        let additions = try self.fields("{\"fixture\":true\(extra)}")
+        fields.merge(additions) { _, new in new }
+        return try JSONDecoder().decode(LabSnapshot.self, from: JSONEncoder().encode(fields))
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, _ json: String) throws -> T {
+        try JSONDecoder().decode(type, from: Data(json.utf8))
+    }
+
+    private func fields(_ json: String) throws -> [String: JSONValue] {
+        try decode([String: JSONValue].self, json)
     }
 }

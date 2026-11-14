@@ -1,4 +1,4 @@
-"""Tests for color-dilution educational lesson and guided inquiry.
+"""Historical dilution content and current mock dose safety boundaries.
 
 Verifies:
 1. EXPERIMENT definition, metadata, controlled variables, and lesson concepts (H2O 18.015 g/mol).
@@ -189,28 +189,51 @@ def test_citations_in_module_docstring():
     assert "receiver C" in doc
 
 
-@pytest.mark.asyncio
-async def test_integrated_dilution_two_water_volumes_and_capacity(tmp_path):
-    from agentic.openarms_lab.runtime import Lab
+@pytest.mark.parametrize(('initial', 'station', 'portions', 'missing_observation', 'reason'), [
+    ('held', 'C', 2, False, 'invalid_task'),
+    ('held', 'B', 1, False, 'invalid_task'),
+    ('held', 'C', 1, True, 'independent observation'),
+    ('full_receiver', 'C', 1, False, 'empty receiver'),
+    ('unheld', 'C', 1, False, 'held full cup'),
+])
+async def test_mock_pour_rejects_invalid_dose_route_state_or_missing_observation(
+        tmp_path, initial, station, portions, missing_observation, reason):
+    import asyncio
+
     from agentic.openarms_lab.backends import MockBackend
-    lab=Lab(tmp_path,backend_factory=lambda:MockBackend(delay=.001))
-    sid=(await lab.create())['session_id']
-    await lab.select_experiment(sid,'color_dilution')
-    for n,(station,value) in enumerate([('A',.5),('C',.25)]):
-        if n:await lab.prepare(sid)
-        await lab.prediction(sid,'More water should lower concentration and conserve dye.')
-        s=await lab.request(sid,f'add water from {station} to B',str(n))
-        assert s['pending']['skill_id']=='premeasured_dilution.v1'
-        assert [x['action'] for x in s['pending']['validation']['expanded']]==['pick','pour','return_cup','home']
-        await lab.confirm(sid,s['pending']['request_id']);await lab.tasks[sid]
-        s=lab.snapshot(sid)
-        assert s['observations'][-1]['provenance']=='MODEL-PREDICTED'
-        assert s['observations'][-1]['value']==value
-        assert s['state']['receiver_load']['B']==1
-        assert s['state']['holding'] is None and s['state']['at']=='HOME'
-        s=await lab.request(sid,'add water from A to B','overflow'+str(n))
-        assert s['pending'] is None
-    evidence=lab.registry.test_candidate('premeasured_dilution.v1')
-    assert evidence['verdict']=='passed' and evidence['provenance']=='MOCK'
-    assert evidence['approval_scopes']['physical']=='unsupported'
-    await lab.shutdown()
+    from agentic.openarms_lab.runtime import Lab
+    from agentic.tests.test_task_loop import TestPerception, decision
+
+    class ProposedPour:
+        async def run(self, context, **kwargs):
+            steps = [{'operation': 'inspect_scene'},
+                     {'operation': 'mock_pour', 'arguments': {
+                         'fixture': 'sample_cup', 'station': station, 'portions': portions}}]
+            if not missing_observation:
+                steps.append({'operation': 'observe'})
+            return decision(payload={'steps': steps,
+                                     'outcome_checks': [{'feature': 'readable', 'expected': True}]})
+
+    class PreparedMock(MockBackend):
+        def prepare(self):
+            super().prepare()
+            if initial != 'unheld':
+                self._state.update(holding='sample_cup', cup_station=None)
+            if initial == 'full_receiver':
+                self._state.update(receiver_portions=1)
+
+    backend = PreparedMock(delay=0)
+    lab = Lab(tmp_path, expert=ProposedPour(), perception=TestPerception(unknown=False),
+              backend_factory=lambda: backend)
+    try:
+        sid = (await lab.create())['session_id']
+        before = backend.state()
+        handle = await lab.start_task(sid, 'Pour the held mock cup into the receiver.')
+        await asyncio.wait_for(asyncio.shield(lab.workers[handle['task_id']]), 2)
+        snap = lab.snapshot(sid)
+        assert snap['tasks'][0]['status'] == 'failed'
+        assert reason in snap['tasks'][0]['summary']
+        assert snap['pending'] is None and snap['requests'] == [] and snap['observations'] == []
+        assert backend.state() == before and backend.executions == 0
+    finally:
+        await lab.shutdown()

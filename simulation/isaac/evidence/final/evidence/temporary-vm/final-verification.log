@@ -1,0 +1,13 @@
+uuid, name, driver_version
+GPU-64f6e52e-032d-2bca-3d10-d0ab27aad946, NVIDIA GeForce RTX 3060, 595.99.02
+active
+active
+TEMPORARY_VM_REMOVED
+{
+  "package_name_sets_equal": true,
+  "added": [],
+  "removed": [],
+  "before_count": 3095,
+  "after_count": 3095,
+  "note": "Normalized optional architecture suffixes; no package-version changes were requested. Apt installation and removal logs preserve exact transactions."
+}

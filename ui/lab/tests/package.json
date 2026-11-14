@@ -1,0 +1,14 @@
+{
+  "name": "openarms-ph-browser-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:unit": "node --test audio.test.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.1",
+    "ws": "8.23.0"
+  }
+}

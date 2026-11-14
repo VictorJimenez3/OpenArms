@@ -1,0 +1,71 @@
+{
+  "files_exist": {
+    "build.py": true,
+    "Scene.blend": true,
+    "Environment.usdc": true,
+    "Front.png": true,
+    "Overhead.png": true,
+    "Result.png": true,
+    "manifest.json": true,
+    "EXPERIMENT.md": true
+  },
+  "usd": {
+    "default_prim": "/ClassicLab",
+    "meters_per_unit": 1.0,
+    "up_axis": "Z",
+    "external_asset_dependencies": [],
+    "unresolved_dependencies": [],
+    "layers": [
+      "Environment.usdc"
+    ],
+    "robot_named_prims": [],
+    "physics_apis": [],
+    "stable_prim_paths_valid": {
+      "dosing_paddle": true,
+      "stopcock": true,
+      "receiving_flask": true,
+      "passive_burette": true,
+      "passive_stand": true,
+      "staged_drop": true,
+      "staged_pink": true
+    },
+    "prim_count": 389
+  },
+  "renders": {
+    "Front": [
+      1600,
+      1000
+    ],
+    "Overhead": [
+      1600,
+      1000
+    ],
+    "Result": [
+      1600,
+      1000
+    ]
+  },
+  "visual_inspection": {
+    "status": "Inspected actual PNGs; final framing and lighting pass",
+    "front": "Complete stand/burette, static original robot, single receiving flask and supporting reagent apparatus",
+    "overhead": "Working layout visible; perspective foreshortening of tall passive stand is expected",
+    "result": "Hanging drop and pink receiving liquid visible; static staged endpoint"
+  },
+  "limitations": [
+    "No physics",
+    "No verified robot reach or controller",
+    "No chemistry or mixing model executed",
+    "No actual titration outcome",
+    "USD glass/material appearance renderer-dependent"
+  ],
+  "passed": true,
+  "orchestrator_visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "scope": "Actual Blender images visually inspected; no scientific/runtime validation"
+  }
+}

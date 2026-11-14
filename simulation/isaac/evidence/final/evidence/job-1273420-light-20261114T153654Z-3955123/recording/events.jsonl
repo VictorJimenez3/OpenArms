@@ -1,0 +1,13 @@
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "started", "task": "cube"}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "approach", "sim_time_s": 0.008333333767950535}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "descend", "sim_time_s": 1.0083333859220147}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "close", "sim_time_s": 4.008333542384207}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "lift", "sim_time_s": 6.008333646692336}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "hold", "sim_time_s": 9.008333803154528}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "carry", "sim_time_s": 11.008333907462656}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "lower", "sim_time_s": 14.008334063924849}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "release", "sim_time_s": 17.00833422038704}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "retreat", "sim_time_s": 19.00833432469517}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "phase", "phase": "settle", "sim_time_s": 22.008334481157362}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "observations_finished", "status": "passed", "manipulation_success": true}
+{"request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a", "backend": "simulated", "provenance": "SIMULATED", "event": "finished", "status": "passed", "returncode": 0, "stopped": false}

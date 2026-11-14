@@ -1,0 +1,28 @@
+{
+  "provenance": "SIMULATED",
+  "kind": "articulation_smoke",
+  "manipulation_success": false,
+  "utc_started": "2026-11-14T13:47:05Z",
+  "slurm_job_id": "1273056",
+  "git_commit": "761a57974fa43af942b5a3b564413de2f7df1a5d",
+  "workshop_commit": "ce807d99724cb65671abec01f908a2fcb4a6eab7",
+  "isaac_version": "5.1.0.0",
+  "frames": 240,
+  "measured_rotation_span_rad": 0.36133285611867905,
+  "result": "Robot rendered and articulation moved; grasp/place not attempted",
+  "utc_finished": "2026-11-14T13:48:33Z",
+  "app_receipt_status": "passed",
+  "overall_process_status": "failed_during_shutdown",
+  "exit_code": 139,
+  "video_sha256": "b19fdfa21ff283a78fe22c2f9d2526d0f8b04d44af1c79fbdc5b73c7ba2903de",
+  "video_duration_s": 8,
+  "video_resolution": [
+    960,
+    720
+  ],
+  "gpu_model": "NVIDIA RTX A6000",
+  "source_asset": "SO-ARM101-USD.usd",
+  "source_asset_camera_mount": true,
+  "evidence_scope": "Summary of an actual runtime-agent recording, not a new trial; no candidate experiments executed",
+  "source_bundle": "Local delivered outputs/isaac-first-motion, original runtime outputs/evidence/job-1273056"
+}

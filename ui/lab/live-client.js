@@ -1,446 +1,327 @@
-/**
- * OpenArms Lab - Gemini Live WebSocket Client
- *
- * Implements real mic PCM capture via AudioWorklet (/audio-worklet.js),
- * speaker streaming queue with 24kHz PCM16 decoding,
- * interrupt cancellation & buffer flush,
- * echo cancellation, mute, lifecycle cleanup,
- * and bounded retry with fallback to deterministic text.
- */
-
-function arrayBufferToBase64(buffer) {
+const noop = () => {};
+const id = () => crypto.randomUUID();
+function encode(buffer) {
   const bytes = new Uint8Array(buffer);
-  let binary = '';
-  const len = bytes.byteLength;
-  const chunkSize = 8192;
-  for (let i = 0; i < len; i += chunkSize) {
-    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
-    binary += String.fromCharCode.apply(null, chunk);
-  }
-  return btoa(binary);
+  let string = '';
+  for (let i = 0; i < bytes.length; i += 4096) string += String.fromCharCode(...bytes.subarray(i, i + 4096));
+  return btoa(string);
 }
 
-function base64ToUint8Array(base64) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+// A reply is audible only after scheduled PCM finishes. reply_end is not playback.
+export class PcmPlayer {
+  constructor(context, send, change = noop) {
+    this.context = context;
+    this.send = send;
+    this.change = change;
+    this.replies = new Map();
+    this.sources = new Set();
+    this.nextTime = 0;
+    this.timer = null;
   }
-  return bytes;
-}
-
-export class LiveClient {
-  constructor(sessionId, options = {}) {
-    this.sessionId = sessionId;
-    this.baseUrl = options.baseUrl || '';
-
-    // Callbacks
-    this.onStatusChange = options.onStatusChange || (() => {});
-    this.onTranscript = options.onTranscript || (() => {});
-    this.onInterrupted = options.onInterrupted || (() => {});
-    this.onError = options.onError || (() => {});
-    this.onAudioLevel = options.onAudioLevel || (() => {});
-
-    // State
-    this.status = 'disconnected'; // disconnected, connecting, active, muted, unavailable, error
-    this.isLiveAvailable = true;
-    this.isMuted = false;
-    this.ws = null;
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 3;
-    this.reconnectTimer = null;
-    this.isUserInitiatedStop = false;
-
-    // Web Audio graph
-    this.audioCtx = null;
-    this.mediaStream = null;
-    this.sourceNode = null;
-    this.workletNode = null;
-    this.masterGainNode = null;
-
-    // Speaker queue state
-    this.activeSources = new Set();
-    this.nextPlayTime = 0;
-    this.generation = 0;
+  start(replyId) {
+    if (!replyId || this.replies.has(replyId)) return;
+    this.replies.set(replyId, { id: replyId, count: 0, samples: 0, ended: false, aborted: false, acked: false });
+    // Keep a bounded tombstone set so interrupted/duplicate chunks cannot revive a reply.
+    if (this.replies.size > 250) this.replies.delete(this.replies.keys().next().value);
   }
-
-  _buildWsUrl() {
-    let host = window.location.host;
-    let protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-
-    if (this.baseUrl) {
-      try {
-        const parsed = new URL(this.baseUrl, window.location.href);
-        host = parsed.host;
-        protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
-      } catch (e) {
-        // fallback
-      }
-    }
-
-    return `${protocol}//${host}/api/sessions/${encodeURIComponent(this.sessionId)}/live`;
-  }
-
-  async _initAudioContext() {
-    if (!this.audioCtx) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) {
-        throw new Error('Web Audio API not supported in this browser');
-      }
-      this.audioCtx = new AudioContextClass();
-      this.masterGainNode = this.audioCtx.createGain();
-      this.masterGainNode.connect(this.audioCtx.destination);
-    }
-
-    if (this.audioCtx.state === 'suspended') {
-      await this.audioCtx.resume();
-    }
-  }
-
-  async _loadAudioWorklet() {
-    // Try multiple possible paths to accommodate root or subpath mounts
-    const workletPaths = [
-      '/audio-worklet.js',
-      './audio-worklet.js',
-      'audio-worklet.js',
-    ];
-
-    let loaded = false;
-    let lastErr = null;
-
-    for (const path of workletPaths) {
-      try {
-        await this.audioCtx.audioWorklet.addModule(path);
-        loaded = true;
-        break;
-      } catch (err) {
-        lastErr = err;
-      }
-    }
-
-    if (!loaded) {
-      throw new Error(`Failed to load audio worklet module: ${lastErr?.message}`);
-    }
-  }
-
-  async startVoice() {
-    if (['connecting', 'reconnecting', 'active', 'muted'].includes(this.status)) return;
-    const generation = ++this.generation;
-    this.isUserInitiatedStop = false;
-    this.isMuted = false;
-    this.reconnectAttempts = 0;
-    this._updateStatus('connecting', 'Requesting microphone and starting voice engine...');
-
+  chunk(replyId, data) {
+    const reply = this.replies.get(replyId);
+    if (!reply || reply.aborted || reply.ended || reply.acked) return;
+    if (this.context.state !== 'running') { this.fail(replyId, 'Speaker paused. Tap Start voice to restore audio.'); return; }
     try {
-      // 1. Initialize Audio Context (requires user gesture)
-      await this._initAudioContext();
-      if (generation !== this.generation) return;
-
-      // 2. Request user microphone with echo cancellation
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-      if (generation !== this.generation) {
-        stream.getTracks().forEach(track => track.stop());
-        return;
-      }
-      this.mediaStream = stream;
-
-      // 3. Load AudioWorklet
-      await this._loadAudioWorklet();
-      if (generation !== this.generation) return;
-
-      // 4. Build audio processing pipeline
-      this.sourceNode = this.audioCtx.createMediaStreamSource(this.mediaStream);
-      this.workletNode = new AudioWorkletNode(this.audioCtx, 'pcm-capture-processor');
-
-      // Wire worklet port to receive 16kHz PCM chunks
-      this.workletNode.port.onmessage = (event) => {
-        const msg = event.data;
-        if (msg && msg.type === 'pcm' && msg.buffer) {
-          this._handleMicPcmChunk(msg.buffer);
-        }
-      };
-
-      this.sourceNode.connect(this.workletNode);
-      // Connect worklet to a silent destination to keep the processor running in all browsers
-      const dummyGain = this.audioCtx.createGain();
-      dummyGain.gain.value = 0;
-      this.workletNode.connect(dummyGain);
-      dummyGain.connect(this.audioCtx.destination);
-
-      // 5. Connect WebSocket
-      this._connectWebSocket();
-    } catch (err) {
-      if (generation !== this.generation) return;
-      console.error('[LiveClient] Voice initialization error:', err);
-      this.cleanup();
-      this._updateStatus('error', err.message || 'Microphone access denied or audio initialization failed');
-      this.onError({ message: err.message });
-      throw err;
-    }
-  }
-
-  _connectWebSocket() {
-    if (this.ws) {
-      try { this.ws.close(); } catch (e) {}
-    }
-
-    const wsUrl = this._buildWsUrl();
-    const socket = new WebSocket(wsUrl);
-    this.ws = socket;
-
-    this.ws.onopen = () => {
-      if (this.ws !== socket) return;
-      this.isLiveAvailable = true;
-      this._updateStatus('connecting', 'Connecting to Gemini Live...');
-    };
-
-    this.ws.onmessage = (event) => {
-      if (this.ws !== socket) return;
-      this._handleServerMessage(event.data);
-    };
-
-    this.ws.onerror = (err) => {
-      console.warn('[LiveClient] WebSocket error:', err);
-    };
-
-    this.ws.onclose = (event) => {
-      if (this.ws !== socket) return;
-      if (!this.isLiveAvailable || event.code === 1008) {
-        this.cleanup();
-        this._updateStatus('unavailable', 'Live voice unavailable. Use the text command field.');
-        return;
-      }
-      if (!this.isUserInitiatedStop) {
-        this._handleUnexpectedClose(event);
-      } else {
-        this._updateStatus('disconnected', 'Voice session closed');
-      }
-    };
-  }
-
-  _handleMicPcmChunk(buffer) {
-    if (this.isMuted) return;
-
-    // Calculate approximate RMS level for visualization
-    const int16Array = new Int16Array(buffer);
-    let sum = 0;
-    for (let i = 0; i < int16Array.length; i += 4) {
-      const val = int16Array[i] / 32768.0;
-      sum += val * val;
-    }
-    const rms = Math.sqrt(sum / (int16Array.length / 4));
-    this.onAudioLevel(rms);
-
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      const base64Pcm = arrayBufferToBase64(buffer);
-      this.ws.send(JSON.stringify({
-        type: 'audio',
-        data: base64Pcm,
-      }));
-    }
-  }
-
-  _handleServerMessage(rawData) {
-    let msg;
-    try {
-      msg = JSON.parse(rawData);
-    } catch (err) {
-      console.warn('[LiveClient] Non-JSON message received:', err);
-      return;
-    }
-
-    switch (msg.type) {
-      case 'status':
-        if (msg.status === 'unavailable') {
-          this.isLiveAvailable = false;
-          this._updateStatus('unavailable', msg.message || 'Live voice service unavailable on this host');
-        } else {
-          if (['connected','listening'].includes(msg.status)) this.reconnectAttempts = 0;
-          const normalized = ['connected','listening'].includes(msg.status) ? (this.isMuted ? 'muted' : 'active') : msg.status;
-          this._updateStatus(normalized, msg.message);
-        }
-        break;
-
-      case 'audio':
-        if (msg.data) {
-          this._play24kPcmChunk(msg.data);
-        }
-        break;
-
-      case 'transcript':
-        if (msg.role && msg.text) {
-          this.onTranscript({ role: msg.role, text: msg.text });
-        }
-        break;
-
-      case 'interrupted':
-        this._flushSpeakerQueue();
-        this.onInterrupted();
-        break;
-
-      case 'error':
-        this.onError({ message: msg.message || 'Unknown voice error' });
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  _play24kPcmChunk(base64Data) {
-    if (!this.audioCtx) return;
-
-    try {
-      // Bound queued speech during long responses or a stalled audio device.
-      if (this.nextPlayTime - this.audioCtx.currentTime > 10) this._flushSpeakerQueue();
-      const bytes = base64ToUint8Array(base64Data);
-      const int16 = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
-      const float32 = new Float32Array(int16.length);
-
-      for (let i = 0; i < int16.length; i++) {
-        float32[i] = int16[i] / 32768.0;
-      }
-
-      // 24kHz mono PCM
-      const audioBuffer = this.audioCtx.createBuffer(1, float32.length, 24000);
-      audioBuffer.copyToChannel(float32, 0);
-
-      const now = this.audioCtx.currentTime;
-      const startTime = Math.max(now, this.nextPlayTime);
-
-      const source = this.audioCtx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.masterGainNode);
-
-      source.start(startTime);
-      this.nextPlayTime = startTime + audioBuffer.duration;
-      this.activeSources.add(source);
-
+      const binary = atob(data);
+      if (!binary.length || binary.length % 2 || binary.length > 24000 * 2 * 12) throw new Error('Invalid audio frame');
+      if (this.nextTime - this.context.currentTime > 12) throw new Error('Speech queue exceeded its limit');
+      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+      const view = new DataView(bytes.buffer);
+      const pcm = new Float32Array(bytes.length / 2);
+      for (let n = 0; n < pcm.length; n++) pcm[n] = view.getInt16(n * 2, true) / 32768;
+      const buffer = this.context.createBuffer(1, pcm.length, 24000);
+      buffer.copyToChannel(pcm, 0);
+      const source = this.context.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.context.destination);
+      const start = Math.max(this.context.currentTime + 0.015, this.nextTime);
+      this.nextTime = start + buffer.duration;
+      reply.count++;
+      reply.samples += pcm.length;
+      const entry = { source, replyId, start };
+      this.sources.add(entry);
       source.onended = () => {
-        this.activeSources.delete(source);
+        this.sources.delete(entry);
+        source.disconnect();
+        reply.count--;
+        this.maybeAck(reply);
+        this.report();
       };
-    } catch (err) {
-      console.error('[LiveClient] Audio decoding/playback error:', err);
+      source.start(start);
+      this.report();
+    } catch { this.fail(replyId, 'Speaker playback failed. Your text conversation is still available.'); }
+  }
+  end(replyId) { const reply = this.replies.get(replyId); if (reply) { reply.ended = true; this.maybeAck(reply); } }
+  maybeAck(reply) {
+    if (reply.ended && reply.samples > 0 && reply.count === 0 && !reply.aborted && !reply.acked) {
+      reply.acked = true;
+      this.send({ type: 'played', reply_id: reply.id });
     }
   }
-
-  _flushSpeakerQueue() {
-    for (const source of this.activeSources) {
-      try {
-        source.stop(0);
-      } catch (e) {
-        // already stopped
+  fail(replyId, message) { this.clear(replyId, true); this.change('error', message); }
+  clear(replyId, notify = false) {
+    const affected = new Set();
+    for (const reply of this.replies.values()) {
+      if ((!replyId || reply.id === replyId) && !reply.acked && !reply.aborted) { reply.aborted = true; affected.add(reply.id); }
+    }
+    for (const entry of [...this.sources]) {
+      if (!replyId || entry.replyId === replyId) {
+        entry.source.onended = null;
+        try { entry.source.stop(); entry.source.disconnect(); } catch {}
+        this.sources.delete(entry);
       }
     }
-    this.activeSources.clear();
-    this.nextPlayTime = this.audioCtx ? this.audioCtx.currentTime : 0;
+    if (!this.sources.size) this.nextTime = this.context.currentTime;
+    if (notify) for (const reply of affected) this.send({ type: 'interrupt', reply_id: reply });
+    this.report();
   }
+  report() {
+    clearTimeout(this.timer);
+    const now = this.context.currentTime;
+    const firstStart = Math.min(...[...this.sources].map(entry => entry.start));
+    const playing = firstStart <= now;
+    this.change(this.sources.size ? playing ? 'playing' : 'queued' : 'idle');
+    if (!playing && this.sources.size) this.timer = setTimeout(() => this.report(), (firstStart - now) * 1000 + 5);
+  }
+}
 
-  _handleUnexpectedClose(event) {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      const delay = 1000 * Math.pow(2, this.reconnectAttempts - 1);
-      this._updateStatus('connecting', `Voice connection dropped. Reconnecting (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-
-      this.reconnectTimer = setTimeout(() => {
-        if (!this.isUserInitiatedStop) {
-          this._connectWebSocket();
+export class SessionClient {
+  #api;
+  constructor(api, options = {}) {
+    this.#api = api;
+    this.onState = options.onState || noop;
+    this.onTranscript = options.onTranscript || noop;
+    this.onStatus = options.onStatus || noop;
+    this.onError = options.onError || noop;
+    this.onResync = options.onResync || noop;
+    this.status = { connection: 'connecting', mic: 'off', provider: 'off', playback: 'idle', muted: false, voiceOn: false, detail: '' };
+    this.ws = null;
+    this.ready = false;
+    this.closed = false;
+    this.retry = 0;
+    this.revision = -1;
+    this.generation = null;
+    this.audioEpoch = 0;
+    this.startEpoch = 0;
+    this.context = null;
+    this.player = null;
+    this.captureEnabled = false;
+    this.heartbeat = null;
+    this.retryTimer = null;
+    this.watchdog = null;
+    this.routeHandler = () => { if (this.status.voiceOn) this.pauseAudio('Audio route changed. Tap Start voice to reconnect your microphone.'); };
+    this.visibilityHandler = () => { if (document.hidden && this.status.voiceOn) this.pauseAudio('Voice paused while the page was in the background. Tap Start voice to resume.'); };
+    navigator.mediaDevices?.addEventListener('devicechange', this.routeHandler);
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+  }
+  update(patch) { Object.assign(this.status, patch); this.gate(); this.onStatus({ ...this.status }); }
+  send(frame) {
+    // No send queue: controls/audio are never replayed after reconnection.
+    if (!this.ready || this.ws?.readyState !== WebSocket.OPEN || this.ws.bufferedAmount > 128000) return false;
+    this.ws.send(JSON.stringify(frame));
+    return true;
+  }
+  connect() {
+    if (this.ws && [WebSocket.CONNECTING, WebSocket.OPEN].includes(this.ws.readyState)) return;
+    this.closed = false;
+    clearTimeout(this.retryTimer);
+    this.ready = false;
+    this.update({ connection: this.retry ? 'reconnecting' : 'connecting' });
+    const url = new URL(`/api/sessions/${encodeURIComponent(this.#api.sessionId)}/live`, location.href);
+    url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const socket = new WebSocket(url);
+    this.ws = socket;
+    const connectionId = id();
+    let lastPong = Date.now();
+    let helloTime = 0;
+    const sentPings = new Set();
+    let seq = 0;
+    this.watchdog = setInterval(() => {
+      if (this.ws === socket && Date.now() - lastPong > 15000) socket.close(4000, 'Heartbeat timeout');
+    }, 1000);
+    socket.onopen = () => {
+      if (this.ws !== socket) return;
+      socket.send(JSON.stringify({ type: 'hello', protocol_version: 1, connection_id: connectionId, access_token: this.#api.accessToken }));
+    };
+    socket.onmessage = ({ data }) => {
+      if (this.ws !== socket) return;
+      let frame;
+      try { frame = JSON.parse(data); } catch { return; }
+      if (frame.type === 'hello') {
+        if (this.ready || frame.protocol_version !== 1 || frame.connection_id !== connectionId || !Number.isSafeInteger(frame.generation) || frame.generation < 0) {
+          this.closed = true; socket.close(1002, 'Invalid session greeting'); this.onError('The lab protocol did not match this browser. Reload after updating the app.'); return;
         }
-      }, delay);
-    } else {
-      this.cleanup();
-      this.isLiveAvailable = false;
-      this._updateStatus('unavailable', 'Live voice unavailable. Falling back to deterministic local text pathway.');
+        if (this.generation === null || frame.generation > this.generation) this.setGeneration(frame.generation);
+        this.ready = true;
+        helloTime = Date.now(); lastPong = helloTime;
+        this.update({ connection: 'connected' });
+        clearInterval(this.heartbeat);
+        this.heartbeat = setInterval(() => {
+          const current = ++seq;
+          if (this.send({ type: 'ping', seq: current })) sentPings.add(current);
+        }, 5000);
+        this.onResync();
+        return;
+      }
+      if (!this.ready) return;
+      if (frame.type === 'pong') {
+        if (sentPings.delete(frame.seq)) { lastPong = Date.now(); if (lastPong - helloTime >= 15000) this.retry = 0; }
+        return;
+      }
+      this.receive(frame);
+    };
+    socket.onerror = noop; // onclose owns retry and cleanup.
+    socket.onclose = event => {
+      if (this.ws !== socket) return;
+      this.ws = null; this.ready = false;
+      clearInterval(this.heartbeat); clearInterval(this.watchdog);
+      this.dropAudio();
+      this.update({ voiceOn: false, mic: 'off', provider: 'off', playback: 'idle' });
+      if ([1008, 4001, 4003, 4009, 4401, 4403, 4409].includes(event.code)) this.closed = true;
+      if (this.closed || this.retry >= 6) {
+        this.update({ connection: 'offline', detail: event.code === 1008 || event.code === 4401 ? 'Session access ended. Reconnect your session.' : 'Session paused. Reconnect to restore the notebook.' });
+        return;
+      }
+      this.retry++;
+      this.update({ connection: 'reconnecting', detail: 'Reconnecting your notebook. Voice will need a fresh tap.' });
+      this.retryTimer = setTimeout(() => this.connect(), Math.min(8000, 500 * 2 ** (this.retry - 1)));
+    };
+  }
+  receive(frame) {
+    switch (frame.type) {
+      case 'state': this.acceptState(frame.state); break;
+      case 'transcript': if (frame.turn_id && ['user','assistant'].includes(frame.role) && typeof frame.text === 'string') this.onTranscript(frame); break;
+      case 'status': {
+        // Optional relay metadata is diagnostic only. The audio gate uses provider status.
+        if (typeof frame.model === 'string') this.status.model = frame.model;
+        if (typeof frame.provider === 'string') this.status.providerName = frame.provider;
+        if (frame.status === 'unavailable') {
+          this.dropAudio();
+          this.update({ voiceOn: false, provider: 'unavailable', mic: 'off', playback: 'idle', detail: frame.message || 'Voice is unavailable. You can keep exploring with text.' });
+        } else if (this.status.voiceOn) {
+          this.update({ provider: frame.status, detail: frame.message || '' });
+          if (frame.status === 'reconnecting') this.player?.clear();
+        }
+        break;
+      }
+      case 'reply_start': if (this.status.voiceOn && !this.status.muted) this.player?.start(frame.reply_id); break;
+      case 'audio': if (this.status.voiceOn && !this.status.muted) this.player?.chunk(frame.reply_id, frame.data); break;
+      case 'reply_end': this.player?.end(frame.reply_id); break;
+      case 'interrupted': this.player?.clear(frame.reply_id); this.resetCapture(); break;
+      case 'error':
+        if (['owner_replaced','connection_replaced','session_replaced','unauthorized'].includes(frame.code)) { this.closed = true; this.ws?.close(); }
+        this.onError(frame.message || 'Voice hit a problem. Your text notebook is still available.');
+        break;
     }
   }
-
-  _updateStatus(status, message = '') {
-    this.status = status;
-    this.onStatusChange({
-      status,
-      message,
-      isLiveAvailable: this.isLiveAvailable,
-      isMuted: this.isMuted,
-    });
+  acceptState(state) {
+    if (state?.session_id !== this.#api.sessionId || !Number.isSafeInteger(state.revision) || state.revision <= this.revision ||
+        !Number.isSafeInteger(state.generation) || state.generation < 0 || state.generation < this.generation) return false;
+    this.revision = state.revision;
+    this.setGeneration(state.generation);
+    this.onState(state);
+    return true;
   }
-
+  setGeneration(generation) {
+    if (generation === this.generation) return;
+    this.generation = generation;
+    this.resetCapture();
+    this.player?.clear();
+  }
+  gate() {
+    const enabled = Boolean(this.ready && this.status.voiceOn && !this.status.muted && this.status.mic === 'ready' && ['connected','listening','speaking'].includes(this.status.provider));
+    if (enabled !== this.captureEnabled) {
+      this.captureEnabled = enabled;
+      this.audioEpoch++;
+      this.worklet?.port.postMessage({ type: 'gate', enabled, epoch: this.audioEpoch });
+    }
+  }
+  resetCapture() {
+    this.audioEpoch++;
+    this.worklet?.port.postMessage({ type: 'gate', enabled: this.captureEnabled, epoch: this.audioEpoch });
+  }
+  async startVoice() {
+    if (this.status.voiceOn || this.status.mic === 'requesting') return;
+    if (!this.ready) { this.onError('Your notebook is reconnecting. Try voice once it is connected.'); return; }
+    const epoch = ++this.startEpoch;
+    this.update({ mic: 'requesting', provider: 'off', detail: 'Allow microphone access to talk. Text works without it.' });
+    try {
+      if (!isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('Voice needs HTTPS or localhost. Continue with text, or open the trusted lab link.');
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) throw new Error('This browser does not support streaming audio. Continue with text.');
+      // Create/resume before awaiting permissions: iOS needs the original user gesture.
+      this.context ||= new Audio();
+      await this.context.resume();
+      if (epoch !== this.startEpoch) return;
+      if (this.context.state !== 'running') throw new Error('Speaker is paused. Tap Start voice again to enable sound.');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      if (epoch !== this.startEpoch) { stream.getTracks().forEach(track => track.stop()); return; }
+      this.stream = stream;
+      await this.context.audioWorklet.addModule(new URL('./audio-worklet.js', import.meta.url));
+      if (epoch !== this.startEpoch) return;
+      this.source = this.context.createMediaStreamSource(stream);
+      this.worklet = new AudioWorkletNode(this.context, 'pcm-capture-processor');
+      this.silent = this.context.createGain();
+      this.silent.gain.value = 0;
+      this.source.connect(this.worklet); this.worklet.connect(this.silent); this.silent.connect(this.context.destination);
+      this.worklet.port.onmessage = ({ data }) => {
+        if (data.type === 'pcm' && data.epoch === this.audioEpoch && this.captureEnabled) this.send({ type: 'audio', data: encode(data.buffer), epoch: this.generation });
+      };
+      this.player = new PcmPlayer(this.context, frame => this.send(frame), (playback, detail) => this.update({ playback, ...(detail ? { detail } : {}) }));
+      stream.getAudioTracks().forEach(track => { track.onended = () => this.pauseAudio('Microphone disconnected. Check your input and tap Start voice.'); });
+      this.context.onstatechange = () => {
+        if (this.context?.state !== 'running' && this.status.voiceOn) this.pauseAudio('Audio paused by your device. Tap Start voice to resume.');
+      };
+      if (!this.send({ type: 'start_voice' })) throw new Error('Voice could not start while the connection changed. Try again.');
+      this.update({ voiceOn: true, muted: false, mic: 'ready', provider: 'connecting', playback: 'idle', detail: 'Connecting the voice companion…' });
+    } catch (error) {
+      if (epoch !== this.startEpoch) return;
+      const denied = ['NotAllowedError','PermissionDeniedError'].includes(error.name);
+      this.dropAudio();
+      this.update({ voiceOn: false, mic: denied ? 'denied' : 'error', provider: 'off', playback: 'idle', detail: denied ? 'Microphone blocked. Allow it in browser site settings, then tap Retry microphone. Text is ready.' : error.message });
+    }
+  }
+  dropAudio() {
+    ++this.startEpoch;
+    this.captureEnabled = false; this.resetCapture();
+    this.player?.clear(undefined, false); this.player = null;
+    this.stream?.getTracks().forEach(track => { track.onended = null; track.stop(); }); this.stream = null;
+    this.source?.disconnect(); this.worklet?.disconnect(); this.silent?.disconnect();
+    if (this.worklet) this.worklet.port.onmessage = null;
+    this.source = this.worklet = this.silent = null;
+    if (this.context) { this.context.onstatechange = null; this.context.close().catch(noop); this.context = null; }
+  }
+  pauseAudio(detail) {
+    this.player?.clear(undefined, true);
+    this.send({ type: 'stop_voice' });
+    this.dropAudio();
+    this.update({ voiceOn: false, mic: 'off', provider: 'off', playback: 'idle', detail });
+  }
+  stopVoice() { this.pauseAudio('Voice ended. Your conversation and notebook are saved.'); }
   setMuted(muted) {
-    this.isMuted = !!muted;
-    this.mediaStream?.getAudioTracks().forEach(track => { track.enabled = !this.isMuted; });
-    if (this.workletNode) {
-      this.workletNode.port.postMessage({ type: 'mute', muted: this.isMuted });
-    }
-    if (this.status !== 'unavailable' && this.status !== 'disconnected' && this.status !== 'error') {
-      this._updateStatus(this.isMuted ? 'muted' : 'active', this.isMuted ? 'Microphone muted' : 'Microphone active');
-    }
+    if (!this.status.voiceOn) return;
+    this.player?.clear(undefined, true);
+    this.stream?.getAudioTracks().forEach(track => { track.enabled = !muted; });
+    this.update({ muted: Boolean(muted), playback: 'idle', detail: muted ? 'Microphone muted. Queued speech cleared.' : '' });
+    this.resetCapture();
+    if (!this.send({ type: 'mute', muted: Boolean(muted) })) this.pauseAudio('Connection changed. Tap Start voice after reconnecting.');
   }
-
-  sendText(text) {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: 'text', text }));
-      return true;
-    }
-    return false;
-  }
-
-  sendAudioEnd() {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type: 'audio_end' }));
-    }
-  }
-
-  cleanup() {
-    ++this.generation;
-    this.isUserInitiatedStop = true;
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-
-    this._flushSpeakerQueue();
-
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((track) => track.stop());
-      this.mediaStream = null;
-    }
-
-    if (this.sourceNode) {
-      try { this.sourceNode.disconnect(); } catch (e) {}
-      this.sourceNode = null;
-    }
-
-    if (this.workletNode) {
-      try {
-        this.workletNode.port.postMessage({ type: 'flush' });
-        this.workletNode.disconnect();
-      } catch (e) {}
-      this.workletNode = null;
-    }
-
-    if (this.ws) {
-      try {
-        if (this.ws.readyState === WebSocket.OPEN) {
-          this.ws.send(JSON.stringify({ type: 'close' }));
-        }
-        this.ws.close();
-      } catch (e) {}
-      this.ws = null;
-    }
-
-    if (this.audioCtx) {
-      this.audioCtx.close().catch(() => {});
-      this.audioCtx = null;
-      this.masterGainNode = null;
-    }
-
-    this._updateStatus('disconnected', 'Voice session stopped');
+  interrupt() { this.player?.clear(undefined, true); this.resetCapture(); this.update({ playback: 'idle' }); }
+  stopTrial() { this.interrupt(); return this.send({ type: 'stop' }); }
+  reconnect() { this.retry = 0; this.closed = false; this.connect(); }
+  close() {
+    this.closed = true; clearTimeout(this.retryTimer); clearInterval(this.heartbeat); clearInterval(this.watchdog);
+    this.send({ type: 'close' }); this.ready = false;
+    this.dropAudio();
+    const socket = this.ws; this.ws = null; socket?.close();
+    navigator.mediaDevices?.removeEventListener('devicechange', this.routeHandler);
+    document.removeEventListener('visibilitychange', this.visibilityHandler);
   }
 }

@@ -1,0 +1,16 @@
+#usda 1.0
+(
+ defaultPrim = "ColliderProxies"
+ metersPerUnit = 1
+ upAxis = "Z"
+)
+def Xform "ColliderProxies" {
+ def Mesh "Table" {
+  uniform token purpose = "guide"
+  token visibility = "invisible"
+  uniform token subdivisionScheme = "none"
+  point3f[] points = [(-.38,-.375,-.044),(.62,-.375,-.044),(.62,.375,-.044),(-.38,.375,-.044),(-.38,-.375,0),(.62,-.375,0),(.62,.375,0),(-.38,.375,0)]
+  int[] faceVertexCounts = [4,4,4,4,4,4]
+  int[] faceVertexIndices = [0,3,2,1,4,5,6,7,0,1,5,4,1,2,6,5,2,3,7,6,3,0,4,7]
+ }
+}

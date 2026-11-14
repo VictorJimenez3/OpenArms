@@ -1,0 +1,28 @@
+{
+  "provider": "openai_codex_cli",
+  "model": "gpt-6.1-sol",
+  "requested_model": "gpt-6.1-sol",
+  "actual_model": null,
+  "model_verified": false,
+  "reasoning_effort": "medium",
+  "effort_source": "requested",
+  "calls": 2,
+  "usage": {
+    "input_tokens": 27338,
+    "cached_input_tokens": 18176,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 285,
+    "reasoning_output_tokens": 48
+  },
+  "elapsed_ms": 16340,
+  "kind": "complete",
+  "checks": {
+    "tool_invoked": true,
+    "fresh_images_returned": true,
+    "multiple_model_calls": true
+  },
+  "live_hardware": false,
+  "actual_provider_call": true,
+  "source": "recorded bench images",
+  "receipt_sha256": "daf8fbc6e27f497be4244da5d1fffedd0ddc4c3701f31681934797fc5b247387"
+}

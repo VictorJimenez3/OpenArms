@@ -1,0 +1,142 @@
+Nov 14 10:02:15 igvc-NUC12DCMi9 systemd[1]: Starting openarms-vm-handoff.service - /bin/bash -c "/usr/local/sbin/openarms-vm-control bind && /usr/local/sbin/openarms-vm-control start-gpu"...
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]: Traceback (most recent call last):
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]:   File "/usr/local/sbin/openarms-vm-control", line 211, in <module>
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]:     elif a.action=='bind': bind(state)
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]:                            ^^^^^^^^^^^
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]:   File "/usr/local/sbin/openarms-vm-control", line 157, in bind
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]:     deadline = int(quiet(['systemctl','show','openarms-vm-rollback.timer','--property=NextElapseUSecMonotonic','--value']))
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 14 10:02:15 igvc-NUC12DCMi9 bash[1434076]: ValueError: invalid literal for int() with base 10: '1w 22h 56min 779.150ms'
+Nov 14 10:02:15 igvc-NUC12DCMi9 systemd[1]: openarms-vm-handoff.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:02:15 igvc-NUC12DCMi9 systemd[1]: openarms-vm-handoff.service: Failed with result 'exit-code'.
+Nov 14 10:02:15 igvc-NUC12DCMi9 systemd[1]: Failed to start openarms-vm-handoff.service - /bin/bash -c "/usr/local/sbin/openarms-vm-control bind && /usr/local/sbin/openarms-vm-control start-gpu".
+Nov 14 10:02:15 igvc-NUC12DCMi9 systemd[1]: openarms-vm-handoff.service: Triggering OnFailure= dependencies.
+Nov 14 10:02:15 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:02:16 igvc-NUC12DCMi9 openarms-vm-control[1434080]: RESTORE_VERIFIED 2026-11-14T15:02:16Z
+Nov 14 10:02:16 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Deactivated successfully.
+Nov 14 10:02:38 igvc-NUC12DCMi9 systemd[1]: Starting openarms-vm-handoff.service - /bin/bash -c "/usr/local/sbin/openarms-vm-control bind && /usr/local/sbin/openarms-vm-control start-gpu"...
+Nov 14 10:02:43 igvc-NUC12DCMi9 bash[1434385]: VFIO_READY
+Nov 14 10:02:47 igvc-NUC12DCMi9 bash[1434383]: vm_mode=gpu pid=1435319 utc=2026-11-14T15:02:47Z
+Nov 14 10:02:47 igvc-NUC12DCMi9 systemd[1]: Finished openarms-vm-handoff.service - /bin/bash -c "/usr/local/sbin/openarms-vm-control bind && /usr/local/sbin/openarms-vm-control start-gpu".
+Nov 14 10:37:13 igvc-NUC12DCMi9 systemd[1]: Starting openarms-vm-restore-now.service - /usr/local/sbin/openarms-vm-control restore...
+Nov 14 10:37:16 igvc-NUC12DCMi9 openarms-vm-control[1510746]: Job for nvidia-persistenced.service failed because the control process exited with error code.
+Nov 14 10:37:16 igvc-NUC12DCMi9 openarms-vm-control[1510746]: See "systemctl status nvidia-persistenced.service" and "journalctl -xeu nvidia-persistenced.service" for details.
+Nov 14 10:37:16 igvc-NUC12DCMi9 openarms-vm-control[1510746]: RESTORE_ERROR service nvidia-persistenced.service: systemctl exited 1
+Nov 14 10:37:16 igvc-NUC12DCMi9 openarms-vm-control[1510746]: RESTORE_ERROR verification: Original NVIDIA modules missing
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: openarms-vm-restore-now.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: openarms-vm-restore-now.service: Failed with result 'exit-code'.
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: Failed to start openarms-vm-restore-now.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: openarms-vm-restore-now.service: Triggering OnFailure= dependencies.
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: openarms-vm-restore-now.service: Consumed 1.866s CPU time.
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:37:16 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:37:16 igvc-NUC12DCMi9 openarms-vm-control[1511102]: modprobe: ERROR: could not insert 'nvidia_uvm': Device or resource busy
+Nov 14 10:37:16 igvc-NUC12DCMi9 openarms-vm-control[1511102]: RESTORE_ERROR module nvidia_uvm: modprobe exited 1
+Nov 14 10:37:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:37:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:37:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Consumed 2.185s CPU time.
+Nov 14 10:37:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Scheduled restart job, restart counter is at 1.
+Nov 14 10:37:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:37:52 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:37:52 igvc-NUC12DCMi9 openarms-vm-control[1515287]: modprobe: ERROR: could not insert 'nvidia_uvm': Device or resource busy
+Nov 14 10:37:52 igvc-NUC12DCMi9 openarms-vm-control[1515287]: RESTORE_ERROR module nvidia_uvm: modprobe exited 1
+Nov 14 10:37:52 igvc-NUC12DCMi9 openarms-vm-control[1515287]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:37:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:37:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:38:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Scheduled restart job, restart counter is at 2.
+Nov 14 10:38:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:38:22 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:38:22 igvc-NUC12DCMi9 openarms-vm-control[1517675]: modprobe: ERROR: could not insert 'nvidia_uvm': Device or resource busy
+Nov 14 10:38:22 igvc-NUC12DCMi9 openarms-vm-control[1517675]: RESTORE_ERROR module nvidia_uvm: modprobe exited 1
+Nov 14 10:38:22 igvc-NUC12DCMi9 openarms-vm-control[1517675]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:38:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:38:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:38:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Scheduled restart job, restart counter is at 3.
+Nov 14 10:38:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:38:52 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:38:52 igvc-NUC12DCMi9 openarms-vm-control[1520026]: modprobe: ERROR: could not insert 'nvidia_uvm': Device or resource busy
+Nov 14 10:38:52 igvc-NUC12DCMi9 openarms-vm-control[1520026]: RESTORE_ERROR module nvidia_uvm: modprobe exited 1
+Nov 14 10:38:52 igvc-NUC12DCMi9 openarms-vm-control[1520026]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:38:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:38:52 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:39:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Scheduled restart job, restart counter is at 4.
+Nov 14 10:39:22 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:39:22 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:39:23 igvc-NUC12DCMi9 openarms-vm-control[1522271]: modprobe: ERROR: could not insert 'nvidia_uvm': Device or resource busy
+Nov 14 10:39:23 igvc-NUC12DCMi9 openarms-vm-control[1522271]: RESTORE_ERROR module nvidia_uvm: modprobe exited 1
+Nov 14 10:39:23 igvc-NUC12DCMi9 openarms-vm-control[1522271]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:39:23 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:39:23 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:39:36 igvc-NUC12DCMi9 systemd[1]: Stopped openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:39:36 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:39:36 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:39:36 igvc-NUC12DCMi9 openarms-vm-control[1523193]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:39:36 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:39:36 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:40:06 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Scheduled restart job, restart counter is at 5.
+Nov 14 10:40:06 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:40:06 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:40:07 igvc-NUC12DCMi9 openarms-vm-control[1523354]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:40:07 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:40:07 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:40:37 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Scheduled restart job, restart counter is at 6.
+Nov 14 10:40:37 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:40:37 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:40:37 igvc-NUC12DCMi9 openarms-vm-control[1523588]: RESTORE_ERROR verification: Console state mismatch: vtcon0
+Nov 14 10:40:37 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Main process exited, code=exited, status=1/FAILURE
+Nov 14 10:40:37 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Failed with result 'exit-code'.
+Nov 14 10:40:40 igvc-NUC12DCMi9 systemd[1]: Stopped openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:40:40 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: multiple trigger source candidates for exit status propagation (openarms-vm-restore-now.service, openarms-vm-handoff.service), skipping.
+Nov 14 10:40:40 igvc-NUC12DCMi9 systemd[1]: Started openarms-vm-rollback.service - /usr/local/sbin/openarms-vm-control restore.
+Nov 14 10:40:40 igvc-NUC12DCMi9 openarms-vm-control[1523745]: RESTORE_VERIFIED 2026-11-14T15:40:40Z
+Nov 14 10:40:40 igvc-NUC12DCMi9 systemd[1]: openarms-vm-rollback.service: Deactivated successfully.
+Nov 14 10:41:50 igvc-NUC12DCMi9 systemd[1]: openarms-vm-handoff.service: Deactivated successfully.
+Nov 14 10:41:50 igvc-NUC12DCMi9 systemd[1]: Stopped openarms-vm-handoff.service - /bin/bash -c "/usr/local/sbin/openarms-vm-control bind && /usr/local/sbin/openarms-vm-control start-gpu".
+Nov 14 10:41:50 igvc-NUC12DCMi9 systemd[1]: openarms-vm-handoff.service: Consumed 1h 21min 24.063s CPU time, 32.1G memory peak, 0B memory swap peak.
+{
+  "drivers": {
+    "0000:01:00.0": "nvidia",
+    "0000:01:00.1": "snd_hda_intel"
+  },
+  "overrides": {
+    "0000:01:00.0": "",
+    "0000:01:00.1": ""
+  },
+  "modules": [
+    "nvidia_uvm",
+    "nvidia_drm",
+    "nvidia_modeset",
+    "nvidia"
+  ],
+  "vt": {
+    "vtcon0": "1"
+  },
+  "services": {
+    "gdm.service": true,
+    "nvidia-persistenced.service": true
+  },
+  "gpu": "GPU-64f6e52e-032d-2bca-3d10-d0ab27aad946, NVIDIA GeForce RTX 3060, 595.99.02",
+  "qemu": null,
+  "gpu_assigned": false
+}uuid, name, driver_version, memory.total [MiB]
+GPU-64f6e52e-032d-2bca-3d10-d0ab27aad946, NVIDIA GeForce RTX 3060, 595.99.02, 12288 MiB
+active
+active
+cloud-image-utils
+genisoimage
+ipxe-qemu
+libaio1t64
+libcacard0
+libdaxctl1
+libfdt1
+libndctl6
+libpmem1
+libslirp0
+liburing2
+libusbredirparser1t64
+ovmf
+qemu-system-common
+qemu-system-data
+qemu-system-x86
+qemu-utils
+seabios

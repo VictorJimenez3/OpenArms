@@ -1,0 +1,56 @@
+{
+  "combined": {
+    "artifact": "no-gemini-combined-tests-2.log",
+    "sha256": "8dcca1be6e15fbca46626be1819d8532a074b0142b5b0e4489f5342a51f8f57f",
+    "tail": [
+      "........................................................................ [ 92%]",
+      "..................................                                       [100%]",
+      "466 passed in 53.59s"
+    ]
+  },
+  "browser": {
+    "artifact": "final-browser-tests.log",
+    "sha256": "5235f3cbf4c9b94f9f98fad5dabf7e173c6b6f54eb9f53b402915db88ba36b30",
+    "tail": [
+      "[35/36] [desktop] \u203a browser.spec.mjs:573:1 \u203a developer rejects foreign media URLs and aborts a replaced fetch",
+      "[36/36] [mobile-chromium] \u203a browser.spec.mjs:573:1 \u203a developer rejects foreign media URLs and aborts a replaced fetch",
+      "  36 passed (19.8s)"
+    ]
+  },
+  "audio": {
+    "artifact": "final-audio-tests.log",
+    "sha256": "9490931d12811878d2a9de53340e4a34bc601a146f512e4a7d51432e47e300c3",
+    "tail": [
+      "# skipped 0",
+      "# todo 0",
+      "# duration_ms 124.577583"
+    ]
+  },
+  "native": {
+    "artifact": "final-native-checks.log",
+    "sha256": "8611eb8a48a95a711be2ea0d35ef010dd62f98e8c88b56fb719d23238bc30e09",
+    "tail": [
+      "OpenArmsVoice.xcodeproj/project.pbxproj: OK",
+      "PASS: Xcode project source membership, iOS 17 target, signing, scheme, permissions, and local-only ATS",
+      "PASS: Swift syntax parse for all app sources; Foundation core typecheck and streaming XCTest suite. No iOS build performed."
+    ]
+  },
+  "native_build": {
+    "artifact": "final-native-build.log",
+    "sha256": "3cb2a16a253cb949340b664dc7dc2fb90bddeb538bfa04c3e240d3256ce127b8",
+    "tail": [
+      "PruneExplicitPrecompiledModules /Users/joeroche/Documents/Codex/2026-11-14/i-wrote-the-openarms-ph-demo-2/work/final-native-build/Build/Intermediates.noindex/ExplicitPrecompiledModules",
+      "",
+      "** BUILD SUCCEEDED **"
+    ]
+  },
+  "provider_compatibility_combined": {
+    "artifact": "compatibility-combined-tests.log",
+    "sha256": "e610840c26b489d57a1c693506be18ad8874898b08d367fda7a1db2fa2929d5d",
+    "tail": [
+      "........................................................................ [ 87%]",
+      ".............................................................            [100%]",
+      "493 passed in 55.58s"
+    ]
+  }
+}

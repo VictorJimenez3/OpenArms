@@ -82,9 +82,6 @@ class MujocoPreview:
 
     def describe(self, backend, request):
         """The simulation request for this proposal, or a reason there is none."""
-        if 'sim' in request:
-            # A composed plan arrives with its own targets (free_plan.FreePlans.sim_request).
-            return {**request['sim'], '_poses_file': os.environ.get('OPENARMS_POSES', 'firmware/openarms_executor/poses.json'), '_note': None}, None
         if request.get('skill_id') == 'premeasured_dilution.v1':
             return None, 'The simulation has no model of the pour for this lesson yet.'
         p = request['parameters']

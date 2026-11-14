@@ -1,210 +1,143 @@
-"""The simulation preview runs on every proposal, and only a cleared plan can be executed."""
+"""Simulation evidence and consent checks through the shared lab runtime."""
 import asyncio
-import json
-from pathlib import Path
+
 import pytest
-from agentic.openarms_lab.backends import MockBackend
-from agentic.openarms_lab.runtime import Lab,LabError
-from agentic.openarms_lab.sim_preview import MujocoPreview,grasp_pose,from_env
+from fastapi.testclient import TestClient
 
-ROOT=Path(__file__).resolve().parents[2]
+from agentic.openarms_lab.app import create_app
+from agentic.openarms_lab.mujoco_backend import MujocoBackend
+from agentic.openarms_lab.mujoco_scene import MujocoSceneService
+from agentic.openarms_lab.runtime import Lab, LabError
+from agentic.openarms_lab.scene import SceneService
+from agentic.openarms_lab.simulated_backend import SceneBackend
+from agentic.tests.test_task_loop import TestExpert as ExpertFixture
 
-class FakePreview:
-    def __init__(self,status='ready',**extra):
-        self.status,self.extra,self.calls=status,extra,[]
-    def __call__(self,backend,request):
-        self.calls.append(request)
-        return {'status':self.status,'provenance':'SIMULATED','warnings':['a note'],'blocks':[],**self.extra}
 
-async def proposed(lab,text='test sample at A in B'):
-    s=await lab.create()
-    sid=s['session_id']
-    await lab.prediction(sid,'A will float because its density is below water.')
-    s=await lab.request(sid,text,'client-1')
-    assert s['pending'],s['messages'][-1]
-    return sid,s['pending']['request_id']
+async def wait_for_status(lab, sid, expected):
+    async with asyncio.timeout(10):
+        while True:
+            snapshot = lab.snapshot(sid)
+            status = snapshot['tasks'][-1]['status']
+            if status == expected:
+                return snapshot
+            assert status not in ('failed', 'cancelled', 'needs_clarification'), snapshot['tasks'][-1]
+            await asyncio.sleep(.01)
 
-async def previewed(lab,sid):
-    await asyncio.gather(*lab.preview_tasks.get(sid,()))
-    return lab.snapshot(sid)
-
-def lab_with(tmp_path,previewer):
-    return Lab(tmp_path,backend_factory=lambda:MockBackend(delay=.001),previewer=previewer)
 
 @pytest.mark.asyncio
-async def test_every_proposal_is_simulated_before_anything_executes(tmp_path):
-    fake=FakePreview()
-    lab=lab_with(tmp_path,fake)
-    sid,pid=await proposed(lab)
-    s=lab.snapshot(sid)
-    assert s['pending']['preview']['status']=='running'
-    assert 'Simulating it first' in s['messages'][-1]['text']
-    with pytest.raises(LabError,match='still running'):
-        await lab.confirm(sid,pid)
-    s=await previewed(lab,sid)
-    assert s['pending']['preview']['status']=='ready'
-    assert [c['parameters']['source'] for c in fake.calls]==['A']
-    assert 'execute' in s['messages'][-1]['text'] and 'SIMULATED' in s['messages'][-1]['text']
-    assert s['requests'][-1]['status']=='requested' and sid not in lab.tasks
-    assert 'simulation_preview' in {e['kind'] for e in s['notebook']}
+async def test_shared_runtime_inspects_before_expert_and_only_dispatches_presented_proposal_once(tmp_path):
+    # This scenario uses the existing synthetic regression environment for speed.
+    scene = SceneService(tmp_path / 'synthetic-frames')
+    expert = ExpertFixture()
+    lab = Lab(tmp_path, backend_factory=lambda: SceneBackend(scene, delay=0), expert=expert, perception=scene)
+    try:
+        sid = (await lab.create())['session_id']
+        await lab.choose_condition(sid, 'vinegar')
+        await lab.prediction(sid, 'The receiver will appear pink.')
+        await lab.start_task(sid, 'Test the prepared sample.', client_request_id='request')
+        proposed = await wait_for_status(lab, sid, 'awaiting_confirmation')
+        pending = proposed['pending']
+        binding = sid, pending['request_id'], pending['proposal_version']
+        planning = expert.contexts[0]
+        assert planning['scene']['fresh'] and planning['images'][0]['provenance'] == 'SYNTHETIC'
+        assert lab.backends[sid].executions == 0
+        with pytest.raises(LabError, match='presented'):
+            await lab.confirm(*binding)
+        await lab.present(*binding)
+        await lab.confirm(*binding)
+        done = await wait_for_status(lab, sid, 'completed')
+        with pytest.raises(LabError, match='Stale'):
+            await lab.confirm(*binding)
+        assert lab.backends[sid].executions == 1
+        outcome = done['observations'][-1]
+        assert outcome['features']['color'] == 'pink'
+        assert outcome['evidence'] != [planning['images'][0]['evidence_id']]
+        assert outcome['provenance'] == 'SYNTHETIC'
+    finally:
+        await lab.shutdown()
+
 
 @pytest.mark.asyncio
-async def test_typing_execute_runs_the_previewed_plan_once(tmp_path):
-    lab=lab_with(tmp_path,FakePreview())
-    sid,pid=await proposed(lab)
-    await previewed(lab,sid)
-    s=await lab.request(sid,'Execute.','client-2')
-    assert s['requests'][-1]['student_confirmed'] and s['pending'] is None
-    await lab.tasks[sid]
-    s=lab.snapshot(sid)
-    assert s['requests'][-1]['status']=='completed' and len(s['requests'])==1
-    s=await lab.request(sid,'execute','client-3')
-    assert 'no simulated plan waiting' in s['messages'][-1]['text']
-    assert len(s['requests'])==1
+async def test_corrected_condition_revokes_simulation_consent(tmp_path):
+    scene = SceneService(tmp_path / 'synthetic-frames')
+    lab = Lab(tmp_path, backend_factory=lambda: SceneBackend(scene, delay=0), expert=ExpertFixture(), perception=scene)
+    try:
+        sid = (await lab.create())['session_id']
+        await lab.choose_condition(sid, 'vinegar')
+        await lab.start_task(sid, 'Test the prepared sample.', client_request_id='old')
+        pending = (await wait_for_status(lab, sid, 'awaiting_confirmation'))['pending']
+        binding = sid, pending['request_id'], pending['proposal_version']
+        await lab.present(*binding)
+        await lab.choose_condition(sid, 'water')
+        assert lab.snapshot(sid)['pending'] is None
+        with pytest.raises(LabError, match='Stale'):
+            await lab.confirm(*binding)
+        assert lab.backends[sid].executions == 0
+    finally:
+        await lab.shutdown()
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize('status',['blocked','error'])
-async def test_a_plan_the_simulation_did_not_clear_cannot_execute(tmp_path,status):
-    lab=lab_with(tmp_path,FakePreview(status,blocks=['The gripper closed on nothing.'],reason='boom'))
-    sid,pid=await proposed(lab)
-    s=await previewed(lab,sid)
-    assert 'not be executed' in s['messages'][-1]['text'] or 'Nothing will be executed' in s['messages'][-1]['text']
-    with pytest.raises(LabError,match='did not clear'):
-        await lab.confirm(sid,pid)
-    s=await lab.request(sid,'execute','client-2')
-    assert 'did not clear' in s['messages'][-1]['text']
-    assert s['requests'][-1]['status']=='requested' and sid not in lab.tasks
 
-@pytest.mark.asyncio
-async def test_an_action_with_no_simulation_model_can_still_execute(tmp_path):
-    lab=lab_with(tmp_path,FakePreview('unavailable',reason='No model of the pour.'))
-    sid,pid=await proposed(lab)
-    s=await previewed(lab,sid)
-    assert 'without a preview' in s['messages'][-1]['text']
-    await lab.confirm(sid,pid)
-    await lab.tasks[sid]
-    assert lab.snapshot(sid)['requests'][-1]['status']=='completed'
-
-@pytest.mark.asyncio
-async def test_a_correction_gets_its_own_preview_and_the_old_one_is_ignored(tmp_path):
-    fake=FakePreview()
-    lab=lab_with(tmp_path,fake)
-    sid,first=await proposed(lab)
-    s=await lab.request(sid,'test sample at C in B','client-2')
-    second=s['pending']['request_id']
-    assert second!=first
-    s=await previewed(lab,sid)
-    assert [c['parameters']['source'] for c in fake.calls]==['A','C']
-    assert s['pending']['request_id']==second and s['pending']['preview']['status']=='ready'
-    with pytest.raises(LabError,match='Stale'):
-        await lab.confirm(sid,first)
-
-@pytest.mark.asyncio
-async def test_without_a_previewer_execute_is_not_a_command_and_nothing_changes(tmp_path):
-    lab=lab_with(tmp_path,None)
-    sid,pid=await proposed(lab)
-    s=lab.snapshot(sid)
-    assert 'preview' not in s['pending'] and 'confirm or correct' in s['messages'][-1]['text']
-    await lab.confirm(sid,pid)
-    await lab.tasks[sid]
-    assert lab.snapshot(sid)['requests'][-1]['status']=='completed'
-
-def test_grasp_pose_is_where_the_gripper_first_closes():
-    g='gripper.pos'
-    above,grasp={'shoulder_pan.pos':1.0},{'shoulder_pan.pos':2.0}
-    assert grasp_pose([{g:90},above,grasp,{g:20},above])==grasp
-    assert grasp_pose([{g:90},above,grasp,above]) is None
-
-def test_from_env(monkeypatch):
-    monkeypatch.delenv('OPENARMS_PREVIEW',raising=False)
-    assert from_env() is None
-    monkeypatch.setenv('OPENARMS_PREVIEW','mujoco')
-    assert isinstance(from_env(),MujocoPreview)
-    monkeypatch.setenv('OPENARMS_PREVIEW','isaac')
-    with pytest.raises(ValueError):from_env()
-
-def request(source='A',skill='known_station_transfer.v1'):
-    return {'request_id':'r1','skill_id':skill,'parameters':{'object':'sample','source':source,'destination':'B'}}
-
-def test_the_preview_request_is_the_runners_own_script(monkeypatch):
-    monkeypatch.delenv('OPENARMS_POSES',raising=False)
-    poses=json.loads((ROOT/'firmware/openarms_executor/poses.json').read_text())
-    sim,reason=MujocoPreview().describe(MockBackend(),request())
-    assert reason is None and sim['seconds']==1.5 and sim['object_at']=='A'
-    assert sim['marks']=={'A':poses['poses']['GRASP_A'],'B':poses['poses']['GRASP_B']}
-    assert sim['script'][-1]==poses['poses']['HOME'] and sim['script'][0]=={'gripper.pos':poses['gripper']['open']}
-    shifted,_=MujocoPreview(c_offset_deg=5).describe(MockBackend(),request('C'))
-    assert shifted['marks']['C']['shoulder_pan.pos']==pytest.approx(poses['poses']['GRASP_A']['shoulder_pan.pos']+5)
-    assert shifted['_note'] and 'not taught' in shifted['_note']
-    sim,reason=MujocoPreview().describe(MockBackend(),request(skill='premeasured_dilution.v1'))
-    assert sim is None and 'pour' in reason
-
-def test_an_empty_source_is_simulated_as_empty():
-    backend=MockBackend()
-    backend._state['point_holds']['A']=None
-    sim,_=MujocoPreview().describe(backend,request())
-    assert sim['object_at'] is None
-
-def test_real_mujoco_preview_end_to_end():
+def test_existing_block_preview_checks_position_and_rejects_empty_source():
     pytest.importorskip('mujoco')
-    pytest.importorskip('openarms_sim')
-    previewer=MujocoPreview()
-    out=previewer(MockBackend(),request())
-    assert out['status']=='ready',out
-    assert out['provenance']=='SIMULATED' and out['objects'][0]['at']=='B'
-    assert previewer.video_path(out['video'].rsplit('/',1)[1]).is_file()
-    assert previewer.video_path('../lab.sqlite3') is None
+    from openarms_sim import preview
 
-def test_preview_video_route(tmp_path):
-    from fastapi.testclient import TestClient
-    from agentic.openarms_lab.app import create_app
-    previewer=MujocoPreview()
-    previewer.video_dir=tmp_path
-    (tmp_path/'script-0123456789abcdef.mp4').write_bytes(b'video')
-    (tmp_path/'secret.txt').write_text('no')
-    with TestClient(create_app(Lab(tmp_path/'data',previewer=previewer))) as client:
-        assert client.get('/api/previews/script-0123456789abcdef.mp4').content==b'video'
-        assert client.get('/api/previews/secret.txt').status_code==404
-        assert client.get('/api/previews/script-ffffffffffffffff.mp4').status_code==404
-        assert client.get('/api/health').json()['preview']=='mujoco'
+    plan = {'steps': [{'action': 'move_block', 'args': {'from': 'A', 'to': 'B'}}]}
+    moved = preview(plan, setup='block', render=False)
+    assert moved['ok'] and moved['motion_seconds'] > 0
+    assert moved['objects'] == [{'name': 'block', 'at': 'B', 'started_at': 'A', 'moved': True}]
+    blocked = preview(plan, setup='block', objects={'block': 'C'}, render=False)
+    assert not blocked['ok']
+    assert any(issue['code'] == 'missed_grasp' for issue in blocked['issues'])
+    assert blocked['objects'][0]['at'] == 'C'
 
-def test_a_connected_runner_supplies_its_own_script_and_speed():
-    """With the physical adapter, the preview plays what that exact runner would send."""
-    from firmware.openarms_executor.motion import FakeRobot
-    from firmware.openarms_executor.poses import load_poses
-    from firmware.openarms_executor.transfer_runner import PoseTransferRunner
-    poses=load_poses(ROOT/'research/joseph/mandarin-transfer-2026-11-14/poses/bench-a.json')
-    runner=PoseTransferRunner(FakeRobot(poses['poses']['HOME']),poses,seconds=3.0)
-    class Adapter:
-        mode='physical'
-        def __init__(self):self.runner=runner
-        def state(self):return {'point_holds':{'A':'mandarin','C':'mandarin','B':None}}
-    sim,reason=MujocoPreview().describe(Adapter(),request())
-    assert reason is None and sim['script']==runner.scripts['A'] and sim['seconds']==3.0
-    assert sim['marks']['A']==poses['poses']['GRASP_A']
-    # This runner was not configured with a C pickup, so the preview shows the offset construction and says so.
-    sim,_=MujocoPreview().describe(Adapter(),request('C'))
-    assert 'not taught' in sim['_note']
 
-@pytest.mark.asyncio
-async def test_restoring_an_old_session_does_not_disarm_the_shared_physical_arm(tmp_path,monkeypatch):
-    """Reloading the page after a restart restores the old session; new sessions must still work."""
-    class Arm(MockBackend):
-        mode='physical'
-        def capabilities(self):return {**super().capabilities(),'objects':['mandarin']}
-    first=Lab(tmp_path,backend_factory=lambda:MockBackend(delay=.001))
-    old=(await first.create('mandarin_transfer'))['session_id']
-    await first.shutdown()
-    monkeypatch.setenv('OPENARMS_BACKEND','physical')
-    lab=Lab(tmp_path)
-    lab.physical=Arm(delay=.001)
-    lab.physical.prepare('mandarin')
-    restored=lab.snapshot(old)
-    assert restored['state']['armed'] is True and lab.physical.state()['armed'] is True
-    await lab.prediction(old,'It will reach B.')
-    s=await lab.request(old,'move the mandarin from A to B','c1')
-    assert s['pending'] is None and 'Start a new session' in s['messages'][-1]['text']
-    fresh=(await lab.create())['session_id']
-    await lab.prediction(fresh,'It will reach B.')
-    s=await lab.request(fresh,'move the mandarin from A to B','c2')
-    assert s['pending'],s['messages'][-1]
+def test_real_simulation_png_and_mp4_use_shared_authenticated_session_routes(tmp_path, monkeypatch):
+    pytest.importorskip('mujoco')
+    monkeypatch.delenv('OPENARMS_DEMO_TOKEN', raising=False)
+    scene = MujocoSceneService(tmp_path / 'mujoco-frames')
+    lab = Lab(tmp_path / 'data', perception=scene, expert=ExpertFixture(),
+              backend_factory=lambda: MujocoBackend(scene))
+    with TestClient(create_app(lab, access_path=tmp_path / 'access.sqlite3'), base_url='http://localhost') as client:
+        own = client.post('/api/sessions').json()
+        other = client.post('/api/sessions').json()
+        sid = own['session_id']
+        base = f'/api/sessions/{sid}'
+        headers = {'Authorization': 'Bearer ' + own['access_token']}
+        other_headers = {'Authorization': 'Bearer ' + other['access_token']}
+
+        state = client.get(base, headers=headers).json()
+        image = state['scene_images'][0]
+        assert image['provenance'] == 'SIMULATED'
+        fid, url = image['evidence_id'], image['artifact_url']
+        assert client.get(url).status_code == 401
+        assert client.get(url, headers=other_headers).status_code == 401
+        png = client.get(url, headers=headers)
+        assert png.status_code == 200 and png.headers['content-type'] == 'image/png'
+        assert png.content.startswith(b'\x89PNG\r\n\x1a\n')
+        other_base = f"/api/sessions/{other['session_id']}"
+        assert client.get(f'{other_base}/evidence/{fid}', headers=other_headers).status_code == 404
+
+        assert client.post(base + '/condition', json={'condition_id': 'vinegar'}, headers=headers).status_code == 200
+        client.portal.call(lab.start_task, sid, 'Test the prepared sample.')
+        pending = client.portal.call(wait_for_status, lab, sid, 'awaiting_confirmation')['pending']
+        binding = {key: pending[key] for key in ('request_id', 'proposal_version')}
+        assert lab.backends[sid].executions == 0
+        assert client.post(base + '/confirm', json=binding, headers=headers).status_code == 409
+        assert client.post(base + '/present', json={**binding, 'channel': 'text'}, headers=headers).status_code == 200
+        assert client.post(base + '/confirm', json=binding, headers=headers).status_code == 200
+        client.portal.call(wait_for_status, lab, sid, 'completed')
+        done = client.get(base, headers=headers).json()
+        assert done['observations'][-1]['features'] == {'readable': True, 'color': 'pink'}
+        assert done['observations'][-1]['provenance'] == 'SIMULATED'
+        assert lab.backends[sid].executions == 1
+        simulation = done['state']['simulation']
+        assert simulation['source_revision'] == '16a975e' and simulation['dose_count'] == 1
+        assert simulation['frame_url'] != url
+        assert client.get(simulation['frame_url'], headers=headers).status_code == 200
+        assert client.get(simulation['video_url']).status_code == 401
+        assert client.get(simulation['video_url'], headers=other_headers).status_code == 401
+        video = client.get(simulation['video_url'], headers=headers)
+        assert video.status_code == 200 and video.headers['content-type'] == 'video/mp4'
+        assert b'ftyp' in video.content[:32]
+        name = simulation['video_url'].rsplit('/', 1)[1]
+        assert client.get(f'{other_base}/media/{name}', headers=other_headers).status_code == 404

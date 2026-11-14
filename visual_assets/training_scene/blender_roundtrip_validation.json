@@ -1,0 +1,68 @@
+[
+  {
+    "file": "01_vial_placement/Experiment.usdc",
+    "meshes": 23,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "materials": 5,
+    "ok": true,
+    "scope": "Blender USD import only"
+  },
+  {
+    "file": "02_sample_sorting/Experiment.usdc",
+    "meshes": 31,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "materials": 4,
+    "ok": true,
+    "scope": "Blender USD import only"
+  },
+  {
+    "file": "03_density/Experiment.usdc",
+    "meshes": 22,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "materials": 6,
+    "ok": true,
+    "scope": "Blender USD import only"
+  },
+  {
+    "file": "04_ramp_friction/Experiment.usdc",
+    "meshes": 27,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "materials": 5,
+    "ok": true,
+    "scope": "Blender USD import only"
+  },
+  {
+    "file": "05_lever_balance/Experiment.usdc",
+    "meshes": 39,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "materials": 5,
+    "ok": true,
+    "scope": "Blender USD import only"
+  },
+  {
+    "file": "06_indicator/Experiment.usdc",
+    "meshes": 24,
+    "cameras": [
+      "Camera_Front",
+      "Camera_Overhead"
+    ],
+    "materials": 7,
+    "ok": true,
+    "scope": "Blender USD import only"
+  }
+]

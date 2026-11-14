@@ -1,180 +1,68 @@
-/**
- * OpenArms Lab - REST API Client
- *
- * Implements the full OpenArms Lab API contract.
- * All session mutations return an updated snapshot.
- * Errors return { detail: string | object }.
- * Works credential-free.
- */
-
+// Credentials stay in this client and per-tab sessionStorage; never in a URL or view.
 export class ApiError extends Error {
-  constructor(message, status, detail = null) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.detail = detail;
-  }
+  constructor(message, status) { super(message); this.status = status; }
 }
-
 export class LabApiClient {
-  constructor(baseUrl = '') {
-    this.baseUrl = baseUrl.replace(/\/+$/, '');
+  #credentials = null;
+  constructor() {
+    try { this.#credentials = JSON.parse(sessionStorage.getItem('openarms.ph.session')); } catch { /* Private browsing can disable storage. */ }
   }
-
-  async _request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-    const headers = {
-      'Accept': 'application/json',
-      ...(options.headers || {}),
-    };
-
-    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
-      headers['Content-Type'] = 'application/json';
-      options.body = JSON.stringify(options.body);
-    }
-
+  get sessionId() { return this.#credentials?.session_id; }
+  get accessToken() { return this.#credentials?.access_token; }
+  forget() { this.#credentials = null; try { sessionStorage.removeItem('openarms.ph.session'); } catch {} }
+  async request(path, body, token = this.accessToken) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
     let response;
     try {
-      response = await fetch(url, { ...options, headers });
-    } catch (networkError) {
-      throw new ApiError(
-        `Network error connecting to ${endpoint}: ${networkError.message}`,
-        0,
-        { networkError: networkError.message }
-      );
-    }
-
-    let data = null;
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        data = null;
-      }
-    } else {
-      const text = await response.text();
-      data = text ? { raw: text } : null;
-    }
-
-    if (!response.ok) {
-      const detail = data && data.detail ? data.detail : (data || response.statusText);
-      const message = typeof detail === 'string' ? detail : JSON.stringify(detail);
-      throw new ApiError(message || `HTTP ${response.status}`, response.status, detail);
-    }
-
+      response = await fetch(path, { method: body === undefined ? 'GET' : 'POST', headers: { Accept: 'application/json', ...(body === undefined ? {} : {'Content-Type':'application/json'}), ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: controller.signal, cache: 'no-store', credentials: 'same-origin' });
+    } catch { throw new ApiError('We couldn’t reach the lab. Your draft is still here. Reconnect, then check the notebook before trying again.', 0); }
+    finally { clearTimeout(timeout); }
+    let data;
+    try { data = await response.json(); } catch { throw new ApiError('The lab sent an unreadable response. Reconnect to check your notebook.', response.status); }
+    if (!response.ok) throw new ApiError(typeof data.detail === 'string' ? data.detail : typeof data.message === 'string' ? data.message : `The lab couldn’t complete that request (${response.status}).`, response.status);
     return data;
   }
-
-  // System & Meta endpoints
-  async getHealth() {
-    return this._request('/api/health');
+  async create(pairingCode) {
+    const result = await this.request('/api/sessions', {}, pairingCode || null);
+    if (!result.session_id || !result.access_token) throw new ApiError('The lab did not provide a session credential.', 502);
+    this.#credentials = { session_id: result.session_id, access_token: result.access_token };
+    try { sessionStorage.setItem('openarms.ph.session', JSON.stringify(this.#credentials)); } catch {}
+    // The token must never reach a renderer or a transcript.
+    const { access_token, ...snapshot } = result;
+    return snapshot;
   }
-
-  async getExperiments() {
-    return this._request('/api/experiments');
+  snapshot() { return this.request(`/api/sessions/${encodeURIComponent(this.sessionId)}`); }
+  action(name, body = {}) { return this.request(`/api/sessions/${encodeURIComponent(this.sessionId)}/${name}`, body); }
+  async evidenceImage(frame, signal) {
+    if (typeof frame.evidence_id !== 'string' || !frame.evidence_id) throw new Error('Image unavailable');
+    return this.#media(frame.artifact_url, 'image', signal,
+      path => path === `evidence/${encodeURIComponent(frame.evidence_id)}`);
   }
-
-  // Session lifecycle
-  async createSession() {
-    return this._request('/api/sessions', {
-      method: 'POST',
-      body: {},
-    });
+  async simulationMedia(artifactUrl, kind, signal) {
+    const pathPattern = kind === 'video' ? /^media\/[0-9a-f]{32}\.mp4$/ : /^evidence\/[0-9a-f]{32}$/;
+    return this.#media(artifactUrl, kind, signal, path => pathPattern.test(path));
   }
-
-  async getSession(sessionId) {
-    if (!sessionId) throw new Error('sessionId is required');
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}`);
-  }
-
-  async selectExperiment(sessionId, experimentId) {
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/experiment`, {
-      method: 'POST',
-      body: { experiment_id: experimentId },
-    });
-  }
-
-  async submitPrediction(sessionId, text) {
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/prediction`, {
-      method: 'POST',
-      body: { text },
-    });
-  }
-
-  async sendRequest(sessionId, text, clientRequestId = null) {
-    const payload = { text };
-    if (clientRequestId) {
-      payload.client_request_id = clientRequestId;
+  async #media(artifactUrl, kind, signal, acceptsPath) {
+    const { session_id: sessionId, access_token: token } = this.#credentials || {};
+    if (!sessionId || !token || typeof artifactUrl !== 'string') throw new Error('Media unavailable');
+    const url = new URL(artifactUrl, location.href);
+    const prefix = `/api/sessions/${encodeURIComponent(sessionId)}/`;
+    if (url.origin !== location.origin || !/^https?:$/.test(url.protocol) || url.username || url.password ||
+        url.search || url.hash || !url.pathname.startsWith(prefix) || !acceptsPath(url.pathname.slice(prefix.length))) {
+      throw new Error('Media unavailable');
     }
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/request`, {
-      method: 'POST',
-      body: payload,
-    });
-  }
 
-  async confirmProposal(sessionId, requestId) {
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/confirm`, {
-      method: 'POST',
-      body: { request_id: requestId },
+    const video = kind === 'video';
+    const response = await fetch(url.pathname, {
+      headers: { Accept: video ? 'video/mp4' : 'image/*', Authorization: `Bearer ${token}` },
+      signal: AbortSignal.any([signal, AbortSignal.timeout(12000)]),
+      redirect: 'error', cache: 'no-store', credentials: 'same-origin',
     });
-  }
-
-  async cancelProposal(sessionId, requestId = null) {
-    const payload = requestId ? { request_id: requestId } : {};
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/cancel`, {
-      method: 'POST',
-      body: payload,
-    });
-  }
-
-  async emergencyStop(sessionId) {
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/stop`, {
-      method: 'POST',
-      body: {},
-    });
-  }
-
-  async submitAnswer(sessionId, questionId, answer) {
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/answer`, {
-      method: 'POST',
-      body: {
-        question_id: questionId,
-        answer,
-      },
-    });
-  }
-
-  async disconnectSession(sessionId) {
-    return this._request(`/api/sessions/${encodeURIComponent(sessionId)}/disconnect`, {
-      method: 'POST',
-      body: {},
-    });
-  }
-
-  // Skills Registry & Diagnostics endpoints
-  async getSkills() {
-    return this._request('/api/skills');
-  }
-
-  async composeSkill(instruction) {
-    return this._request('/api/skills/compose', {
-      method: 'POST',
-      body: { instruction },
-    });
-  }
-
-  async testSkill(skillId) {
-    return this._request(`/api/skills/${encodeURIComponent(skillId)}/test`, {
-      method: 'POST',
-      body: {},
-    });
-  }
-
-  async promoteSkill(skillId, evidenceId) {
-    return this._request(`/api/skills/${encodeURIComponent(skillId)}/promote`, {
-      method: 'POST',
-      body: { evidence_id: evidenceId },
-    });
+    const type = response.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase();
+    if (!response.ok || !(video ? type === 'video/mp4' : /^image\/(png|jpeg|webp|gif|avif|bmp)$/.test(type))) {
+      throw new Error('Media unavailable');
+    }
+    return response.blob();
   }
 }

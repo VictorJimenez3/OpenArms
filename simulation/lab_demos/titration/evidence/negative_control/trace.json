@@ -1,0 +1,201 @@
+{
+  "events": [
+    {
+      "t_s": 2.384,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 3.926,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 5.468,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 7.01,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 8.552,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 10.094,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 11.636,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 13.178,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 14.72,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 16.262,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 17.804,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 19.346,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 20.888,
+      "event": "missed_action",
+      "trial": "small",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 21.652,
+      "event": "trial_complete",
+      "trial": "small",
+      "success": false,
+      "drops": 0
+    },
+    {
+      "t_s": 26.1,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 27.642,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 29.184,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 30.726,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 32.268,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 33.81,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 35.352,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 36.894,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 38.436,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 39.978,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 41.52,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 43.062,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 44.604,
+      "event": "missed_action",
+      "trial": "large",
+      "engagement_distance_m": 0.0002,
+      "dose_count_unchanged": 0
+    },
+    {
+      "t_s": 45.368,
+      "event": "trial_complete",
+      "trial": "large",
+      "success": false,
+      "drops": 0
+    }
+  ],
+  "observations": []
+}

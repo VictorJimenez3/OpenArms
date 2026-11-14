@@ -1,0 +1,12 @@
+No material claim blockers found for the bounded simulation result.
+
+- Both runs record clean source commit `6afba01407b8036a0a22d5d8d6f261ac26424051`, containing physics fix `002e9a7`. All seven receipt-listed artifact hashes per run verified. The read-only auditor reproduced [report.json](/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/science-experiment/report.json) exactly.
+- Both simulator processes exited **0**, with observations passed and no stop or cleanup failure. Each video independently decoded **720 frames**, 960×720, 30 fps, 24 seconds. Slurm steps `.0/.1/.2` completed `0:0`; the allocation’s cancellation is recorded separately in [accounting](/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/slurm-1273420-accounting.log).
+- Both flattened scenes contain **14 colliders**, all with **0.5 mm contact offset**, zero rest offset and zero torsional patch radii. Authored cube masses are 10 g and 40 g.
+- At active contacts (`abs(normal_force) > .001 N`), hold/carry separation spans approximately **−0.518 to +0.062 mm** across both runs. Both fingers maintain force, with no active receiver contacts during hold/carry. Cube centers reach approximately **79–80 mm height** and move **105.4 mm horizontally during carry**.
+- Final settling shows released, upright objects inside the receiver, zero finger forces and approximately **64 mm gripper clearance**. The final closed one-second window contains **121 contiguous samples at 120 Hz**.
+- Measured tray +Z normal forces are **0.0980999991 N** and **0.3923999918 N**, ratio **3.999999955**. Analytic m·g predictions remain separately labeled. Controls match exactly after excluding measured FK diagnostics.
+- Canonical requests validate; request IDs agree across results, receipts, experiments and events. Results explicitly retain `SIMULATED`, `operator_authorized: false` and `physical_success: null`.
+
+Limitations: one trial per condition establishes neither repeatability nor physical performance. Hash checks establish local consistency, not independent authenticity. I verified video decoding but relied on the parent’s stated visual review. No edits, SSH, GPU execution or delegation performed.
+

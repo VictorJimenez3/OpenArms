@@ -1,0 +1,86 @@
+[
+  {
+    "asset": "BaseEnvironment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 16,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead",
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  },
+  {
+    "asset": "01_vial_placement/Experiment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 23,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front",
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  },
+  {
+    "asset": "02_sample_sorting/Experiment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 31,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead",
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  },
+  {
+    "asset": "03_density/Experiment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 22,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front",
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  },
+  {
+    "asset": "04_ramp_friction/Experiment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 27,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead",
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  },
+  {
+    "asset": "05_lever_balance/Experiment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 39,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead",
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  },
+  {
+    "asset": "06_indicator/Experiment.usdc",
+    "ok": true,
+    "errors": [],
+    "mesh_count": 24,
+    "cameras": [
+      "/TrainingScene/Cameras/Camera_Front/Camera_Front",
+      "/TrainingScene/Cameras/Camera_Overhead/Camera_Overhead"
+    ],
+    "physics_or_articulation": [],
+    "self_contained": true
+  }
+]

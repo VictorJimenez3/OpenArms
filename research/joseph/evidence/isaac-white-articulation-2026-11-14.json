@@ -1,0 +1,38 @@
+{
+  "provenance": "SIMULATED",
+  "kind": "articulation_smoke",
+  "status": "failed",
+  "observation_status": "passed",
+  "shutdown_status": "process_failed",
+  "process_returncode": -6,
+  "manipulation_success": false,
+  "utc_started": "2026-11-14T14:22:25Z",
+  "utc_finished": "2026-11-14T14:23:03Z",
+  "slurm_job_id": "1273070",
+  "git_commit": "2cb3088fd9c424862ba181942c479de818515907",
+  "workshop_commit": "ce807d99724cb65671abec01f908a2fcb4a6eab7",
+  "isaac_version": "5.1.0.0",
+  "frames": 240,
+  "measured_rotation_span_rad": 0.36133285611867905,
+  "result": "Robot rendered and articulation moved; grasp/place not attempted",
+  "video_sha256": "77cc36b1f5fdbbefd748664109a600f049d052d07126964fc9aa1ed725d4ee87",
+  "video_metadata": {
+    "width": 960,
+    "height": 720,
+    "r_frame_rate": "30/1",
+    "duration": "8.000000",
+    "nb_frames": "240"
+  },
+  "appearance": {
+    "robot_asset": "SO-ARM101-USD-NO-CAMERA.usd",
+    "onboard_camera": false,
+    "plastic_color_rgb": [
+      0.95,
+      0.95,
+      0.95
+    ],
+    "material_shader": "/World/Robot/Looks/material_a_3d_printed/Shader",
+    "external_evidence_camera": true
+  },
+  "evidence_scope": "Actual Isaac articulation recording only; no candidate experiment executed; runtime owner reviewed first frame, visual lane checked metadata and hash"
+}

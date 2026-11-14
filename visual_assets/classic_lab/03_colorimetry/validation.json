@@ -1,0 +1,81 @@
+{
+  "output_existence": {
+    "build.py": true,
+    "Scene.blend": true,
+    "Environment.usdc": true,
+    "Front.png": true,
+    "Overhead.png": true,
+    "Result.png": true,
+    "manifest.json": true,
+    "EXPERIMENT.md": true
+  },
+  "usd": {
+    "default_prim": "/ClassicLab",
+    "meters_per_unit": 1.0,
+    "up_axis": "Z",
+    "external_assets": [],
+    "unresolved_dependencies": [],
+    "used_layers_count": 1,
+    "robot_prim_paths": [],
+    "physics_prim_paths": [],
+    "stable_prim_paths_exist": {
+      "/ClassicLab/References/Reference_0": true,
+      "/ClassicLab/References/Reference_1": true,
+      "/ClassicLab/References/Reference_2": true,
+      "/ClassicLab/References/Reference_3": true,
+      "/ClassicLab/References/Reference_4": true,
+      "/ClassicLab/References/Unknown_comparison_aliquot": true,
+      "/ClassicLab/Photometer/Unknown_in_optical_holder": true,
+      "/ClassicLab/Bench": true,
+      "/ClassicLab/Photometer": true,
+      "/ClassicLab/Preparation": true
+    },
+    "prim_count": 551
+  },
+  "renders": {
+    "Front.png": {
+      "width": 1600,
+      "height": 1000,
+      "bytes": 1796245
+    },
+    "Overhead.png": {
+      "width": 1600,
+      "height": 1000,
+      "bytes": 1696967
+    },
+    "Result.png": {
+      "width": 1600,
+      "height": 1000,
+      "bytes": 2061772
+    }
+  },
+  "visual_review": {
+    "performed": true,
+    "images": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "observations": [
+      "Neutral practical bench; original white camera-free static robot appears in previews.",
+      "Magenta references have legible concentration order; unknown is separate amber holder.",
+      "Instrument shows exposed lamp, sample holder, detector, display and controls.",
+      "Source bottle and pipette fixture are distinct preparation apparatus."
+    ],
+    "limitations": [
+      "Staged values and material colors are illustrative; no measured optical response.",
+      "No robot execution, reach or insertion evidence.",
+      "USD transmission may differ from Blender render."
+    ]
+  },
+  "passed": true,
+  "orchestrator_visual_review": {
+    "reviewed": [
+      "Front.png",
+      "Overhead.png",
+      "Result.png"
+    ],
+    "status": "accepted",
+    "scope": "Actual Blender images visually inspected; no scientific/runtime validation"
+  }
+}
