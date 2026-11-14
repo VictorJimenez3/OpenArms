@@ -740,7 +740,7 @@ class GeminiBridge:
                             # Reply UUIDs are one-use playback tokens. A delayed ACK
                             # for a dropped/expired reply cannot present a new one.
                             self.replies[rid] = {'complete': True, 'proposal': proposal,
-                                                 'expires': time.monotonic() + PLAYBACK_ACK_TIMEOUT}
+                                                 'expires': time.monotonic() + self.reply_seconds + PLAYBACK_ACK_TIMEOUT}
                         if self.reply_id == rid:
                             self._clear_reply()
                         self.playback_changed.set()

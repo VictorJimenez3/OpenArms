@@ -364,6 +364,29 @@ async def test_paraphrased_confirmation_prompt_requests_exact_readout_after_play
         await finish(bridge,runner)
 
 
+async def test_long_exact_preview_can_finish_playback_before_ack_expires(monkeypatch):
+    state={**context(),'pending':{'request_id':'proposal','proposal_version':1,'summary':'Inspect the prepared sample.'}}
+    clock=[100.0]
+    monkeypatch.setattr(live,'time',NS(monotonic=lambda:clock[0]))
+    client,sent,presented=Client(),[],[]
+    async def emit(frame):sent.append(frame)
+    async def tool(name,args):
+        if name=='_present_audio':presented.append(args)
+    bridge=live.GeminiBridge(lambda:state,tool,emit,client_factory=lambda:client)
+    runner=asyncio.create_task(bridge.run())
+    try:
+        await until(lambda:bridge.ready)
+        packet=output_reply(state['pending']['summary'])
+        packet.server_content.model_turn.parts[0].inline_data.data=bytes(20*48000)
+        client.sessions[0].incoming.put_nowait(packet)
+        await until(lambda:any(e['type']=='reply_end'for e in sent))
+        rid=next(e['reply_id']for e in sent if e['type']=='reply_end')
+        clock[0]+=20
+        await bridge.played(rid)
+        assert len(presented)==1
+    finally:await finish(bridge,runner)
+
+
 @pytest.mark.parametrize('resumed', [True, False])
 async def test_reconnect_recovers_subscription_and_replays_real_correlated_feedback(resumed):
     state = {**context(), 'generation': 0, 'notebook': []}
