@@ -6,7 +6,7 @@ The physical target is exactly two vessels: A donor → C receiver → donor A �
 
 ## Current working baseline
 
-Main `4f9c3ec` includes the shared task loop/registry and PR #25's actual Gemini Live conversation repairs. Speech stays Gemini Live, independently of Codex/Claude expert profiles. The merged simulator remains the fixed-dispenser `indicator_ph` regression apparatus. The separate carried-donor/camera prototype and evaluator require reviewed integration; [MAIN_INTEGRATION](MAIN_INTEGRATION.md) owns their evidence boundaries. Physical dispatch and real-device acceptance remain separate.
+The local integration preserves main `4f9c3ec`, the shared task loop/registry and PR #25's actual Gemini Live conversation repairs. Speech stays Gemini Live, independently of Codex/Claude expert profiles. The water-only carried-donor backend, fresh camera dispatch checks and replay-backed admission are now locally integrated. The default `metered_dropper` retains the fixed-dispenser regression. Full-suite and Gemini-water acceptance are pending in the current snapshot; [MAIN_INTEGRATION](MAIN_INTEGRATION.md) owns their evidence boundaries. Physical dispatch and real-device acceptance remain separate.
 
 ## Handoffs and active writers
 
@@ -25,6 +25,6 @@ Joseph retains browser/iPhone ownership; coordinate scoped client changes. Curre
 ## Integration order
 
 1. Keep physical bring-up and independent software moving in parallel. Software uses versioned provisional vessel/fixture inputs until the physical team supplies measured replacements. Preserve the actual Gemini Live connection.
-2. Reuse and review the separate two-vessel/camera prototype against current main; keep PR #25's newer speech fixes. Run student command → fresh scene → supported skill validation → MuJoCo execution → independent result → equivalent warm reuse. Record which backend and scene actually ran.
+2. Verify the locally integrated two-vessel/camera slice; retain PR #25's newer speech fixes and preserve the original prototype's dirty files. Run student command → fresh scene → supported skill validation → MuJoCo execution → independent result → equivalent warm reuse. Record which backend and scene actually ran. The simulator owner must next replace provisional 70/60 mm vessels and old docks with the reviewed vessel/fixture geometry; do not create a competing scene writer.
 3. Verify changed/missing/swapped/stale scene cases, exact proposal/consent, STOP during active work, delayed tool results and reconnect. Unreadable results remain UNKNOWN. Do not add mandatory simulator or expert round trips to the known-skill motor path.
 4. Feed actual bench handoffs into the same semantic A→C skill and scene contract. Supervised physical action, chemistry, first-minute timing and unplugged-device evidence remain explicit acceptance gates. Software integration may proceed without claiming them.
