@@ -609,7 +609,7 @@ class OpenArmsApp {
     }
     if (status === 'active' || status === 'muted') {
       this.dom.liveFallbackBadge.style.display = 'none';
-      this.dom.liveNoticeText.textContent = 'Gemini Live connected. Review and confirm every proposed action below.';
+      this.dom.liveNoticeText.textContent = 'Voice stays on until toggled off. Choose an experiment, predict, correct, say “confirm” or “cancel”, answer questions, or ask for the next trial.';
     }
     // Update Voice Badge in Header
     if (status === 'active') {
@@ -654,7 +654,7 @@ class OpenArmsApp {
       this.dom.btnToggleMic.className = 'btn-mic';
       this.dom.micIcon.textContent = '🎤';
       this.dom.micPulseRing.classList.remove('active');
-      this.dom.voiceStatusText.textContent = 'Click mic to start voice';
+      this.dom.voiceStatusText.textContent = 'Start voice · stays on until stopped';
       this.dom.audioLevelFill.style.width = '0%';
       this.dom.btnToggleMute.disabled = true;
       this.dom.btnDisconnectVoice.disabled = true;

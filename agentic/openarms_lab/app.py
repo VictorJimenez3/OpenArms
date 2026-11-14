@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from dotenv import load_dotenv
 from .runtime import Lab,LabError
+from .voice_controls import MUTATING_TOOLS
 
 ROOT=Path(__file__).resolve().parents[2]
 # Explicit external env file supports bridging an existing checkout without copying secrets.
@@ -166,7 +167,7 @@ def create_app(lab=None):
         from .live import serve_live
         generation=lab.get(sid).get('generation',0)
         async def guarded(name,args):
-            if name in ('request_action','record_prediction','answer_question') and lab.get(sid).get('generation',0)!=generation:
+            if name in MUTATING_TOOLS and lab.get(sid).get('generation',0)!=args.pop('_voice_generation',generation):
                 raise LabError('This voice turn was revoked by STOP/disconnect. Reconnect before proposing another action.')
             return await lab.tool(sid,name,args)
         await serve_live(ws,lambda:lab.snapshot(sid),guarded,lambda:lab.stop(sid,disconnect=True))

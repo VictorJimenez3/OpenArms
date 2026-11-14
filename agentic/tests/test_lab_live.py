@@ -161,8 +161,8 @@ async def test_pcm_transcripts_usage_text_and_stop_protocol_without_provider():
         assert session.realtime[0]['audio'].mime_type == 'audio/pcm;rate=16000'
         assert session.realtime[1] == {'audio_stream_end': True}
         assert len(session.realtime) == 2  # odd-length PCM was rejected
-        assert len(session.turns) == 1  # STOP never reaches model reasoning
-        assert session.turns[0]['turns'].parts[0].text == 'What do I observe?'
+        assert len(session.turns) == 2  # greeting + question; STOP never reaches model reasoning
+        assert session.turns[1]['turns'].parts[0].text == 'What do I observe?'
         assert {'type': 'audio', 'data': base64.b64encode(pcm).decode()} in browser.sent
         assert {'type': 'transcript', 'role': 'user', 'text': 'my prediction'} in browser.sent
         assert {'type': 'transcript', 'role': 'assistant', 'text': 'check the evidence'} in browser.sent

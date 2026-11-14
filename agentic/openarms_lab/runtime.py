@@ -9,6 +9,7 @@ from pathlib import Path
 from .backends import MockBackend, TransferRunnerAdapter
 from .contracts import Parameters, SkillRequest
 from .store import Store
+from .voice_controls import MUTATING_TOOLS
 from agentic.openarms_agent.validator import validate as validate_legacy
 
 TERMINAL={'completed','failed','stopped','unknown','cancelled','rejected','expired'}
@@ -77,7 +78,10 @@ class Lab:
         s['state']=self._backend(sid).state()
         s['capabilities']=self._backend(sid).capabilities()
         s['skills']=self.registry.list()
-        return copy.deepcopy(s)
+        snap=copy.deepcopy(s)
+        from .learning import EXPERIMENTS
+        snap['available_experiments']=copy.deepcopy(EXPERIMENTS)
+        return snap
     async def publish(self,s):
         snap=self.snapshot(s['session_id'])
         self.store.save(snap)
@@ -227,7 +231,7 @@ class Lab:
             try:
                 generation=s.get('generation',0)
                 async def guarded(name,args):
-                    if name in ('request_action','record_prediction','answer_question') and s.get('generation',0)!=generation:
+                    if name in MUTATING_TOOLS and s.get('generation',0)!=args.pop('_voice_generation',generation):
                         raise LabError('This model turn was cancelled. Start a fresh instruction.')
                     return await self.tool(sid,name,args)
                 task=asyncio.create_task(text_reply(text,lambda:self.snapshot(sid),guarded))
@@ -415,6 +419,18 @@ class Lab:
         return await self.publish(s)
     async def tool(self,sid,name,args):
         if name=='get_lab_state': return self.snapshot(sid)
+        if name=='select_experiment': return await self.select_experiment(sid,args['experiment_id'])
+        if name=='prepare_next_trial': return await self.prepare(sid)
+        if name=='cancel_request': return await self.cancel(sid,args['request_id'])
+        if name=='student_confirm':
+            consent=args.get('_voice_consent') or {}
+            if consent.get('request_id')!=args.get('request_id') or not consent.get('text'):
+                raise LabError('Student confirmation needs trusted explicit input for this proposal.')
+            s=self.get(sid)
+            # confirm() independently checks pending ID, expiry, connection and validation.
+            result=await self.confirm(sid,args['request_id'])
+            self._event(s,'voice_student_consent',request_id=args['request_id'],text=consent['text'],operator_authorized=False)
+            return await self.publish(s)
         if name=='request_action': return await self.request(sid,args['text'],('live:'+args['_tool_call_id']) if args.get('_tool_call_id') else None)
         if name=='record_prediction': return await self.prediction(sid,args['text'])
         if name=='answer_question': return await self.answer(sid,args['question_id'],args['answer'])
@@ -435,7 +451,7 @@ class Lab:
             self._event(s,'model_usage',**args)
             self.store.save(self.snapshot(sid))
             return {'recorded':True}
-        raise LabError('Unknown tool. Student confirmation is available only in the UI.')
+        raise LabError('Unknown lab tool.')
     async def shutdown(self):
         for sid in list(self.sessions): await self.stop(sid,disconnect=True)
         self.store.db.close()

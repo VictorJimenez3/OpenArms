@@ -14,10 +14,19 @@ import os
 from starlette.websockets import WebSocketDisconnect
 from google import genai
 from google.genai import types
+from .voice_controls import VoiceControls
 
 TOOLS=[{'function_declarations':[
     {'name':'request_action','description':'Propose a supported action for explicit student confirmation in the UI. NEVER executes or confirms. Say you are checking the skill catalog first.',
      'parameters':{'type':'OBJECT','properties':{'text':{'type':'STRING'}},'required':['text']}},
+    {'name':'select_experiment','description':'Select the student requested experiment by its exact ID. Read available_experiments from get_lab_state first if needed.',
+     'parameters':{'type':'OBJECT','properties':{'experiment_id':{'type':'STRING'}},'required':['experiment_id']}},
+    {'name':'prepare_next_trial','description':'Prepare/reset the MOCK apparatus for the next trial at the student request. Physical reset belongs to the bench operator.',
+     'parameters':{'type':'OBJECT','properties':{}}},
+    {'name':'student_confirm','description':'Confirm only after the student explicitly says yes or confirm AFTER the current proposal was presented. Must use its exact request_id. Server independently checks the input transcript. This is student consent only, never bench operator authorization.',
+     'parameters':{'type':'OBJECT','properties':{'request_id':{'type':'STRING'}},'required':['request_id']}},
+    {'name':'cancel_request','description':'Cancel the current pending proposal by exact request_id. For active execution use stop_lab.',
+     'parameters':{'type':'OBJECT','properties':{'request_id':{'type':'STRING'}},'required':['request_id']}},
     {'name':'record_prediction','description':'Record the student prediction in their own words before a trial.',
      'parameters':{'type':'OBJECT','properties':{'text':{'type':'STRING'}},'required':['text']}},
     {'name':'get_lab_state','description':'Get current experiment, capabilities, requests, observations and notebook. Controller completion is not verified success.',
@@ -35,7 +44,7 @@ def compact(context):
 def system_prompt(context):
     return ('You are OpenArms, a concise supportive science learning companion. The student is the scientist: '
       'ask for their question, prediction and controlled-variable decisions. Use the tools to record their prediction, '
-      'propose actions, read state and assess quiz answers. No tool confirms motion: ask the student to review and press Confirm. '
+      'select experiments, prepare the next trial, propose/correct/cancel actions, read instructions and assess quiz answers. After presenting the exact proposal, ask the student to say confirm or cancel. Call student_confirm only in a NEW user turn with an explicit yes/confirm; never infer confirmation from a prediction, command, silence or your own speech. '
       'Physical operator authorization is separate. For supported operations quote the known stations and parameters exactly. '
       'Ask clarification for ambiguous requests. Never invent sensors, pictures, real science outcomes or physical success. '
       'Distinguish REAL, SIMULATED, MOCK, MODEL-PREDICTED and UNKNOWN in speech. The buoyancy demo uses MOCK transfer '
@@ -50,6 +59,7 @@ class Reconnect(Exception):pass
 
 async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=None,reconnect_delay=.5):
     """Accepted same-origin browser websocket; PCM in/out plus explicit app tools."""
+    controls=VoiceControls(context,tool_call)
     client=None
     seen={}
     resumable=None
@@ -78,6 +88,9 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                 await emit({'type':'status','status':'connecting' if attempt==0 else 'reconnecting'})
                 async with client.aio.live.connect(model=os.getenv('GEMINI_LIVE_MODEL','gemini-3.8-live'),config=config) as session:
                     await emit({'type':'status','status':'connected'})
+                    await session.send_client_content(turns=types.Content(role='user',parts=[types.Part(text=
+                        'Voice has just started. Briefly introduce the available experiments and how to choose one by voice. '
+                        'Do not change state or propose any action until the student asks.')]),turn_complete=True)
                     async def upstream():
                         while True:
                             try: msg=await websocket.receive_json()
@@ -97,6 +110,7 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                                     await tool_call('stop_lab',{})
                                     await emit({'type':'interrupted'})
                                     continue
+                                controls.input(text,finished=True)
                                 await record('user',text)
                                 await session.send_client_content(turns=types.Content(role='user',parts=[types.Part(text=text)]),turn_complete=True)
                     async def run_tool(call):
@@ -107,7 +121,7 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                             elif call.name not in {f['name'] for f in TOOLS[0]['function_declarations']}:
                                 result={'error':'Tool is not allowed.'}
                             else:
-                                try:result=await asyncio.wait_for(tool_call(call.name,{**dict(call.args or {}),**({'_tool_call_id':cid} if call.name=='request_action' else {})}),timeout=35)
+                                try:result=await asyncio.wait_for(controls.dispatch(call.name,{**dict(call.args or {}),**({'_tool_call_id':cid} if call.name=='request_action' else {})}),timeout=35)
                                 except Exception as exc:
                                     if call.name=='request_action':await tool_call('_cancel_tool_request',{'tool_call_id':cid})
                                     result={'error':str(exc)[:500]}
@@ -132,6 +146,16 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                                         if task:task.cancel()
                                         await tool_call('_cancel_tool_request',{'tool_call_id':cid,'request_id':proposals.get(cid)})
                                     await emit({'type':'interrupted'})
+                                sc=response.server_content
+                                if sc and sc.input_transcription:
+                                    transcription=sc.input_transcription
+                                    fragment=transcription.text or ''
+                                    controls.input(fragment,finished=bool(getattr(transcription,'finished',False)))
+                                    await record('user',fragment)
+                                    if controls.finished.is_set() and controls.text.strip().lower().rstrip('.!') in ('stop','stop now','emergency stop'):
+                                        await tool_call('stop_lab',{})
+                                        controls.consumed=True
+                                        await emit({'type':'interrupted'})
                                 if response.tool_call:
                                     for call in response.tool_call.function_calls:
                                         if call.id not in pending and call.id not in cancelled:
@@ -139,8 +163,6 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
                                 sc=response.server_content
                                 if sc:
                                     if sc.interrupted:await emit({'type':'interrupted'})
-                                    if sc.input_transcription and sc.input_transcription.text:
-                                        await record('user',sc.input_transcription.text)
                                     if sc.output_transcription and sc.output_transcription.text:
                                         await record('assistant',sc.output_transcription.text)
                                     if sc.model_turn:
@@ -199,6 +221,8 @@ async def serve_live(websocket,context,tool_call,on_disconnect,*,client_factory=
 async def _text_generate_reply(text,context,tool_call):
     """Same grounded Gemini tools for text-only clients, with bounded tool rounds."""
     if not key():raise ValueError('Gemini credentials are not configured.')
+    controls=VoiceControls(context,tool_call)
+    controls.input(text,finished=True)
     c=genai.Client(api_key=key())
     messages=[types.Content(role='user',parts=[types.Part(text=text)])]
     try:
@@ -214,7 +238,7 @@ async def _text_generate_reply(text,context,tool_call):
             for call in calls:
                 if call.name not in {f['name'] for f in TOOLS[0]['function_declarations']}:result={'error':'Tool is not allowed.'}
                 else:
-                    try:result=await tool_call(call.name,dict(call.args or {}))
+                    try:result=await controls.dispatch(call.name,dict(call.args or {}))
                     except Exception as exc:result={'error':str(exc)[:500]}
                 responses.append(types.Part.from_function_response(name=call.name,response={'result':result}))
             messages.append(types.Content(role='tool',parts=responses))
@@ -226,6 +250,8 @@ async def text_reply(text,context,tool_call):
     if os.getenv('OPENARMS_TEXT_TRANSPORT','live')=='generate':
         return await _text_generate_reply(text,context,tool_call)
     if not key():raise ValueError('Gemini credentials are not configured.')
+    controls=VoiceControls(context,tool_call)
+    controls.input(text,finished=True)
     client=genai.Client(api_key=key(),http_options={'api_version':'v1beta'})
     try:
         config=types.LiveConnectConfig(response_modalities=['AUDIO'],system_instruction=system_prompt(context),
@@ -246,7 +272,7 @@ async def text_reply(text,context,tool_call):
                             if call.name not in {f['name'] for f in TOOLS[0]['function_declarations']}:
                                 result={'error':'Tool is not allowed.'}
                             else:
-                                try:result=await tool_call(call.name,dict(call.args or {}))
+                                try:result=await controls.dispatch(call.name,dict(call.args or {}))
                                 except Exception as exc:result={'error':str(exc)[:500]}
                             replies.append(types.FunctionResponse(id=call.id,name=call.name,response={'result':result}))
                         if replies:await session.send_tool_response(function_responses=replies)
