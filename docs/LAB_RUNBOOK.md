@@ -62,7 +62,9 @@ Skill admission combines the frozen synthetic robustness suite with actual MuJoC
 | `OPENARMS_DATA_DIR` | Persistent notebook, scene artifacts, evaluations and scoped registry |
 | `OPENARMS_ENV_FILE` | Optional explicit local environment file |
 | Legacy `GEMINI_LIVE_MODEL` / Google keys | Ignored by the current default application voice path |
-| `OPENARMS_CODEX_EXECUTABLE` | Authenticated expert executable; default `codex` |
+| `OPENARMS_EXPERT_CONFIG` | Host-owned selection file for model changes between tasks |
+| `OPENARMS_EXPERT_PROFILE`, `OPENARMS_EXPERT_EFFORT` | Defaults without a config file: `sol`, `medium` |
+| `OPENARMS_CODEX_EXECUTABLE`, `OPENARMS_CLAUDE_EXECUTABLE` | Independent CLI paths; default `codex`, `claude` |
 | `OPENARMS_DEMO_TOKEN` | Creation credential for a remote deployment |
 | `OPENARMS_ALLOWED_HOSTS` | Explicit additional hostnames; same-origin controls still apply |
 | `OPENARMS_HOST`, `PORT` | Default `127.0.0.1`, `8000` |

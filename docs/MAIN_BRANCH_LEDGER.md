@@ -1,6 +1,6 @@
 # Branch consolidation ledger
 
-Snapshot after fetching all origin heads and reconciling remote main 19a37ae. All listed heads are retained in the local integration history. The active model-compatibility worker may advance its existing branch after this snapshot; integrator must incorporate and review that handoff before the final merge. Nothing here claims remote main has already been updated. No branch was deleted.
+Snapshot after fetching all origin heads and reconciling remote main 19a37ae. All listed heads are retained in the local integration history. The model-compatibility handoff at `968f560` is now integrated and reviewed. Nothing here claims remote main has already been updated. No branch was deleted.
 
 | Pinned head | Branch references | Included in integration history |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Snapshot after fetching all origin heads and reconciling remote main 19a37ae. Al
 | `a1e88da5e5` | `codex/preserve-dilution-intent` | Yes |
 | `0f70ae0828` | `codex/runtime-full-loop` | Yes |
 | `b49d3997a3` | `codex/software-integration` | Yes |
-| `0e99a7111a` | `codex/task-evidence-review-repairs` | Yes |
+| `968f5606bf` | `codex/task-evidence-review-repairs` | Yes |
 | `1d53190444` | `codex/voice-first-desktop` | Yes |
 | `84ac0ee684` | `codex/voice-first-native` | Yes |
 | `57b0a6ad62` | `codex/voice-review-repairs` | Yes |

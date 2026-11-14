@@ -21,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .access import SessionAccess
 from .runtime import Lab, LabError
-from .codex_expert import CodexExpert
+from .expert_profiles import ConfiguredExpert
 
 ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(os.getenv('OPENARMS_ENV_FILE', ROOT / '.env'), override=False)
@@ -149,8 +149,13 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 evaluator = SyntheticSkillEvaluator(data / 'evaluations')
             else:
                 raise ValueError('OPENARMS_EXECUTION must be mock or mujoco; hardware is disabled.')
-            expert = CodexExpert(data / 'expert-work', artifact_roots=[scene.artifact_dir],
-                                 executable=os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'))
+            expert = ConfiguredExpert(
+                data / 'expert-work', artifact_roots=[scene.artifact_dir],
+                config_path=os.getenv('OPENARMS_EXPERT_CONFIG'),
+                profile=os.getenv('OPENARMS_EXPERT_PROFILE', 'sol'),
+                reasoning_effort=os.getenv('OPENARMS_EXPERT_EFFORT', 'medium'),
+                executables={'codex': os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'),
+                             'claude': os.getenv('OPENARMS_CLAUDE_EXECUTABLE', 'claude')})
             app.state.lab = Lab(data, expert=expert, perception=scene,
                                 registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,
@@ -204,11 +209,15 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
 
     @app.get('/api/health')
     async def health():
+        expert = service().expert
+        identity = expert.describe() if hasattr(expert, 'describe') else {
+            'provider': getattr(expert, 'provider', None), 'model': getattr(expert, 'model', None),
+            'reasoning_effort': getattr(expert, 'reasoning_effort', None)}
         return {'backend': app.state.execution_mode, 'hardware_enabled': False, 'protocol_version': 1,
                 'live_configured': voice_factory is not None, 'live_model': None,
                 'voice_status': 'injected' if voice_factory is not None else 'disabled_pending_replacement',
-                'expert_provider': 'openai_codex_cli', 'expert_model': 'gpt-6.1-sol',
-                'expert_reasoning_effort': 'medium',
+                'expert_provider': identity.get('provider'), 'expert_model': identity.get('model'),
+                'expert_reasoning_effort': identity.get('reasoning_effort'), 'expert': identity,
                 'pairing_required': bool(os.getenv('OPENARMS_DEMO_TOKEN'))}
 
     @app.post('/api/sessions')

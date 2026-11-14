@@ -89,11 +89,12 @@ class ConfiguredExpert:
     Existing direct adapter.run() callers remain supported.
     """
     def __init__(self, work_dir, *, artifact_roots, config_path=None, profile='sol',
-                 reasoning_effort='medium', executable=None, transports=None, **limits):
+                 reasoning_effort='medium', executable=None, executables=None, transports=None, **limits):
         self.work_dir, self.roots = Path(work_dir), artifact_roots
         self.config_path = Path(config_path) if config_path else None
         self.default = {'profile': profile, 'reasoning_effort': reasoning_effort}
         self.executable, self.transports, self.limits = executable, transports or {}, limits
+        self.executables = dict(executables or {})
         self._tasks = {}
         self._semaphore = asyncio.Semaphore(limits.pop('max_concurrent', 1))
 
@@ -119,8 +120,9 @@ class ConfiguredExpert:
             cls = CodexExpert if profile.provider == 'codex' else ClaudeExpert
             kwargs = dict(self.limits, model=profile.model, reasoning_effort=profile.reasoning_effort,
                           transport=self.transports.get(profile.provider))
-            if self.executable:
-                kwargs['executable'] = self.executable
+            executable = self.executable or self.executables.get(profile.provider)
+            if executable:
+                kwargs['executable'] = executable
             adapter = cls(self.work_dir, artifact_roots=self.roots, **kwargs)
             adapter._semaphore = self._semaphore
             self._tasks[task_id] = adapter
@@ -148,7 +150,7 @@ class ConfiguredExpert:
             selected = self.snapshot()
             cls = CodexExpert if selected['provider'] == 'codex' else ClaudeExpert
             import shutil
-            executable = self.executable or ('codex' if cls is CodexExpert else 'claude')
+            executable = self.executable or self.executables.get(selected['provider']) or selected['provider']
             return selected | {'provider': cls.provider, 'configured': True,
                                'active_task_bindings': len(self._tasks),
                                'executable_available': shutil.which(executable) is not None,
@@ -180,3 +182,24 @@ def expert_from_arguments(args, work_dir, *, artifact_roots, **kwargs):
     return ConfiguredExpert(work_dir, artifact_roots=artifact_roots, config_path=args.expert_config,
                             profile=args.expert_profile, reasoning_effort=args.reasoning_effort,
                             executable=args.executable, **kwargs)
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='Select the expert for new tasks; active tasks keep their model.')
+    parser.add_argument('profile', choices=[*PROFILES, 'fable'])
+    parser.add_argument('--config', type=Path, required=True)
+    parser.add_argument('--effort', default='medium')
+    parser.add_argument('--provider', choices=['codex', 'claude'])
+    parser.add_argument('--model', help='Explicit pinned provider model ID; required for Fable.')
+    args = parser.parse_args()
+    config = {'profile': args.profile, 'reasoning_effort': args.effort}
+    if args.model or args.provider:
+        if not (args.model and args.provider):
+            parser.error('--model and --provider must be supplied together')
+        config['bindings'] = {args.profile: {'provider': args.provider, 'model': args.model}}
+    try:
+        write_config(args.config, config)
+    except ExpertUnavailable as exc:
+        parser.error(str(exc))
+    print(json.dumps(resolve_profile(config).describe()))

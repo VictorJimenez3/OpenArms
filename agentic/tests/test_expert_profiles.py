@@ -84,17 +84,22 @@ async def test_atomic_hot_swap_keeps_active_task_through_checkpoints(tmp_path):
     config = tmp_path/'config.json'
     write_config(config, {'profile': 'sol'})
     router = ConfiguredExpert(tmp_path/'calls', artifact_roots=[tmp_path], config_path=config,
-                              transports={'codex': lambda *_: None})
+                              transports={'codex': lambda *_: None},
+                              executables={'codex': 'codex2', 'claude': 'claude-local'})
     original = router.snapshot()
     write_config(config, {'profile': 'astra', 'reasoning_effort': 'high'})
     # Queue-time snapshot predates delayed first expert call.
     first = router.bind('active', original)
     assert first.model == 'gpt-6.1-sol'
+    assert first.executable == 'codex2'
     assert router.bind('active').model == 'gpt-6.1-sol'
     second = router.bind('new')
     assert second.model == 'gpt-6-astra' and second.reasoning_effort == 'high'
     router.release('active')
     assert router.bind('active').model == 'gpt-6-astra'
+    write_config(config, {'profile': 'opus'})
+    assert router.bind('claude-task').executable == 'claude-local'
+    assert router.bind('new') is second
     config.write_text('{')
     assert router.describe()['error_code'] == 'configuration'
     assert router.bind('new') is second

@@ -43,5 +43,14 @@
       "",
       "** BUILD SUCCEEDED **"
     ]
+  },
+  "provider_compatibility_combined": {
+    "artifact": "compatibility-combined-tests.log",
+    "sha256": "e610840c26b489d57a1c693506be18ad8874898b08d367fda7a1db2fa2929d5d",
+    "tail": [
+      "........................................................................ [ 87%]",
+      ".............................................................            [100%]",
+      "493 passed in 55.58s"
+    ]
   }
 }

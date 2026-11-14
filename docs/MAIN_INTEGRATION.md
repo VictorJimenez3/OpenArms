@@ -44,6 +44,8 @@ Every merge below is local until independent review and the combined checks pass
 - Remote main advanced from `171a21a` to `19a37ae`. Its added `0b90e36` Claude fallback has been independently reviewed and reconciled into integration history. The current expert covers its useful planning behaviors; the older physical/free-plan dispatcher is superseded, not reactivated.
 - No physical pH actuation or physical reset is enabled or newly verified. The broader product's D1 milestone remains open.
 
+Model compatibility is integrated from `968f560`: shared Codex/Claude transports, task-pinned selection and one-command host configuration. Parent review and the final 493-test suite passed. Actual Sol image/tool smoke passed; Claude/Fable live qualification remains open.
+
 ## Current evidence
 
 Before the provider withdrawal guard, the combined suite passed 464 tests; desktop/mobile browser checks passed 36, audio checks passed 5, and portable native checks passed 17. A signed iOS Simulator build and fresh screenshots passed. The guard plus leading-decimal routing correction passed 13 focused tests, then 466 combined tests. The initial combined attempt found an unavailable-status protocol mismatch; the guard now emits the clients’ existing unavailable status, and the unchanged integration test passes. These are software evidence, not actual-phone acceptance.

@@ -10,13 +10,15 @@ Sources: [01 — current product vision](https://app.notion.com/p/41871c9c107e81
 
 ## Requirement IDs
 R1: A continuous voice agent remains responsive to the student. Joseph withdrew Gemini on November 14; its default connection is disabled while the replacement is built and qualified. This changes the provider, not the required two-agent behavior.
-R2: OpenAI gpt-6.1-sol at medium reasoning through Codex performs image-aware planning and makes tool-level decisions during execution; familiar tasks reuse skills and unfamiliar supported tasks escalate.
+R2: The selected Codex or Claude expert (default OpenAI gpt-6.1-sol at medium reasoning through Codex) performs image-aware planning and makes tool-level decisions during execution; familiar tasks reuse skills and unfamiliar supported tasks escalate.
 R3: Timestamped raw images and recognition/localization tools inform planning.
 R4: Execution and independent observation feedback reach both agents; progress, clarification, failure, cancellation and bounded replanning work.
 R5: Expert-authored, validated, versioned skills become conversationally callable.
 R6: A real recorded limitation causes a substantive expert revision, unchanged-baseline comparison, and evidence-based promotion or rejection.
 
 The current `demo-speed-v2` product correction also applies: D1 reliable direct actions; D2 responsive voice; D3 one expensive expert pass produces a tested parameterized skill with fast subsequent reuse; D4 measured improvement. Students can issue individual supported actions immediately. Prediction and reflection are optional. A successful familiar skill must not wait for another expert call at each checkpoint; independent validation and observation continue, with uncertainty/failure escalating to the expert.
+
+November 14 provider compatibility correction: Joseph requested shared Codex/Claude agents and hot model selection. [Expert profiles](EXPERT_MODELS.md) own configuration and qualification details; a task retains its selection through confirmation/checkpoints. This does not alter the shared tools, registry, consent or supported hardware-disabled execution.
 
 ## Responsibility map
 | Accountable owner / isolated lane | Requirements and owned connection | Dependencies | Required evidence / remaining gap |
