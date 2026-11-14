@@ -194,6 +194,7 @@ def localize(calibration, observation, *, now_s, max_age_s=0.25):
         if uncertainty > calibration["max_error_mm"]:
             raise GeometryError("localization uncertainty exceeds tolerance")
         result.update(status="ok", xy_mm=xy.tolist(), uncertainty_mm=uncertainty,
+                      geometry_hash=calibration["content_hash"],
                       camera_mount_id=calibration["camera_mount_id"], feature="table_contact",
                       coordinate_frame=calibration["plane_id"], clock_id=calibration["clock_id"], units="mm",
                       grasp_pose=None, controller_validation_required=True)

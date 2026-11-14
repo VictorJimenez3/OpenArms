@@ -2,7 +2,7 @@
 import runpy
 import sys
 
-COMMANDS = ("demo", "capture", "episode", "keyframes", "geometry", "skills", "benchmark", "policy")
+COMMANDS = ("demo", "capture", "episode", "keyframes", "geometry", "skills", "benchmark", "policy", "adaptation", "outcomes")
 
 
 def main():

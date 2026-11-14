@@ -7,10 +7,10 @@ These modules never import an arm driver or activate a skill. The actual-cup dat
 From the repository root (Python 3.12):
 
 ```sh
-python3.12 -m venv .venv-models
-.venv-models/bin/pip install -r bench_vision/requirements-models.txt pytest==8.4.2
-.venv-models/bin/python -m pytest bench_vision/tests/test_perception.py bench_vision/tests/test_policy.py -q
-.venv-models/bin/python -m bench_vision.benchmark bench_vision/evidence/models/dataset.json \
+python3.12 -m venv outputs/models-env
+outputs/models-env/bin/pip install -r bench_vision/requirements-models.txt pytest==8.4.2
+outputs/models-env/bin/python -m pytest bench_vision/tests/test_perception.py bench_vision/tests/test_policy.py -q
+outputs/models-env/bin/python -m bench_vision.benchmark bench_vision/evidence/models/dataset.json \
   --root /path/to/recorded/mandarin-bench --out outputs/comparison-new.json \
   --device mps --model grounding-dino --repeats 3
 ```
@@ -40,8 +40,8 @@ Grounding DINO found all three original visible oranges and their dark/grayscale
 ## Policy preparation
 
 ```sh
-.venv-models/bin/python -m bench_vision.policy check policy-manifest.json target-conventions.json
-.venv-models/bin/python -m bench_vision.policy training episode-index.json
+outputs/models-env/bin/python -m bench_vision.policy check policy-manifest.json target-conventions.json
+outputs/models-env/bin/python -m bench_vision.policy training episode-index.json
 ```
 
 Blocked preflight exits 2. `check_compatibility` requires exact joint names/order, units, absolute/delta mode, camera keys, finite normalization, horizon/dimension, target limits, embodiment identity and a reviewed mapping receipt. `denormalize_actions` checks the entire chunk shape, normalized range and every denormalized target limit. It returns arrays only and has no executor. `training_preflight` requires distinct aligned physical episodes with observed task outcome, episode-level train/validation splits and disjoint position groups; no adjacent-frame splitting. Metadata compatibility is never physical authorization.
