@@ -174,7 +174,7 @@ def preview(
 
 def example_plan(source: str | None = None, into: str | None = None, portions: int = 1, setup: str | None = None) -> dict:
     """A one-step plan: move the block (block setup) or add a sample (liquid setup)."""
-    if setup_name(setup) == "liquid":
+    if load_bench(setup_name(setup)).receivers:  # a bench with receivers pours (liquid, kit)
         source, into = source or "A", into or "C"
         step = {"action": "add_sample", "args": {"source": source, "into": into, "portions": portions}}
         said = f"add some of {source} to {into}"
