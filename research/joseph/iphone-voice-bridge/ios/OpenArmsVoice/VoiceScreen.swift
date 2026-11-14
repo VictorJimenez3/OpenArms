@@ -29,14 +29,15 @@ struct VoiceScreen: View {
                     voiceControl
                     if let notice = client.notice { noticeCard(notice) }
                     if let lab = client.snapshot {
-                        if lab.experiment.id == "red_cabbage_ph" { trial(lab) }
+                        requestComposer
                         if !lab.taskRecords.isEmpty { taskUpdates(lab) }
                         if let proposal = lab.pending { proposalCard(proposal) }
-                        if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
-                        if !lab.executionRecords.isEmpty { execution(lab) }
                         if !lab.observations.isEmpty { evidence(lab) }
                         if !lab.outcomeRecords.isEmpty { outcomes(lab) }
-                        conversation
+                        if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
+                        if !lab.executionRecords.isEmpty { execution(lab) }
+                        if !client.messages.isEmpty { conversation }
+                        if lab.experiment.id == "red_cabbage_ph" { trial(lab) }
                         if !lab.skillRecords.isEmpty || !lab.evaluationRecords.isEmpty { skills(lab) }
                         history(lab)
                     } else {
@@ -55,7 +56,7 @@ struct VoiceScreen: View {
                         .buttonStyle(.bordered)
                         .accessibilityHint("Stops the lab directly, even when voice is unavailable.")
                     }
-                    Text("Physical equipment is disabled.")
+                    Text("Software demo · physical actuation disabled in this session")
                         .font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .center)
                 }
                 .padding(.horizontal, 22).padding(.vertical, 24)
@@ -160,53 +161,60 @@ struct VoiceScreen: View {
     }
 
     private func trial(_ lab: LabSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Your trial").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-            Text(lab.experiment.question).font(.body)
-            Text("Choose a prepared condition").font(.subheadline.weight(.semibold))
-            // A vertical group preserves readable labels at large accessibility text sizes.
-            VStack(spacing: 10) {
-                ForEach(lab.conditions) { condition in
-                    let selected = condition.id == lab.trial.conditionID
-                    Button { client.chooseCondition(condition.id) } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                            Text(condition.title).font(.body.weight(selected ? .semibold : .regular))
-                            Spacer(minLength: 0)
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 18) {
+                Text(lab.experiment.question).font(.body)
+                Text("Prepared conditions").font(.subheadline.weight(.semibold))
+                // A vertical group preserves readable labels at large accessibility text sizes.
+                VStack(spacing: 10) {
+                    ForEach(lab.conditions) { condition in
+                        let selected = condition.id == lab.trial.conditionID
+                        Button { client.chooseCondition(condition.id) } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                                Text(condition.title).font(.body.weight(selected ? .semibold : .regular))
+                                Spacer(minLength: 0)
+                            }
+                            .padding(.horizontal, 16).frame(maxWidth: .infinity, minHeight: 52)
+                            .background(selected ? LabStyle.purple.opacity(0.11) : Color.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 16))
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? LabStyle.purple : .clear, lineWidth: 1.5))
                         }
-                        .padding(.horizontal, 16).frame(maxWidth: .infinity, minHeight: 52)
-                        .background(selected ? LabStyle.purple.opacity(0.11) : Color.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? LabStyle.purple : .clear, lineWidth: 1.5))
+                        .buttonStyle(.plain).disabled(!client.canAct)
+                        .accessibilityAddTraits(selected ? .isSelected : [])
+                        .accessibilityIdentifier("condition_\(condition.id)")
                     }
-                    .buttonStyle(.plain).disabled(!client.canAct)
-                    .accessibilityAddTraits(selected ? .isSelected : [])
-                    .accessibilityIdentifier("condition_\(condition.id)")
                 }
-            }
-            Text("Make a prediction").font(.subheadline.weight(.semibold))
-            if !lab.prediction.isEmpty {
-                Label(lab.prediction, systemImage: "quote.bubble").font(.subheadline).foregroundStyle(LabStyle.purple).textSelection(.enabled)
-            }
-            TextField("What color or classification do you expect?", text: $prediction, axis: .vertical)
-                .lineLimit(2...5).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
-                .focused($focusedField, equals: .prediction).accessibilityLabel("Your prediction")
-            Button(lab.prediction.isEmpty ? "Save prediction" : "Update prediction") {
-                client.predict(prediction); focusedField = nil
-            }
-            .buttonStyle(.bordered).frame(minHeight: 44)
-            .disabled(!client.canAct || prediction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || lab.trial.conditionID == nil)
-            .accessibilityHint("Updating your prediction replaces any previous proposal. You will review the new proposal before confirming.")
+                Text("Prediction").font(.subheadline.weight(.semibold))
+                if !lab.prediction.isEmpty {
+                    Label(lab.prediction, systemImage: "quote.bubble").font(.subheadline).foregroundStyle(LabStyle.purple).textSelection(.enabled)
+                }
+                TextField("What color or classification do you expect?", text: $prediction, axis: .vertical)
+                    .lineLimit(2...5).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
+                    .focused($focusedField, equals: .prediction).accessibilityLabel("Your prediction")
+                Button(lab.prediction.isEmpty ? "Save prediction" : "Update prediction") {
+                    client.predict(prediction); focusedField = nil
+                }
+                .buttonStyle(.bordered).frame(minHeight: 44)
+                .disabled(!client.canAct || prediction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                Button("Start another trial") { client.prepare(); focusedField = nil }
+                    .buttonStyle(.bordered).frame(minHeight: 44).disabled(!client.canAct || lab.pending != nil)
+            }.padding(.top, 10)
+        } label: {
+            Label("Optional trial context", systemImage: "flask").font(.headline).frame(minHeight: 44)
         }.padding(22).card()
     }
 
     private func proposalCard(_ proposal: Proposal) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Label("Review before we begin", systemImage: "checkmark.shield").font(.headline).accessibilityAddTraits(.isHeader)
-            Text(proposal.summary).font(.body).textSelection(.enabled)
-            if let id = proposal.skillID {
-                metadata("Skill", [id, proposal.skillVersion?.scalarText].compactMap { $0 }.joined(separator: " · "))
+            let steps = proposal.reviewSteps
+            if !steps.isEmpty, steps.count == RecordPresentation.records(proposal.plan?["steps"]).count {
+                ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                    Text("\(index + 1). \(step)").font(.body)
+                }
+            } else {
+                Text(proposal.summary).font(.body).textSelection(.enabled)
             }
-            metadata("Plan version", String(proposal.proposalVersion))
             Button { focusedField = nil; client.confirm(proposal) } label: {
                 Text("Confirm this plan").font(.headline).frame(maxWidth: .infinity, minHeight: 50)
             }
@@ -215,7 +223,7 @@ struct VoiceScreen: View {
             Button("Cancel proposal", role: .destructive) { client.cancel(proposal) }
                 .frame(maxWidth: .infinity, minHeight: 44).disabled(!client.canAct)
             if !client.canConfirm && !client.busy {
-                Text(client.connected ? "Making sure this exact proposal is ready for review…" : "Reconnect to review a fresh proposal.")
+                Text(client.connected ? "Waiting for the lab to acknowledge this preview." : "Reconnect to review a fresh proposal.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -231,11 +239,16 @@ struct VoiceScreen: View {
             Text("Task progress").font(.headline).accessibilityAddTraits(.isHeader)
             ForEach(Array(lab.taskRecords.suffix(3).enumerated()), id: \.offset) { _, task in
                 VStack(alignment: .leading, spacing: 6) {
-                    if let status = RecordPresentation.status(task) { Text(status.capitalized).font(.subheadline.bold()) }
+                    let status = task["status"]?.string
+                    if ["queued", "running"].contains(status) {
+                        ProgressView(status == "queued" ? "Request received" : "Preparing your task").controlSize(.small)
+                    } else if let status = RecordPresentation.status(task) {
+                        Text(status.capitalized).font(.subheadline.bold())
+                    }
                     if let request = RecordPresentation.text(task, "request", "goal") { Text(request) }
                     if let question = RecordPresentation.clarification(task) {
                         Text(question).fontWeight(.medium)
-                        Text("Reply by voice or in Conversation.").font(.footnote).foregroundStyle(.secondary)
+                        Text("Reply by voice or type your answer.").font(.footnote).foregroundStyle(.secondary)
                     } else if let summary = RecordPresentation.text(task, "summary", "reason") {
                         Text(summary)
                     }
@@ -243,8 +256,16 @@ struct VoiceScreen: View {
                         metadata("Current operation", RecordPresentation.text(progress, "operation")?.replacingOccurrences(of: "_", with: " "))
                         metadata("Phase", RecordPresentation.text(progress, "phase"))
                     }
+                    if task["route"]?.string == "active_skill" {
+                        Label("Used a saved skill", systemImage: "bolt").font(.footnote)
+                    }
+                    if let metrics = lab.metrics(for: task) {
+                        if let milliseconds = metrics["planning_ms"]?.numericValue {
+                            metadata("Planning", "\(milliseconds.formatted(.number.precision(.fractionLength(0)))) ms")
+                        }
+                        metadata("Model calls", RecordPresentation.text(metrics, "model_calls"))
+                    }
                     if let id = task["task_id"]?.string,
-                       let status = task["status"]?.string,
                        ["queued", "running", "awaiting_confirmation", "executing", "observing"].contains(status) {
                         Button("Cancel task", role: .destructive) { client.cancelTask(id) }
                             .buttonStyle(.bordered).frame(minHeight: 44).disabled(!client.canAct)
@@ -255,29 +276,43 @@ struct VoiceScreen: View {
     }
 
     private func sceneEvidence(_ lab: LabSnapshot) -> some View {
-        DisclosureGroup {
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(Array((lab.sceneRecords + lab.imageRecords).suffix(8).enumerated()), id: \.offset) { _, record in
-                    evidenceMetadata(record)
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Scene evidence", systemImage: "photo.on.rectangle").font(.headline).accessibilityAddTraits(.isHeader)
+            ForEach(Array(lab.imageRecords.suffix(4).enumerated()), id: \.offset) { _, frame in
+                evidenceFrame(frame)
+            }
+            if !lab.sceneRecords.isEmpty {
+                DisclosureGroup("Scene details") {
+                    ForEach(Array(lab.sceneRecords.suffix(4).enumerated()), id: \.offset) { _, record in
+                        evidenceMetadata(record).padding(.top, 8)
+                    }
                 }
-            }.padding(.top, 10).frame(maxWidth: .infinity, alignment: .leading)
-        } label: { Label("Scene evidence", systemImage: "photo.on.rectangle").font(.headline).frame(minHeight: 44) }
-        .padding(20).card()
+            }
+        }.padding(20).card()
+    }
+
+    private func evidenceFrame(_ frame: JSONValue) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let id = frame["evidence_id"]?.string, let path = frame["artifact_url"]?.string {
+                EvidenceImage(client: client, id: id, path: path, scope: client.evidenceScope)
+            } else {
+                Text("Scene image unavailable").font(.footnote).foregroundStyle(.secondary)
+            }
+            evidenceMetadata(frame)
+        }
     }
 
     private func evidenceMetadata(_ record: JSONValue) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             if let title = RecordPresentation.text(record, "description", "summary", "text") { Text(title) }
             Text(RecordPresentation.provenance(record)).font(.caption.bold()).foregroundStyle(LabStyle.teal)
-            metadata("Capture timestamp", RecordPresentation.text(record, "captured_at", "capture_timestamp"))
+            metadata("Captured", captureTime(record))
             metadata("Clock", RecordPresentation.text(record, "capture_clock", "clock"))
             metadata("Camera", RecordPresentation.text(record, "camera_id"))
-            metadata("Evidence ID", RecordPresentation.text(record, "evidence_id", "frame_id"))
-            metadata("SHA-256", RecordPresentation.text(record, "sha256"))
             if case let .bool(fresh) = record["fresh"] { metadata("Freshness", fresh ? "Fresh" : "Stale") }
             metadata("Coordinate frame", RecordPresentation.text(record, "coordinate_frame"))
             metadata("Uncertainty", RecordPresentation.text(record, "uncertainty"))
-            let labels = strings(record["verified_labels"])
+            let labels = RecordPresentation.strings(record["verified_labels"])
             if !labels.isEmpty { metadata("Verified labels", labels.joined(separator: ", ")) }
             ForEach(Array(RecordPresentation.records(record["detections"]).suffix(8).enumerated()), id: \.offset) { _, detection in
                 metadata("Detection", RecordPresentation.text(detection, "label", "class_name"))
@@ -285,6 +320,14 @@ struct VoiceScreen: View {
                 metadata("Uncertainty", RecordPresentation.text(detection, "uncertainty"))
             }
         }
+    }
+
+    private func captureTime(_ record: JSONValue) -> String? {
+        let timestamp = record["captured_at"] ?? record["capture_timestamp"]
+        if let seconds = timestamp?.numericValue, seconds.isFinite, (0...253402300799).contains(seconds) {
+            return Date(timeIntervalSince1970: seconds).formatted(date: .abbreviated, time: .standard)
+        }
+        return timestamp?.scalarText
     }
 
     private func execution(_ lab: LabSnapshot) -> some View {
@@ -306,8 +349,6 @@ struct VoiceScreen: View {
             ForEach(Array(lab.outcomeRecords.suffix(4).enumerated()), id: \.offset) { _, outcome in
                 evidenceMetadata(outcome)
                 metadata("Observer status", RecordPresentation.status(outcome))
-                let ids = strings(outcome["evidence_ids"])
-                if !ids.isEmpty { metadata("Evidence", ids.joined(separator: ", ")) }
             }
         }.padding(20).card()
     }
@@ -317,18 +358,17 @@ struct VoiceScreen: View {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(lab.skillRecords.suffix(8).enumerated()), id: \.offset) { _, skill in
                     VStack(alignment: .leading, spacing: 4) {
-                        if let name = RecordPresentation.text(skill, "name", "title", "skill_id", "id") { Text(name).fontWeight(.medium) }
+                        if let name = RecordPresentation.text(skill, "name", "title", "intent") { Text(name).fontWeight(.medium) }
                         metadata("Status", RecordPresentation.status(skill))
-                        metadata("Version", RecordPresentation.text(skill, "version", "skill_version"))
-                        if let intent = RecordPresentation.text(skill, "intent") { Text(intent).font(.subheadline) }
                     }
                 }
                 ForEach(Array(lab.evaluationRecords.suffix(4).enumerated()), id: \.offset) { _, evaluation in
                     let decision = evaluation["decision"] ?? evaluation
-                    metadata("Evaluated skill", RecordPresentation.text(evaluation, "skill_id"))
-                    metadata("Evaluated version", RecordPresentation.text(evaluation, "skill_version"))
                     metadata("Decision", RecordPresentation.text(decision, "decision", "status", "outcome"))
-                    let reasons = strings(decision["reasons"])
+                    let receipt = evaluation["receipt"] ?? evaluation
+                    metadata("Baseline cases recovered", RecordPresentation.text(receipt, "baseline_recovered"))
+                    metadata("Candidate cases recovered", RecordPresentation.text(receipt, "candidate_recovered"))
+                    let reasons = RecordPresentation.strings(receipt["reasons"])
                     if !reasons.isEmpty { metadata("Reasons", reasons.joined(separator: " ")) }
                 }
             }.padding(.top, 10).frame(maxWidth: .infinity, alignment: .leading)
@@ -343,39 +383,52 @@ struct VoiceScreen: View {
         }
     }
 
-    private func strings(_ value: JSONValue?) -> [String] {
-        if case let .array(values) = value { return values.compactMap(\.string) }
-        return []
-    }
-
     private func evidence(_ lab: LabSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 18) {
-            Label("Observations", systemImage: "sparkle.magnifyingglass").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+            Label("Independent observations", systemImage: "sparkle.magnifyingglass").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
             ForEach(lab.observations.suffix(3)) { observation in
                 VStack(alignment: .leading, spacing: 8) {
                     Text(observation.provenance)
                         .font(.caption.bold()).foregroundStyle(LabStyle.teal)
                     Text(observation.text).textSelection(.enabled)
                     metadata("Source", observation.source)
-                    let ids = observation.evidence.compactMap { $0.string ?? $0["evidence_id"]?.string }
-                    if !ids.isEmpty {
-                        metadata("Evidence", ids.joined(separator: ", "))
+                    if let status = observation.status { metadata("Observer status", status.capitalized) }
+                    if observation.checks?.failedChecks == true { metadata("Outcome checks", "One or more checks failed") }
+                    ForEach(Array(observation.images.suffix(2).enumerated()), id: \.offset) { _, frame in
+                        evidenceFrame(frame)
                     }
                 }.padding(.vertical, 4)
             }
-            if lab.experiment.id == "red_cabbage_ph" {
+            if lab.experiment.id == "red_cabbage_ph", ["reflecting", "complete", "stopped"].contains(lab.trial.state),
+               lab.observations.contains(where: { $0.trialID == lab.trial.trialID }) {
                 Divider()
-                Text("What does the evidence suggest?").font(.headline)
-                TextField("Compare the result with your prediction…", text: $reflection, axis: .vertical)
-                    .lineLimit(2...6).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
-                    .focused($focusedField, equals: .reflection).accessibilityLabel("Your reflection")
-                Button("Save reflection") { client.reflect(reflection); reflection = ""; focusedField = nil }
-                    .buttonStyle(.bordered).frame(minHeight: 44)
-                    .disabled(!client.canAct || reflection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Button("Start another trial") { client.prepare(); focusedField = nil }
-                    .buttonStyle(.bordered).frame(minHeight: 44).disabled(!client.canAct || lab.pending != nil)
+                DisclosureGroup("Optional reflection") {
+                    TextField("What did you notice?", text: $reflection, axis: .vertical)
+                        .lineLimit(2...6).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
+                        .focused($focusedField, equals: .reflection).accessibilityLabel("Your reflection")
+                    Button("Save reflection") { client.reflect(reflection); reflection = ""; focusedField = nil }
+                        .buttonStyle(.bordered).frame(minHeight: 44)
+                        .disabled(!client.canAct || reflection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
             }
         }.padding(22).card()
+    }
+
+    private var requestComposer: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            TextField("Ask a question or request an action", text: $message, axis: .vertical)
+                .lineLimit(2...5).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
+                .focused($focusedField, equals: .message).accessibilityLabel("Message OpenArms")
+            Button {
+                if client.sendText(message) { message = ""; focusedField = nil }
+            } label: {
+                Label("Send message", systemImage: "arrow.up.circle").frame(minHeight: 44)
+            }.buttonStyle(.bordered)
+                .disabled(!client.canAct || DirectLabRequest.cleanedText(message) == nil)
+            if message.trimmingCharacters(in: .whitespacesAndNewlines).unicodeScalars.count > 4000 {
+                Text("Keep the message to 4,000 characters or fewer.").font(.footnote).foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var conversation: some View {
@@ -390,13 +443,6 @@ struct VoiceScreen: View {
                 .background(entry.role == "user" ? LabStyle.purple.opacity(0.08) : Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 18))
                 .accessibilityElement(children: .combine)
             }
-            TextField("Type a question or tell me what you think…", text: $message, axis: .vertical)
-                .lineLimit(2...5).padding(14).background(.white, in: RoundedRectangle(cornerRadius: 14))
-                .focused($focusedField, equals: .message).accessibilityLabel("Message OpenArms")
-            Button { client.sendText(message); message = ""; focusedField = nil } label: {
-                Label("Send message", systemImage: "arrow.up.circle").frame(minHeight: 44)
-            }.buttonStyle(.bordered)
-                .disabled(!client.canAct || message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
     }
 
@@ -406,7 +452,8 @@ struct VoiceScreen: View {
                 if lab.notebook.isEmpty { Text("Your saved reflections and trials will appear here.").foregroundStyle(.secondary) }
                 ForEach(Array(lab.notebook.enumerated()), id: \.offset) { _, entry in
                     // Show human prose from the canonical notebook; never developer JSON.
-                    let text = entry["text"]?.string ?? entry["reflection"]?.string ?? entry["summary"]?.string
+                    let data = entry["data"] ?? entry
+                    let text = RecordPresentation.text(data, "text", "reflection", "summary")
                     if let text, !text.isEmpty { Text(text).font(.subheadline).textSelection(.enabled) }
                 }
                 ForEach(lab.observations) { observation in
@@ -433,6 +480,62 @@ struct VoiceScreen: View {
             }
         }.padding(18).background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 18))
         .accessibilityElement(children: .contain)
+    }
+}
+
+private struct EvidenceImage: View {
+    @ObservedObject var client: VoiceClient
+    let id: String
+    let path: String
+    let scope: VoiceClient.EvidenceScope?
+
+    private struct LoadKey: Hashable {
+        let id: String
+        let path: String
+        let scope: VoiceClient.EvidenceScope
+    }
+
+    private enum Result {
+        case image(UIImage)
+        case unavailable
+    }
+
+    @State private var loaded: (key: LoadKey, result: Result)?
+    private var key: LoadKey? { scope.map { LoadKey(id: id, path: path, scope: $0) } }
+
+    var body: some View {
+        Group {
+            if let key {
+                if let loaded, loaded.key == key {
+                    switch loaded.result {
+                    case let .image(image):
+                        Image(uiImage: image).resizable().scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: 260)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .accessibilityLabel("Captured scene image")
+                    case .unavailable:
+                        Text("Scene image unavailable").font(.footnote).foregroundStyle(.secondary)
+                    }
+                } else {
+                    ProgressView("Loading scene image").controlSize(.small)
+                }
+            } else {
+                Text("Connect to view the scene image").font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .task(id: key) { [key] in
+            loaded = nil
+            guard let key else { return }
+            do {
+                let image = try await client.loadEvidenceImage(id: key.id, path: key.path, scope: key.scope)
+                try Task.checkCancellation()
+                guard client.evidenceScope == key.scope else { return }
+                loaded = (key, .image(image))
+            } catch {
+                guard !Task.isCancelled, client.evidenceScope == key.scope else { return }
+                loaded = (key, .unavailable)
+            }
+        }
     }
 }
 
