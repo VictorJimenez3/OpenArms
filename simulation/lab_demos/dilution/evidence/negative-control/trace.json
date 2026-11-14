@@ -2,7 +2,7 @@
   "model": "MuJoCo SO-101 with position actuators; fixed dispenser; geometric site/button engagement; analytical liquid model",
   "elapsed_sim_s": 20.008,
   "captured_fps": 30,
-  "playback_speed": 1.0,
+  "playback_speed": 4.0,
   "policy": "deterministic quintic waypoint state machine with measured joint/site feedback",
   "events": [
     {
@@ -49,12 +49,9 @@
         "solute_final_relative_mass": 20.0,
         "mass_conserved": true,
         "button_engaged": false,
-        "actuator_state_home_error_rad": 0.00071,
-        "negative_control": {
-          "enabled": false,
-          "delivered_ml": 0.0,
-          "concentration_unchanged": true
-        }
+        "actuator_state_home_error_rad": 0.00041,
+        "action_enabled": false,
+        "disabled_action_unchanged": true
       }
     }
   ],
@@ -69,12 +66,9 @@
     "solute_final_relative_mass": 20.0,
     "mass_conserved": true,
     "button_engaged": false,
-    "actuator_state_home_error_rad": 0.00071,
-    "negative_control": {
-      "enabled": false,
-      "delivered_ml": 0.0,
-      "concentration_unchanged": true
-    }
+    "actuator_state_home_error_rad": 0.00041,
+    "action_enabled": false,
+    "disabled_action_unchanged": true
   },
   "limits": [
     "placeholder unmeasured base/fixture calibration",

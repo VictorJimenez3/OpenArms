@@ -4,7 +4,7 @@ Run from the repository root with the shared MuJoCo environment:
 
 ```bash
 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 PYTHONPATH=simulation \
-  /Users/joeroche/Documents/Codex/2026-11-14/view-x20/work/mujoco-venv/bin/python \
+  python \
   simulation/lab_demos/dilution/run.py \
   --output-dir simulation/lab_demos/dilution/evidence/final --speed 1
 ```
@@ -19,12 +19,10 @@ playback speed.
 
 Two matching 20 mL blue-dye samples begin at the same modeled concentration.
 The SO-101 position actuators follow a deterministic quintic waypoint policy:
-home, approach a fixed plunger, press, retract, and home. A measured
+folded home, approach a fixed plunger, press, retract, and folded home. A measured
 `gripperframe` site is compared with a fixed geometric engagement target during
 the press phase. The analytical dispenser supplies one 20 mL
-dose over 0.65 s of engagement (30.77 mL/s), capped at 20 mL. In this rendered
-run, the measured site remained inside the engagement threshold for about
-1.28 s and delivered the capped dose. A fixed outlet is positioned above the
+dose over 0.65 s of engagement (30.77 mL/s), capped at 20 mL. The measured site remained inside the engagement threshold long enough to deliver the capped dose. A fixed outlet is positioned above the
 treated vessel; no cup is picked up or poured.
 
 Liquid volume and color are an analytical visualization. It assumes additive
@@ -47,3 +45,5 @@ real-arm calibrated. Button engagement is a geometric site threshold, not
 contact-validated button mechanics; liquid transfer and mixing are analytical.
 This is a deterministic scripted policy, not a learned policy. The run does not
 validate collisions, flow, or an actual laboratory experiment.
+
+Integration review corrected the milliliter-to-cubic-meter conversion for liquid height, reset the IK scratch pose before runtime, and stopped the visible stream after the capped dose. The positive and disabled-action recordings were regenerated; both numerical results remain consistent.

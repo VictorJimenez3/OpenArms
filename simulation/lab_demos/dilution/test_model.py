@@ -21,3 +21,9 @@ def test_negative_control_has_no_expected_change():
     assert dose == 0
     assert amount == 20
     assert concentration == 1
+
+
+def test_visual_volume_uses_milliliters_in_meter_geometry():
+    from simulation.lab_demos.dilution.run import liquid_height_m
+    assert 0.013 < liquid_height_m(20.0) < 0.015
+    assert liquid_height_m(40.0) == 2 * liquid_height_m(20.0)

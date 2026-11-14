@@ -29,9 +29,13 @@ def dilution_result(initial_ml: float, concentration: float, added_water_ml: flo
 
 
 def dose_from_engagement(seconds: float, enabled: bool = True) -> float:
-    """A calibrated (illustrative) 20 mL/s dispenser, capped at one 20 mL dose."""
+    """An illustrative dispenser delivering 20 mL over 0.65 s, capped at one dose."""
     return min(DOSE_ML, max(0.0, seconds) * (DOSE_ML / .65)) if enabled else 0.0
 
+
+def liquid_height_m(volume_ml: float) -> float:
+    """Convert milliliters to cubic meters before computing cylindrical depth."""
+    return volume_ml * 1e-6 / (math.pi * (RADIUS * .83) ** 2)
 
 def build():
     s = mujoco.MjSpec.from_file(str(ARM_XML)); s.modelname = "so101_dilution_demo"
@@ -77,9 +81,12 @@ def build():
         if np.linalg.norm(err(res.x))>.008: raise RuntimeError(f"unreachable policy target {xyz}: residual {np.linalg.norm(err(res.x)):.3f}m")
         return res.x.copy()
     # Use an approach and press pose along vertical axis; engagement is measured at the actual site.
-    qhome=np.zeros(5)
+    home=json.loads((ROOT / "config/setups/block/poses.json").read_text())["poses"]["HOME"]
+    qhome=np.deg2rad([home[j] for j in ARM_JOINTS])
     qapproach=solve(BUTTON+np.array([0,0,.045]),qhome)
     qpress=solve(BUTTON+np.array([0,0,.006]),qapproach)
+    d.qpos[ids]=qhome; d.qvel[:]=0; d.ctrl[aids]=qhome
+    mujoco.mj_forward(m,d)
     return m,d,ids,aids,site,qhome,qapproach,qpress,lo,hi
 
 
@@ -116,19 +123,19 @@ def run(output: Path, speed: float, enabled=True):
             # Geometric button travel threshold triggers water flow; do not depend on video time.
             engaged=(name=="press" and enabled and np.linalg.norm(tip-(BUTTON+np.array([0,0,.006])))<.014)
             if engaged:
-                m.geom_rgba[m.geom("flow").id,3]=1
+                m.geom_rgba[m.geom("flow").id,3]=float(dose_from_engagement(pressed_time)<DOSE_ML)
                 if not first_press:
                     first_press=True; event_log.append({"time_s":round(simulated,3),"event":"button_engaged","site_xyz_m":np.round(tip,4).tolist()})
                 pressed_time+=dt
                 added=dose_from_engagement(pressed_time)
                 amounts[0],concentrations[0]=dilution_result(BASE_ML,INITIAL_CONC,added)
-            elif name=="press" and first_press and not any(e["event"]=="button_released" for e in event_log):
+            elif first_press and not any(e["event"]=="button_released" for e in event_log):
                 event_log.append({"time_s":round(simulated,3),"event":"button_released"})
                 m.geom_rgba[m.geom("flow").id,3]=0
             # Analytical amount is conveyed from measured engagement duration only.
             liquid_ids=[m.geom(f"liquid{i}").id for i in range(2)]
             for i,gid in enumerate(liquid_ids):
-                h=max(.002,amounts[i]/1000/(math.pi*(RADIUS*.83)**2))
+                h=max(.002,liquid_height_m(amounts[i]))
                 h=min(h,VESSEL_H*.90); m.geom_size[gid,1]=h/2; m.geom_pos[gid,2]=-VESSEL_H/2+h/2
                 c=concentrations[i]; m.geom_rgba[gid,:3]=[.025+.28*(1-c),.08+.55*(1-c),.52+.40*(1-c)]
             if tick%keep==0:
@@ -155,7 +162,8 @@ def run(output: Path, speed: float, enabled=True):
            "solute_initial_relative_mass":initial_solute,"solute_final_relative_mass":round(amounts[0]*concentrations[0],8),
            "mass_conserved":abs(amounts[0]*concentrations[0]-initial_solute)<1e-6,
            "button_engaged":first_press,"actuator_state_home_error_rad":round(float(np.linalg.norm(d.qpos[ids]-qhome)),5),
-           "negative_control":{"enabled":False,"delivered_ml":0.0,"concentration_unchanged":True}}
+           "action_enabled":enabled,
+           "disabled_action_unchanged": bool(not enabled and amounts[0]==BASE_ML and concentrations[0]==INITIAL_CONC)}
     event_log.append({"time_s":round(simulated,3),"event":"experiment_complete","result":final})
     trace={"model":"MuJoCo SO-101 with position actuators; fixed dispenser; geometric site/button engagement; analytical liquid model",
       "elapsed_sim_s":round(simulated,3),"captured_fps":FPS,"playback_speed":speed,"policy":"deterministic quintic waypoint state machine with measured joint/site feedback",

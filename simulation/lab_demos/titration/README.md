@@ -7,7 +7,7 @@ A compact, rendered SO-101 titration teaching demonstration. Two prepared sample
 From the repository root:
 
 ```sh
-OMP_NUM_THREADS=2 PYTHONPATH=simulation /Users/joeroche/Documents/Codex/2026-11-14/view-x20/work/mujoco-venv/bin/python simulation/lab_demos/titration/run.py --output-dir simulation/lab_demos/titration/evidence --speed 1
+OMP_NUM_THREADS=2 PYTHONPATH=simulation python simulation/lab_demos/titration/run.py --output-dir simulation/lab_demos/titration/evidence --speed 1
 ```
 
 `--speed` labels the playback multiplier (1 is the simulated duration); the timeline and logged chemical observations use MuJoCo simulated seconds. `--negative-control` executes the same robot motion while disabling dose delivery. `--no-render` runs the policy and writes JSON without creating a video.
