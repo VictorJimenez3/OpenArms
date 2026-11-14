@@ -75,6 +75,14 @@ class TaskLoop:
 
     def _queue_task(self, s, text, turn_id, *, improvement=None):
         self._idle(s)
+        previous = s['tasks'][-1] if s.get('tasks') else None
+        clarification = None
+        if (not improvement and previous and previous['status'] == 'needs_clarification' and
+                previous['trial_id'] == s['trial']['trial_id'] and previous['generation'] == s['generation'] and
+                not previous.get('clarification_answered')):
+            clarification = {'task_id': previous['task_id'], 'request': previous['request'],
+                             'question': previous.get('summary'), 'answer': text}
+            previous['clarification_answered'] = True
         self._invalidate(s, 'A new task replaced this proposal.')
         task_id = str(uuid.uuid4())
         task = {'task_id': task_id, 'session_id': s['session_id'], 'turn_id': turn_id,
@@ -84,7 +92,9 @@ class TaskLoop:
                 'route': None, 'plan': None, 'execution': [], 'observations': [],
                 'feedback': [], 'expert_runs': [], 'evidence': {}, 'scene': None, 'images': [],
                 'started_at': time.time(), 'dispatched_action': False,
-                'improvement': copy.deepcopy(improvement)}
+                'improvement': copy.deepcopy(improvement), 'clarification': clarification}
+        if clarification:
+            task['feedback'].append({'type': 'student_clarification', **copy.deepcopy(clarification)})
         s['tasks'].append(task)
         self._task_event(s, task, 'task_queued', status='queued')
         self._spawn(s, task, self._plan_task(s, task))
@@ -104,7 +114,8 @@ class TaskLoop:
 
     def _cancel_tasks(self, s, reason, *, target=None):
         for task in s.get('tasks', []):
-            if task['status'] in TASK_TERMINAL or (target and target not in (task['task_id'], task['request_id'])):
+            if (task['status'] in TASK_TERMINAL - {'needs_clarification'} or
+                    (target and target not in (task['task_id'], task['request_id']))):
                 continue
             task.update(status='cancelled', reason=reason)
             self._task_event(s, task, 'task_cancelled', status='cancelled', reason=reason)
@@ -341,6 +352,7 @@ class TaskLoop:
             'task_id': task['task_id'], 'session_id': s['session_id'], 'request': task['request'],
             'conversation': [{k: m[k] for k in ('role', 'text')} for m in s['messages'][-20:] if m.get('final')],
             'phase': phase, 'scene': task['scene'], 'images': task['images'],
+            'clarification': task.get('clarification'),
             'tools': [{'name': name, 'description': summary,
                        'input_schema': {'type': 'object', 'properties': properties,
                                         'required': required, 'additionalProperties': False}}
@@ -355,6 +367,8 @@ class TaskLoop:
                              'A prepared sample requires an explicit condition in its arguments. Use the requested sample '
                              'or the selected condition. Ask which sample when neither is specified. '
                              'Prediction is optional notebook context. '
+                             'If clarification is present, interpret the answer with its original request and question; '
+                             'a changed goal replaces the old goal, and all executable proposals require fresh consent. '
                              'For a repeatable supported task, author a parameterized skill_definition with useful '
                              'retrieval_examples, preconditions, independent outcome checks and explicit limitations. '
                              'Each declared parameter must be used as $parameter in step arguments and as {parameter} '

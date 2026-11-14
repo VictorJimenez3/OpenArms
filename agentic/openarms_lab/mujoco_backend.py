@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import hashlib
 import time
 import uuid
 
@@ -92,7 +93,7 @@ class MujocoBackend:
         self.scene_service.begin(sid)
         simulation = self._state['simulation']
         self._state.update(at='MUJOCO', phase='starting', armed=False)
-        simulation.update(status='running', frame_name=None, video_name=None)
+        simulation.update(status='running', frame_name=None, video_name=None, video_sha256=None)
 
         async def report(message):
             self._set_frame(simulation, message)
@@ -118,7 +119,8 @@ class MujocoBackend:
                     raise RuntimeError('MuJoCo video is missing or empty.')
                 staging.replace(folder / video_name)
                 final_state = result['state']
-                simulation.update(status='completed', video_name=video_name)
+                simulation.update(status='completed', video_name=video_name,
+                                  video_sha256=hashlib.sha256((folder / video_name).read_bytes()).hexdigest())
                 self._state.update(at='HOME', cup_station='A', cup_portions=0, receiver_portions=1)
             else:
                 reason = result['warnings'][0] if result['warnings'] else 'MuJoCo did not deliver a dose.'

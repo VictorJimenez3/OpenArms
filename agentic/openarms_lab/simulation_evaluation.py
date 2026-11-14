@@ -19,14 +19,21 @@ from .skills import compute_skill_hash
 
 
 def simulation_scope():
+    import cv2
+    import mujoco
+    import numpy
     from .mujoco_scene import CAMERA_SETUP, METHOD, SCENE
     root = Path(__file__).resolve().parents[2]
     # Version labels alone cannot carry admission across changed implementation.
     sources = ['simulation/lab_demos/ph/run.py', 'simulation/lab_demos/ph/__init__.py',
                'simulation/lab_demos/titration/run.py',
                'agentic/openarms_lab/mujoco_scene.py', 'agentic/openarms_lab/mujoco_worker.py',
-               'agentic/openarms_lab/mujoco_backend.py']
+               'agentic/openarms_lab/mujoco_backend.py',
+               'simulation/config/setups/block/poses.json']
+    sources += [str(path.relative_to(root)) for path in sorted((root / 'simulation/models/so101').rglob('*'))
+                if path.is_file() and path.suffix.lower() in {'.xml', '.stl', '.obj', '.mtl', '.png', '.jpg'}]
     identity = {'scene': SCENE, 'camera': CAMERA_SETUP, 'observer': METHOD,
+                'versions': {'mujoco': mujoco.__version__, 'numpy': numpy.__version__, 'opencv': cv2.__version__},
                 'sources': {name: hashlib.sha256((root/name).read_bytes()).hexdigest() for name in sources}}
     return 'mujoco-' + compute_skill_hash(identity)[:16]
 

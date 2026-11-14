@@ -60,6 +60,10 @@ def test_developer_uses_same_app_and_simulation_media_requires_session_grant(cli
     folder = client.app.state.lab.perception.artifact_dir / sid
     folder.mkdir(exist_ok=True)
     (folder/name).write_bytes(b'video-test-fixture')
+    import hashlib
+    lab = client.app.state.lab
+    lab._event(lab.get(sid), 'execution_result', simulation={
+        'video_name': name, 'video_sha256': hashlib.sha256(b'video-test-fixture').hexdigest()})
     state = public_state({'simulation': {'engine': 'MuJoCo', 'video_name': name,
                                         'frame_name': name[:-4]+'.png'}}, sid)
     sim = state['simulation']
@@ -67,6 +71,8 @@ def test_developer_uses_same_app_and_simulation_media_requires_session_grant(cli
     assert client.get(sim['video_url']).status_code == 401
     assert client.get(sim['video_url'], headers=other).status_code == 401
     assert client.get(sim['video_url'], headers=headers).content == b'video-test-fixture'
+    (folder/name).write_bytes(b'modified-video')
+    assert client.get(sim['video_url'], headers=headers).status_code == 409
     external = folder.parent / 'not-this-session.mp4'
     external.write_bytes(b'other-session')
     (folder/name).unlink()

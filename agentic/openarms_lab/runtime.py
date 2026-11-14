@@ -301,6 +301,13 @@ class Lab(TaskLoop):
                 self._editable(s)
                 if s['generation'] != generation:
                     raise LabError('Evaluation was revoked by STOP or reconnection; no skill was promoted.')
+                try:
+                    current_baseline = self.registry.get(skill_id)
+                except KeyError:
+                    current_baseline = None
+                if ((current_baseline or {}).get('version') != (baseline or {}).get('version') or
+                        self.registry.get(skill_id, version)['status'] != 'task_validated'):
+                    raise LabError('The active skill changed during evaluation; request a fresh comparison.')
                 decision = self.registry.record_evaluation(skill_id, version, raw)
                 self._event(s, 'skill_evaluation', skill_id=skill_id, skill_version=version,
                             decision=decision, provenance='EVALUATOR', execution_scope=self.execution_scope)
@@ -641,6 +648,11 @@ class Lab(TaskLoop):
                         self._message(s, 'assistant', 'Send a separate completed “confirm” after reviewing the current proposal.')
                     elif c:
                         self._choose(s, c)
+                        prior = s['tasks'][-1] if s['tasks'] else None
+                        if prior and prior['status'] == 'needs_clarification':
+                            task = self._queue_task(s, text, turn['turn_id'])
+                            if client_request_id:
+                                s['dedupe'][client_request_id]['task_id'] = task['task_id']
                     elif normalized in ('new trial', 'next trial', 'prepare next trial', 'start over', 'try again'):
                         self._prepare(s)
                     elif normalized.startswith('reflection '):
@@ -648,7 +660,9 @@ class Lab(TaskLoop):
                     elif (normalized.startswith('i predict ') or
                           re.fullmatch(r'(?:it (?:will|might|should) (?:be|turn) )?(?:pink|purple|blue|green|blue green|acidic|basic|neutral|near neutral)', normalized)):
                         self._predict(s, text)
-                    elif re.match(r'^(?:what|why|how|explain|tell me)\b', normalized) and re.search(
+                    elif normalized in ('thanks', 'thank you', 'okay', 'ok', 'hello', 'hi', 'great', 'got it'):
+                        self._message(s, 'assistant', 'I’m here. Tell me what you’d like to test, or ask about the current result.')
+                    elif re.match(r'^(?:what (?:is|are|does|did)|why|how (?:does|did|is|are)|explain|tell me about|can you explain)\b', normalized) and re.search(
                             r'\b(?:ph|indicator|acidic|basic|alkaline|cabbage|control|evidence|result)\b', normalized):
                         current = [o for o in s['observations'] if o.get('trial_id') == s['trial']['trial_id']]
                         self._message(s, 'assistant', science_reply(text, current))

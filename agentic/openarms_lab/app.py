@@ -247,7 +247,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.get('/api/sessions/{sid}/media/{name}')
     async def simulation_video(sid: str, name: str, request: Request):
         authorize(sid, request)
-        service().get(sid)
+        state = service().snapshot(sid)
         perception = getattr(service(), 'perception', None)
         if not re.fullmatch(r'[0-9a-f]{32}\.mp4', name) or not hasattr(perception, 'artifact_dir'):
             raise HTTPException(404, 'Simulation video is unavailable.')
@@ -255,7 +255,21 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         path = (folder / name).resolve()
         if path.parent != folder or not path.is_file():
             raise HTTPException(404, 'Simulation video is unavailable.')
-        return FileResponse(path, media_type='video/mp4')
+        expected = set()
+        def collect(value):
+            if isinstance(value, dict):
+                if value.get('video_name') == name and value.get('video_sha256'):
+                    expected.add(value['video_sha256'])
+                for nested in value.values():
+                    collect(nested)
+            elif isinstance(value, list):
+                for nested in value:
+                    collect(nested)
+        collect(state)
+        data = path.read_bytes()
+        if len(expected) != 1 or hashlib.sha256(data).hexdigest() not in expected:
+            raise HTTPException(409, 'Simulation video no longer matches its published identity.')
+        return Response(data, media_type='video/mp4')
 
     @app.post('/api/sessions/{sid}/condition')
     async def condition(sid: str, body: Condition, request: Request):
