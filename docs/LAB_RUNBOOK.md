@@ -53,6 +53,19 @@ OPENARMS_PREVIEW=mujoco OPENARMS_BACKEND=mock .venv/bin/python -m agentic.openar
 - In mock mode C is shown as the A pickup turned `OPENARMS_PREVIEW_C_OFFSET` degrees (default 5) at the shoulder, the firmware's own construction. Without the variable set, behaviour and messages are unchanged.
 - Glue: `agentic/openarms_lab/sim_preview.py`. Tests: `agentic/tests/test_lab_sim_preview.py`, `simulation/tests/test_preview.py`.
 
+## Free-form commands from the saved positions (optional)
+
+Set `OPENARMS_FREE_PLANS=1` to accept commands composed from what the pose file holds, beyond the registry's A/C to B transfer:
+
+- "move the mandarin from B to A"
+- "go to above B, then return home"
+- "go above A, open the gripper, go down to A, close the gripper, go up, return home"
+- "again" / "repeat the previous command"
+
+`agentic/openarms_lab/free_plan.py` parses the text with fixed patterns (no model call; a command that is not fully understood makes no plan) into the existing agent catalog actions `move_block`, `go_to`, `gripper` and `wait`. The existing `openarms_agent` validator decides what is allowed on the bench as the app tracks it, for example a plan must end at HOME with an empty gripper and the arm reaches a GRASP position only from the ABOVE position over it. With `OPENARMS_PREVIEW=mujoco` the same targets are simulated first.
+
+In physical mode every plan, including A to B, then runs through the firmware `PoseArm` on the connected robot, so one executor tracks the arm and object from one command to the next and the arm stays armed after a completed plan. Before each run the app checks the arm is within 5 degrees of HOME and asks the bench operator y/n in the server terminal. A STOP, a fault or a failed step still disarms until restart. `OPENARMS_SECONDS` sets the time per move for these plans (default: the runner's 1.5). Object positions are tracked from completed steps, not sensed: if someone moves the object by hand, start a new server. This path has been run against a stand-in robot in tests, not yet on the real arm.
+
 ## Configuration and verification
 
 | Variable | Default / purpose |
