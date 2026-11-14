@@ -16,7 +16,7 @@ Start with the [Devin or teammate handoff](../../../research/victor/devin-handof
 | --- | --- | --- |
 | Text and student control | Shared feature path implemented. The exact-proposal, correction and STOP checks pass on the current branch. | For new actions, extend the existing session regression tests. |
 | Robot decisions | A real Codex run changed its observation plan after an unreadable checkpoint and recovered via a second view with one motion dispatch. | Bring the same decision and safety tests to the next runnable setup. Keep current request guards bounded to demonstrated behavior. |
-| Skill admission and improvement | Cold/warm runs passed in scoped mock and indicator MuJoCo sessions. The synthetic improvement experiment also ran. | Repeat the improvement command using the new mock-scoped baseline before relying on a revised version for the next demo. |
+| Skill admission and improvement | Cold/warm runs passed in scoped mock and indicator MuJoCo sessions. The real expert's mock-scoped revision passed the stricter replay and a held-out synthetic case. | Qualify any transferred capability with independently specified expected effects on the destination setup. |
 | Speech | Existing Gemini Live bridge retained. Transport, consent and playback fixtures passed. | Run the generated-audio rehearsal when a local key is present, then a separate actual-device speech check. This can proceed independently of the simulator. |
 | Teammate simulator | The published kit preview ran with placeholder poses and a predicted result. | Integrate one runnable action once the teammate provides independent evidence and STOP support. |
 
@@ -36,7 +36,7 @@ Start with the [Devin or teammate handoff](../../../research/victor/devin-handof
 ## 3. Demonstrate decisions, learning and fast reuse
 
 - [x] Run `student_decision_rehearsal.py` with the configured expert. In the changed case, both views were obscured for the first post-action observation, then the secondary view recovered. The expert saw the unreadable receipt, inspected the secondary frame, and proposed a new observation. The both-obscured control remained unreadable.
-- [ ] Use the existing evaluation path to admit a successful expert-authored skill for that setup. Run an equivalent supported request with the active version and verify zero expert calls on a clean run. Save a small fixed set of supported, ambiguous, negated and unsupported mixed requests, with the expected routes. Keep the baseline unchanged for an improvement run. Use `improvement_rehearsal.py` and the frozen synthetic cases to compare a substantive revision from a recorded failure, such as recovering a secondary view, including a held-out case. Keep the recorded promotion or rejection and its reasons.
+- [x] Admit and reuse an expert-authored skill in the existing fixtures. An equivalent warm request used zero expert calls. In the mock-scoped improvement run, the secondary-view revision recovered 12 of 24 cases versus 9 for the original. With a held-out shift and occlusion combined, it recovered 3 of 3 versus 0 for the original. The route tests cover supported, ambiguous, negated, and unsupported requests for the existing fixture.
 - [ ] Save the run index with commit and setup revision, student inputs, tool and image IDs, final proposal version, controller and observation receipts, model calls and tokens, and failures. Record the requested model and actual identity if the provider emits it. Record acknowledgment, plan ready, human approval wait, dispatch, controller finish and first useful result separately. Report the cold/warm comparison on equivalent requests. A single run describes that run's latency.
 
 ## 4. Verify speech on the same path
@@ -51,6 +51,8 @@ Start with the [Devin or teammate handoff](../../../research/victor/devin-handof
 - [ ] Use the first measured failure or bottleneck to choose one bounded change and rerun the same cases. Keep the original results for comparison. Report a measured limitation when the candidate provides no benefit or the teammate's supplied interface cannot yet produce the required evidence.
 
 The first integration should supply a revision, operation schema and valid amount or targets, reset/ready signal, executor progress and terminal receipt, stop completion, and an observer result with evidence ID and capture time. Add the app-side registration in `contracts.py` and `app.py` once the setup is verified. Model `check_step`, `execute_step`, and `observe` after the current `MujocoBackend` and `MujocoSceneService`. Keep the existing hardware guard and scope admission to the new setup. Run the basic deterministic API test first, then the real expert, then the same cold/warm case. With a preview-only revision, preserve its canary receipt and leave the connected evaluation pending.
+
+Freeze the new setup's expected effects independently of model-authored checks. Include a readable result that fails the expected effect and a failed controller run with readable evidence. Both must fail admission. Measure one complete student pass that ends with the student asking a result question and using the answer to direct the next trial. The indicator runs establish the existing fixture behavior, so reuse their test structure where it fits.
 
 ## Definition of done
 
