@@ -9,9 +9,10 @@ receipt says passed; Slurm/process exit 139 is authoritative for the failed
 shutdown. Preserve both. Evidence is under
 `/common/users/jdr317/openarms-isaac/evidence/job-1273056`.
 
-The next configuration uses the workshop's NO-CAMERA robot and white plastic.
+The updated configuration uses the workshop's NO-CAMERA robot and white plastic.
 The external recording camera is separate from the robot. Job `1273070` was
-submitted with commit `2cb3088`; submission is not execution evidence.
+executed with commit `2cb3088` and produced the [actual updated recording](evidence/README.md).
+Its articulation observations passed; native cleanup aborted with return -6.
 `run_recording.py` now records child-process exits independently in
 `execution.json`, so a native shutdown crash cannot leave an overall passed
 receipt. Track current runtime state in
@@ -124,6 +125,13 @@ A separate, explicitly authorized host is supported without fabricating a Slurm
 identity. The default remains Slurm. `execution_context.py` requires the exact
 configured dedicated hostname and rejects Rutgers managed hosts in that mode.
 The verified IGVC machine is `igvc-NUC12DCMi9`, RTX 3060 12 GB, driver 595.99.02.
+Its isolated installation passed dependency checks, but actual scene startup
+crashes in `librtx.scenedb`. An empty-stage diagnostic reproduces this failure;
+keeping the startup stage allows construction but does not make scene setup work.
+The official immediate-cleanup option hung in a diagnostic and was terminated.
+No RTX 3060 recording has passed. This resembles upstream 5.1/595 Vulkan reports,
+including [issue 912](https://github.com/isaac-sim/IsaacSim/issues/912); the exact
+root cause is not established. A host-wide driver change requires separate approval.
 Its isolated environment is `/home/igvc/openarms-isaac-5.1`; no IGVC code, services,
 robot calibration or physical devices are changed. Installation/launch outcomes
 must be read from evidence, not inferred from this host inventory.
