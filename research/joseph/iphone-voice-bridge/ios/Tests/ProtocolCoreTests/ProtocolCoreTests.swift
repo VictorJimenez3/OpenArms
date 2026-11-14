@@ -347,7 +347,7 @@ final class ProtocolCoreTests: XCTestCase {
     private func proposalSnapshot(version: String) -> Data {
         Data("""
         {"session_id":"s","backend":"mock","revision":2,"generation":0,"connected":true,
-        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "experiment":{"id":"indicator_ph","title":"Indicator pH","question":"What changes?"},
         "trial":{"trial_id":"t1","state":"awaiting_confirmation"},"conditions":[],"prediction":"",
         "observations":[],"messages":[],"notebook":[],"state":{},
         "pending":{"request_id":"request","proposal_version":\(version),"summary":"Inspect the scene",
@@ -367,7 +367,7 @@ final class ProtocolCoreTests: XCTestCase {
                           extra: String = "") throws -> LabSnapshot {
         let base = """
         {"session_id":"\(id)","backend":"mock","revision":\(revision),"generation":\(generation),"connected":true,
-        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "experiment":{"id":"indicator_ph","title":"Indicator pH","question":"What changes?"},
         "trial":{"trial_id":"t1","state":"ready"},"conditions":[],"prediction":"",
         "observations":[],"messages":[],"notebook":[],"state":\(state)}
         """

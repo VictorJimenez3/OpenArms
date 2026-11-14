@@ -5,7 +5,7 @@
 model: rule_table
 
 substances:
-  cabbage_indicator: {kind: indicator, name: red cabbage indicator}
+  ph_indicator: {kind: indicator, name: red indicator}
   vinegar:           {kind: acid,    strength: 1, name: vinegar}
   lemon_juice:       {kind: acid,    strength: 1, name: lemon juice}
   baking_soda:       {kind: base,    strength: 1, name: baking soda solution}
@@ -35,7 +35,7 @@ observations:
 # prediction. Only substances listed under real_bench may ever be poured by
 # the real arm; everything else is simulation-only. Any combination under
 # hazards is blocked from the real arm even if each substance is allowed.
-real_bench: [cabbage_indicator, vinegar, lemon_juice, baking_soda, water]
+real_bench: [ph_indicator, vinegar, lemon_juice, baking_soda, water]
 
 hazards:
   - {mix: [bleach, ammonia], reason: bleach and ammonia release toxic chloramine gas}

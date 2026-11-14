@@ -1,17 +1,13 @@
 # OpenArms: the judging goal
 
-A student directs a real robot arm one action at a time through a responsive Gemini conversation. One narrow physical pH experiment demonstrates independence; the student chooses the steps. Optional: one short reflection at the end.
+A student directs a real robot arm one supported action at a time through responsive conversation. The student chooses the sequence; prediction and reflection are optional. The technical contribution is an image-aware expert that turns expensive successful work into tested, parameterized skills and demonstrates a measured improvement.
 
-The technical contribution is a harness that turns expensive successful reasoning into optimized, parameterized, reusable skills and tools. Prove fast reuse, then one meaningful improvement if feasible. Fixed labeled stations, taught trajectories and a hardcoded physical fallback are acceptable. New-position generalization is optional.
+The new target is the **Smartivity My First Science Kit**, with the activity to be chosen later. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the materials inventory, Victor's bench handoff, D1–D4 priorities and outstanding work. Fixed stations and taught trajectories are acceptable; physical delivery must be independently observed.
 
-[Architecture](ARCHITECTURE.md) owns D1–D4 and acceptance. [GitHub issues](https://github.com/VictorJimenez3/OpenArms/issues) own work; [interfaces](INTERFACES.md) record actual connections; [wet-lab runbook](WET_LAB.md) owns supervised bench setup. Preserve the baseline. Simulation is for preparation, not the physical judging claim.
+## Current software
 
-Smallest judging sequence: student requests a supported physical action -> Gemini acknowledges while it runs -> independent outcome -> another individual student request -> fast reuse of the tested skill -> visible experiment result. Show the cold/warm receipt and, if established, one baseline/candidate improvement. Never slow the baseline artificially to manufacture a speedup.
+Main contains one authenticated browser/iPhone session service, a configurable Codex/Claude expert, perception tools, exact proposals, deterministic execution, independent observations and evaluated skill reuse. The default expert is Codex gpt-6.1-sol medium. Gemini is withdrawn and voice is disabled pending replacement. Physical actuation is disabled.
 
-## Current software delivery
+The main architecture is conversation → expert/perception → supported skills → supervised execution → independent observations. Simulation is an optional Devpost/presentation extra, outside core acceptance. The retained simulator and synthetic fixture do not implement the new kit. `/developer` shows evidence and diagnostics; STOP never authorizes a blind physical reset.
 
-Red-cabbage indicator pH is the only student demo. Gemini Live, the Codex expert, camera tools, execution feedback and evaluated skill reuse share one session/runtime. Physical actuation is disabled for this software delivery; the selected simulator is the newer MuJoCo metered-dropper apparatus. Its analytical color model and independent rendered-image observation retain SIMULATED provenance. This does not close the physical judging milestone above.
-
-Browser and native iPhone use the same server; prediction/reflection are optional, and no lesson or experiment picker gates requests. The developer view contains simulation diagnostics. New trials preserve history, and normal simulation completion returns home. STOP never authorizes a blind physical reset.
-
-Read [the full software contract](FULL_SYSTEM_DELIVERY.md), [runbook](LAB_RUNBOOK.md), and [main consolidation ledger](MAIN_INTEGRATION.md) for current evidence and remaining gates. [Notion physical demo selection](https://app.notion.com/p/41871c9c107e816fab14f3549f6a8fd6) defines bench scope; [wet-lab procedures](WET_LAB.md) govern supervised hardware work.
+Start with the [runbook](LAB_RUNBOOK.md). Use the [delivery contract](FULL_SYSTEM_DELIVERY.md), [interfaces](INTERFACES.md), [main ledger](MAIN_INTEGRATION.md) and [GitHub issues](https://github.com/VictorJimenez3/OpenArms/issues) for coordinated work. Earlier Notion/demo selections are historical where they conflict with Joseph's kit decision.

@@ -14,7 +14,7 @@ class Parameters(FrozenModel):
     condition_id: ConditionId
     source: Literal['A'] = 'A'
     destination: Literal['C'] = 'C'
-    preparation: Literal['prepared_sample_with_red_cabbage_indicator'] = 'prepared_sample_with_red_cabbage_indicator'
+    preparation: Literal['prepared_sample_with_ph_indicator'] = 'prepared_sample_with_ph_indicator'
 
 class SkillRequest(FrozenModel):
     request_id: str = Field(pattern=UUID_PATTERN)
@@ -22,7 +22,7 @@ class SkillRequest(FrozenModel):
     trial_id: str = Field(pattern=UUID_PATTERN)
     proposal_version: int = Field(ge=1)
     generation: int = Field(ge=0)
-    skill_id: Literal['red_cabbage_ph.v1']
+    skill_id: Literal['indicator_ph.v1']
     skill_version: Literal['1.0.0']
     skill_hash: str = Field(pattern=r'^[0-9a-f]{64}$')
     prediction: str = Field(min_length=1, max_length=4000)

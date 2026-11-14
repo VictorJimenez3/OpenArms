@@ -1,6 +1,6 @@
 # Working in OpenArms
 
-- Before planning, assigning, implementing, reviewing or pushing, read [the demo architecture](docs/ARCHITECTURE.md). Read [the software delivery contract](docs/FULL_SYSTEM_DELIVERY.md) for R1–R6 and the [integration ledger](docs/MAIN_INTEGRATION.md) when merging branches. The architecture defines D1–D4: fast physical student control and responsive conversation first, optimized reusable skills and measured improvement next. pH is the demo context, not a forced lesson sequence.
+- Before planning, assigning, implementing, reviewing or pushing, read [the demo architecture](docs/ARCHITECTURE.md). Read [the software delivery contract](docs/FULL_SYSTEM_DELIVERY.md) for R1–R6 and the [integration ledger](docs/MAIN_INTEGRATION.md) when merging branches. The architecture defines D1–D4: fast physical student control and responsive conversation first, optimized reusable skills and measured improvement next. The Smartivity kit is the demo target; its activity is undecided. The retained simulation is optional Devpost/presentation material, outside the core architecture and acceptance requirements.
 - Read [current interfaces](docs/INTERFACES.md) before connecting components. Distinguish target behavior, implemented behavior and demonstrated behavior. Preserve the working physical fallback; no unsupported claims.
 - Every substantial task names D1–D4, its GitHub issue, owned files, producer/consumer dependency, baseline and acceptance evidence. Keep assignments short. No general framework or research expansion without a demonstrated demo need.
 - Keep parallel agents in isolated branches/worktrees. Use the [ownership table](README.md#where-to-start); the integrator owns shared contracts and merges. Reuse existing GitHub issues for decisions/blockers. Do not edit another active lane's files or create a competing runtime.
@@ -11,6 +11,8 @@
 - Preserve physical authorization, deterministic limits and STOP. Simulation is development evidence; do not activate hardware or candidate motions through a documentation task.
 
 Codex and Claude use this same instruction source; `CLAUDE.md` imports it. Select expert providers/models through the shared profile configuration, never by forking the task loop, tool contracts or skills. Provider-specific authentication stays local. Report requested and actual model identity, and never substitute a model silently.
+
+Where local `TODO.md` and `.openarms/` lane tooling are installed, pick one folder ticket and use that runner. Review and land or close each lane before opening another for the folder. Shared requirements and current work remain in the architecture and GitHub issues.
 
 ## Assignment format
 

@@ -136,7 +136,7 @@ def test_acid_turns_indicator_pink_and_base_turns_it_blue():
 
 
 def test_acid_then_base_fizzes_back_to_purple():
-    start = {"C": {"cabbage_indicator": 1, "vinegar": 1}}
+    start = {"C": {"ph_indicator": 1, "vinegar": 1}}
     c = receiver(liquid(add("B", "C"), contents=start), "C")
     assert c["color"] == "purple" and c["observations"] == ["fizzing"]
 
@@ -162,7 +162,7 @@ def test_simulation_only_substance_is_blocked_even_alone():
 
 
 def test_overflow_is_blocked():
-    full = {"C": {"cabbage_indicator": 1, "water": load_bench("liquid").receiver_capacity - 1}}
+    full = {"C": {"ph_indicator": 1, "water": load_bench("liquid").receiver_capacity - 1}}
     assert "overflow" in codes(liquid(add("A", "C"), contents=full))
 
 
@@ -231,7 +231,7 @@ def test_go_to_never_exceeds_the_speed_limit():
 
 def test_safety_list_is_independent_of_the_colour_model():
     cfg = load_chemistry_config()
-    assert safety_issues(cfg, {"cabbage_indicator": 1, "vinegar": 2, "baking_soda": 1}) == []
+    assert safety_issues(cfg, {"ph_indicator": 1, "vinegar": 2, "baking_soda": 1}) == []
     assert safety_issues(cfg, {"mystery": 1}) == ["mystery is not a known substance"]
     assert load_model(cfg).predict({}).label == "empty"
 

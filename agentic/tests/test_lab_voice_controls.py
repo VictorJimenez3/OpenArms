@@ -216,7 +216,7 @@ async def test_mutation_uses_completed_transcript_and_claims_turn_once(voice_lab
     assert snapshot['tasks'][0]['turn_id'] == controls.turn_id
 
 
-@pytest.mark.parametrize('text', ['Thanks!', 'Why does cabbage indicator turn pink?'])
+@pytest.mark.parametrize('text', ['Thanks!', 'Why does indicator turn pink?'])
 async def test_conversation_is_not_a_task_even_if_model_quotes_it(voice_lab, text):
     lab, sid, controls, _ = voice_lab
     controls.input(text, finished=True)

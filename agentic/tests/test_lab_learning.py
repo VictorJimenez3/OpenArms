@@ -34,9 +34,9 @@ def test_feedback_quotes_only_recorded_reference_not_student_assertion():
 
 def test_single_experiment_and_copies_are_isolated():
     assert len(CONDITIONS) == 3
-    exp = get_experiment('red_cabbage_ph')
+    exp = get_experiment('indicator_ph')
     exp['id'] = 'changed'
-    assert get_experiment('red_cabbage_ph')['id'] == 'red_cabbage_ph'
+    assert get_experiment('indicator_ph')['id'] == 'indicator_ph'
     c = condition('water')
     c['color'] = 'changed'
     assert condition('water')['color'] == 'purple'

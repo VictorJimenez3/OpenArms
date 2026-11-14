@@ -149,7 +149,7 @@ class MujocoSceneService:
                           'available_samples': list(CONDITIONS),
                           'recognition_labels': ['source', 'receiver'],
                           'object_descriptions': {'source': 'fixed metered source dropper',
-                                                  'receiver': 'stationary cabbage indicator dish'},
+                                                  'receiver': 'stationary indicator dish'},
                           'observable_features': copy.deepcopy(self.feature_schema),
                           'limitations': [*LIMITATIONS, 'Recognition is limited to the rendered fixture and two fixed views.']}}
 

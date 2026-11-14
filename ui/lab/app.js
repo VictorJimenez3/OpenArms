@@ -484,7 +484,7 @@ function renderHistory() {
   const fragment = document.createDocumentFragment();
   for (const [index, observation] of observations.entries()) {
     const entry = document.createElement('article'); entry.className = 'history-item';
-    const title = document.createElement('strong'); title.textContent = `Trial ${index + 1} · ${names[observation.condition_id] || 'Red-cabbage indicator'}`;
+    const title = document.createElement('strong'); title.textContent = `Trial ${index + 1} · ${names[observation.condition_id] || 'Indicator'}`;
     const provenance = document.createElement('span'); provenance.className = 'history-label'; provenance.textContent = observationLabel(observation);
     const result = document.createElement('p'); result.textContent = observation.text || 'No observation recorded.';
     entry.append(title, provenance, result);

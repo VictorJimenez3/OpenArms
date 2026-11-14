@@ -91,7 +91,7 @@ async def run(base, output, audible=False):
                 await ready.wait()
                 await ws.send(json.dumps({'type':'start_voice'}))
                 await wait_for(lambda: playback_count>0, 50)
-                await speak('Please test the prepared vinegar sample and check the cabbage indicator color.', 0)
+                await speak('Please test the prepared vinegar sample and check the indicator color.', 0)
                 await wait_for(lambda:bool(state.get('tasks')))
                 start_phase = state['tasks'][-1]['status']
                 before = len(transcripts)

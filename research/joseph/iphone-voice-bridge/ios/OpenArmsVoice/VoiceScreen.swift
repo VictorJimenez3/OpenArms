@@ -331,7 +331,7 @@ struct VoiceScreen: View {
             if !lab.outcomeRecords.isEmpty { outcomes(lab) }
             if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
             if !lab.executionRecords.isEmpty { execution(lab) }
-            if lab.experiment.id == "red_cabbage_ph" { trial(lab) }
+            if lab.experiment.id == "indicator_ph" { trial(lab) }
             if !lab.skillRecords.isEmpty || !lab.evaluationRecords.isEmpty { skills(lab) }
             history(lab)
         } else if client.messages.isEmpty {
@@ -599,7 +599,7 @@ struct VoiceScreen: View {
                     }
                 }.padding(.vertical, 4)
             }
-            if lab.experiment.id == "red_cabbage_ph", ["reflecting", "complete", "stopped"].contains(lab.trial.state),
+            if lab.experiment.id == "indicator_ph", ["reflecting", "complete", "stopped"].contains(lab.trial.state),
                lab.observations.contains(where: { $0.trialID == lab.trial.trialID }) {
                 Divider()
                 DisclosureGroup("Optional reflection") {

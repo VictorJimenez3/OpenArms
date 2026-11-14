@@ -60,7 +60,7 @@ class SyntheticBench:
             cv2.rectangle(image, (480, 170), (670, 360), (130, 130, 140), 3)
             cv2.rectangle(image, (484, 245), (666, 356), COLORS[self.color], -1)
             cv2.rectangle(image, (555, 185), (595, 215), MARKERS['receiver'], -1)
-            cv2.putText(image, 'C: cabbage indicator', (467, 405), cv2.FONT_HERSHEY_SIMPLEX, .55, (60, 50, 60), 1)
+            cv2.putText(image, 'C: indicator', (467, 405), cv2.FONT_HERSHEY_SIMPLEX, .55, (60, 50, 60), 1)
         occluded = self.occluded_primary if view == 'primary' else self.occluded_secondary
         if occluded:
             cv2.rectangle(image, (450, 155), (705, 365), (85, 85, 85), -1)
@@ -107,7 +107,7 @@ class SceneService:
                           'individual_pour_source_condition': world.sample_condition,
                           'recognition_labels': ['source', 'receiver'],
                           'object_descriptions': {'source': 'sample cup; station A initially',
-                                                  'receiver': 'cabbage indicator receiver at C'},
+                                                  'receiver': 'indicator receiver at C'},
                           'observable_features': self.feature_schema,
                           'limitations': ['Synthetic software fixture; no measured pH or physical geometry.']}}
 

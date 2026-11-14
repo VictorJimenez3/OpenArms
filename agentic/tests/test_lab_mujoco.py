@@ -39,7 +39,7 @@ def real_simulator():
 async def test_real_prepared_sample_render_and_independent_observation(session, real_simulator, condition, color):
     scene, backend = session
     sid = backend.session_id
-    metadata = {'scene_id': 'red_cabbage_ph_metered_dropper', 'scene_version': 1,
+    metadata = {'scene_id': 'indicator_ph_metered_dropper', 'scene_version': 2,
                 'source_revision': '16a975e', 'control_mode': 'mujoco_position_actuator_feedback'}
     assert metadata.items() <= backend.capabilities().items()
     for view in ('secondary', 'primary'):

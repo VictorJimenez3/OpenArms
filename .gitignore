@@ -9,3 +9,6 @@ __pycache__/
 .venv
 outputs/
 *.egg-info/
+
+# Application environment, separate from the physical bench environment
+.venv-lab/

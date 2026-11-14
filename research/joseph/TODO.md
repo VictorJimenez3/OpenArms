@@ -1,6 +1,6 @@
 # OpenArms research to-do
 
-Current priority: finish the [mandarin demo next steps and human to-do](mandarin-transfer-handoff.md#next-steps). The broader experiments below remain follow-up work; simulation is deferred for the current command-to-robot rehearsal.
+Current priorities are the [kit and bench handoff checklist](../../docs/ARCHITECTURE.md#kit-scope-and-bench-handoff) and replacement voice. Activity selection is deferred. The merged software evidence is indexed in [the consolidation receipts](software-consolidation-2026-11-14/README.md). The older research questions below are optional follow-up, not current blockers.
 
 ## First pass
 

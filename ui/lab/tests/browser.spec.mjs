@@ -94,7 +94,7 @@ test('complete a pH trial with text, reflection, history and a new sample',async
   await page.getByLabel('What did you learn?').fill('The pink reference supports my prediction of an acidic sample.');
   await page.getByRole('button',{name:'Save reflection'}).click();
   await expect(page.getByText('Reflection saved.',{exact:true})).toBeVisible();
-  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Why does cabbage change color?');
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Why does indicator change color?');
   await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('acid–base conditions');
   await disclose(page, 'history');

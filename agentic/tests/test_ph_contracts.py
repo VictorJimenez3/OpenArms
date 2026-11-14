@@ -9,7 +9,7 @@ from agentic.openarms_lab.skills import compute_skill_hash
 
 def canonical():
     return dict(request_id=str(uuid.uuid4()), session_id=str(uuid.uuid4()), trial_id=str(uuid.uuid4()),
-                proposal_version=1, generation=0, skill_id='red_cabbage_ph.v1', skill_version='1.0.0',
+                proposal_version=1, generation=0, skill_id='indicator_ph.v1', skill_version='1.0.0',
                 skill_hash=compute_skill_hash(PH_SKILL), prediction='Pink', parameters=Parameters(condition_id='vinegar'))
 
 @pytest.mark.parametrize('changes', [{'proposal_version': True}, {'proposal_version': '1'}, {'proposal_version': 0},

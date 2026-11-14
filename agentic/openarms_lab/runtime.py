@@ -682,7 +682,7 @@ class Lab(TaskLoop):
                     elif normalized in ('thanks', 'thank you', 'okay', 'ok', 'hello', 'hi', 'great', 'got it'):
                         self._message(s, 'assistant', 'I’m here. Tell me what you’d like to test, or ask about the current result.')
                     elif re.match(r'^(?:what (?:is|are|does|did)|why|how (?:does|did|is|are)|explain|tell me about|can you explain)\b', normalized) and re.search(
-                            r'\b(?:ph|indicator|acidic|basic|alkaline|cabbage|control|evidence|result)\b', normalized):
+                            r'\b(?:ph|indicator|acidic|basic|alkaline|control|evidence|result)\b', normalized):
                         current = [o for o in s['observations'] if o.get('trial_id') == s['trial']['trial_id']]
                         self._message(s, 'assistant', science_reply(text, current))
                     else:

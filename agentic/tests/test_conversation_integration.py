@@ -36,7 +36,7 @@ async def test_thanks_is_conversation_and_how_about_starts_real_task(tmp_path):
         for text in ('Thanks', 'Hello', 'Okay'):
             await lab.converse(sid, text)
         assert lab.get(sid)['tasks'] == [] and expert.contexts == []
-        await lab.converse(sid, 'How about testing a prepared sample with cabbage indicator?')
+        await lab.converse(sid, 'How about testing a prepared sample with indicator?')
         first = lab.get(sid)['tasks'][-1]
         await asyncio.wait_for(asyncio.shield(lab.workers[first['task_id']]), 5)
         assert first['status'] == 'needs_clarification'

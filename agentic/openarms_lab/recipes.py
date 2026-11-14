@@ -8,9 +8,9 @@ from pydantic import Field
 from .contracts import FrozenModel
 
 class PhSkill(FrozenModel):
-    skill_id: str = 'red_cabbage_ph.v1'
+    skill_id: str = 'indicator_ph.v1'
     version: str = '1.0.0'
-    name: str = 'Prepared red-cabbage indicator trial (MOCK)'
+    name: str = 'Prepared indicator trial (MOCK)'
     source: str = 'A'
     destination: str = 'C'
     conditions: tuple[str, ...] = ('vinegar', 'baking_soda', 'water')

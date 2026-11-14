@@ -2,23 +2,23 @@
 
 [Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
 
-The student app targets continuous voice on Mac and iPhone. Red-cabbage indicator pH is the student demonstration. **Voice is currently disabled:** Joseph withdrew Gemini, and its replacement is not qualified yet. Text, the shared session, STOP and simulation remain available. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
+The student app targets continuous voice on Mac and iPhone. The Smartivity kit is the new target, with activity selection deferred. The retained indicator-pH simulation is optional Devpost/presentation material, not the main architecture or a required demo. **Voice is currently disabled:** Joseph withdrew Gemini, and its replacement is not qualified yet. Text, the shared session, STOP and simulation remain available. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
 
 ## Start
 
-From the repository root, use Python 3.12 and the project virtual environment:
+From the repository root, use Python 3.12 and the dedicated application environment (leave an existing bench `.venv` intact):
 
 ```sh
-uv venv --python 3.12 .venv  # only if it does not exist
-uv pip install --python .venv/bin/python -r agentic/requirements-lab.txt -e 'simulation[dev]'
-OPENARMS_EXECUTION=mujoco PORT=8010 .venv/bin/python -m agentic.openarms_lab
+uv venv --python 3.12 .venv-lab  # only if it does not exist
+uv pip install --python .venv-lab/bin/python -r agentic/requirements-lab.txt -e 'simulation[dev]'
+OPENARMS_EXECUTION=mock PORT=8010 .venv-lab/bin/python -m agentic.openarms_lab
 ```
 
 Authenticate the chosen expert independently; see [model profiles and switching](EXPERT_MODELS.md). The default needs the `codex` CLI on PATH. Legacy Google keys do not enable voice in the application. Never copy credentials into evidence or Git.
 
 Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same session with the simulator, actual expert/tool trace, observations and skill evaluations. Both views use the same bearer grant and voice connection. A phone needs a reachable configured HTTPS endpoint; localhost refers to the phone itself. Browser microphone access requires localhost or HTTPS.
 
-`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression. `mujoco` runs the updated lab apparatus, selected explicitly; failure never falls back to mock. The older `openarms_sim.Player` preview is historical and is not the current student simulator. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
+`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression; it does not implement the undecided kit activity. `mujoco` runs the updated lab apparatus, selected explicitly; failure never falls back to mock. The older `openarms_sim.Player` preview is historical and is not the current student simulator. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
 
 ## Which processes to run
 
@@ -35,9 +35,11 @@ For another device, serve the app through a trusted HTTPS endpoint reaching the 
 
 Stop the application with Ctrl-C. The server cancels active work; reopening a session restores history but never replays execution or consent. Use a fresh `OPENARMS_DATA_DIR` for an isolated rehearsal rather than deleting someone else’s notebook.
 
-## Demonstrate
+## Optional simulation for Devpost or a presentation
 
-1. Open **Type instead** and request, “Please test the prepared vinegar sample and check the cabbage indicator color.” Talk reports the pending voice replacement.
+This is separate from core product acceptance. To use the retained MuJoCo example, restart the server with `OPENARMS_EXECUTION=mujoco` in the command above. Its fixed-dispenser layout and indicator rules do not describe the new kit.
+
+1. Open **Type instead** and request, “Please test the prepared vinegar sample and check the indicator color.” Talk reports the pending voice replacement.
 2. Follow progress while the expert examines the scene. The session remains connected while planning runs; continuous spoken follow-up remains an unmet acceptance check.
 3. Review the exact server proposal and use its confirmation button. Bare typed confirmation does not authorize execution.
 4. Watch the new apparatus execute in `/developer`. The observer reads a fresh rendered image, and the session displays the observed simulated color.
@@ -52,7 +54,7 @@ Exact proposal presentation precedes fresh confirmation. Corrections, changed pl
 
 Images have timestamps, immutable hashes and session-scoped URLs. The developer view identifies the scene, source revision and controller. Its MP4 is generated by the confirmed execution. The observer processes pixels separately from executor completion; unreadable evidence remains UNKNOWN. SIMULATED, SYNTHETIC, recorded physical evidence and analytical predictions are distinct.
 
-Skill admission combines the frozen synthetic robustness suite with actual MuJoCo runs for every declared parameter combination. The demonstrated occlusion improvement is measured in the synthetic suite; clear-view MuJoCo admission is separate evidence. A new simulator version requires fresh admission. This does not qualify a skill for the physical arm.
+Skill admission combines the frozen synthetic robustness suite with actual MuJoCo runs for every declared parameter combination. The demonstrated occlusion improvement is measured in the synthetic suite; clear-view MuJoCo admission is separate evidence. A new simulator version requires fresh admission. The neutral indicator identifiers in scene version 2 make earlier sessions read-only; retain their original evidence and start a new session/data directory for this baseline. Kit activity support remains unimplemented. This does not qualify a skill for the physical arm.
 
 ## Configuration
 
@@ -72,8 +74,8 @@ Skill admission combines the frozen synthetic robustness suite with actual MuJoC
 ## Verify
 
 ```sh
-PYTHONPATH=agentic:simulation:. .venv/bin/python -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q
-PYTHONPATH=agentic:simulation:. .venv/bin/python agentic/scripts/full_loop_rehearsal.py --execution mujoco --out /absolute/new-evidence-directory
+PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q
+PYTHONPATH=agentic:simulation:. .venv-lab/bin/python agentic/scripts/full_loop_rehearsal.py --execution mujoco --out /absolute/new-evidence-directory
 cd ui/lab/tests
 npm ci
 OPENARMS_FIXTURE_PORT=8774 npm test

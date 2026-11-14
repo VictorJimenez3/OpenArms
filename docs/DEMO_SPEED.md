@@ -13,7 +13,7 @@ Receipts are retained locally under the software-integration worktree's ignored 
 
 ## Immediate assignment
 
-Existing runtime/voice integrator, [issue #19](https://github.com/VictorJimenez3/OpenArms/issues/19): qualify completed confirmation -> exactly one executor dispatch, and timestamp through first motion while Gemini remains responsive. Preserve STOP, existing authorization, correction/staleness and the working fallback. Reuse the active overhaul repair rather than creating another runtime. Finish with actual-device and supervised physical evidence through [#12](https://github.com/VictorJimenez3/OpenArms/issues/12).
+Existing runtime/voice integrator, [issue #19](https://github.com/VictorJimenez3/OpenArms/issues/19): qualify completed confirmation -> exactly one executor dispatch, and timestamp through first motion while the replacement voice agent remains responsive. Preserve STOP, existing authorization, correction/staleness and the working fallback. Reuse the active overhaul repair rather than creating another runtime. Finish with actual-device and supervised physical evidence through [#12](https://github.com/VictorJimenez3/OpenArms/issues/12).
 
 ## Smallest P1 experiment
 

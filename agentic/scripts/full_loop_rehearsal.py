@@ -64,7 +64,7 @@ async def main():
     sid = (await lab.create())['session_id']
     try:
         began = time.perf_counter()
-        await lab.converse(sid, 'Please test the prepared vinegar sample and check the cabbage indicator color.', 'cold-request')
+        await lab.converse(sid, 'Please test the prepared vinegar sample and check the indicator color.', 'cold-request')
         cold = await settle(lab, sid, approve=True)
         (args.out/'cold.json').write_text(json.dumps(cold, indent=2))
         task = cold['tasks'][-1]

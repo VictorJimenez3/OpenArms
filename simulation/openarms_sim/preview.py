@@ -76,7 +76,7 @@ def preview(
 
     objects   where loose objects start, e.g. {"block": "B"}; default is bench.yaml.
     contents  what each container holds at the start (liquid setup),
-              e.g. {"C": {"cabbage_indicator": 1, "vinegar": 1}}.
+              e.g. {"C": {"ph_indicator": 1, "vinegar": 1}}.
     setup     "block" or "liquid"; default is the active setup.
     poses     overrides the setup's poses.json (used by the tests); skips the cache.
     """

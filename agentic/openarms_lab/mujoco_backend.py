@@ -54,7 +54,7 @@ class MujocoBackend:
 
     @staticmethod
     def capabilities():
-        return {'experiment_id': 'red_cabbage_ph', 'conditions': list(CONDITIONS),
+        return {'experiment_id': 'indicator_ph', 'conditions': list(CONDITIONS),
                 'routes': [['A', 'C']], 'mock_execution': False, 'physical_execution': False,
                 'simulation_execution': True, 'supported_operations': [OPERATION], **SCENE,
                 'measurement': False, 'observation_provenance': 'SIMULATED',

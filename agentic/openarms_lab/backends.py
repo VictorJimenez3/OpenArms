@@ -42,7 +42,7 @@ class MockBackend:
 
     @staticmethod
     def capabilities():
-        return {'experiment_id': 'red_cabbage_ph', 'conditions': list(PH_SKILL.conditions),
+        return {'experiment_id': 'indicator_ph', 'conditions': list(PH_SKILL.conditions),
                 'routes': [['A', 'C']], 'mock_execution': True, 'physical_execution': False,
                 'measurement': False, 'observation_provenance': 'independent_or_unknown',
                 'limitations': PH_SKILL.limitations}
