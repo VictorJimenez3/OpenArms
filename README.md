@@ -10,14 +10,7 @@ Mandarin transfer is historical hardware evidence, not a student experiment. A s
 
 ## Where to start
 
-Start in your own Git worktree and task branch. The table lists provisional contacts. Agree on the specific paths when a task spans areas.
-
-| Code | First contact | Research |
-| --- | --- | --- |
-| [`firmware/`](firmware/) | Joseph | [`research/joseph/`](research/joseph/) |
-| [`simulation/`](simulation/) | Stefanie | [`research/stefanie/`](research/stefanie/) |
-| [`agentic/`](agentic/) | Duc | [`research/duc/`](research/duc/) |
-| [`ui/`](ui/) | Victor | [`research/victor/`](research/victor/) |
+Start in your own Git worktree and task branch. Check the [ownership table](AGENTS.md#ownership) before editing and use the [team work plan](docs/TEAM_WORK_PLAN.md) for current handoffs. Victor handles changes to `main`.
 
 Save findings and evidence using the [research guide](research/README.md). Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
 
