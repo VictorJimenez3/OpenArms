@@ -18,6 +18,8 @@ parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--seconds', type=float, default=8)
 parser.add_argument('--task', choices=['articulation','vial','cube'], default='articulation')
 parser.add_argument('--request-id', default=None)
+parser.add_argument('--startup-stage', choices=['new', 'existing'], default='new')
+parser.add_argument('--cleanup', choices=['full', 'immediate'], default='full')
 args = parser.parse_args()
 if not math.isfinite(args.seconds) or args.seconds <= 0:
     parser.error('--seconds must be positive and finite')
@@ -71,8 +73,12 @@ try:
     ], text=True)
     save()
     from isaacsim import SimulationApp
-    app = SimulationApp({'headless': True, 'width': 960, 'height': 720,
-                         'renderer': 'RayTracedLighting', 'multi_gpu': False})
+    receipt['launcher_config'] = {'headless': True, 'width': 960, 'height': 720,
+                                 'renderer': 'RayTracedLighting', 'multi_gpu': False,
+                                 'create_new_stage': args.startup_stage == 'new'}
+    receipt['cleanup_mode'] = args.cleanup
+    save()
+    app = SimulationApp(receipt['launcher_config'])
     receipt['isaac_app_created'] = True
     save()
     # Simulation modules must be imported after the application starts.
@@ -209,7 +215,7 @@ finally:
                         for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
     save()
     if app is not None:
-        app.close()
+        app.close(skip_cleanup=args.cleanup == 'immediate')
     receipt['shutdown_status'] = 'completed'
     receipt['status'] = receipt['observation_status']
     save()
