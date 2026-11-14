@@ -1,0 +1,378 @@
+{
+  "schema": "openarms.historical-bench-evidence.v1",
+  "run_id": "mandarin-assisted-c-to-b-2026-11-14",
+  "outcome": "physical mandarin picked up, carried, and released at B on the red card",
+  "source_chat": {
+    "title": "Adapt OpenArms transfer for C\u2192B",
+    "thread_id": "01a1d984-d10e-7d42-b1cf-f19ce1ef574a",
+    "successful_turn_started": "2026-11-14T06:07:49-05:00",
+    "successful_turn_completed": "2026-11-14T06:13:33-05:00"
+  },
+  "time_note": "Turn bounds are from chat metadata; source_file_mtime fields are preserved filesystem metadata, not sensor capture timestamps. Stage stdout has no wall-clock timestamps. Teaching t values are monotonic seconds.",
+  "repository_base_reported_in_original_notes": "1e686a5679da3a61f1bd2a70f1eaf7f320729781",
+  "runtime_code_note": "Local edits and staged commands preceded commits. The base commit alone is not a frozen runtime snapshot. The archived final helper and selected execution records establish the actual pose loader.",
+  "pose_input": "poses/bench-a.json",
+  "pose_input_original": "outputs/mandarin-bench/bench-a.json",
+  "evidence_scope": "One successful supervised, camera-assisted staged C-to-B trial. No independently taught C pickup. Automatic localization, repeated success, packaged one-command replay, phone-to-physical transfer and wet-lab pouring are not established by this bundle.",
+  "source_roots": {
+    "original_checkout": "MacBook OpenArms checkout",
+    "original_chat": "MacBook chat workspace for Adapt OpenArms transfer for C\u2192B"
+  },
+  "files": [
+    {
+      "path": "poses/bench-a.json",
+      "sha256": "ca62cb56aa82a1eeda319a9642716f3a2866fc1527df6c9020ee7b57ff138e6b",
+      "bytes": 1313,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/bench-a.json",
+      "source_sha256": "ca62cb56aa82a1eeda319a9642716f3a2866fc1527df6c9020ee7b57ff138e6b",
+      "source_bytes": 1313,
+      "source_file_mtime": "2026-11-14T05:49:04.532033-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "poses/current-home.json",
+      "sha256": "54cebfd638577917697f804f10d81d3dca77c6196c0af9d9d5e19db045d6de04",
+      "bytes": 1331,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/current-home.json",
+      "source_sha256": "54cebfd638577917697f804f10d81d3dca77c6196c0af9d9d5e19db045d6de04",
+      "source_bytes": 1331,
+      "source_file_mtime": "2026-11-14T05:29:52.252762-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "poses/grasp-a-correction.json",
+      "sha256": "c9692cce219fc5bd1b7aa6627f19953aff43d1e102405933bc4aafb382859318",
+      "bytes": 1128,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/grasp-a-correction.json",
+      "source_sha256": "c9692cce219fc5bd1b7aa6627f19953aff43d1e102405933bc4aafb382859318",
+      "source_bytes": 1128,
+      "source_file_mtime": "2026-11-14T05:46:39.406318-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "poses/above-b-correction.json",
+      "sha256": "6a4fc4cf04d892c08c3f0133bbd294b9d0339474af64a2961fb8fee258a567ad",
+      "bytes": 1112,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/above-b-correction.json",
+      "source_sha256": "6a4fc4cf04d892c08c3f0133bbd294b9d0339474af64a2961fb8fee258a567ad",
+      "source_bytes": 1112,
+      "source_file_mtime": "2026-11-14T05:47:43.596118-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "poses/poses.repository-baseline.json",
+      "sha256": "11b6cfc7b22c118df58166342aff2818b82d453a69b0077388a741411acdb902",
+      "bytes": 1334,
+      "source_root": "original_checkout",
+      "source_path": "firmware/openarms_executor/poses.json",
+      "source_sha256": "11b6cfc7b22c118df58166342aff2818b82d453a69b0077388a741411acdb902",
+      "source_bytes": 1334,
+      "source_file_mtime": "2026-11-14T05:06:51.246567-05:00",
+      "encoding": "unchanged original bytes",
+      "note": "Matches tracked poses.json at 1e686a5; not the final successful transfer input."
+    },
+    {
+      "path": "teaching/demo-A-0r3xmggo.jsonl.gz",
+      "sha256": "e3e0c5d4eb5e937b8e7b4fdc55c0c46443f7485d227b8305264d22db94772436",
+      "bytes": 178022,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/demo-A-0r3xmggo.jsonl",
+      "source_sha256": "4d656a23fb82cd37c560fe763232bdf6cabf6be0abbfaa08d8574d51bca2456b",
+      "source_bytes": 8136975,
+      "source_file_mtime": "2026-11-14T05:48:53.255919-05:00",
+      "encoding": "gzip of original bytes"
+    },
+    {
+      "path": "teaching/demo-C-s4ergxp_.jsonl.gz",
+      "sha256": "1e9553045a8db125311e9e8b97d50ec2b377e7f17ac9272b0116bf71d4846b0a",
+      "bytes": 2673,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/demo-C-s4ergxp_.jsonl",
+      "source_sha256": "6b1bc459b58e3a559bfcfd9ade3ff68fd8d58c5533ae9166df1ee54e8a139eb5",
+      "source_bytes": 205708,
+      "source_file_mtime": "2026-11-14T05:53:35.349653-05:00",
+      "encoding": "gzip of original bytes"
+    },
+    {
+      "path": "receipts/empty-A-trial.jsonl",
+      "sha256": "f725ef4def2c25a73af7ee5c529bad6efd95081db49696f1cf06eb3dc3c4efa5",
+      "bytes": 2208,
+      "source_root": "original_chat",
+      "source_path": "outputs/empty-A-trial.jsonl",
+      "source_sha256": "f725ef4def2c25a73af7ee5c529bad6efd95081db49696f1cf06eb3dc3c4efa5",
+      "source_bytes": 2208,
+      "source_file_mtime": "2026-11-14T05:38:49.245834-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/empty-A-captured-trial.jsonl",
+      "sha256": "3a4afb9fd9fa0c66b0e6535ac46c3939487a84022795c07a0a2cac4c2a6657fe",
+      "bytes": 3318,
+      "source_root": "original_chat",
+      "source_path": "outputs/empty-A-captured-trial.jsonl",
+      "source_sha256": "3a4afb9fd9fa0c66b0e6535ac46c3939487a84022795c07a0a2cac4c2a6657fe",
+      "source_bytes": 3318,
+      "source_file_mtime": "2026-11-14T05:51:29.791762-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/loaded-A-captured-trial.jsonl",
+      "sha256": "822041cc0da5a3b8d7cf2d3de2d7317c49bb7b63fa14dfb348c08b3ffefed441",
+      "bytes": 3317,
+      "source_root": "original_chat",
+      "source_path": "outputs/loaded-A-captured-trial.jsonl",
+      "source_sha256": "822041cc0da5a3b8d7cf2d3de2d7317c49bb7b63fa14dfb348c08b3ffefed441",
+      "source_bytes": 3317,
+      "source_file_mtime": "2026-11-14T05:53:04.008313-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/C-to-B-motion.json",
+      "sha256": "42a764d006ff5f273fdcebf004a4b110c952a23beafa70f61ef547c597404bd9",
+      "bytes": 7867,
+      "source_root": "original_chat",
+      "source_path": "outputs/C-to-B-motion.json",
+      "source_sha256": "42a764d006ff5f273fdcebf004a4b110c952a23beafa70f61ef547c597404bd9",
+      "source_bytes": 7867,
+      "source_file_mtime": "2026-11-14T06:13:23.528648-05:00",
+      "encoding": "unchanged original bytes",
+      "note": "Assembled after the run from stage stdout and the recorded exception; not a continuous sensor trace."
+    },
+    {
+      "path": "receipts/assisted-grip-check.json",
+      "sha256": "0016e8892d19df1c6e3b751557550decfc03c98c2c1663fd6fc4638a614115fd",
+      "bytes": 622,
+      "source_root": "original_checkout",
+      "source_path": "outputs/mandarin-bench/assisted-grip-check.json",
+      "source_sha256": "0016e8892d19df1c6e3b751557550decfc03c98c2c1663fd6fc4638a614115fd",
+      "source_bytes": 622,
+      "source_file_mtime": "2026-11-14T06:06:56.637092-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/stages/hover-stage.json",
+      "sha256": "a7260caceb5e9a020d5264cc89e92f35c9592763e5542acaf35cb0b605132bc0",
+      "bytes": 743,
+      "source_root": "original_chat",
+      "source_path": "work/hover-stage.json",
+      "source_sha256": "a7260caceb5e9a020d5264cc89e92f35c9592763e5542acaf35cb0b605132bc0",
+      "source_bytes": 743,
+      "source_file_mtime": "2026-11-14T06:09:06.249022-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/stages/probe-pan.json",
+      "sha256": "1c4e7c31fbceb62a9b66cbe7c836ac0a7a7016b9eb44f6e4e9e3dd8bea67ac53",
+      "bytes": 745,
+      "source_root": "original_chat",
+      "source_path": "work/probe-pan.json",
+      "source_sha256": "1c4e7c31fbceb62a9b66cbe7c836ac0a7a7016b9eb44f6e4e9e3dd8bea67ac53",
+      "source_bytes": 745,
+      "source_file_mtime": "2026-11-14T06:09:42.577083-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/stages/grasp-pan5.json",
+      "sha256": "d46879582fee4ee8f9d23d0df8d647e7ee799ab8b70b1efb6281a580e11c4501",
+      "bytes": 739,
+      "source_root": "original_chat",
+      "source_path": "work/grasp-pan5.json",
+      "source_sha256": "d46879582fee4ee8f9d23d0df8d647e7ee799ab8b70b1efb6281a580e11c4501",
+      "source_bytes": 739,
+      "source_file_mtime": "2026-11-14T06:10:17.865442-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/stages/lift-pan5.json",
+      "sha256": "6cbcffe9156e0a74a5ec4fe5c1959e6f0d9b49fab3c6966f80419a3c9c3df095",
+      "bytes": 774,
+      "source_root": "original_chat",
+      "source_path": "work/lift-pan5.json",
+      "source_sha256": "6cbcffe9156e0a74a5ec4fe5c1959e6f0d9b49fab3c6966f80419a3c9c3df095",
+      "source_bytes": 774,
+      "source_file_mtime": "2026-11-14T06:10:44.679716-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/stages/raise-pan5.json.empty",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source_root": "original_chat",
+      "source_path": "work/raise-pan5.json",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_bytes": 0,
+      "source_file_mtime": "2026-11-14T06:11:32.596382-05:00",
+      "encoding": "unchanged original bytes",
+      "note": "Original zero-byte stdout: process raised before serializing a result. See raise-error.txt."
+    },
+    {
+      "path": "receipts/stages/carry-pan5.json",
+      "sha256": "5e0f712bf4c8951fd02bff21d52e55171f077f1bfde3a8a82275c1f3d2f5ceb8",
+      "bytes": 735,
+      "source_root": "original_chat",
+      "source_path": "work/carry-pan5.json",
+      "source_sha256": "5e0f712bf4c8951fd02bff21d52e55171f077f1bfde3a8a82275c1f3d2f5ceb8",
+      "source_bytes": 735,
+      "source_file_mtime": "2026-11-14T06:12:10.908341-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "receipts/stages/drop-pan5.json",
+      "sha256": "ee237ef6b38bf14a07300463dd20fb049dd53dd12f0c4ed22d102a1ae51e0097",
+      "bytes": 1334,
+      "source_root": "original_chat",
+      "source_path": "work/drop-pan5.json",
+      "source_sha256": "ee237ef6b38bf14a07300463dd20fb049dd53dd12f0c4ed22d102a1ae51e0097",
+      "source_bytes": 1334,
+      "source_file_mtime": "2026-11-14T06:12:41.549875-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/before-camera-0.jpg",
+      "sha256": "65b0a55eaea6512474c6171df06ec57220f6c404f22e1be36e23f441cca188aa",
+      "bytes": 34244,
+      "source_root": "original_chat",
+      "source_path": "work/camera/correction-before-0.jpg",
+      "source_sha256": "65b0a55eaea6512474c6171df06ec57220f6c404f22e1be36e23f441cca188aa",
+      "source_bytes": 34244,
+      "source_file_mtime": "2026-11-14T06:08:18.528771-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/before-camera-1.jpg",
+      "sha256": "7a0adad533646fbed79bbccd4fb7e0fa5aa8e2e09caca48d993c9f113c86b318",
+      "bytes": 24980,
+      "source_root": "original_chat",
+      "source_path": "work/camera/correction-before-1.jpg",
+      "source_sha256": "7a0adad533646fbed79bbccd4fb7e0fa5aa8e2e09caca48d993c9f113c86b318",
+      "source_bytes": 24980,
+      "source_file_mtime": "2026-11-14T06:08:19.978250-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/carry-camera-0.jpg",
+      "sha256": "1cb7873efa8863f8bf43a26b4237147a49bf6d40e1a193d01a0bd717097af56b",
+      "bytes": 26158,
+      "source_root": "original_chat",
+      "source_path": "work/camera/carry-pan5-0.jpg",
+      "source_sha256": "1cb7873efa8863f8bf43a26b4237147a49bf6d40e1a193d01a0bd717097af56b",
+      "source_bytes": 26158,
+      "source_file_mtime": "2026-11-14T06:12:13.425553-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/carry-camera-1.jpg",
+      "sha256": "d56a7f5d58bae45844f59448510aa71aa78549c48f86cfae98ccd262aba4a63f",
+      "bytes": 31623,
+      "source_root": "original_chat",
+      "source_path": "work/camera/carry-pan5-1.jpg",
+      "source_sha256": "d56a7f5d58bae45844f59448510aa71aa78549c48f86cfae98ccd262aba4a63f",
+      "source_bytes": 31623,
+      "source_file_mtime": "2026-11-14T06:12:15.888441-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/after-camera-0.jpg",
+      "sha256": "06ad33849332bf65ed1db5dd8cfbdd7bc3dcd48d3efe6700981cdd9ba61172f8",
+      "bytes": 32244,
+      "source_root": "original_chat",
+      "source_path": "work/camera/drop-pan5-0.jpg",
+      "source_sha256": "06ad33849332bf65ed1db5dd8cfbdd7bc3dcd48d3efe6700981cdd9ba61172f8",
+      "source_bytes": 32244,
+      "source_file_mtime": "2026-11-14T06:12:43.986693-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/after-camera-1.jpg",
+      "sha256": "e3edaae82c1a0da2735edf8c021a1455fdb4b55309db64f511ea48bbbe809626",
+      "bytes": 29689,
+      "source_root": "original_chat",
+      "source_path": "work/camera/drop-pan5-1.jpg",
+      "source_sha256": "e3edaae82c1a0da2735edf8c021a1455fdb4b55309db64f511ea48bbbe809626",
+      "source_bytes": 29689,
+      "source_file_mtime": "2026-11-14T06:12:46.510913-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/raised-check-camera-0.jpg",
+      "sha256": "d1bf43aff132b6889d39010a8dda4e2d53a6f1b673eb82f929e816d7fa778492",
+      "bytes": 31475,
+      "source_root": "original_chat",
+      "source_path": "work/camera/raised-check-0.jpg",
+      "source_sha256": "d1bf43aff132b6889d39010a8dda4e2d53a6f1b673eb82f929e816d7fa778492",
+      "source_bytes": 31475,
+      "source_file_mtime": "2026-11-14T06:11:44.786412-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "images/raised-check-camera-1.jpg",
+      "sha256": "09be50dc5e83707fa0458c258a210c7e0e0ec786a899a9bd3dc1e01c51cdbe85",
+      "bytes": 26364,
+      "source_root": "original_chat",
+      "source_path": "work/camera/raised-check-1.jpg",
+      "source_sha256": "09be50dc5e83707fa0458c258a210c7e0e0ec786a899a9bd3dc1e01c51cdbe85",
+      "source_bytes": 26364,
+      "source_file_mtime": "2026-11-14T06:11:47.340538-05:00",
+      "encoding": "unchanged original bytes"
+    },
+    {
+      "path": "historical-source/bench-position.py.txt",
+      "sha256": "eca46c9df168ea7bede85bc6dcff4f88cfbbcdbf988a6005576f30740a5a5fc8",
+      "bytes": 4690,
+      "source_root": "original_chat",
+      "source_path": "work/bench-position.py",
+      "source_sha256": "eca46c9df168ea7bede85bc6dcff4f88cfbbcdbf988a6005576f30740a5a5fc8",
+      "source_bytes": 4690,
+      "source_file_mtime": "2026-11-14T06:12:04.113558-05:00",
+      "encoding": "unchanged original bytes",
+      "note": "Final surviving local helper, edited between stages. Archived as text for inspection, not a current entry point or an exact per-stage source snapshot."
+    },
+    {
+      "path": "calibration/robots/so_follower/my_awesome_follower_arm.json",
+      "sha256": "78d0560de125e00094c1c2a102a00a862a9d6941194bf701748e620329e487c7",
+      "bytes": 913,
+      "source_root": "original_checkout",
+      "source_path": "calibration/robots/so_follower/my_awesome_follower_arm.json",
+      "source_sha256": "78d0560de125e00094c1c2a102a00a862a9d6941194bf701748e620329e487c7",
+      "source_bytes": 913,
+      "source_file_mtime": "2026-11-13T21:54:30.785801-05:00",
+      "encoding": "unchanged original bytes",
+      "note": "Current saved profile matches 1e686a5; runtime command selected this calibration directory."
+    },
+    {
+      "path": "calibration/teleoperators/so_leader/my_awesome_leader_arm.json",
+      "sha256": "8606905d654bab077886338bd5b90cc83301e782be02d13fafa3128f1b13c51d",
+      "bytes": 915,
+      "source_root": "original_checkout",
+      "source_path": "calibration/teleoperators/so_leader/my_awesome_leader_arm.json",
+      "source_sha256": "8606905d654bab077886338bd5b90cc83301e782be02d13fafa3128f1b13c51d",
+      "source_bytes": 915,
+      "source_file_mtime": "2026-11-13T21:54:30.786209-05:00",
+      "encoding": "unchanged original bytes",
+      "note": "Current saved profile matches 1e686a5; runtime command selected this calibration directory."
+    }
+  ],
+  "derived_files": [
+    {
+      "path": "receipts/stages/raise-error.txt",
+      "provenance": "Exact recorded command stderr, extracted from original chat tool output; not from the empty stage stdout.",
+      "sha256": "2f02f947076382460a97f68b65495796485cdeedcf60e856b3de1a3ea4daa52b",
+      "bytes": 670
+    },
+    {
+      "path": "historical-source/execution-excerpts.json",
+      "provenance": "Selected original chat command executions, including original exit statuses and retained output; not a full session export.",
+      "sha256": "885941e24b2da0e8b55611844da7af8d948774c772cc8cd5524fa0b93ef01912",
+      "bytes": 13505
+    }
+  ],
+  "lerobot_reference": {
+    "revision": "e0d50211ef236143ae867228662b7dfaba554f02",
+    "source": "Retained work/lerobot checkout from the original chat workspace",
+    "units": "SO101FollowerConfig.use_degrees defaults to true; gripper MotorNormMode.RANGE_0_100."
+  }
+}
