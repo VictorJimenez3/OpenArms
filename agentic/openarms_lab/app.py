@@ -53,7 +53,8 @@ def create_app(lab=None):
     @asynccontextmanager
     async def lifespan(app):
         from .sim_preview import from_env
-        app.state.lab=lab or Lab(Path(os.getenv('OPENARMS_DATA_DIR',ROOT/'outputs/lab')),previewer=from_env())
+        from .free_plan import from_env as free_from_env
+        app.state.lab=lab or Lab(Path(os.getenv('OPENARMS_DATA_DIR',ROOT/'outputs/lab')),previewer=from_env(),free_plans=free_from_env())
         yield
         await app.state.lab.shutdown()
     app=FastAPI(title='OpenArms Student Lab',lifespan=lifespan)
@@ -82,7 +83,7 @@ def create_app(lab=None):
     @app.get('/api/health')
     async def health():
         key=bool(os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'))
-        return {'backend':os.getenv('OPENARMS_BACKEND','mock'),'preview':'mujoco' if service().previewer else None,'live_configured':key,
+        return {'backend':os.getenv('OPENARMS_BACKEND','mock'),'preview':'mujoco' if service().previewer else None,'free_plans':bool(service().free),'plan_agent':bool(service().free and service().free.planner),'live_configured':key,
                 'live_model':os.getenv('GEMINI_LIVE_MODEL','gemini-3.8-live'),
                 'expert_configured':key,'expert_model':os.getenv('OPENARMS_EXPERT_MODEL','gemini-3.8-flash')}
     @app.get('/api/experiments')

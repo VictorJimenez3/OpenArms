@@ -8,6 +8,7 @@ import uuid
 from pathlib import Path
 from .backends import MockBackend, TransferRunnerAdapter
 from .contracts import Parameters, SkillRequest
+from .free_plan import SKILL as FREE_SKILL, PlanProblem, repeat_requested
 from .store import Store
 from .voice_controls import MUTATING_TOOLS
 from agentic.openarms_agent.validator import validate as validate_legacy
@@ -24,7 +25,7 @@ def normalized_words(text):
     return re.sub(r'[^a-z ]','',text.lower()).strip()
 
 class Lab:
-    def __init__(self, data_dir:Path, *, backend_factory=None, registry=None, execution_timeout=60, confirmation_ttl=120, previewer=None):
+    def __init__(self, data_dir:Path, *, backend_factory=None, registry=None, execution_timeout=60, confirmation_ttl=120, previewer=None, free_plans=None):
         from .skills import SkillRegistry
         self.store=Store(data_dir/'lab.sqlite3')
         self.registry=registry or SkillRegistry(data_dir/'skills.json')
@@ -44,6 +45,8 @@ class Lab:
         # Optional simulation preview (sim_preview.MujocoPreview): runs on every proposal, before execution.
         self.previewer=previewer
         self.preview_tasks={}
+        # Optional free-form commands built from the saved positions (free_plan.FreePlans).
+        self.free=free_plans
         self.locks={}
     def _backend(self,sid):
         if sid not in self.backends:
@@ -157,6 +160,10 @@ class Lab:
     def _validate(self,s,skill_id,params):
         if s.get('recovered'):
             raise LabError('This session was restored after a restart. Start a new session before another trial.')
+        if skill_id==FREE_SKILL:
+            if not self.free: raise LabError('Free-form plans are not enabled on this server.')
+            try: return None,self.free.validate(self._backend(s['session_id']),params['steps'])
+            except PlanProblem as exc: raise LabError(str(exc)) from exc
         try: p=Parameters.model_validate(params)
         except Exception as exc: raise LabError(f'Unsupported parameters: {exc}') from exc
         skill=self.registry.get(skill_id)
@@ -215,6 +222,16 @@ class Lab:
         self._message(s,'user',text)
         s['dedupe'][cid]={'text':text}
         if not s['connected']: s['connected']=True
+        if self.free:
+            import re
+            if repeat_requested(text):
+                if not s.get('last_instruction'):
+                    self._message(s,'assistant','There is no earlier command to repeat yet.')
+                    return await self.publish(s)
+                text=s['last_instruction']
+            else:
+                # "move it from A to B again" is the same command as without "again".
+                text=re.sub(r'\s+(?:again|once more|one more time)\s*[.!]?\s*$','',text,flags=re.I) or text
         if not s['prediction']:
             self._message(s,'assistant','What do you predict will happen, and why? Record your prediction before a trial.')
             return await self.publish(s)
@@ -237,6 +254,33 @@ class Lab:
                     'It cannot carry out the additional steps in your request. '
                     'Please revise your request; nothing has started.')}
         self._event(s,'routing',instruction=text,result=routed)
+        b=self._backend(sid)
+        if self.free and (routed['status']!='resolved' or b.mode=='physical'):
+            # Anything composed from the saved positions; on the real arm this is also how A to B runs,
+            # so one executor tracks where the arm and the object are from one command to the next.
+            obj='mandarin' if 'transfer' in s['experiment']['id'] else 'sample'
+            added,calls='',0
+            try:
+                steps=self.free.parse(text,b)
+                if not steps and routed['status']!='resolved':
+                    # Fixed patterns did not cover it: Claude proposes steps, the same validator decides.
+                    generation=s.get('generation',0)
+                    planned=await asyncio.to_thread(self.free.plan_with_agent,text,b,s.get('last_instruction'))
+                    if s.get('generation',0)!=generation or s['pending'] is not None or self._busy(s):
+                        return await self.publish(s)  # stopped or superseded while the model was thinking
+                    if planned: steps,added,calls=planned
+                v=self.free.validate(b,steps) if steps else None
+            except PlanProblem as exc:
+                self._event(s,'validation_rejected',reason=str(exc))
+                self._message(s,'assistant',str(exc))
+                return await self.publish(s)
+            if steps:
+                r={'request_id':str(uuid.uuid4()),'session_id':sid,'skill_id':FREE_SKILL,'parameters':{'steps':steps},
+                   'client_request_id':cid,'status':'requested','expires_at':time.time()+self.confirmation_ttl,
+                   'summary':self.free.summary(steps,obj)+(f' ({added})' if added else ''),'student_confirmed':False,'operator_authorized':False,
+                   'validation':v,'metrics':{'model_calls':calls,'planner':'claude' if calls else 'patterns'}}
+                s['last_instruction']=text
+                return await self._propose(s,r)
         if routed['status']!='resolved':
             self._message(s,'assistant',routed.get('message','Please name the source A or C and destination B.'))
             return await self.publish(s)
@@ -250,6 +294,10 @@ class Lab:
         r={**request.model_dump(),'client_request_id':cid,'status':'requested','expires_at':time.time()+self.confirmation_ttl,
            'summary':(f'Add the premeasured water cup at {params.source} into dye receiver {params.destination} (MOCK)' if s['experiment']['id']=='color_dilution' else f'Transfer {params.object} from {params.source} to {params.destination}'),
            'student_confirmed':False,'operator_authorized':False,'validation':v,'metrics':routed.get('metrics',{})}
+        s['last_instruction']=text
+        return await self._propose(s,r)
+    async def _propose(self,s,r):
+        sid=s['session_id']
         s['requests'].append(r)
         s['pending']=r
         self._event(s,'request_proposed',request_id=r['request_id'],request=r)
@@ -265,8 +313,13 @@ class Lab:
     async def _preview(self,s,r):
         """Simulate the proposal. Only a cleared (or unsimulatable) proposal can then be executed."""
         b=self._backend(s['session_id'])
+        free=r['skill_id']==FREE_SKILL
         try:
-            out=await asyncio.to_thread(self.previewer,b,copy.deepcopy({k:r[k] for k in ('request_id','skill_id','parameters')}))
+            req=copy.deepcopy({k:r[k] for k in ('request_id','skill_id','parameters')})
+            if free:
+                obj='mandarin' if 'transfer' in s['experiment']['id'] else 'sample'
+                req['sim']=self.free.sim_request(b,r['parameters']['steps'],obj)
+            out=await asyncio.to_thread(self.previewer,b,req)
         except Exception as exc:
             out={'status':'error','provenance':'SIMULATED','reason':f'{type(exc).__name__}: {exc}'}
         r['preview']=out
@@ -278,7 +331,9 @@ class Lab:
                 # The student gets the full window to watch the preview.
                 r['expires_at']=time.time()+self.confirmation_ttl
                 notes=len(out.get('warnings',[]))
-                self._message(s,'assistant',f"Simulation finished (SIMULATED): the {p['object']} ends at {p['destination']}"
+                moved=[f"the {o['name']} ends at {o['at']}" if o.get('at') else f"the {o['name']} is off its marks" for o in out.get('objects',[])]
+                outcome=(' and '.join(moved) or 'the plan completes') if free else f"the {p['object']} ends at {p['destination']}"
+                self._message(s,'assistant',f"Simulation finished (SIMULATED): {outcome}"
                     +(f", with {notes} note{'s' if notes!=1 else ''} to read" if notes else '')
                     +f". Watch the preview, then say or type \"execute\" to run it on the {target}, or correct or cancel it. No real motion has started.")
             elif out['status']=='blocked':
@@ -353,6 +408,7 @@ class Lab:
         if backend.mode=='physical' and self.physical_owner!=s['session_id']:
             return
         try:
+            if self.free: self.free.stop()  # the composed-plan executor shares this arm
             await backend.stop()
         except Exception as exc:
             if backend.mode=='physical':self.physical_unavailable=True
@@ -361,7 +417,10 @@ class Lab:
 
     async def _execute(self,s,r):
         sid=s['session_id'];b=self._backend(sid)
-        request=SkillRequest.model_validate({k:r[k] for k in ('request_id','session_id','skill_id','parameters')})
+        free=r['skill_id']==FREE_SKILL
+        request=None if free else SkillRequest.model_validate({k:r[k] for k in ('request_id','session_id','skill_id','parameters')})
+        # A composed plan can take longer than one fixed transfer.
+        timeout=max(self.execution_timeout,2*self.free.estimate_seconds(b,r['parameters']['steps'])+30) if free else self.execution_timeout
         async def progress(phase):
             r['phase']=phase
             self._event(s,'execution_progress',request_id=r['request_id'],phase=phase)
@@ -381,10 +440,13 @@ class Lab:
                 r['status']='awaiting_operator'
                 self._message(s,'assistant','Your request is confirmed. Waiting for the bench operator to authorize this exact action.')
                 await self.publish(s)
-                authorized=await asyncio.wait_for(b.authorize(request),timeout=self.execution_timeout)
+                why=None
+                if free: authorized,why=await asyncio.wait_for(self.free.authorize(b,r),timeout=self.execution_timeout)
+                else: authorized=await asyncio.wait_for(b.authorize(request),timeout=self.execution_timeout)
                 if not authorized:
-                    r.update(status='rejected',reason='Physical operator declined authorization.')
-                    self._event(s,'operator_rejected',request_id=r['request_id'])
+                    r.update(status='rejected',reason=why or 'Physical operator declined authorization.')
+                    self._event(s,'operator_rejected',request_id=r['request_id'],reason=r['reason'])
+                    if why: self._message(s,'assistant',f"Not started: {why}")
                     return
                 r['operator_authorized']=True
                 self._event(s,'operator_authorized',request_id=r['request_id'])
@@ -392,12 +454,12 @@ class Lab:
             r['status']='executing'
             self._message(s,'assistant','The action is running. You can use STOP at any time.')
             await self.publish(s)
-            result=await asyncio.wait_for(b.execute(request,progress),timeout=self.execution_timeout)
+            result=await asyncio.wait_for(self.free.execute(b,r,progress) if free else b.execute(request,progress),timeout=timeout)
             if result.request_id!=r['request_id'] or result.backend!=b.mode:
                 raise LabError('Execution result does not match this request/backend.')
             r.update(status=result.status,result=result.model_dump())
             self._event(s,'execution_result',request_id=r['request_id'],result=result.model_dump())
-            if len(self.registry.get(r['skill_id']).get('steps',[]))>1:
+            if not free and len(self.registry.get(r['skill_id']).get('steps',[]))>1:
                 await progress('observing_destination')
                 self._event(s,'skill_step',request_id=r['request_id'],action='observe',station=request.parameters.destination,
                     provenance=result.observation.provenance if result.observation else 'UNKNOWN')
@@ -407,7 +469,7 @@ class Lab:
                 self._event(s,'observation',**obs)
             if result.status=='completed':
                 from .learning import model_observation,make_quiz
-                if b.mode=='mock' and result.observation and result.observation.provenance=='MOCK':
+                if b.mode=='mock' and not free and result.observation and result.observation.provenance=='MOCK':
                     modeled=model_observation(s['experiment']['id'],r['parameters'])
                     if modeled:
                         modeled={**modeled,'request_id':r['request_id'],'experiment_id':s['experiment']['id']}
