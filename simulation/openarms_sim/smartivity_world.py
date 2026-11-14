@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import math
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass, replace
 from types import SimpleNamespace
 
@@ -25,7 +25,7 @@ GOLDEN_ANGLE = 2.39996323
 MAX_LAYOUT_VARIATION_M = .018
 REGISTRATION_WIDTH, REGISTRATION_HEIGHT = 640, 480
 REGISTRATION_CENTER = (.26, 0.)
-REGISTRATION_HEIGHT_M = .398
+REGISTRATION_VERTICAL_SPAN_M = .398
 FIDUCIALS = {
     "dock": {"offset_xy_m": [.041, 0.], "rgb_min": [180, 0, 150], "rgb_max": [255, 120, 255],
              "radius_m": .006},
@@ -277,7 +277,7 @@ class World:
     def _add_registration(self, spec):
         world = spec.worldbody
         world.add_camera(name="registration", pos=[*REGISTRATION_CENTER, .65], xyaxes=[0, -1, 0, 1, 0, 0],
-                         fovy=REGISTRATION_HEIGHT_M, proj=mujoco.mjtProjection.mjPROJ_ORTHOGRAPHIC)
+                         fovy=REGISTRATION_VERTICAL_SPAN_M, proj=mujoco.mjtProjection.mjPROJ_ORTHOGRAPHIC)
         for label, world_pos, rgb in (("dock", self.dock, [1, 0, 1]),
                                        ("receiver", self.receiver, [0, 1, 0])):
             marker = FIDUCIALS[label]
@@ -338,8 +338,11 @@ class World:
         station_a = self.nominal_beaker if dock is None else dock
         station_c = self.nominal_flask if receiver is None else receiver
         grasp = station_a + UP * grasp_height
-        planning_data = mujoco.MjData(self.model)
-        lite = SimpleNamespace(model=self.model, data=planning_data, arm_qadr=self._qaddr[:5], grasp_site=self._site)
+        # Runtime camera rendering updates visual geoms on the live model.
+        # An off-thread registration solve gets its own model as well as data.
+        model = self.model if dock is None else copy(self.model)
+        planning_data = mujoco.MjData(model)
+        lite = SimpleNamespace(model=model, data=planning_data, arm_qadr=self._qaddr[:5], grasp_site=self._site)
         q_grasp, Rg = self._solve(lite, grasp, 0.)
         q_lift, _ = self._solve(lite, grasp + UP * config["lift_m"], 0., q_grasp)
         tip = math.radians(config["tip_deg"])
@@ -381,13 +384,13 @@ class World:
         if error > .004:
             raise RuntimeError(f"Smartivity fixture grasp/tilt unreachable ({error:.3f} m IK error)")
         scene.data.qpos[self._qaddr[:5]] = q
-        mujoco.mj_kinematics(self.model, scene.data)
+        mujoco.mj_kinematics(scene.model, scene.data)
         return q, scene.data.site_xmat[self._site].reshape(3, 3).copy()
 
     def registration_calibration(self):
         if self.position_variation_m is None:
             raise ValueError("Layout registration is disabled.")
-        scale = REGISTRATION_HEIGHT_M / REGISTRATION_HEIGHT
+        scale = REGISTRATION_VERTICAL_SPAN_M / REGISTRATION_HEIGHT
         x, y = REGISTRATION_CENTER
         return {
             "width_px": REGISTRATION_WIDTH, "height_px": REGISTRATION_HEIGHT,
