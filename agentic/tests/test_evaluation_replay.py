@@ -44,3 +44,21 @@ async def test_frozen_replay_detects_real_gain_and_rejects_label_only_revision(t
     rejected = await evaluator.evaluate_candidate('test-session', label_only, baseline)
     assert not rejected['passed']
     assert rejected['baseline_recovered'] == rejected['candidate_recovered']
+
+
+@pytest.mark.asyncio
+async def test_improvement_cannot_raise_score_by_dropping_a_condition(tmp_path):
+    baseline, candidate = definition(), definition(True)
+    candidate['parameter_schema']['sample']['enum'] = ['vinegar']
+    evaluator = SyntheticSkillEvaluator(tmp_path)
+    with pytest.raises(ValueError, match='baseline parameter domain'):
+        await evaluator.evaluate_candidate('test-session', candidate, baseline)
+
+
+@pytest.mark.asyncio
+async def test_improvement_must_preserve_existing_conversational_invocations(tmp_path):
+    baseline, candidate = definition(), definition(True)
+    candidate['retrieval_examples'] = ['a different request {sample}']
+    evaluator = SyntheticSkillEvaluator(tmp_path)
+    receipt = await evaluator.evaluate_candidate('test-session', candidate, baseline)
+    assert not receipt['passed'] and not receipt['regression_gates']['routing']

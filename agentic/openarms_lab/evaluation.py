@@ -144,7 +144,7 @@ class SyntheticSkillEvaluator:
         finally:
             await lab.shutdown()
 
-    def _routing(self, folder, definition, combinations):
+    def _routing(self, folder, definition, combinations, previous_examples=()):
         registry = SkillRegistry(folder/'routing-only-registry.json')
         version = registry.candidate(definition)
         # Isolated routing exercise only: this does not promote the app registry.
@@ -152,7 +152,7 @@ class SyntheticSkillEvaluator:
         registry.data['active'][definition.skill_id] = version
         receipts = []
         for bindings in combinations:
-            for template in definition.retrieval_examples:
+            for template in dict.fromkeys([*definition.retrieval_examples, *previous_examples]):
                 text = template
                 for key, value in bindings.items():
                     text = text.replace('{'+key+'}', str(value).replace('_', ' '))
@@ -175,6 +175,14 @@ class SyntheticSkillEvaluator:
             definitions = {'candidate': self._definition(candidate)}
             if baseline:
                 definitions['baseline'] = self._definition(baseline)
+                previous, revised = definitions['baseline'], definitions['candidate']
+                if previous.parameter_schema != revised.parameter_schema:
+                    raise ValueError('An improvement comparison must preserve the unchanged baseline parameter domain.')
+                prior_checks = {compute_skill_hash(check) for check in previous.outcome_checks}
+                new_checks = {compute_skill_hash(check) for check in revised.outcome_checks}
+                if (not prior_checks.issubset(new_checks) or
+                        any(revised.expected_state.get(key) != value for key, value in previous.expected_state.items())):
+                    raise ValueError('An improvement cannot weaken baseline outcome or final-state checks.')
             comparisons, controls = {}, {}
             candidate_bindings = self._bindings(definitions['candidate'])
             # This is deliberately a scoped suite, not an unsupported generic score.
@@ -184,7 +192,8 @@ class SyntheticSkillEvaluator:
                     plan = registry.compile(PlanDraft(skill_definition=definition, bindings=binding))
                     if not any(s['operation'] == 'mock_prepared_sample' for s in plan['steps']):
                         raise ValueError('Synthetic pH evaluation currently supports prepared-sample skills only.')
-            routing = self._routing(folder, definitions['candidate'], candidate_bindings)
+            routing = self._routing(folder, definitions['candidate'], candidate_bindings,
+                                    definitions['baseline'].retrieval_examples if baseline else ())
             for label, definition in definitions.items():
                 rows = []
                 for bi, binding in enumerate(candidate_bindings):
