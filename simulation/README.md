@@ -164,6 +164,23 @@ A plan may also contain the arm steps `pick`, `place`, `pour`, `return_cup` and 
 
 Rendering a block move takes about 1.5 seconds on an M2 MacBook, and a pour about 3 seconds, which is at the agent's timeout. Videos are cached by plan, starting state and config, so a repeat request returns instantly. Run `python -m openarms_sim.prerender` before a demo, and again after changing anything in `config/`.
 
+## Preview inside the student lab app
+
+With `OPENARMS_PREVIEW=mujoco`, the lab app (`agentic/openarms_lab/`) simulates every
+proposed transfer before it can be executed; see `docs/LAB_RUNBOOK.md`. That path uses
+`openarms_sim/script.py`, which plays the firmware runner's own waypoint list instead of
+a plan built from a setup:
+
+```python
+from openarms_sim.script import preview_script
+out = preview_script(script, home, marks={"A": grasp_a, "B": grasp_b}, object_at="A", seconds=1.5)
+```
+
+`script` is the list of targets the runner sends (five arm joints in degrees, or the
+gripper alone). The marks are drawn where those poses put the gripper, so nothing is
+measured. A grasp on nothing, or an object that does not end at the destination, blocks.
+Contacts with the table or object are notes until `config/joint_map.yaml` is measured.
+
 ## Config
 
 Everything the simulation knows about the real world is in `config/`. The firmware should read the same files.

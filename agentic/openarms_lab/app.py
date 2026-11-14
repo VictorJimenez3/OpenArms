@@ -52,7 +52,8 @@ def trusted_origin(origin,host):
 def create_app(lab=None):
     @asynccontextmanager
     async def lifespan(app):
-        app.state.lab=lab or Lab(Path(os.getenv('OPENARMS_DATA_DIR',ROOT/'outputs/lab')))
+        from .sim_preview import from_env
+        app.state.lab=lab or Lab(Path(os.getenv('OPENARMS_DATA_DIR',ROOT/'outputs/lab')),previewer=from_env())
         yield
         await app.state.lab.shutdown()
     app=FastAPI(title='OpenArms Student Lab',lifespan=lifespan)
@@ -81,13 +82,20 @@ def create_app(lab=None):
     @app.get('/api/health')
     async def health():
         key=bool(os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'))
-        return {'backend':os.getenv('OPENARMS_BACKEND','mock'),'live_configured':key,
+        return {'backend':os.getenv('OPENARMS_BACKEND','mock'),'preview':'mujoco' if service().previewer else None,'live_configured':key,
                 'live_model':os.getenv('GEMINI_LIVE_MODEL','gemini-3.8-live'),
                 'expert_configured':key,'expert_model':os.getenv('OPENARMS_EXPERT_MODEL','gemini-3.8-flash')}
     @app.get('/api/experiments')
     async def experiments():
         from .learning import EXPERIMENTS
         return EXPERIMENTS
+    @app.get('/api/previews/{name}')
+    async def preview_video(name:str):
+        # Simulation preview videos only; the name is checked against the previewer's own pattern.
+        previewer=service().previewer
+        path=previewer.video_path(name) if previewer else None
+        if path is None:return JSONResponse({'detail':'Preview not found.'},status_code=404)
+        return FileResponse(path,media_type='video/mp4')
     @app.post('/api/sessions')
     async def create():return await service().create()
     @app.get('/api/sessions')

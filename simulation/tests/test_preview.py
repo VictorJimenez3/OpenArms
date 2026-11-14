@@ -282,3 +282,72 @@ def test_real_arm_commands_start_and_end_at_home_and_respect_the_speed_limit():
         limit = load_joint_map()["motion"]["max_speed_deg_s"] * speed
         assert np.max(np.abs(np.diff(arr, axis=0))) * FPS <= limit * 1.02
         assert all(0 <= c["gripper.pos"] <= 100 for c in targets)
+
+
+# ---- playing the real runner's waypoint script ------------------------------------------
+
+
+def _transfer_script(poses, gripper):
+    o, c = {"gripper.pos": gripper["open"]}, {"gripper.pos": gripper["cup"]}
+    p = poses
+    return [o, p["ABOVE_A"], p["GRASP_A"], c, p["ABOVE_A"], p["ABOVE_B"], p["GRASP_B"], o, p["ABOVE_B"], p["HOME"]]
+
+
+@pytest.fixture
+def firmware_poses():
+    import json
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[2] / "firmware/openarms_executor/poses.json"
+    if not path.exists():
+        pytest.skip("no firmware pose file in this checkout")
+    return json.loads(path.read_text())
+
+
+def _run_script(fp, **kw):
+    from openarms_sim.script import preview_script
+
+    p = fp["poses"]
+    args = dict(
+        script=_transfer_script(p, fp["gripper"]),
+        home={**p["HOME"], "gripper.pos": fp["gripper"]["open"]},
+        marks={"A": p["GRASP_A"], "B": p["GRASP_B"]},
+        object_at="A",
+        render=False,
+        trusted=list(p.values()),
+    )
+    args.update(kw)
+    return preview_script(**args)
+
+
+def test_script_preview_delivers_the_object(firmware_poses):
+    out = _run_script(firmware_poses)
+    assert out["ok"], out["warnings"]
+    assert out["objects"] == [{"name": "mandarin", "at": "B", "started_at": "A", "moved": True}]
+    assert out["motion_seconds"] == 15.0  # ten targets at the runner's 1.5 s per move
+    assert out["video_url"] is None
+
+
+def test_script_preview_blocks_a_grasp_on_nothing(firmware_poses):
+    out = _run_script(firmware_poses, object_at=None)
+    assert not out["ok"]
+    assert "missed_grasp" in [i["code"] for i in out["issues"] if i["severity"] == "block"]
+
+
+def test_script_preview_blocks_when_the_object_is_somewhere_else(firmware_poses):
+    out = _run_script(firmware_poses, object_at="B")
+    assert not out["ok"]
+    assert out["objects"][0]["at"] == "B" and not out["objects"][0]["moved"]
+
+
+def test_script_preview_geometry_is_a_note_until_the_joint_map_is_measured(firmware_poses):
+    out = _run_script(firmware_poses)
+    assert not out["joint_map_measured"]
+    geometry = [i for i in out["issues"] if i["code"] in ("hits_table", "held_hits_table", "hits_object")]
+    assert all(i["severity"] == "note" for i in geometry)
+    assert "unmeasured_joint_map" in [i["code"] for i in out["issues"]]
+
+
+def test_script_preview_rejects_an_incomplete_arm_target(firmware_poses):
+    out = _run_script(firmware_poses, marks={"A": {"shoulder_pan.pos": 0.0}, "B": firmware_poses["poses"]["GRASP_B"]})
+    assert not out["ok"] and out["issues"][0]["code"] == "bad_plan"

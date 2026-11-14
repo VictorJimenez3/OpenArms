@@ -38,6 +38,21 @@ The physical adapter is opt-in with `OPENARMS_BACKEND=physical`, `OPENARMS_HARDW
 
 A future simulation implementation can implement `ExecutionBackend` in `agentic/openarms_lab/contracts.py` and be supplied through `Lab(backend_factory=...)`; label its observations `SIMULATED`. No simulation backend ships here.
 
+## Simulation preview before execution (optional)
+
+Set `OPENARMS_PREVIEW=mujoco` to simulate every proposed transfer before it can run. The order becomes: request, **SIMULATED** preview in the proposal card, then the student says or types **"execute"** (or presses the Execute button) to run it on the configured controller. In physical mode the bench operator's terminal authorization still follows.
+
+```sh
+.venv/bin/python -m pip install -e simulation      # once; needs mujoco, imageio-ffmpeg
+OPENARMS_PREVIEW=mujoco OPENARMS_BACKEND=mock .venv/bin/python -m agentic.openarms_lab
+```
+
+- The preview plays the same waypoint script the transfer runner would send (same pose file, same seconds per move) in `simulation/openarms_sim/script.py`. It runs in a separate process, opens no serial port and sends no motor command.
+- A proposal executes only when its preview is `ready`, or `unavailable` because the skill has no simulation model (the dilution pour). `blocked` (for example the gripper closes on nothing) and `error` cannot be executed; ask again after fixing the cause.
+- `simulation/config/joint_map.yaml` is still unmeasured. Until it is measured, what the simulation shows touching the table or object is listed as a note and does not block. The video is a preview of the commanded joint motion, not evidence about the real bench.
+- In mock mode C is shown as the A pickup turned `OPENARMS_PREVIEW_C_OFFSET` degrees (default 5) at the shoulder, the firmware's own construction. Without the variable set, behaviour and messages are unchanged.
+- Glue: `agentic/openarms_lab/sim_preview.py`. Tests: `agentic/tests/test_lab_sim_preview.py`, `simulation/tests/test_preview.py`.
+
 ## Configuration and verification
 
 | Variable | Default / purpose |
