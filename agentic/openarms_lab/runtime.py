@@ -293,13 +293,14 @@ class Lab(TaskLoop):
             if not baseline or baseline['skill_id'] != pinned['skill_id'] or baseline['version'] != pinned['skill_version']:
                 raise LabError('The pinned improvement baseline changed; request a fresh comparison.')
         evaluation = asyncio.create_task(self.evaluator.evaluate_candidate(sid, candidate, baseline))
-        running = self.evaluations.setdefault(sid, set())
-        running.add(evaluation)
+        running = self.evaluations.setdefault(sid, {})
+        owner = {'task_id': completed[-1]['task_id'], 'request_id': completed[-1]['request_id'], 'cancelled': False}
+        running[evaluation] = owner
         try:
             raw = await asyncio.wait_for(evaluation, self.expert_timeout)
             async with self._lock(sid):
                 self._editable(s)
-                if s['generation'] != generation:
+                if s['generation'] != generation or owner['cancelled']:
                     raise LabError('Evaluation was revoked by STOP or reconnection; no skill was promoted.')
                 try:
                     current_baseline = self.registry.get(skill_id)
@@ -314,7 +315,7 @@ class Lab(TaskLoop):
                 await self.publish(s)
                 return decision
         finally:
-            running.discard(evaluation)
+            running.pop(evaluation, None)
 
     async def _evaluate_completed(self, s, task):
         plan = task.get('plan') or {}
@@ -403,10 +404,16 @@ class Lab(TaskLoop):
         self._event(s, 'condition_selected', condition_id=c['id'])
         self._message(s, 'assistant', f"Selected {c['title']} for this mock trial.")
 
-    async def choose_condition(self, sid, condition_id):
+    async def choose_condition(self, sid, condition_id, *, turn_id=None):
         async with self._lock(sid):
             s = self.get(sid)
             self._choose(s, condition_id)
+            prior = s['tasks'][-1] if s['tasks'] else None
+            if prior and prior['status'] == 'needs_clarification':
+                message = next((m for m in reversed(s['messages']) if m['turn_id'] == turn_id
+                                and m['role'] == 'user' and m.get('final')), None)
+                answer = message['text'] if message else condition(condition_id)['title']
+                self._queue_task(s, answer, turn_id)
             return await self.publish(s)
 
     def _predict(self, s, text):
@@ -499,6 +506,12 @@ class Lab(TaskLoop):
 
     def _cancel_session_tasks(self, s, reason, *, target=None):
         self._cancel_tasks(s, reason, target=target)
+        for evaluation, owner in tuple(self.evaluations.get(s['session_id'], {}).items()):
+            if not owner['cancelled'] and target in (None, owner['task_id'], owner['request_id']):
+                owner['cancelled'] = True
+                evaluation.cancel()
+                self._event(s, 'skill_evaluation_cancelled', task_id=owner['task_id'],
+                            request_id=owner['request_id'], reason=reason)
         stopped_execution = False
         for r in s['requests']:
             if r['status'] in ACTIVE and (not target or target in (r['request_id'], r.get('task_id'))):
@@ -525,13 +538,18 @@ class Lab(TaskLoop):
             self._editable(s)
             if request_id is not None:
                 _id(request_id, 'request or task ID')
-                if not any(t['status'] not in TASK_TERMINAL and request_id in (t['task_id'], t['request_id'])
-                           for t in s['tasks']):
+                task_live = any(t['status'] not in TASK_TERMINAL - {'needs_clarification'}
+                                and request_id in (t['task_id'], t['request_id']) for t in s['tasks'])
+                evaluation_live = any(not owner['cancelled'] and request_id in (owner['task_id'], owner['request_id'])
+                                      for owner in self.evaluations.get(sid, {}).values())
+                if not task_live and not evaluation_live:
                     raise LabError('That task or proposal is stale.')
             if s['pending'] and request_id in (None, s['pending']['request_id'], s['pending']['task_id']):
                 self._invalidate(s, 'Student cancelled.')
             if self._cancel_session_tasks(s, 'Student cancelled.', target=request_id):
                 await self._stop_backend(sid)
+            if request_id is None:
+                s['generation'] += 1
             return await self.publish(s)
 
     async def stop(self, sid, disconnect=False):
@@ -641,6 +659,7 @@ class Lab(TaskLoop):
                         self._invalidate(s, 'Student cancelled.')
                         if self._cancel_session_tasks(s, 'Student cancelled.'):
                             await self._stop_backend(sid)
+                        s['generation'] += 1
                         self._message(s, 'assistant', 'Task cancelled.')
                     elif _affirmative(text):
                         self._message(s, 'assistant', 'Use the Confirm button on the exact proposal, or confirm aloud after hearing it.')
@@ -721,7 +740,7 @@ class Lab(TaskLoop):
                 raise LabError('No recorded skill limitation is available for improvement.')
             return await self.start_improvement(sid, target['task_id'], clean['limitation'])
         if name == 'choose_condition':
-            return await self.choose_condition(sid, clean['condition_id'])
+            return await self.choose_condition(sid, clean['condition_id'], turn_id=args.get('_voice_turn_id'))
         if name == 'record_prediction':
             return await self.prediction(sid, clean['text'])
         if name == 'start_task' or (name == 'request_action' and '_voice_generation' in args):

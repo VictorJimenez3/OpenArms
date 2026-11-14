@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import itertools
 import json
 import math
 import re
@@ -64,7 +65,11 @@ def _substitute(arguments, bindings):
 
 
 def _normalize(text):
-    return re.sub(r'\s+', ' ', text.lower().strip().rstrip('.!'))
+    # ASR may insert sentence breaks into one spoken request. Preserve decimal
+    # points and all words, including negation, while ignoring polite padding.
+    text = re.sub(r'(?<!\d)[.,;:!?]|[.,;:!?](?!\d)', ' ', text.lower())
+    text = re.sub(r'\s+', ' ', text).strip()
+    return re.sub(r'^please | please$', '', text)
 
 
 class SkillRegistry:
@@ -101,12 +106,14 @@ class SkillRegistry:
     def list(self):
         return [self.get(skill_id) for skill_id in self.data['active']]
 
-    def match(self, text):
+    def match(self, text, *, active_versions=None):
         norm = _normalize(text)
         if re.search(r"\b(?:no|not|never|cancel|stop|except|unless|instead|don't|can’t|can't)\b", norm):
             return None
         matches = {}
-        for skill in self.list():
+        active = self.data['active'] if active_versions is None else active_versions
+        for skill_id, version in active.items():
+            skill = self.get(skill_id, version)
             schema = skill['parameter_schema']
             for template in skill['retrieval_examples']:
                 parts = SLOT.split(_normalize(template))
@@ -266,6 +273,38 @@ class SkillRegistry:
         return [copy.deepcopy(decision) for decision in self.data['decisions']
                 if decision['candidate_hash'] == version]
 
+    def _routing_admission(self, skill_id, version):
+        """Compare all declared routes using the production matcher and registry."""
+        active = dict(self.data['active'])
+        proposed = {**active, skill_id: version}
+        cases = []
+        definitions = [(key, value, proposed[key]) for key, value in active.items()]
+        definitions.append((skill_id, version, version))
+        for key, source_version, expected_version in definitions:
+            definition = self.get(key, source_version)
+            schema = definition['parameter_schema']
+            domains = [spec.get('enum') for spec in schema.values()]
+            if any(not domain for domain in domains) or math.prod(map(len, domains)) > 256:
+                return {'passed': False, 'active_versions': active,
+                        'reason': 'Reusable routing needs a bounded enumerable parameter domain.', 'cases': cases}
+            for values in itertools.product(*domains):
+                bindings = dict(zip(schema, values))
+                for template in definition['retrieval_examples']:
+                    text = template
+                    for name, value in bindings.items():
+                        text = text.replace('{'+name+'}', str(value).replace('_', ' '))
+                    match = self.match(text, active_versions=proposed)
+                    passed = bool(match and match.skill_id == key and match.skill_version == expected_version
+                                  and match.bindings == bindings
+                                  and self.match('Do not '+text, active_versions=proposed) is None)
+                    cases.append({'text': text, 'skill_id': key, 'version': expected_version,
+                                  'bindings': bindings, 'passed': passed})
+                    if len(cases) > 4096:
+                        return {'passed': False, 'active_versions': active,
+                                'reason': 'Registry route comparison exceeded its bounded case budget.', 'cases': cases}
+        return {'passed': bool(cases) and all(case['passed'] for case in cases),
+                'active_versions': active, 'candidate': version, 'cases': cases}
+
     def record_evaluation(self, skill_id, version, raw_receipt):
         receipt = EvaluationReceipt.model_validate(raw_receipt)
         candidate = self.get(skill_id, version)
@@ -277,6 +316,14 @@ class SkillRegistry:
             raise ValueError('Evaluation must identify the exact candidate and current baseline.')
         if any(not re.fullmatch(r'[0-9a-f]{64}', item) for item in receipt.artifact_hashes):
             raise ValueError('Evaluation artifacts require SHA-256 hashes.')
+        routing = self._routing_admission(skill_id, version)
+        receipt = receipt.model_copy(update={
+            'regression_gates': {**receipt.regression_gates, 'active_registry_routing': routing['passed']},
+            'metrics': {**receipt.metrics, 'active_registry_routing': routing},
+            'passed': receipt.passed and routing['passed'],
+            'reasons': [*receipt.reasons, *([] if routing['passed'] else [
+                'Candidate conflicts with or loses a route in the current active registry.'])],
+        }, deep=True)
         approved = (receipt.passed and GATES.issubset(receipt.regression_gates) and
                     all(receipt.regression_gates.values()) and
                     receipt.candidate_recovered > receipt.baseline_recovered)

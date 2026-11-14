@@ -80,3 +80,30 @@ def test_simulator_configuration_changes_invalidate_admission(monkeypatch, suffi
         return value + b'changed-config' if path.as_posix().endswith(suffix) else value
     monkeypatch.setattr(Path, 'read_bytes', changed)
     assert simulation_scope() != before
+
+
+@pytest.mark.asyncio
+async def test_spoken_condition_answer_resumes_clarification_in_one_mutation(tmp_path):
+    from agentic.openarms_lab.voice_controls import VoiceControls
+    scene, expert = SceneService(tmp_path/'images'), ClarifyingExpert()
+    lab = Lab(tmp_path/'data', expert=expert, perception=scene,
+              backend_factory=lambda: SceneBackend(scene, delay=0))
+    try:
+        sid = (await lab.create())['session_id']
+        handle = await lab.start_task(sid, 'Test a prepared sample')
+        await asyncio.wait_for(asyncio.shield(lab.workers[handle['task_id']]), 5)
+        async def callback(name, args):
+            return await lab.tool(sid, name, args)
+        controls = VoiceControls(lambda: lab.snapshot(sid), callback)
+        controls.input('water', finished=True)
+        await lab.tool(sid, '_record_transcript', {'role':'user', 'text':'water',
+                       'turn_id':controls.turn_id, 'final':True})
+        await controls.dispatch('choose_condition', {'condition_id':'water'})
+        task = lab.get(sid)['tasks'][-1]
+        await asyncio.wait_for(asyncio.shield(lab.workers[task['task_id']]), 5)
+        assert task['status'] == 'awaiting_confirmation'
+        assert task['clarification']['task_id'] == handle['task_id']
+        assert expert.contexts[-1]['clarification']['answer'] == 'water'
+        assert controls.consumed and lab.backends[sid].executions == 0
+    finally:
+        await lab.shutdown()

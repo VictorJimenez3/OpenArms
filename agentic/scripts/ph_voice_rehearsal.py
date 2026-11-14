@@ -1,4 +1,4 @@
-"""Real Gemini speech -> real Codex expert -> simulated observed outcome.
+"""Real Gemini speech -> Codex -> observed simulation -> registration -> spoken reuse.
 
 Generated student speech and acknowledged PCM playback are test inputs. --audible
 plays returned audio on the Mac; neither mode verifies a physical iPhone.
@@ -109,6 +109,38 @@ async def run(base, output, audible=False):
                 assert state['tasks'][-1]['status']=='completed', state['tasks'][-1].get('summary')
                 await wait_for(lambda:any(t['role']=='assistant' and 'simulation' in t['text'].lower() and 'pink' in t['text'].lower() for t in transcripts),60)
                 assert state['observations'][-1]['provenance'] in ('SYNTHETIC', 'SIMULATED')
+                cold = state['tasks'][-1]
+                version = cold['plan']['skill_version']
+                await wait_for(lambda: any(skill['version'] == version and skill['status'] == 'active'
+                                          for skill in state.get('skills', [])) or any(
+                    event['kind'] == 'skill_evaluation_failed' and event['data'].get('task_id') == cold['task_id']
+                    for event in state['notebook']))
+                registered = next((skill for skill in state['skills']
+                                   if skill['version'] == version and skill['status'] == 'active'), None)
+                assert registered, 'The completed spoken trial did not pass reusable-skill admission.'
+                old_trial = state['trial']['trial_id']
+                await speak('Prepare a new trial.', 3)
+                await wait_for(lambda: state['trial']['trial_id'] != old_trial, 50)
+                warm_request = registered['retrieval_examples'][0]
+                for parameter, value in cold['plan']['bindings'].items():
+                    warm_request = warm_request.replace('{'+parameter+'}', str(value).replace('_', ' '))
+                previous_tasks = len(state['tasks'])
+                await speak(warm_request, 4)
+                await wait_for(lambda: len(state['tasks']) > previous_tasks and
+                               (bool(state.get('pending')) or state['tasks'][-1]['status'] in ('failed', 'needs_clarification')))
+                assert state.get('pending'), state['tasks'][-1].get('summary')
+                assert state['tasks'][-1]['route'] == 'active_skill', 'Equivalent spoken request did not reuse the registered skill.'
+                assert state['pending']['skill_version'] == version
+                await wait_for(lambda: bool((state.get('pending') or {}).get('presented')), 90)
+                assert state['pending']['presentation']['channel'] == 'audio'
+                before = len(transcripts)
+                await speak('Confirm.', 5)
+                await wait_for(lambda: state['tasks'][-1]['status'] in ('completed', 'failed', 'needs_clarification', 'cancelled'))
+                warm = state['tasks'][-1]
+                assert warm['status'] == 'completed' and not warm['expert_runs'], warm.get('summary')
+                assert warm['observations'][-1]['status'] == 'observed'
+                await wait_for(lambda: any(t['role'] == 'assistant' and 'simulation' in t['text'].lower()
+                                          and 'pink' in t['text'].lower() for t in transcripts[before:]), 60)
                 await playback.join()
                 result={'passed':True,'session_id':sid,'evidence_type':'generated-speech real-provider integration',
                         'expert_provider':'openai_codex_cli','expert_model':'gpt-6.1-sol','expert_effort':'medium',
@@ -116,6 +148,9 @@ async def run(base, output, audible=False):
                         'execution_backend':state['backend'],
                         'observation_provenance':state['observations'][-1]['provenance'],
                         'audio_proposal_presented':True,'completed_trials':len(state['observations']),
+                        'skill_registered':True, 'skill_version':version, 'warm_request':warm_request,
+                        'cold_expert_calls':sum(run['calls'] for run in cold['expert_runs']),
+                        'warm_expert_calls':sum(run['calls'] for run in warm['expert_runs']),
                         'mac_output_played':audible,'physical_iphone_verified':False,'transcripts':transcripts}
                 (output/'result.json').write_text(json.dumps(result,indent=2))
                 print(json.dumps(result,indent=2),flush=True)

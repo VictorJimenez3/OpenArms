@@ -65,3 +65,62 @@ async def test_unbound_typed_confirmation_cannot_approve_a_replacement(lab):
     assert lab.backends[sid].executions == 0
     with pytest.raises(LabError):
         await lab.confirm(sid, first['request_id'], first['proposal_version'])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('method', ['text', 'tool', 'task', 'request'])
+@pytest.mark.parametrize('suppress_cancel', [False, True])
+async def test_cancel_revokes_pending_promotion_even_if_evaluator_ignores_cancel(lab, method, suppress_cancel):
+    entered, release = asyncio.Event(), asyncio.Event()
+    class PausedEvaluator(FakeEvaluator):
+        async def evaluate_candidate(self, *args):
+            entered.set()
+            try:
+                await release.wait()
+            except asyncio.CancelledError:
+                if not suppress_cancel:
+                    raise
+                await release.wait()
+            return await super().evaluate_candidate(*args)
+    sid, proposal = await proposed(lab)
+    await lab.present(sid, proposal['request_id'], proposal['proposal_version'])
+    await lab.confirm(sid, proposal['request_id'], proposal['proposal_version'])
+    await lab.workers[proposal['task_id']]
+    lab.evaluator = PausedEvaluator()
+    evaluation = asyncio.create_task(lab.evaluate_candidate(sid, proposal['skill_id'], proposal['skill_version']))
+    await entered.wait()
+    if method == 'text':
+        await lab.converse(sid, 'cancel')
+    elif method == 'tool':
+        await lab.tool(sid, 'cancel_request', {})
+    else:
+        await lab.cancel(sid, proposal['task_id' if method == 'task' else 'request_id'])
+    release.set()
+    with pytest.raises((asyncio.CancelledError, LabError)):
+        await evaluation
+    assert not lab.registry.list()
+    assert any(e['kind'] == 'skill_evaluation_cancelled' for e in lab.get(sid)['notebook'])
+
+
+@pytest.mark.asyncio
+async def test_targeted_evaluation_cancel_preserves_new_pending_task(lab):
+    entered = asyncio.Event()
+    class PausedEvaluator(FakeEvaluator):
+        async def evaluate_candidate(self, *args):
+            entered.set()
+            await asyncio.Event().wait()
+    sid, first = await proposed(lab)
+    await lab.present(sid, first['request_id'], first['proposal_version'])
+    await lab.confirm(sid, first['request_id'], first['proposal_version'])
+    await lab.workers[first['task_id']]
+    lab.evaluator = PausedEvaluator()
+    evaluation = asyncio.create_task(lab.evaluate_candidate(sid, first['skill_id'], first['skill_version']))
+    await entered.wait()
+    await lab.prepare(sid)
+    _, second = await proposed(lab, sid)
+    generation = lab.get(sid)['generation']
+    await lab.cancel(sid, first['task_id'])
+    with pytest.raises(asyncio.CancelledError):
+        await evaluation
+    assert lab.get(sid)['generation'] == generation
+    assert lab.snapshot(sid)['pending']['request_id'] == second['request_id']
