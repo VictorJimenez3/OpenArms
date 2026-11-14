@@ -1,406 +1,596 @@
 import AVFoundation
 import Combine
 import Foundation
+import Security
 import UIKit
+
+private final class NoRedirects: NSObject, URLSessionTaskDelegate {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        completionHandler(nil) // A bearer credential must never follow a redirect to another origin.
+    }
+}
+
+private enum SessionVault {
+    static let service = "org.openarms.ph.session"
+    static func read(origin: String) throws -> SessionCredential? {
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: origin, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecItemNotFound { return nil }
+        guard status == errSecSuccess, let data = item as? Data else { throw VoiceError.message("Unlock this iPhone to restore your private lab session.") }
+        return try JSONDecoder().decode(SessionCredential.self, from: data)
+    }
+    static func save(_ credential: SessionCredential) throws {
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: credential.origin]
+        let attributes: [String: Any] = [kSecValueData as String: try JSONEncoder().encode(credential),
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly]
+        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+        if status == errSecItemNotFound {
+            var item = query; attributes.forEach { item[$0.key] = $0.value }
+            guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else { throw VoiceError.message("Could not save the private session on this iPhone.") }
+        } else if status != errSecSuccess { throw VoiceError.message("Could not update the private session on this iPhone.") }
+    }
+    static func remove(origin: String) {
+        SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: origin] as CFDictionary)
+    }
+}
+
+private struct HTTPFailure: Error { let code: Int }
+private struct CaptureQueueFailure: LocalizedError {
+    let message: String
+    var errorDescription: String? { message }
+}
+
+private final class AudioNotificationObservers {
+    var tokens: [NSObjectProtocol] = []
+    deinit { for token in tokens { NotificationCenter.default.removeObserver(token) } }
+}
 
 @MainActor
 final class VoiceClient: ObservableObject {
-    @Published private(set) var state = "Ready"
-    @Published private(set) var detail = "Start a session to hear the first prompt."
-    @Published private(set) var errorMessage: String?
-    @Published private(set) var active = false
+    @Published private(set) var snapshot: LabSnapshot?
+    @Published private(set) var messages: [LabMessage] = []
     @Published private(set) var connected = false
-    @Published private(set) var ending = false
-    @Published private(set) var muted = false
+    @Published private(set) var connecting = false
+    @Published private(set) var voiceWanted = false
     @Published private(set) var microphoneActive = false
+    @Published private(set) var speakerActive = false
+    @Published private(set) var muted = false
+    @Published private(set) var voiceStatus = "off"
+    @Published private(set) var connectionStatus = "Connect your lab"
+    @Published private(set) var notice: String?
     @Published private(set) var needsMicrophoneSettings = false
-    @Published private(set) var sessionID: String?
-    @Published private(set) var serverMode: String?
-    @Published private(set) var serverLogging: Bool?
-    @Published private(set) var serverRawAudio: Bool?
-    @Published private(set) var replyText = ""
-    @Published private(set) var transcript = ""
-    @Published private(set) var endpointInUse: String?
+    @Published private(set) var busy = false
+    @Published private(set) var acknowledgedProposal: String?
 
     private let audio = AudioPipeline()
-    private var gate = CaptureGate()
-    private var connectionID: UUID?
-    private var fifo: OutboundFIFO?
+    private let redirectDelegate = NoRedirects()
+    private lazy var http: URLSession = {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 15; config.timeoutIntervalForResource = 20
+        config.urlCache = nil; config.httpCookieStorage = nil
+        return URLSession(configuration: config, delegate: redirectDelegate, delegateQueue: nil)
+    }()
+    private var origin: URL?
+    private var credential: SessionCredential?
+    private var pairingToken = ""
     private var socket: URLSessionWebSocketTask?
-    private var urlSession: URLSession?
+    private var fifo: OutboundFIFO?
+    private var connectionID: UUID?
+    private var snapshotStore = SnapshotStore()
+    private var transcripts = TranscriptStore()
+    private var heartbeat = Heartbeat(now: 0)
+    private var openedAt: TimeInterval = 0
+    private var retryCount = 0
+    private var wantsConnection = false
+    private var foreground = true
+    private var audioSuspended = false
+    private var providerReady = false
+    private var visibleProposal: String?
+    private var presentingProposal: String?
     private var startupTask: Task<Void, Never>?
     private var readerTask: Task<Void, Never>?
     private var writerTask: Task<Void, Never>?
-    private var watchdogTask: Task<Void, Never>?
-    private var endingTask: Task<Void, Never>?
-    private var pendingTurn: String?
-    private var awaitingWAV = false
-    private var pingSentAt: ContinuousClock.Instant?
-    private var lastPingAt = ContinuousClock.now
-    private var connectedAt = ContinuousClock.now
-    private var replyDeadline: ContinuousClock.Instant?
-    private var observers: [NSObjectProtocol] = []
+    private var heartbeatTask: Task<Void, Never>?
+    private var retryTask: Task<Void, Never>?
+    private var actionTask: Task<Void, Never>?
+    private var actionID: UUID?
+    private var presentationTask: Task<Void, Never>?
+    private var voiceTask: Task<Void, Never>?
+    private var audioRecoveryTask: Task<Void, Never>?
+    private let observers = AudioNotificationObservers()
+
+    var canAct: Bool { connected && !busy && foreground }
+    var canConfirm: Bool {
+        guard canAct, let p = snapshot?.pending else { return false }
+        return p.presented && acknowledgedProposal == p.id && visibleProposal == p.id
+    }
+    var voiceTitle: String {
+        if voiceWanted {
+            if speakerActive { return "Speaking · tap to pause" }
+            if muted { return "Microphone muted" }
+            return microphoneActive ? "Listening · tap to pause" : "Connecting voice…"
+        }
+        return "Talk with OpenArms"
+    }
+    var voiceDetail: String {
+        if speakerActive { return "You can speak to interrupt, or tap Interrupt below." }
+        if voiceWanted && muted { return "Unmute when you’re ready. Text is always available." }
+        if microphoneActive { return "Tell me your prediction, ask a question, or change your mind." }
+        if voiceStatus == "unavailable" { return "Voice is unavailable. You can keep going with text." }
+        return "Ask a question, describe a task, or explore the pH demonstration."
+    }
 
     init() {
-        audio.onPlaybackFinished = { [weak self] success, message in
-            self?.playbackFinished(success: success, message: message)
+        audio.onPlaybackChanged = { [weak self] playing in self?.speakerActive = playing }
+        audio.onPlaybackFinished = { [weak self] id in
+            guard let self, self.connected, self.foreground else { return }
+            self.fifo?.enqueue(.reply("played", id: id))
+            // The server binds played to reply_start's exact proposal/version. Text presentation
+            // is acknowledged separately only after the proposal card has appeared.
         }
         let center = NotificationCenter.default
-        observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification,
-                                            object: nil, queue: .main) { [weak self] note in
-            let value = (note.userInfo?[AVAudioSessionInterruptionTypeKey] as? NSNumber)?.uintValue
-            guard value == AVAudioSession.InterruptionType.began.rawValue else { return }
-            Task { @MainActor [weak self] in
-                guard let self, self.active else { return }
-                self.fail("Audio was interrupted by a call or another app. Return here and start a new session.")
-            }
+        observers.tokens.append(center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] note in
+            let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+            let options = note.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+            Task { @MainActor [weak self] in self?.interruption(raw: raw, options: options) }
         })
-        observers.append(center.addObserver(forName: AVAudioSession.routeChangeNotification,
-                                            object: nil, queue: .main) { [weak self] note in
-            let value = (note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? NSNumber)?.uintValue
-            guard let value, let reason = AVAudioSession.RouteChangeReason(rawValue: value),
-                  [.newDeviceAvailable, .oldDeviceUnavailable, .noSuitableRouteForCategory,
-                   .routeConfigurationChange].contains(reason) else { return }
-            Task { @MainActor [weak self] in
-                guard let self, self.connected else { return }
-                self.fail("The audio route changed. Check the speaker and microphone, then start a new session.")
-            }
+        observers.tokens.append(center.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] note in
+            let raw = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt ?? 0
+            Task { @MainActor [weak self] in self?.routeChanged(raw) }
         })
-        observers.append(center.addObserver(forName: .AVAudioEngineConfigurationChange,
-                                            object: nil, queue: .main) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self, self.active, self.audio.isCapturing else { return }
-                self.fail("The microphone configuration changed. Start a new session.")
-            }
+        observers.tokens.append(center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.recoverAudio() }
         })
     }
 
-    deinit { observers.forEach(NotificationCenter.default.removeObserver) }
+    func connect(address: String, pairingToken: String = "", allowLocalDebug: Bool = false) {
+        do {
+            let endpoint = try AppEndpoint.resolve(address, allowLocalDebug: allowLocalDebug)
+            closeTransport()
+            if origin != endpoint { snapshotStore = SnapshotStore(); snapshot = nil; transcripts.restore([]); messages = []; credential = nil }
+            origin = endpoint; self.pairingToken = pairingToken
+            wantsConnection = true; retryCount = 0; notice = nil
+            startConnection()
+        } catch { notice = error.localizedDescription }
+    }
 
-    func start(address: String) {
-        guard !active else { return }
-        let url: URL
-        do { url = try RelayEndpoint.resolve(address) }
-        catch { errorMessage = error.localizedDescription; return }
-
-        let id = UUID()
-        connectionID = id
-        active = true
-        ending = false
-        errorMessage = nil
-        needsMicrophoneSettings = false
-        state = "Microphone permission"
-        detail = "Allow microphone access to speak with the relay."
-        sessionID = nil
-        serverMode = nil
-        serverLogging = nil
-        serverRawAudio = nil
-        transcript = ""
-        replyText = ""
-        endpointInUse = url.absoluteString
-        gate = CaptureGate()
-        muted = false
-
+    private func startConnection() {
+        guard foreground, wantsConnection, let origin else { return }
+        connecting = true; connectionStatus = retryCount > 0 ? "Reconnecting to your lab…" : "Opening your lab…"
+        let attempt = UUID(); connectionID = attempt
         startupTask = Task { [weak self] in
-            let allowed = await AVAudioApplication.requestRecordPermission()
-            guard let self, self.connectionID == id, !Task.isCancelled else { return }
-            guard allowed else {
-                self.needsMicrophoneSettings = true
-                self.fail("Microphone access is off. Enable it in Settings → Privacy & Security → Microphone → OpenArms Voice, then start again.")
-                return
-            }
+            guard let self else { return }
             do {
-                try self.audio.activate()
-                self.connect(url: url, id: id)
-            } catch {
-                self.fail("Audio could not start: \(error.localizedDescription)")
-            }
+                if self.credential == nil { self.credential = try SessionVault.read(origin: origin.absoluteString) }
+                var restored: LabSnapshot?
+                if let saved = self.credential {
+                    do { restored = try await self.request(url: AppEndpoint.sessionURL(origin, id: saved.sessionID), method: "GET", token: saved.accessToken) }
+                    catch let e as HTTPFailure where e.code == 401 || e.code == 403 || e.code == 404 {
+                        try Task.checkCancellation()
+                        guard self.connectionID == attempt else { return }
+                        SessionVault.remove(origin: origin.absoluteString); self.credential = nil
+                    }
+                }
+                if restored == nil {
+                    let created = try await self.request(url: origin.appendingPathComponent("api/sessions"), method: "POST", token: self.pairingToken.isEmpty ? nil : self.pairingToken, fields: [:])
+                    try Task.checkCancellation()
+                    guard self.connectionID == attempt else { return }
+                    guard let token = created.accessToken, !token.isEmpty else { throw VoiceError.message("The server did not issue a session credential.") }
+                    let saved = SessionCredential(origin: origin.absoluteString, sessionID: created.sessionID, accessToken: token)
+                    try SessionVault.save(saved); self.credential = saved; self.snapshotStore = SnapshotStore(); restored = created
+                    self.pairingToken = ""
+                }
+                try Task.checkCancellation()
+                guard self.connectionID == attempt, let saved = self.credential, let restored else { return }
+                guard restored.sessionID == saved.sessionID else { throw VoiceError.message("The restored session did not match this iPhone’s credential.") }
+                try self.apply(restored, restoring: true)
+                let ws = self.http.webSocketTask(with: try AppEndpoint.liveURL(origin, id: saved.sessionID))
+                ws.maximumMessageSize = 2 * 1024 * 1024
+                self.socket = ws; self.fifo = OutboundFIFO()
+                self.heartbeat = Heartbeat(now: ProcessInfo.processInfo.systemUptime)
+                self.openedAt = ProcessInfo.processInfo.systemUptime
+                ws.resume()
+                self.fifo?.enqueue(.hello(id: attempt, token: saved.accessToken))
+                self.read(from: ws, attempt: attempt)
+                self.write(to: ws, attempt: attempt)
+                self.watch(attempt: attempt)
+            } catch is CancellationError { }
+            catch { if self.connectionID == attempt { self.connectionFailed(error) } }
         }
     }
 
-    private func connect(url: URL, id: UUID) {
-        state = "Connecting"
-        detail = "Waiting for the relay. Allow Local Network access if asked."
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = 15
-        configuration.timeoutIntervalForResource = 24 * 60 * 60
-        configuration.waitsForConnectivity = false
-        configuration.urlCredentialStorage = nil
-        configuration.httpCookieStorage = nil
-        let session = URLSession(configuration: configuration)
-        let socket = session.webSocketTask(with: url)
-        socket.maximumMessageSize = WaveFile.maximumBytes
-        let fifo = OutboundFIFO()
-        self.urlSession = session
-        self.socket = socket
-        self.fifo = fifo
-        connectedAt = .now
-        lastPingAt = .now
-        pingSentAt = nil
-        socket.resume()
+    private func request(url: URL, method: String, token: String?, fields: [String: JSONValue]? = nil) async throws -> LabSnapshot {
+        var request = URLRequest(url: url)
+        request.httpMethod = method; request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
+        if let fields { request.httpBody = try JSONEncoder().encode(fields); request.setValue("application/json", forHTTPHeaderField: "Content-Type") }
+        let (data, response) = try await http.data(for: request)
+        guard let response = response as? HTTPURLResponse else { throw VoiceError.message("The lab returned an invalid response.") }
+        guard (200...299).contains(response.statusCode) else { throw HTTPFailure(code: response.statusCode) }
+        guard data.count <= 8 * 1024 * 1024 else { throw VoiceError.message("Lab history is too large to restore safely.") }
+        return try JSONDecoder().decode(LabSnapshot.self, from: data)
+    }
 
-        writerTask = Task { [weak self] in
-            for await _ in fifo.wakeups {
-                guard let self, self.connectionID == id, !Task.isCancelled else { return }
-                if let failure = fifo.failure { self.fail(failure); return }
-                while let frame = fifo.pop() {
-                    do {
-                        // Exactly one send in flight; controls and audio use the same FIFO.
-                        switch frame {
-                        case let .audio(data): try await socket.send(.data(data))
-                        case let .control(text, endsSession):
-                            try await socket.send(.string(text))
-                            guard self.connectionID == id else { return }
-                            if endsSession { self.finishSession(detail: "Session ended. Start again for a new session."); return }
-                        }
-                    } catch {
-                        guard self.connectionID == id, !Task.isCancelled else { return }
-                        self.fail(self.connectionError(error)); return
-                    }
-                    guard self.connectionID == id, !Task.isCancelled else { return }
-                    if let failure = fifo.failure { self.fail(failure); return }
-                }
-            }
-        }
+    private func read(from ws: URLSessionWebSocketTask, attempt: UUID) {
         readerTask = Task { [weak self] in
             do {
                 while !Task.isCancelled {
-                    let message = try await socket.receive()
-                    guard let self, self.connectionID == id else { return }
-                    if self.ending { continue }
-                    switch message {
-                    case let .string(text): try self.receive(text: text)
-                    case let .data(data): try self.receive(wav: data)
-                    @unknown default: throw VoiceError.message("The relay sent an unsupported WebSocket frame.")
+                    let message = try await ws.receive()
+                    guard let self, self.connectionID == attempt else { return }
+                    let data: Data
+                    switch message { case let .string(text): data = Data(text.utf8); case .data: throw VoiceError.message("The lab sent unsupported binary audio."); @unknown default: continue }
+                    try self.receive(JSONDecoder().decode(ServerEvent.self, from: data), attempt: attempt)
+                }
+            } catch is CancellationError { }
+            catch { guard let self, self.connectionID == attempt else { return }; self.connectionFailed(error) }
+        }
+    }
+
+    private func write(to ws: URLSessionWebSocketTask, attempt: UUID) {
+        guard let fifo else { return }
+        writerTask = Task { [weak self] in
+            do {
+                for await _ in fifo.wakeups {
+                    guard let self, self.connectionID == attempt else { return }
+                    if let problem = fifo.failure { throw CaptureQueueFailure(message: problem) }
+                    while let frame = fifo.pop() {
+                        // One send may already be in flight at mute. No buffered audio survives.
+                        try Task.checkCancellation()
+                        try await ws.send(.string(frame.json))
                     }
                 }
-            } catch {
-                guard let self, self.connectionID == id, !Task.isCancelled else { return }
-                if self.ending { self.finishSession(detail: "Session ended.") }
-                else { self.fail(self.connectionError(error)) }
-            }
+            } catch is CancellationError { }
+            catch { guard let self, self.connectionID == attempt else { return }; self.connectionFailed(error) }
         }
-        watchdogTask = Task { [weak self] in
+    }
+
+    private func watch(attempt: UUID) {
+        heartbeatTask = Task { [weak self] in
+            var ticks = 0
             while !Task.isCancelled {
                 do { try await Task.sleep(for: .seconds(1)) } catch { return }
-                guard let self, self.connectionID == id else { return }
-                let now = ContinuousClock.now
-                if !self.connected {
-                    if now - self.connectedAt > .seconds(20) {
-                        self.fail("The relay did not start a session. Check its hostname, port, Wi-Fi, firewall, and Local Network permission in Settings.")
-                        return
-                    }
-                    continue
+                guard let self, self.connectionID == attempt else { return }
+                let now = ProcessInfo.processInfo.systemUptime
+                if self.heartbeat.expired(now: now) { self.connectionFailed(URLError(.timedOut)); return }
+                ticks += 1
+                if ticks % 5 == 0 && self.connected {
+                    self.fifo?.enqueue(ClientFrame(type: "ping", fields: ["seq": .number(Double(self.heartbeat.ping()))]))
                 }
-                if let deadline = self.replyDeadline, now > deadline {
-                    self.fail("The relay did not finish sending its reply audio. Start a new session."); return
-                }
-                if let sent = self.pingSentAt {
-                    if now - sent > .seconds(15) {
-                        self.fail("The relay stopped responding. Check Wi-Fi and the relay, then start a new session."); return
-                    }
-                } else if now - self.lastPingAt > .seconds(10) {
-                    // Deadline includes time queued behind audio, so a stuck send also times out.
-                    self.pingSentAt = now
-                    self.lastPingAt = now
-                    fifo.enqueue(.ping)
-                }
+                if self.connected && now - self.openedAt >= 30 { self.retryCount = 0 }
             }
         }
     }
 
-    private func receive(text: String) throws {
-        guard text.utf8.count <= 64 * 1024 else { throw VoiceError.message("The relay sent an oversized event.") }
-        let event = try JSONDecoder().decode(ServerEvent.self, from: Data(text.utf8))
-        if event.type == "error" {
-            guard let relayMessage = event.message, let fatal = event.fatal else {
-                throw VoiceError.message("The relay sent an incomplete error event.")
-            }
-            let message = String(relayMessage.prefix(2000))
-            stopCapture()
-            try gate.receiveState("processing")
-            if fatal { fail(message) }
-            else { errorMessage = message; state = "Waiting for relay"; detail = "The relay reported an error and will send the next state." }
+    private func receive(_ event: ServerEvent, attempt: UUID) throws {
+        if event.type == "hello" {
+            guard !connected, event.protocolVersion == 1, event.connectionID == attempt.uuidString, let epoch = event.generation,
+                  snapshotStore.acceptHello(generation: epoch) else { throw VoiceError.message("The lab connection contract did not match this client.") }
+            connected = true; connecting = false; connectionStatus = "Your lab is connected"
+            if voiceWanted { beginVoice() }
             return
         }
-        if event.type == "session" {
-            guard !connected, let session = event.sessionID, !session.isEmpty,
-                  let mode = event.mode, let logging = event.logging, let raw = event.rawAudio else {
-                throw VoiceError.message("The relay sent invalid session information.")
-            }
-            sessionID = session
-            serverMode = mode
-            serverLogging = logging
-            serverRawAudio = raw
-            connected = true
-            state = "Preparing reply"
-            detail = "Connected. Waiting for the opening prompt."
+        guard connected else {
+            if event.type == "error" { throw VoiceError.message("The lab did not accept this session. Reconnect from Lab connection.") }
             return
         }
-        guard connected else { throw VoiceError.message("The relay sent an event before starting a session.") }
         switch event.type {
-        case "pong": pingSentAt = nil
-        case "state":
-            guard let value = event.state else { throw VoiceError.message("The relay omitted its state.") }
-            try gate.receiveState(value)
-            if pendingTurn != nil {
-                // Never capture while a reply is pending, even if the server sends listening early.
-                stopCapture()
-                return
+        case "pong": if let seq = event.seq { heartbeat.pong(seq, now: ProcessInfo.processInfo.systemUptime) }
+        case "state": if let state = event.state { try apply(state) }
+        case "status":
+            guard let status = event.status else { return }
+            voiceStatus = status
+            if ["listening", "speaking"].contains(status) && voiceWanted {
+                providerReady = true; updateCapture()
+            } else if ["unavailable", "reconnecting", "connecting"].contains(status) {
+                providerReady = false; flushAudio(notify: true)
+                if status == "unavailable" { voiceWanted = false; audio.stopAll(); notice = "Voice is unavailable. Continue with text, or try Talk again." }
             }
-            if gate.canCapture {
-                guard let fifo else { return }
-                try audio.startCapture(into: fifo)
-                microphoneActive = true
-                state = "Listening"
-                detail = "Speak now. Pause when you have finished your thought."
-            } else {
-                stopCapture()
-                state = muted || value == "muted" ? "Muted" : "Preparing reply"
-                detail = muted ? "Your microphone is off. Replies can still play." : "Your microphone is off while the relay prepares a reply."
-            }
-        case "reply":
-            guard pendingTurn == nil, let turn = event.turnID, !turn.isEmpty, let text = event.text else {
-                throw VoiceError.message("The relay sent an invalid or overlapping reply.")
-            }
-            gate.beginReply()
-            stopCapture()
-            pendingTurn = turn
-            awaitingWAV = true
-            replyDeadline = .now.advanced(by: .seconds(30))
-            replyText = String(text.prefix(6000))
-            state = "Receiving reply"
-            detail = "Your microphone is off. The reply will play on the speaker."
         case "transcript":
-            guard event.role == "student", let text = event.text else {
-                throw VoiceError.message("The relay sent an invalid transcript.")
+            if let role = event.role, let text = event.text, let turn = event.turnID {
+                transcripts.update(role: role, text: text, turnID: turn, final: event.final ?? false); messages = transcripts.turns
             }
-            transcript = String(text.prefix(6000))
-        default: throw VoiceError.message("The relay sent an unsupported event: \(event.type.prefix(60)).")
+        case "reply_start":
+            guard voiceWanted, foreground, !audioSuspended, !muted, let id = event.replyID else {
+                if let id = event.replyID { fifo?.enqueue(.reply("interrupt", id: id)) }; return
+            }
+            if let previous = audio.activeReply { fifo?.enqueue(.reply("interrupt", id: previous)) }
+            do { try audio.beginReply(id) }
+            catch { voiceFailed(error) }
+        case "audio":
+            guard voiceWanted, !muted, foreground, !audioSuspended, let id = event.replyID, audio.activeReply == id else { return }
+            guard let encoded = event.data, let bytes = Data(base64Encoded: encoded) else { voiceFailed(VoiceError.message("Voice sent unreadable audio.")); return }
+            do { try audio.append(bytes, replyID: id) } catch { voiceFailed(error) }
+        case "reply_end": if let id = event.replyID { audio.endReply(id) }
+        case "interrupted":
+            if event.replyID == nil || event.replyID == audio.activeReply { flushAudio(notify: false); updateCapture() }
+        case "error":
+            // Never render raw provider errors, which can contain remote URLs or credentials.
+            notice = "The lab could not complete that step. Review the current trial and try again."
+            if event.recoverable == false || ["connection_revoked", "superseded", "owner_replaced"].contains(event.code ?? "") {
+                wantsConnection = false; closeTransport(); connectionStatus = "Session opened elsewhere. Reconnect to continue."
+            }
+        default: break // Additive server events remain compatible.
         }
     }
 
-    private func receive(wav: Data) throws {
-        guard connected, pendingTurn != nil, awaitingWAV else {
-            throw VoiceError.message("The relay sent audio without exactly one pending reply.")
+    private func apply(_ state: LabSnapshot, restoring: Bool = false) throws {
+        guard ["mock", "simulation"].contains(state.backend) else {
+            throw VoiceError.message("This client supports mock and simulation sessions. Physical execution is unavailable.")
         }
-        awaitingWAV = false
-        replyDeadline = nil
-        stopCapture()
-        try audio.play(wav)
-        state = "Speaking"
-        detail = muted ? "Reply playing. Your microphone remains muted." : "Reply playing on the speaker. Your microphone is off."
+        var privateState = state; privateState.accessToken = nil
+        guard let acceptance = snapshotStore.accept(privateState) else { return }
+        if acceptance == .newGeneration {
+            // STOP and provider reconnect can advance generation without a new socket hello.
+            // Remove the tap/converter and queued PCM before capture resumes under the new epoch.
+            flushAudio(notify: true)
+            acknowledgedProposal = nil
+            presentationTask?.cancel(); presentingProposal = nil
+        }
+        snapshot = privateState
+        if restoring { transcripts.restore(state.messages) } else { transcripts.reconcile(state.messages) }
+        messages = transcripts.turns
+        if acknowledgedProposal != state.pending?.id { acknowledgedProposal = nil }
+        if let p = state.pending, visibleProposal == p.id { acknowledgeVisibleProposal(p) }
+        updateCapture()
     }
 
-    private func playbackFinished(success: Bool, message: String?) {
-        guard active, !ending, let turn = pendingTurn else { return }
-        guard success else { fail(message ?? "Reply playback failed. Start a new session."); return }
-        pendingTurn = nil
-        gate.finishReply()
-        fifo?.enqueue(.played(turn))
-        state = muted ? "Muted" : "Waiting for relay"
-        detail = muted ? "Your microphone is off. Unmute when you are ready." : "Reply finished. Waiting for the relay to allow listening."
+    func proposalAppeared(_ proposal: Proposal) {
+        visibleProposal = proposal.id
+        acknowledgeVisibleProposal(proposal)
+    }
+    func proposalDisappeared(_ id: String) { if visibleProposal == id { visibleProposal = nil } }
+    private func acknowledgeVisibleProposal(_ proposal: Proposal) {
+        guard connected, foreground, visibleProposal == proposal.id, snapshot?.pending?.id == proposal.id,
+              acknowledgedProposal != proposal.id, presentingProposal != proposal.id,
+              let origin, let credential, let attempt = connectionID else { return }
+        presentationTask?.cancel(); presentingProposal = proposal.id
+        presentationTask = Task { [weak self] in
+            guard let self else { return }
+            defer { if self.presentingProposal == proposal.id { self.presentingProposal = nil } }
+            do {
+                // Allow the mounted SwiftUI card to draw; cancellation/visibility is rechecked.
+                try await Task.sleep(for: .milliseconds(150))
+                guard self.visibleProposal == proposal.id, self.foreground, self.connectionID == attempt else { return }
+                var fields = proposal.fields; fields["channel"] = .string("text")
+                let updated = try await self.request(url: AppEndpoint.sessionURL(origin, id: credential.sessionID, action: "present"), method: "POST", token: credential.accessToken, fields: fields)
+                try Task.checkCancellation()
+                guard self.connectionID == attempt, self.visibleProposal == proposal.id else { return }
+                try self.apply(updated)
+                if self.snapshot?.pending?.id == proposal.id && self.snapshot?.pending?.presented == true { self.acknowledgedProposal = proposal.id }
+            } catch is CancellationError { }
+            catch { self.notice = "The proposal could not be marked as shown. Reconnect before confirming." }
+        }
     }
 
+    func chooseCondition(_ id: String) { act("condition", fields: ["condition_id": .string(id)]) }
+    func predict(_ text: String) { if let text = clean(text) { act("prediction", fields: ["text": .string(text)]) } }
+    func reflect(_ text: String) { if let text = clean(text) { act("reflection", fields: ["text": .string(text)]) } }
+    func sendText(_ text: String) {
+        if let text = clean(text) { act("request", fields: ["text": .string(text), "client_request_id": .string(UUID().uuidString)]) }
+    }
+    func confirm(_ proposal: Proposal) {
+        guard canConfirm, snapshot?.pending?.id == proposal.id else { return }
+        act("confirm", fields: proposal.fields)
+    }
+    func cancel(_ proposal: Proposal) { act("cancel", fields: ["request_id": .string(proposal.requestID)]) }
+    func cancelTask(_ id: String) { act("cancel", fields: ["request_id": .string(id)]) }
+    func prepare() { act("prepare") }
+    private func clean(_ text: String) -> String? { let s = text.trimmingCharacters(in: .whitespacesAndNewlines); return s.isEmpty ? nil : String(s.prefix(4000)) }
+
+    private func act(_ action: String, fields: [String: JSONValue] = [:], emergency: Bool = false) {
+        guard (canAct || emergency), let origin, let credential else { return }
+        let attempt = connectionID
+        if emergency { actionTask?.cancel() }
+        let actionID = UUID()
+        self.actionID = actionID
+        busy = true; notice = nil
+        actionTask = Task { [weak self] in
+            guard let self else { return }
+            defer { if self.actionID == actionID { self.actionID = nil; self.busy = false } }
+            do {
+                let state = try await self.request(url: AppEndpoint.sessionURL(origin, id: credential.sessionID, action: action), method: "POST", token: credential.accessToken, fields: fields)
+                try Task.checkCancellation()
+                guard self.connectionID == attempt, self.actionID == actionID else { return }
+                try self.apply(state)
+            } catch is CancellationError { }
+            catch {
+                guard self.connectionID == attempt, self.actionID == actionID else { return }
+                self.notice = self.actionError(error)
+                // Reconcile ambiguous HTTP outcomes; never replay a command or confirmation.
+                if let state = try? await self.request(url: AppEndpoint.sessionURL(origin, id: credential.sessionID), method: "GET", token: credential.accessToken),
+                   self.connectionID == attempt, self.actionID == actionID {
+                    try? self.apply(state)
+                }
+            }
+        }
+    }
+
+    func stopLab() {
+        stopVoice()
+        act("stop", emergency: true) // Direct deterministic endpoint; never asks a provider to stop.
+    }
+
+    func toggleVoice() {
+        if voiceWanted { stopVoice(); return }
+        guard connected, foreground else { notice = "Connect to your lab first. You can use text without microphone permission."; return }
+        voiceTask?.cancel()
+        voiceTask = Task { [weak self] in
+            guard let self else { return }
+            let granted = await withCheckedContinuation { continuation in
+                AVAudioApplication.requestRecordPermission { continuation.resume(returning: $0) }
+            }
+            guard !Task.isCancelled, self.foreground, self.connected else { return }
+            self.needsMicrophoneSettings = !granted
+            guard granted else { self.notice = "Microphone access is off. Allow it in Settings, or continue with text."; return }
+            self.voiceWanted = true; self.muted = false; self.notice = nil; self.beginVoice()
+        }
+    }
+
+    private func beginVoice() {
+        guard voiceWanted, connected, foreground, !audioSuspended else { return }
+        do {
+            try audio.activate()
+            voiceStatus = "connecting"; providerReady = false
+            fifo?.enqueue(ClientFrame(type: "start_voice")); fifo?.enqueue(.mute(muted))
+        } catch { voiceFailed(error) }
+    }
+    func stopVoice() {
+        voiceTask?.cancel(); voiceTask = nil
+        audioRecoveryTask?.cancel(); audioRecoveryTask = nil
+        voiceWanted = false; providerReady = false; voiceStatus = "off"
+        flushAudio(notify: true); audio.stopAll()
+        fifo?.enqueue(ClientFrame(type: "stop_voice"))
+    }
     func toggleMute() {
-        guard connected, !ending else { return }
+        guard voiceWanted else { return }
         muted.toggle()
-        gate.setMuted(muted)
-        // Close the thread-safe gate before removing the tap; racing old callbacks are rejected.
-        stopCapture()
+        flushAudio(notify: true)
         fifo?.enqueue(.mute(muted))
-        if audio.isPlaying {
-            detail = muted ? "Reply playing. Your microphone remains muted." : "Reply playing. Waiting for the relay before listening."
+        updateCapture()
+    }
+    func interrupt() {
+        flushAudio(notify: true)
+        updateCapture()
+    }
+    private func updateCapture() {
+        guard voiceWanted, providerReady, foreground, !audioSuspended, !muted, connected, let fifo, let generation = snapshotStore.audioGeneration else {
+            fifo?.stopCaptureAndDiscardAudio(); audio.stopCapture(); microphoneActive = false; return
+        }
+        do {
+            try audio.startCapture(into: fifo, generation: generation)
+            microphoneActive = audio.isCapturing
+        } catch { voiceFailed(error) }
+    }
+    private func flushAudio(notify: Bool) {
+        fifo?.stopCaptureAndDiscardAudio(); audio.stopCapture(); microphoneActive = false
+        if let id = audio.interruptPlayback(), notify { fifo?.enqueue(.reply("interrupt", id: id)) }
+        speakerActive = false
+        transcripts.discardPartialInput()
+        messages = transcripts.turns
+    }
+    private func voiceFailed(_ error: Error) {
+        stopVoice(); voiceStatus = "unavailable"
+        notice = "Voice paused. Check microphone access and audio output, then try Talk again. Text remains available."
+    }
+
+    func setForeground(_ active: Bool) {
+        guard foreground != active else { return }
+        foreground = active
+        if !active {
+            closeTransport()
+            connectionStatus = "Your lab is saved. Audio is paused."
+        } else if wantsConnection {
+            audioSuspended = false; retryCount = 0; startConnection()
+        }
+    }
+    private func interruption(raw: UInt?, options: UInt) {
+        guard let raw, let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
+        if type == .began {
+            audioSuspended = true; providerReady = false; flushAudio(notify: true); audio.stopAll()
+            fifo?.enqueue(ClientFrame(type: "stop_voice")); voiceStatus = "paused"
         } else {
-            state = muted ? "Muted" : "Waiting for relay"
-            detail = muted ? "Your microphone is off. Replies can still play." : "Unmute requested. Waiting for the relay to allow listening."
+            audioSuspended = false
+            if AVAudioSession.InterruptionOptions(rawValue: options).contains(.shouldResume) { beginVoice() }
+            else { stopVoice() }
+        }
+    }
+    private func routeChanged(_ raw: UInt) {
+        guard let reason = AVAudioSession.RouteChangeReason(rawValue: raw),
+              [.newDeviceAvailable, .oldDeviceUnavailable, .routeConfigurationChange].contains(reason) else { return }
+        recoverAudio()
+    }
+    private func recoverAudio() {
+        guard voiceWanted, foreground else { return }
+        flushAudio(notify: true); audio.stopAll(); providerReady = false
+        fifo?.enqueue(ClientFrame(type: "stop_voice")); voiceStatus = "connecting"
+        audioRecoveryTask?.cancel()
+        audioRecoveryTask = Task { [weak self] in
+            do { try await Task.sleep(for: .milliseconds(350)) } catch { return }
+            self?.beginVoice()
         }
     }
 
-    func end() {
-        guard active, !ending else { return }
-        ending = true
-        stopCapture()
-        audio.stopAll()
-        state = "Ending session"
-        detail = "Closing the connection."
-        watchdogTask?.cancel()
-        guard let fifo, let id = connectionID, connected else {
-            finishSession(detail: "Session ended.")
+    func disconnect() {
+        let saved = credential; let endpoint = origin
+        wantsConnection = false; voiceWanted = false; closeTransport()
+        connectionStatus = "Your lab is saved"
+        if let saved, let endpoint {
+            actionTask = Task { [weak self] in
+                guard let self else { return }
+                _ = try? await self.request(url: AppEndpoint.sessionURL(endpoint, id: saved.sessionID, action: "disconnect"), method: "POST", token: saved.accessToken, fields: [:])
+            }
+        }
+    }
+
+    private func connectionFailed(_ error: Error) {
+        if socket?.closeCode.rawValue == 4001 {
+            wantsConnection = false
+            closeTransport()
+            connectionStatus = "Session opened elsewhere. Reconnect to continue."
             return
         }
-        fifo.enqueue(.end)
-        // Do not wait indefinitely for a blocked write. Closing the socket also ends the session.
-        endingTask = Task { [weak self] in
-            do { try await Task.sleep(for: .seconds(1)) } catch { return }
-            guard let self, self.connectionID == id else { return }
-            self.finishSession(detail: "Session ended.")
+        let terminal: Bool
+        if let e = error as? HTTPFailure { terminal = [401, 403, 404, 409, 426].contains(e.code) }
+        else { terminal = error is DecodingError || error is VoiceError }
+        closeTransport()
+        guard foreground, wantsConnection else { return }
+        guard !terminal, retryCount < 4 else {
+            connecting = false; connectionStatus = "Lab connection paused"
+            notice = actionError(error); return
+        }
+        retryCount += 1; connecting = true
+        if let queueError = error as? CaptureQueueFailure { notice = queueError.message }
+        connectionStatus = "Reconnecting · attempt \(retryCount) of 4"
+        let delay = pow(2.0, Double(retryCount - 1))
+        retryTask = Task { [weak self] in
+            do { try await Task.sleep(for: .seconds(delay)) } catch { return }
+            self?.startConnection()
         }
     }
 
-    func enteredBackground() {
-        guard active else { return }
-        finishSession(detail: "The session ended when the app left the foreground. Start again for a new session.")
-    }
-
-    private func stopCapture() {
-        fifo?.stopCaptureAndDiscardAudio()
-        audio.stopCapture()
-        microphoneActive = false
-    }
-
-    private func cleanup() {
-        connectionID = nil // Invalidate all callbacks before canceling their resources.
-        stopCapture()
-        audio.stopAll()
+    /// The sole teardown owner. Every stale callback is invalidated before resources are stopped.
+    private func closeTransport() {
+        connectionID = nil; connected = false; connecting = false
         startupTask?.cancel(); startupTask = nil
         readerTask?.cancel(); readerTask = nil
         writerTask?.cancel(); writerTask = nil
-        watchdogTask?.cancel(); watchdogTask = nil
-        endingTask?.cancel(); endingTask = nil
+        heartbeatTask?.cancel(); heartbeatTask = nil
+        retryTask?.cancel(); retryTask = nil
+        actionTask?.cancel(); actionTask = nil; actionID = nil; busy = false
+        presentationTask?.cancel(); presentationTask = nil; presentingProposal = nil
+        voiceTask?.cancel(); voiceTask = nil
+        audioRecoveryTask?.cancel(); audioRecoveryTask = nil
+        flushAudio(notify: false); audio.stopAll()
         fifo?.close(); fifo = nil
-        socket?.cancel(with: .normalClosure, reason: nil); socket = nil
-        urlSession?.invalidateAndCancel(); urlSession = nil
-        pendingTurn = nil
-        awaitingWAV = false
-        replyDeadline = nil
-        pingSentAt = nil
-        gate = CaptureGate()
-        muted = false
-        active = false
-        connected = false
-        ending = false
+        socket?.cancel(with: .goingAway, reason: nil); socket = nil
+        providerReady = false; voiceStatus = voiceWanted ? "reconnecting" : "off"
+        acknowledgedProposal = nil; visibleProposal = nil
+        transcripts.restore(snapshot?.messages ?? []); messages = transcripts.turns
     }
 
-    private func finishSession(detail: String) {
-        cleanup()
-        state = "Ready"
-        self.detail = detail
-    }
-
-    private func fail(_ message: String) {
-        cleanup()
-        state = "Session stopped"
-        detail = "Resolve the issue below, then start a new session."
-        errorMessage = message
-        UIAccessibility.post(notification: .announcement, argument: "Session stopped. \(message)")
-    }
-
-    private func connectionError(_ error: Error) -> String {
-        if let error = error as? VoiceError { return error.localizedDescription }
-        if error is DecodingError { return "The relay sent an event the app could not read. Check that client and relay use the same protocol." }
-        let code = (error as NSError).code
-        if (error as NSError).domain == NSURLErrorDomain {
-            switch code {
-            case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed:
-                return "The relay hostname could not be found. Use the Mac's .local hostname and connect both devices to the same Wi-Fi."
-            case NSURLErrorAppTransportSecurityRequiresSecureConnection:
-                return "iOS blocked this address. Use the Mac's .local hostname for local ws://, or a trusted wss:// endpoint."
-            case NSURLErrorSecureConnectionFailed, NSURLErrorServerCertificateUntrusted:
-                return "The relay's secure connection could not be verified. Use a trusted certificate or the local .local ws:// relay."
-            default: break
+    private func actionError(_ error: Error) -> String {
+        if let e = error as? HTTPFailure {
+            switch e.code {
+            case 401, 403: return "The lab did not accept the credential. Check your pairing code in Lab connection."
+            case 404: return "This session is no longer available. Reconnect to open a new lab."
+            case 409, 422: return "The trial changed or this step is not ready. Review the current proposal before trying again."
+            default: return "The lab could not complete that step. The command was not repeated. Reconnect or try again."
             }
         }
-        return "Connection lost or unavailable. Check the relay, Wi-Fi, firewall, and Local Network permission in Settings. \(error.localizedDescription)"
+        if error is DecodingError { return "The lab response did not match this client. Check that the server uses protocol version 1." }
+        if let queueError = error as? CaptureQueueFailure { return queueError.message }
+        if let e = error as? VoiceError { return e.localizedDescription }
+        let code = (error as NSError).code
+        switch code {
+        case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed: return "The lab address could not be found. Check the server address and Wi-Fi."
+        case NSURLErrorSecureConnectionFailed, NSURLErrorServerCertificateUntrusted, NSURLErrorServerCertificateHasBadDate, NSURLErrorServerCertificateHasUnknownRoot:
+            return "The lab’s HTTPS certificate could not be verified. Use the trusted HTTPS address."
+        case NSURLErrorAppTransportSecurityRequiresSecureConnection: return "iOS blocked this address. Use trusted HTTPS, or a .local development host with local networking permission."
+        default: return "The lab is unreachable. Check Wi-Fi and the server, then reconnect. Your commands will not be replayed."
+        }
     }
 }
