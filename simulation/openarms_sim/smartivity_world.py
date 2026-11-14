@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+from copy import deepcopy
 from dataclasses import replace
 from types import SimpleNamespace
 
@@ -72,7 +73,10 @@ def _vessel_radius(profile):
 class World:
     """Bounded joint goals and a separate carrier-volume model."""
 
-    def __init__(self, seed: int = 0):
+    def __init__(self, seed: int = 0, *, aim: str = "spout"):
+        if aim not in ("spout", "mouth_center"):
+            raise ValueError("Unknown pour aim.")
+        self.aim = aim
         source = yaml.safe_load(CONFIG_PATH.read_text())
         self.config = config = source["model"]
         self.seed = int(seed)
@@ -167,8 +171,14 @@ class World:
             body = w.add_body(name=key, pos=pos.tolist(), mocap=key == BEAKER)
             _vessel(spec, body, profile, rgba)
             r, height = _vessel_radius(profile), profile["inner_profile"][-1][0] / 1000
-            _geom(body, key + "_rim", "CYLINDER", [r * 1.12, .0014, 0], [0, 0, height-.001],
-                  [.32, .83, .98, .55] if key == BEAKER else [.75, .94, .82, .5], contype=0, conaffinity=0)
+            rim_color = [.32, .83, .98, .55] if key == BEAKER else [.75, .94, .82, .5]
+            sides = 24
+            for side in range(sides):
+                angle = math.tau * side / sides
+                normal = np.array([math.cos(angle), math.sin(angle)])
+                _geom(body, f"{key}_rim_{side}", "BOX", [.0009, r * math.tan(math.pi / sides), .001],
+                      [*normal * (r + .001), height - .001], rim_color,
+                      quat=[math.cos(angle / 2), 0, 0, math.sin(angle / 2)], contype=0, conaffinity=0)
             _geom(body, key + "_liquid", "CYLINDER", [r*.95, .008, 0], [0, 0, .011],
                   RGBA_WATER if key == BEAKER else RGBA_RED, contype=0, conaffinity=0)
         # The attached-object proxy does not qualify jaw friction or finger contact.
@@ -212,6 +222,12 @@ class World:
             spout /= np.linalg.norm(spout)
             offset = T @ (UP * (self.beaker_height - grasp_height) + spout * radius)
             target_grasp = target_lip - offset
+        if self.aim == "mouth_center":
+            # Paired diagnostic: use the uncorrected center of the donor mouth
+            # instead of vertically projecting the lip into the receiver.
+            for _ in range(5):
+                target_grasp = target_lip - (Rt @ Rg.T) @ (UP * (self.beaker_height - grasp_height))
+                q_tip, Rt = self._solve(lite, target_grasp, tip, q_tip)
         q_above, _ = self._solve(lite, target_grasp, 0., q_lift)
         values = {"HOME": HOME_MODEL, "GRASP_A": q_grasp, "ABOVE_A": q_lift, "LIFT_A": q_lift,
                   "ABOVE_C": q_above, "TIP_C": q_tip}
@@ -332,7 +348,11 @@ class World:
             alpha = blend(self._elapsed / segment.duration)
             target = segment.q0 + alpha * (segment.q1 - segment.q0)
             d.ctrl[self._actuators] = np.r_[target, self._grip(segment.grip0 + alpha * (segment.grip1-segment.grip0))]
+        previous_time = d.time
         mujoco.mj_step(m, d)
+        if abs(d.time - previous_time - self.timestep) > 1e-9 or not np.isfinite(d.qpos).all():
+            self._fail("MuJoCo integration failed.")
+            return
         mujoco.mj_kinematics(m, d)
         self._attach()
         self._update_transfer()
@@ -371,7 +391,7 @@ class World:
             [0., (self.beaker_profile["outer_profile"][-1][1] + self.beaker_profile["spout"]["extension_mm"]) / 1000,
              self.beaker_height]
         )
-        if tilt < threshold or abs(R[2, 1]) < .3:
+        if tilt < threshold or R[2, 1] > -.3:
             return
         flow = self.config["max_flow_ml_s"] * np.clip((tilt - threshold) / 8, 0, 1)
         amount = min(float(flow * self.timestep), donor["water_ml"])
@@ -443,7 +463,8 @@ class World:
         return {"success": bool(success), "delivered_ml": self.delivered_ml, "spilled_ml": self.spill["water_ml"],
                 "overflow_ml": self.overflow_ml, "collisions": self.collisions, "drops": self.drops,
                 "placed": bool(self._placed), "foam_peak": self._max_foam, "elapsed_sim_s": self.sim_time,
-                "preloaded": self.initial, "remaining": self.contents, "spill": self.spill, "fault": self._fault}
+                "aim": self.aim, "seed": self.seed, "preloaded": deepcopy(self.initial),
+                "remaining": deepcopy(self.contents), "spill": self.spill.copy(), "fault": self._fault}
 
     def close(self):
         if self._renderer is not None:

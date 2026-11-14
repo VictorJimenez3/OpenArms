@@ -17,6 +17,10 @@ preparation:
     stir_count: 32
   sequence: Preload both mixtures, with the flask in its tray. Quickly pour the beaker into the flask.
 model:
+  # Simulation assumptions. The flask is sized for the virtual scene.
+  # The beaker uses OpenArms' photo-derived donor_A profile.
+  # Water mL is the flow proxy. Solid/pigment/soap booklet units track
+  # conserved constituents independently and are never converted to mL.
   beaker_xy_m: [0.265, 0.133]
   flask_xy_m: [0.270, -0.086]
   table_centre_m: [0.245, 0.0]
