@@ -1,0 +1,3539 @@
+{
+  "schema_version": 1,
+  "backend": "offline_recorded_image_inference",
+  "physical_outcome": "not_evaluated",
+  "dataset": {
+    "name": "mandarin-four-still-stress-v1",
+    "annotation_provenance": "agent visually drew boxes at 480x640 before running either detector; provisional, human review pending",
+    "negative_definition": "No visually identifiable orange in frame; not proof object physically absent",
+    "cases": [
+      {
+        "id": "A-after-identity",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": [
+          187,
+          205,
+          245,
+          303
+        ]
+      },
+      {
+        "id": "A-after-dark",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": [
+          187,
+          205,
+          245,
+          303
+        ]
+      },
+      {
+        "id": "A-after-gray",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": [
+          187,
+          205,
+          245,
+          303
+        ]
+      },
+      {
+        "id": "A-after-occlude",
+        "image": "A-after.jpg",
+        "sha256": "564e12f127be6fae49ab9cdfa08e7a136fd56a0c4806f6fc7700650afc56d228",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "occlude_right",
+        "original_box": [
+          187,
+          205,
+          245,
+          303
+        ],
+        "expected_box": [
+          187,
+          205,
+          216,
+          303
+        ]
+      },
+      {
+        "id": "A-before-identity",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": [
+          284,
+          173,
+          349,
+          286
+        ]
+      },
+      {
+        "id": "A-before-dark",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": [
+          284,
+          173,
+          349,
+          286
+        ]
+      },
+      {
+        "id": "A-before-gray",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": [
+          284,
+          173,
+          349,
+          286
+        ]
+      },
+      {
+        "id": "A-before-occlude",
+        "image": "A-before.jpg",
+        "sha256": "e28d83aaf0b9d609827199500588adcc9d3651f176801e7b9527a0474bc6c9f9",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "occlude_right",
+        "original_box": [
+          284,
+          173,
+          349,
+          286
+        ],
+        "expected_box": [
+          284,
+          173,
+          316,
+          286
+        ]
+      },
+      {
+        "id": "C-before-identity",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": [
+          123,
+          195,
+          198,
+          275
+        ]
+      },
+      {
+        "id": "C-before-dark",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": [
+          123,
+          195,
+          198,
+          275
+        ]
+      },
+      {
+        "id": "C-before-gray",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": [
+          123,
+          195,
+          198,
+          275
+        ]
+      },
+      {
+        "id": "C-before-occlude",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "occlude_right",
+        "original_box": [
+          123,
+          195,
+          198,
+          275
+        ],
+        "expected_box": [
+          123,
+          195,
+          160,
+          275
+        ]
+      },
+      {
+        "id": "C-hover-identity",
+        "image": "C-hover.jpg",
+        "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "identity",
+        "expected_box": null
+      },
+      {
+        "id": "C-hover-dark",
+        "image": "C-hover.jpg",
+        "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "dark",
+        "expected_box": null
+      },
+      {
+        "id": "C-hover-gray",
+        "image": "C-hover.jpg",
+        "sha256": "43131aceefb76634550aa048eaa193a070e07e58858db1b0150d37e2cff57bc4",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "gray",
+        "expected_box": null
+      },
+      {
+        "id": "synthetic-blank",
+        "image": "C-before.jpg",
+        "sha256": "d79670a638e59478609feaf3eda2d998bc185c0f7d0e3ad586335646839c7b8c",
+        "size_wh": [
+          480,
+          640
+        ],
+        "transform": "blank",
+        "expected_box": null
+      }
+    ]
+  },
+  "device": "mps",
+  "gpu_postprocessing": "CPU NMS for MPS; backbone/head on MPS",
+  "environment": {
+    "python": "3.12.15",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "torch": "2.8.0",
+    "opencv": "4.12.0"
+  },
+  "model_load_ms_including_download_if_uncached": 1191.610958892852,
+  "repeats": 3,
+  "methods": {
+    "hsv-orange-v1": {
+      "cold_first_frame_ms": 112.51458432525396,
+      "summary_all": {
+        "count": 48,
+        "correct_at_iou_0_5_or_negative_unknown": 12,
+        "positive_count": 36,
+        "positive_localized_iou_0_5": 3,
+        "negative_false_positives": 3,
+        "median_end_to_end_ms": 78.91074917279184,
+        "p95_end_to_end_ms": 109.14032165892421,
+        "median_detector_ms": 0.5332287400960922
+      },
+      "warm_summary": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 8,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 2,
+        "negative_false_positives": 2,
+        "median_end_to_end_ms": 79.44450038485229,
+        "p95_end_to_end_ms": 112.77805261779575,
+        "median_detector_ms": 0.5585618782788515
+      },
+      "rows": [
+        {
+          "case_id": "A-after-identity",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 105.95495905727148,
+          "detector_ms": 6.559625267982483,
+          "end_to_end_ms": 112.51458432525396
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 88.31645781174302,
+          "detector_ms": 1.2466670013964176,
+          "end_to_end_ms": 89.56312481313944
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.77899980545044,
+          "detector_ms": 0.5279169417917728,
+          "end_to_end_ms": 73.30691674724221
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.11316670104861,
+          "detector_ms": 0.5428753793239594,
+          "end_to_end_ms": 70.65604208037257
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              285.0,
+              174.0,
+              348.0,
+              285.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  315.8522449746384,
+                  228.46728035568913
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.952076242341729,
+          "image_load_ms": 76.60362496972084,
+          "detector_ms": 2.7204579673707485,
+          "end_to_end_ms": 79.32408293709159
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 78.09549989178777,
+          "detector_ms": 0.522875227034092,
+          "end_to_end_ms": 78.61837511882186
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.33391688391566,
+          "detector_ms": 0.4597082734107971,
+          "end_to_end_ms": 74.79362515732646
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 75.15724981203675,
+          "detector_ms": 0.5115000531077385,
+          "end_to_end_ms": 75.66874986514449
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.94887537136674,
+          "detector_ms": 0.5384576506912708,
+          "end_to_end_ms": 73.48733302205801
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.41224979609251,
+          "detector_ms": 0.45841699466109276,
+          "end_to_end_ms": 73.8706667907536
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.01016694307327,
+          "detector_ms": 0.47729210928082466,
+          "end_to_end_ms": 72.4874590523541
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              411.0,
+              0.0,
+              464.0,
+              169.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  438.3825588518421,
+                  84.14566377876957
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 80.73829114437103,
+          "detector_ms": 0.5782917141914368,
+          "end_to_end_ms": 81.31658285856247
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              353.0,
+              572.0,
+              480.0,
+              640.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  423.1783575213084,
+                  611.5983068417415
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.06245821341872,
+          "detector_ms": 0.5284580402076244,
+          "end_to_end_ms": 71.59091625362635
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.25166694074869,
+          "detector_ms": 0.465374905616045,
+          "end_to_end_ms": 70.71704184636474
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 78.52591713890433,
+          "detector_ms": 0.5254577845335007,
+          "end_to_end_ms": 79.05137492343783
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 87.27741613984108,
+          "detector_ms": 0.4636249504983425,
+          "end_to_end_ms": 87.74104109033942
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 79.08166712149978,
+          "detector_ms": 0.7163328118622303,
+          "end_to_end_ms": 79.79799993336201
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.65800004824996,
+          "detector_ms": 0.47308299690485,
+          "end_to_end_ms": 73.13108304515481
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.66454195976257,
+          "detector_ms": 0.5326247774064541,
+          "end_to_end_ms": 72.19716673716903
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 79.26575001329184,
+          "detector_ms": 0.5064168944954872,
+          "end_to_end_ms": 79.77216690778732
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              285.0,
+              174.0,
+              348.0,
+              285.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  315.8522449746384,
+                  228.46728035568913
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.952076242341729,
+          "image_load_ms": 88.21175014600158,
+          "detector_ms": 0.5776248872280121,
+          "end_to_end_ms": 88.78937503322959
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 96.47416602820158,
+          "detector_ms": 0.7536248303949833,
+          "end_to_end_ms": 97.22779085859656
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 101.454583927989,
+          "detector_ms": 0.5916249938309193,
+          "end_to_end_ms": 102.04620892181993
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 94.01787491515279,
+          "detector_ms": 0.5899583920836449,
+          "end_to_end_ms": 94.60783330723643
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 79.83341719955206,
+          "detector_ms": 0.5615409463644028,
+          "end_to_end_ms": 80.39495814591646
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.63395924121141,
+          "detector_ms": 0.4751658998429775,
+          "end_to_end_ms": 78.10912514105439
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 152.31837471947074,
+          "detector_ms": 0.47062523663043976,
+          "end_to_end_ms": 152.78899995610118
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              411.0,
+              0.0,
+              464.0,
+              169.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  438.3825588518421,
+                  84.14566377876957
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 93.2225831784308,
+          "detector_ms": 0.5825418047606945,
+          "end_to_end_ms": 93.80512498319149
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              353.0,
+              572.0,
+              480.0,
+              640.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  423.1783575213084,
+                  611.5983068417415
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.8351248651743,
+          "detector_ms": 0.5816658958792686,
+          "end_to_end_ms": 72.41679076105356
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 67.38895922899246,
+          "detector_ms": 0.47279102727770805,
+          "end_to_end_ms": 67.86175025627017
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 64.37062518671155,
+          "detector_ms": 0.46854186803102493,
+          "end_to_end_ms": 64.83916705474257
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.39050015434623,
+          "detector_ms": 0.44504180550575256,
+          "end_to_end_ms": 73.83554195985198
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.3133747279644,
+          "detector_ms": 1.5608328394591808,
+          "end_to_end_ms": 78.87420756742358
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 102.41041705012321,
+          "detector_ms": 0.46341679990291595,
+          "end_to_end_ms": 102.87383385002613
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 95.59241589158773,
+          "detector_ms": 0.7638754323124886,
+          "end_to_end_ms": 96.35629132390022
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.71275003626943,
+          "detector_ms": 0.5338327027857304,
+          "end_to_end_ms": 75.24658273905516
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              285.0,
+              174.0,
+              348.0,
+              285.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  315.8522449746384,
+                  228.46728035568913
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.952076242341729,
+          "image_load_ms": 86.16137504577637,
+          "detector_ms": 0.625124666839838,
+          "end_to_end_ms": 86.7864997126162
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 80.65554173663259,
+          "detector_ms": 0.4779999144375324,
+          "end_to_end_ms": 81.13354165107012
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 81.85787498950958,
+          "detector_ms": 0.5134590901434422,
+          "end_to_end_ms": 82.37133407965302
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.01708266884089,
+          "detector_ms": 0.4992089234292507,
+          "end_to_end_ms": 76.51629159227014
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "multiple similarly sized orange regions",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.23729219287634,
+          "detector_ms": 0.6229998543858528,
+          "end_to_end_ms": 77.86029204726219
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 78.3917079679668,
+          "detector_ms": 0.5555828101933002,
+          "end_to_end_ms": 78.9472907781601
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 90.48933256417513,
+          "detector_ms": 2.800667192786932,
+          "end_to_end_ms": 93.28999975696206
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              411.0,
+              0.0,
+              464.0,
+              169.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  438.3825588518421,
+                  84.14566377876957
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 124.10812499001622,
+          "detector_ms": 0.7750838994979858,
+          "end_to_end_ms": 124.88320888951421
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              353.0,
+              572.0,
+              480.0,
+              640.0
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "color_region_centroid",
+                "xy": [
+                  423.1783575213084,
+                  611.5983068417415
+                ]
+              }
+            ],
+            "confidence": null,
+            "unknown_reason": null,
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 78.50483385846019,
+          "detector_ms": 0.6120000034570694,
+          "end_to_end_ms": 79.11683386191726
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.44304195046425,
+          "detector_ms": 1.0612080805003643,
+          "end_to_end_ms": 73.50425003096461
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 64.99183410778642,
+          "detector_ms": 0.4737912677228451,
+          "end_to_end_ms": 65.46562537550926
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no orange region",
+            "method": "hsv-orange-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 75.68300003185868,
+          "detector_ms": 0.4459172487258911,
+          "end_to_end_ms": 76.12891728058457
+        }
+      ]
+    },
+    "torchvision-ssdlite320-mobilenet-v3-large-coco-v1": {
+      "cold_first_frame_ms": 3801.7239589244127,
+      "summary_all": {
+        "count": 48,
+        "correct_at_iou_0_5_or_negative_unknown": 15,
+        "positive_count": 36,
+        "positive_localized_iou_0_5": 3,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 102.47081192210317,
+        "p95_end_to_end_ms": 132.83741034101692,
+        "median_detector_ms": 28.628875501453876
+      },
+      "warm_summary": {
+        "count": 32,
+        "correct_at_iou_0_5_or_negative_unknown": 10,
+        "positive_count": 24,
+        "positive_localized_iou_0_5": 2,
+        "negative_false_positives": 0,
+        "median_end_to_end_ms": 103.311333572492,
+        "p95_end_to_end_ms": 112.04427941702306,
+        "median_detector_ms": 29.815020971000195
+      },
+      "rows": [
+        {
+          "case_id": "A-after-identity",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.93187468126416,
+          "detector_ms": 3730.7920842431486,
+          "end_to_end_ms": 3801.7239589244127
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 105.04295770078897,
+          "detector_ms": 37.519041914492846,
+          "end_to_end_ms": 142.56199961528182
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.19008323550224,
+          "detector_ms": 27.3073329590261,
+          "end_to_end_ms": 97.49741619452834
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 0,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 68.11179174110293,
+          "detector_ms": 22.443666122853756,
+          "end_to_end_ms": 90.55545786395669
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              276.1294250488281,
+              169.21241760253906,
+              348.94818115234375,
+              282.1658935546875
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  312.53880310058594,
+                  225.68915557861328
+                ]
+              }
+            ],
+            "confidence": 0.5231438875198364,
+            "unknown_reason": null,
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.8360992602459737,
+          "image_load_ms": 74.9800419434905,
+          "detector_ms": 23.77383317798376,
+          "end_to_end_ms": 98.75387512147427
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.76883288472891,
+          "detector_ms": 27.79775019735098,
+          "end_to_end_ms": 102.56658308207989
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.49429202824831,
+          "detector_ms": 29.015582986176014,
+          "end_to_end_ms": 103.50987501442432
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.39758395776153,
+          "detector_ms": 21.86679095029831,
+          "end_to_end_ms": 96.26437490805984
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.24229101464152,
+          "detector_ms": 24.27374990656972,
+          "end_to_end_ms": 95.51604092121124
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.1042500808835,
+          "detector_ms": 27.118875179439783,
+          "end_to_end_ms": 99.22312526032329
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.07129087671638,
+          "detector_ms": 32.669459003955126,
+          "end_to_end_ms": 103.7407498806715
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 0,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.98562503233552,
+          "detector_ms": 22.43825001642108,
+          "end_to_end_ms": 93.4238750487566
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 60.96762465313077,
+          "detector_ms": 28.778583277016878,
+          "end_to_end_ms": 89.74620793014765
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 61.93733401596546,
+          "detector_ms": 31.48262482136488,
+          "end_to_end_ms": 93.41995883733034
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 61.42108328640461,
+          "detector_ms": 22.675624582916498,
+          "end_to_end_ms": 84.09670786932111
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 0,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.3272917829454,
+          "detector_ms": 25.691499933600426,
+          "end_to_end_ms": 102.01879171654582
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 68.5346252284944,
+          "detector_ms": 25.309916120022535,
+          "end_to_end_ms": 93.84454134851694
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.87958280742168,
+          "detector_ms": 33.268959261476994,
+          "end_to_end_ms": 107.14854206889868
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 83.470709156245,
+          "detector_ms": 31.306749675422907,
+          "end_to_end_ms": 114.7774588316679
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 1,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.7062084004283,
+          "detector_ms": 28.76966679468751,
+          "end_to_end_ms": 100.4758751951158
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              276.1294250488281,
+              169.21241760253906,
+              348.94818115234375,
+              282.1658935546875
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  312.53880310058594,
+                  225.68915557861328
+                ]
+              }
+            ],
+            "confidence": 0.5231438875198364,
+            "unknown_reason": null,
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.8360992602459737,
+          "image_load_ms": 74.76808270439506,
+          "detector_ms": 29.750166926532984,
+          "end_to_end_ms": 104.51824963092804
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.91358369588852,
+          "detector_ms": 30.24424985051155,
+          "end_to_end_ms": 105.15783354640007
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.38474986702204,
+          "detector_ms": 28.488084208220243,
+          "end_to_end_ms": 102.87283407524228
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.81841586902738,
+          "detector_ms": 28.06995902210474,
+          "end_to_end_ms": 101.88837489113212
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.12912507727742,
+          "detector_ms": 31.245915684849024,
+          "end_to_end_ms": 102.37504076212645
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 162.21016691997647,
+          "detector_ms": 34.53191602602601,
+          "end_to_end_ms": 196.74208294600248
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.81233296170831,
+          "detector_ms": 32.297542318701744,
+          "end_to_end_ms": 109.10987528041005
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 1,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.69662495329976,
+          "detector_ms": 32.185958698391914,
+          "end_to_end_ms": 105.88258365169168
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 62.22420837730169,
+          "detector_ms": 28.472582809627056,
+          "end_to_end_ms": 90.69679118692875
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 74.41312493756413,
+          "detector_ms": 34.87820830196142,
+          "end_to_end_ms": 109.29133323952556
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 61.932750046253204,
+          "detector_ms": 31.263125129044056,
+          "end_to_end_ms": 93.19587517529726
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 1,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 76.00129209458828,
+          "detector_ms": 33.73412508517504,
+          "end_to_end_ms": 109.73541717976332
+        },
+        {
+          "case_id": "A-after-identity",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.26033322513103,
+          "detector_ms": 22.438041865825653,
+          "end_to_end_ms": 94.69837509095669
+        },
+        {
+          "case_id": "A-after-dark",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 70.29108377173543,
+          "detector_ms": 28.334083035588264,
+          "end_to_end_ms": 98.6251668073237
+        },
+        {
+          "case_id": "A-after-gray",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            245,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.3285417817533,
+          "detector_ms": 28.437708038836718,
+          "end_to_end_ms": 105.76624982059002
+        },
+        {
+          "case_id": "A-after-occlude",
+          "repeat": 2,
+          "expected_box": [
+            187,
+            205,
+            216,
+            303
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-after-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.39512477442622,
+          "detector_ms": 22.06154214218259,
+          "end_to_end_ms": 93.45666691660881
+        },
+        {
+          "case_id": "A-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "ok",
+            "box_xyxy": [
+              276.1294250488281,
+              169.21241760253906,
+              348.94818115234375,
+              282.1658935546875
+            ],
+            "mask": null,
+            "pixel_points": [
+              {
+                "name": "box_center",
+                "xy": [
+                  312.53880310058594,
+                  225.68915557861328
+                ]
+              }
+            ],
+            "confidence": 0.5231438875198364,
+            "unknown_reason": null,
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.8360992602459737,
+          "image_load_ms": 73.9960833452642,
+          "detector_ms": 22.00308395549655,
+          "end_to_end_ms": 95.99916730076075
+        },
+        {
+          "case_id": "A-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 75.06883423775434,
+          "detector_ms": 30.319000128656626,
+          "end_to_end_ms": 105.38783436641097
+        },
+        {
+          "case_id": "A-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            349,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.78908312320709,
+          "detector_ms": 27.85091707482934,
+          "end_to_end_ms": 105.64000019803643
+        },
+        {
+          "case_id": "A-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            284,
+            173,
+            316,
+            286
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "A-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 77.31012487784028,
+          "detector_ms": 25.31183324754238,
+          "end_to_end_ms": 102.62195812538266
+        },
+        {
+          "case_id": "C-before-identity",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.84458430856466,
+          "detector_ms": 25.742165744304657,
+          "end_to_end_ms": 97.58675005286932
+        },
+        {
+          "case_id": "C-before-dark",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 75.3268338739872,
+          "detector_ms": 27.776208240538836,
+          "end_to_end_ms": 103.10304211452603
+        },
+        {
+          "case_id": "C-before-gray",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            198,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.62549984827638,
+          "detector_ms": 28.23333302512765,
+          "end_to_end_ms": 101.85883287340403
+        },
+        {
+          "case_id": "C-before-occlude",
+          "repeat": 2,
+          "expected_box": [
+            123,
+            195,
+            160,
+            275
+          ],
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-before-occlude",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 72.22458394244313,
+          "detector_ms": 33.53045787662268,
+          "end_to_end_ms": 105.75504181906581
+        },
+        {
+          "case_id": "C-hover-identity",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-identity",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded"
+          },
+          "iou": 0.0,
+          "image_load_ms": 73.32816673442721,
+          "detector_ms": 36.47987497970462,
+          "end_to_end_ms": 109.80804171413183
+        },
+        {
+          "case_id": "C-hover-dark",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-dark",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.06104213744402,
+          "detector_ms": 32.458582893013954,
+          "end_to_end_ms": 103.51962503045797
+        },
+        {
+          "case_id": "C-hover-gray",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "C-hover-gray",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 61.762833036482334,
+          "detector_ms": 29.879875015467405,
+          "end_to_end_ms": 91.64270805194974
+        },
+        {
+          "case_id": "synthetic-blank",
+          "repeat": 2,
+          "expected_box": null,
+          "observation": {
+            "object_id": "orange",
+            "camera_id": "legacy-unidentified",
+            "frame_id": "synthetic-blank",
+            "timestamp_s": null,
+            "calibration_id": null,
+            "schema_version": 1,
+            "status": "unknown",
+            "box_xyxy": null,
+            "mask": null,
+            "pixel_points": [],
+            "confidence": null,
+            "unknown_reason": "no target above threshold",
+            "method": "torchvision-ssdlite320-mobilenet-v3-large-coco-v1",
+            "geometry_valid": false,
+            "grasp_pose": null,
+            "alignment_known": false,
+            "provenance": "recorded_transformed"
+          },
+          "iou": 0.0,
+          "image_load_ms": 71.12249964848161,
+          "detector_ms": 33.78595830872655,
+          "end_to_end_ms": 104.90845795720816
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Provisional agent-drawn image boxes, not measured metric truth.",
+    "Transforms of four stills are correlated stress tests, not independent trials.",
+    "No training or threshold fitting; fixed HSV bounds and COCO score 0.35.",
+    "Legacy still timestamps/camera IDs not established; no joint alignment claim.",
+    "No cup footage, liquid outcomes, grasp-point accuracy or robot test."
+  ]
+}

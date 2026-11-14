@@ -1,0 +1,118 @@
+{
+  "scope": "one cached decoded frame, cold process first call and two warm calls; no JPEG read in timing",
+  "case": "A-after-identity",
+  "model_load_ms": 1546.4934171177447,
+  "rows": [
+    {
+      "run": 0,
+      "model_forward_ms": 2119.986209087074,
+      "detector_including_prepost_ms": 2200.264750048518,
+      "observation": {
+        "object_id": "orange",
+        "camera_id": "legacy-unidentified",
+        "frame_id": "A-after-identity",
+        "timestamp_s": null,
+        "calibration_id": null,
+        "schema_version": 1,
+        "status": "ok",
+        "box_xyxy": [
+          187.0679931640625,
+          204.05136108398438,
+          240.53604125976562,
+          302.1632385253906
+        ],
+        "mask": null,
+        "pixel_points": [
+          {
+            "name": "box_center",
+            "xy": [
+              213.80201721191406,
+              253.1072998046875
+            ]
+          }
+        ],
+        "confidence": 0.8792126178741455,
+        "unknown_reason": null,
+        "method": "grounding-dino-tiny-a2bb814",
+        "geometry_valid": false,
+        "grasp_pose": null,
+        "alignment_known": false,
+        "provenance": "recorded"
+      }
+    },
+    {
+      "run": 1,
+      "model_forward_ms": 1384.2475418932736,
+      "detector_including_prepost_ms": 1420.9237503819168,
+      "observation": {
+        "object_id": "orange",
+        "camera_id": "legacy-unidentified",
+        "frame_id": "A-after-identity",
+        "timestamp_s": null,
+        "calibration_id": null,
+        "schema_version": 1,
+        "status": "ok",
+        "box_xyxy": [
+          187.0679931640625,
+          204.05136108398438,
+          240.53604125976562,
+          302.1632385253906
+        ],
+        "mask": null,
+        "pixel_points": [
+          {
+            "name": "box_center",
+            "xy": [
+              213.80201721191406,
+              253.1072998046875
+            ]
+          }
+        ],
+        "confidence": 0.8792126178741455,
+        "unknown_reason": null,
+        "method": "grounding-dino-tiny-a2bb814",
+        "geometry_valid": false,
+        "grasp_pose": null,
+        "alignment_known": false,
+        "provenance": "recorded"
+      }
+    },
+    {
+      "run": 2,
+      "model_forward_ms": 1501.5374580398202,
+      "detector_including_prepost_ms": 1554.8994168639183,
+      "observation": {
+        "object_id": "orange",
+        "camera_id": "legacy-unidentified",
+        "frame_id": "A-after-identity",
+        "timestamp_s": null,
+        "calibration_id": null,
+        "schema_version": 1,
+        "status": "ok",
+        "box_xyxy": [
+          187.0679931640625,
+          204.05136108398438,
+          240.53604125976562,
+          302.1632385253906
+        ],
+        "mask": null,
+        "pixel_points": [
+          {
+            "name": "box_center",
+            "xy": [
+              213.80201721191406,
+              253.1072998046875
+            ]
+          }
+        ],
+        "confidence": 0.8792126178741455,
+        "unknown_reason": null,
+        "method": "grounding-dino-tiny-a2bb814",
+        "geometry_valid": false,
+        "grasp_pose": null,
+        "alignment_known": false,
+        "provenance": "recorded"
+      }
+    }
+  ]
+}
