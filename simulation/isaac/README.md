@@ -1,7 +1,20 @@
 # Isaac 5.1 runtime lane
 
-Status: preparation and installation in progress; **no verified Isaac execution,
-manipulation, experiment, or simulation video yet**. Track the compute blocker in
+Status: **real Isaac 5.1 articulation video recorded**, but the first process
+crashed during shutdown. No successful grasp/place or science experiment yet.
+Job `1273056` on rlab7 used an RTX A6000, driver 580.178.04 and commit
+`761a57974fa43af942b5a3b564413de2f7df1a5d`. Its 240-frame, 8-second H264 recording
+shows measured joint motion (Rotation span 0.3613 rad). The original observation
+receipt says passed; Slurm/process exit 139 is authoritative for the failed
+shutdown. Preserve both. Evidence is under
+`/common/users/jdr317/openarms-isaac/evidence/job-1273056`.
+
+The next configuration uses the workshop's NO-CAMERA robot and white plastic.
+The external recording camera is separate from the robot. Job `1273070` was
+submitted with commit `2cb3088`; submission is not execution evidence.
+`run_recording.py` now records child-process exits independently in
+`execution.json`, so a native shutdown crash cannot leave an overall passed
+receipt. Track current runtime state in
 [issue 15](https://github.com/VictorJimenez3/OpenArms/issues/15). This directory
 never imports firmware, serial, LeRobot teleoperation, or MuJoCo.
 
@@ -58,7 +71,13 @@ on the allocated device; reset code alone is not reset evidence.
 
 ## Manipulation gate
 
-Next use one workshop vial and one rack, with deterministic initial poses and
+The unvalidated `vial_scene.py` is retained as a failed offline design candidate:
+the nominal TCP can overlap the fixed finger with the tall vial, and the rack's
+roughly 1 mm clearance needs tighter acceptance than its current checks. Do not
+treat its task flag as a validated skill. A small block and broad receiver are
+being evaluated as the first contact-only manipulation proof.
+
+Use deterministic initial poses and
 no inherited random/preplaced-vial resets. Drive only robot joints after reset;
 never teleport, parent, weld or kinematically attach the object to make a grasp.
 Record individual finger-object forces, object pose/velocity, measured joints,

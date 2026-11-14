@@ -50,8 +50,8 @@ writer = None
 try:
     save()
     event('started', task=args.task)
-    if not receipt['slurm_job_id']:
-        raise RuntimeError('This Rutgers runner requires a Slurm allocation.')
+    from execution_context import validate_context
+    receipt['execution_context'] = validate_context()
     receipt['git_commit'] = git(Path(__file__).resolve().parents[2], 'rev-parse', 'HEAD')
     receipt['git_dirty'] = bool(git(Path(__file__).resolve().parents[2], 'status', '--porcelain'))
     receipt['workshop_commit'] = git(args.workshop, 'rev-parse', 'HEAD')

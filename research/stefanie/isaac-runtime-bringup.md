@@ -1,7 +1,19 @@
 # Can Rutgers execute the OpenArms SO-101 Isaac scene?
 
-As of 2026-11-14, access and CPU installation are established; actual RTX
-allocation, Isaac launch and grasp/place remain unverified. The exact live
+On 2026-11-14, job `1273056` actually launched Isaac 5.1.0.0 on rlab7's RTX A6000
+(driver 580.178.04), rendered the workshop SO-101 and recorded 240 H264 frames
+at 960x720 / 30 fps. Rotation moved through 0.3613 rad. Commit:
+`761a57974fa43af942b5a3b564413de2f7df1a5d`. The process then segfaulted in stage
+cleanup (exit 139); the raw observation receipt's passed status is not a clean
+job result. No grasp/place has been demonstrated. Shared evidence:
+`/common/users/jdr317/openarms-isaac/evidence/job-1273056` plus
+`slurm-1273056.log`. Video SHA256:
+`b19fdfa21ff283a78fe22c2f9d2526d0f8b04d44af1c79fbdc5b73c7ba2903de`.
+
+The user requested a white robot without an onboard camera. The next run uses
+`SO-ARM101-USD-NO-CAMERA.usd` with only printed-plastic material overridden.
+Composed geometry has no camera-named prims; 11 offline kinematics tests pass.
+These are not evidence that the new configuration has run in Isaac. The exact live
 queue and installation state are tracked in [issue 15](https://github.com/VictorJimenez3/OpenArms/issues/15).
 
 The [runtime runbook](../../simulation/isaac/README.md) contains executable
@@ -14,6 +26,10 @@ Initial raw attempts: A6000 allocation `1273052` could not start because GPUs
 were busy. CPU install `1273054` failed because a shallow Git bundle could not
 be cloned. Transfer was corrected with an exact shallow deployment checkout;
 CPU install `1273055` and dependent GPU smoke `1273056` were then submitted.
+Install `1273055` failed on a stale NFS script handle; an immutable node-local
+script retry, `1273059`, completed successfully, and the GPU dependency was
+repaired before job `1273056` ran. Do not edit scripts while a node reads them
+over NFS.
 CPU host check `1273057` verified Ubuntu 24.04.4, glibc 2.39, NVIDIA kernel driver
 580.178.04, Vulkan/NVIDIA GLX/EGL/NVENC libraries, and 10 TB free node-local
 storage on rlab7. This host check had no allocated GPU and is not an RTX test.

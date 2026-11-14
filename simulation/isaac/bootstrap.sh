@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Non-root Python installation; call only within an allocated Slurm job.
 set -euo pipefail
-: "${SLURM_JOB_ID:?Run through Slurm}"
+python3 "$(dirname "$0")/execution_context.py"
 : "${OPENARMS_ISAAC_ROOT:?Set to an approved writable project/scratch directory}"
 : "${OMNI_KIT_ACCEPT_EULA:?Set YES after accepting NVIDIA Omniverse EULA}"
 [[ "$OMNI_KIT_ACCEPT_EULA" == YES ]]
