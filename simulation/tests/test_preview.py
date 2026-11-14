@@ -409,3 +409,34 @@ def test_the_command_line_default_plan_pours_on_any_bench_with_receivers():
     assert example_plan("A", "C", setup="kit")["steps"][0]["action"] == "add_sample"
     assert example_plan(setup="liquid")["steps"][0]["action"] == "add_sample"
     assert example_plan(setup="block")["steps"][0]["action"] == "move_block"
+
+
+# ---- positions read off the bench rulers --------------------------------------------------
+
+
+def test_ruler_centimetres_become_arm_frame_metres():
+    from openarms_sim.config import ruler_to_arm
+
+    ahead = {"arm_cm": [10, 20], "arm_heading_deg": 0}  # arm at (10, 20) pointing along +X
+    assert ruler_to_arm([30, 20], ahead) == (0.2, 0.0)  # straight ahead
+    assert ruler_to_arm([10, 10], ahead) == (0.0, 0.1)  # smaller Y is to its left
+    toward_x_ruler = {"arm_cm": [16, 33], "arm_heading_deg": -90}  # pointing along -Y
+    assert ruler_to_arm([16, 3], toward_x_ruler) == (0.3, 0.0)
+    assert ruler_to_arm([6, 33], toward_x_ruler) == (0.0, 0.1)  # smaller X is to its left
+    with pytest.raises(ValueError, match="two numbers"):
+        ruler_to_arm(["4,6", 4.2], ahead)
+
+
+def test_demo_bench_uses_the_measured_containers_and_ruler_positions():
+    bench = load_bench("demo")
+    assert bench.stations["A"].kind == "source" and bench.stations["C"].kind == "receiver"
+    assert (bench.cup_height, bench.receiver_radius, bench.receiver_height) == (0.047, 0.041, 0.030)
+    # The bench file holds whatever `firmware.openarms_camera locate --apply` last wrote; as committed
+    # that is the layout where the pour works: side by side about 30 cm in front of the arm.
+    for station in ("A", "C"):
+        x, y = bench.stations[station].pos
+        assert 0.25 < x < 0.33, (station, x, y)
+    assert bench.stations["A"].pos[1] > 0.05 and bench.stations["C"].pos[1] < -0.05  # beaker left, container right
+    out = preview(_pour("A", "C"), setup="demo", render=False)
+    assert out["ok"], out["warnings"]
+    assert _receiver(out, "C")["observations"] == ["fizzing", "foam rising like a volcano"]

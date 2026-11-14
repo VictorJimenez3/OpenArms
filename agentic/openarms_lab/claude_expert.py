@@ -46,8 +46,10 @@ class ClaudeExpert(CodexExpert):
         with tempfile.TemporaryDirectory(prefix='claude-', dir=self.work_dir) as folder:
             command = [self.executable, '--bare', '--print', '--verbose',
                        '--input-format', 'stream-json', '--output-format', 'stream-json',
+                       # `--tools ''` leaves only the CLI's own StructuredOutput formatter. A blanket
+                       # `--disallowedTools '*'` also denies that formatter, so no reply can ever be returned.
                        '--json-schema', json.dumps(REPLY_SCHEMA), '--tools', '',
-                       '--disallowedTools', '*', '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
+                       '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
                        '--setting-sources', '', '--settings', '{"disableAllHooks":true}',
                        '--disable-slash-commands', '--no-chrome', '--no-session-persistence',
                        '--permission-mode', 'dontAsk', '--max-turns', '3',
@@ -65,7 +67,7 @@ class ClaudeExpert(CodexExpert):
                 raise ExpertUnavailable('invalid_response', 'Invalid expert telemetry.')
             if event.get('type') == 'system' and event.get('subtype') == 'init':
                 # A CLI that ignores isolation flags is not a compatible transport.
-                if event.get('tools') or event.get('mcp_servers'):
+                if set(event.get('tools') or []) - {'StructuredOutput'} or event.get('mcp_servers'):
                     raise ExpertUnavailable('isolation', 'Expert CLI did not disable autonomous tools.')
             if event.get('type') == 'assistant':
                 message = event.get('message', {})

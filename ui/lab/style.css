@@ -204,3 +204,21 @@ figcaption summary { min-height: 36px; }
   .header-inner { flex-wrap: wrap; gap: 0 9px; }
   .session-indicator { gap: 4px; }
 }
+
+/* Real bench lane */
+.bench { border: 1px solid var(--line); border-radius: 12px; background: var(--subtle); margin-bottom: 22px; padding-bottom: 12px; }
+.bench > :not(.section-head) { margin-left: 13px; margin-right: 13px; }
+.bench-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.bench-pane { margin: 0; }
+.bench-pane figcaption { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+.bench-stage { display: grid; place-items: center; min-height: 190px; background: var(--stage); border-radius: 8px; color: var(--muted); overflow: hidden; }
+.bench-stage img, .bench-stage video { width: 100%; display: block; }
+.bench-badge { font-size: .72rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 999px; background: #f4c542; color: #1a211e; }
+.bench-form { margin-top: 12px; }
+.bench-form .input-row { display: flex; gap: 8px; }
+.bench-form input { flex: 1; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; }
+.bench-summary { font-weight: 640; margin-top: 10px; }
+.bench-notes { font-size: .84rem; color: var(--muted); padding-left: 18px; margin: 6px 13px; }
+.bench-notes .blocked { color: var(--stop); font-weight: 640; }
+.bench-result { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--jade-light); }
+.bench-result[data-provenance="UNKNOWN"] { background: #fdf3d7; }

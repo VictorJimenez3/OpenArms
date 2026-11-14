@@ -187,6 +187,40 @@ The kit's substances, the colour-mixing rule and these reactions are in `config/
 
 Two things are placeholders in `config/setups/kit/bench.yaml`: the sizes of the cups, beaker and flask (the listing gives none, so they are estimates) and their positions (chosen so the simulated arm reaches them). The poses in `poses.json` are solved by the simulation, not recorded on the arm. Measure the pieces and record real poses once the kit is on the bench.
 
+## Demo bench with the rulers as axes
+
+`--setup demo` is the live demo bench: a small beaker (about 50 mL) that the arm pours into a wide round container marked 100 mL. Two 30 cm rulers taped in an L are the bench's axes, and `config/setups/demo/bench.yaml` gives every position in **ruler centimetres**, so a layout change is an edit of two numbers:
+
+```yaml
+ruler_frame:
+  arm_cm: [16.0, 33.0]      # where the arm's base axis sits, read off the rulers
+  arm_heading_deg: -90      # which way the arm points: 0 along +X, 90 along +Y, -90 along -Y
+stations:
+  A: {kind: source,   ruler: [4.6, 4.2], ...}    # centre of the beaker's base
+  C: {kind: receiver, ruler: [4.8, 13.6], ...}   # centre of the container's base
+```
+
+The origin is the inner corner of the L. Standing at the open side of the L, X runs to the right along one ruler and Y toward you along the other. After editing, run `python -m openarms_sim.ik --setup demo` to re-solve the arm poses, then `python -m openarms_sim --setup demo --from A --into C`.
+
+What is measured and what is not:
+
+- **Container sizes** come from `outputs/camera/live_demo.jpg`, scaled by the rulers' millimetre marks: beaker rim 4.5 cm, base 3.2 cm, about 4.7 cm tall; container rim 8.4 cm, base 6.0 cm, about 3.0 cm tall. The photo is tilted, so widths are good to about 0.5 cm and heights to about 1 cm. Check them against the real pieces.
+- **Container positions** are read from the same photo.
+- **The arm's position and heading** are from `outputs/camera/live_demo_2.jpg`, flattened to a top-down view. The base plate lies on the table and shows where the base is: swivel axis at about ruler (17, 35.5), pointing toward the X ruler turned about 10 degrees toward the corner. Good to about 1.5 cm and 5 degrees. (The marker in that photo touches a raised part of the arm and reads about 6 cm too far forward.)
+- The poses are solved by the simulation, not recorded on the arm.
+
+### Rebuilding the bench from a picture
+
+```bash
+python -m firmware.openarms_camera locate --photo outputs/camera/your_photo.jpg          # look only
+python -m firmware.openarms_camera locate --photo outputs/camera/your_photo.jpg --apply  # update the bench and run the pour
+python -m firmware.openarms_camera locate --camera 0 --apply --beaker 4,7                # webcam; beaker position typed in
+```
+
+It finds the two red rulers, saves a flattened top-down picture with a 5 cm grid (`outputs/camera/bench_flat.jpg`), looks for the container and the beaker, and with `--apply` writes their positions into `bench.yaml`, re-solves the poses and runs the pour preview. The ruler mapping is good to about 0.5 cm near the rulers. Finding the clear containers is not reliable: on the two bench photos the container was right in one and 1.8 cm out in the other, and the beaker was 1 cm and 3.5 cm out, because its raised rim is easier to see than its base. Open `bench_flat.jpg`, read the true base position off the grid, and pass `--beaker X,Y` or `--dish X,Y` to correct it. The arm's own position is not detected; edit `arm_cm` if the arm moves.
+
+Where the pour works in the simulation: the two side by side about 30 cm in front of the arm, the beaker about 8 cm to the arm's left and the container about 10 cm to its right. With the arm at (17, 35.5) that is the beaker near ruler (4, 7) and the container near (22, 4). As photographed (beaker (4.8, 4.1), container (5.6, 12.8)) the container is between the arm and the beaker and the pour is blocked.
+
 ## Preview inside the student lab app
 
 With `OPENARMS_PREVIEW=mujoco`, the lab app (`agentic/openarms_lab/`) simulates every

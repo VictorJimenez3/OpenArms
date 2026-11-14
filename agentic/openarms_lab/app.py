@@ -63,6 +63,10 @@ class Cancel(Body):
     request_id: str | None = None
 
 
+class BenchExecute(Body):
+    request_id: str = Field(min_length=1, max_length=128)
+
+
 def proposal_version(value):
     if type(value) is int and value > 0:
         return value
@@ -122,7 +126,7 @@ def bearer(request):
     return value[7:] if value.startswith('Bearer ') else ''
 
 
-def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_timeout=15):
+def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_timeout=15, bench=None):
     @asynccontextmanager
     async def lifespan(app):
         data = Path(os.getenv('OPENARMS_DATA_DIR', ROOT / 'outputs/lab'))
@@ -165,6 +169,12 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         else:
             app.state.lab = lab
             app.state.execution_mode = next((b.mode for b in lab.backends.values()), 'mock')
+        if bench is None:
+            # Optional real-bench lane (OPENARMS_BENCH=1): camera look, simulated preview, then the real arm.
+            from .bench_lane import from_env as bench_from_env
+            app.state.bench = bench_from_env(data)
+        else:
+            app.state.bench = bench
         app.state.access = SessionAccess(Path(access_path) if access_path else data / 'access.sqlite3')
         app.state.connections = {}
         try:
@@ -325,7 +335,58 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.post('/api/sessions/{sid}/stop')
     async def stop(sid: str, request: Request):
         authorize(sid, request)
+        if getattr(app.state, 'bench', None) is not None:
+            await app.state.bench.stop()  # the page's one Stop button also stops the real arm
         return public_state(await service().stop(sid), sid)
+
+    # ---- real-bench lane -------------------------------------------------------------------
+    # Same machine only: these routes can move a real arm and have no remote pairing.
+    def bench_lane(request: Request):
+        lane = getattr(app.state, 'bench', None)
+        if lane is None:
+            raise HTTPException(404, 'The real bench is not enabled on this server.')
+        if request.client is None or request.client.host not in ('127.0.0.1', '::1', 'testclient'):
+            raise HTTPException(403, 'The real bench can only be used from the computer it is connected to.')
+        return lane
+
+    async def bench_call(call):
+        from .bench_lane import BenchError
+        try:
+            return await call
+        except BenchError as exc:
+            return JSONResponse({'detail': str(exc)}, status_code=409)
+
+    @app.get('/api/bench')
+    async def bench_state(request: Request):
+        lane = getattr(app.state, 'bench', None)
+        return {'enabled': False} if lane is None else bench_lane(request).state()
+
+    @app.post('/api/bench/look')
+    async def bench_look(request: Request):
+        return await bench_lane(request).look_all()
+
+    @app.post('/api/bench/request')
+    async def bench_request(body: Text, request: Request):
+        return await bench_call(bench_lane(request).request(body.text))
+
+    @app.post('/api/bench/execute')
+    async def bench_execute(body: BenchExecute, request: Request):
+        return await bench_call(bench_lane(request).execute(body.request_id))
+
+    @app.post('/api/bench/cancel')
+    async def bench_cancel(request: Request):
+        return await bench_call(bench_lane(request).cancel())
+
+    @app.post('/api/bench/stop')
+    async def bench_stop(request: Request):
+        return await bench_lane(request).stop()
+
+    @app.get('/api/bench/{kind}/{name}')
+    async def bench_file(kind: str, name: str, request: Request):
+        path = bench_lane(request).file(kind, name)
+        if path is None:
+            raise HTTPException(404, 'Not found.')
+        return FileResponse(path, media_type='video/mp4' if kind == 'preview' else 'image/jpeg')
 
     @app.post('/api/sessions/{sid}/disconnect')
     async def disconnect(sid: str, request: Request):

@@ -20,6 +20,29 @@ Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same
 
 `OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression. `mujoco` runs the updated lab apparatus, selected explicitly; failure never falls back to mock. The older `openarms_sim.Player` preview is historical and is not the current student simulator. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
 
+## Real bench lane (optional): camera, simulated preview, then the real arm
+
+`OPENARMS_BENCH=1` adds a **Real bench** panel above the pH investigation. It is separate from the pH task loop and does not change it. Press **Look now** first (fixed webcam, OpenCV); a typed command plans from the most recent look and takes no new picture, and is refused if there has been no look yet. Then: plan (fixed patterns, then Claude), MuJoCo preview of the exact joint targets, **execute** (plus the bench operator's `y` in the server terminal for the real arm), then a camera check of the result. Code: `agentic/openarms_lab/bench_lane.py`, `free_plan.py`, `sim_preview.py`, `firmware/openarms_camera/`.
+
+```sh
+# once per camera position: find the camera, then teach where A and B appear in its picture
+.venv/bin/python -m firmware.openarms_camera list
+.venv/bin/python -m firmware.openarms_camera mark --camera 1
+
+source env.sh
+OPENARMS_BENCH=1 OPENARMS_CAMERA=1 OPENARMS_SECONDS=3 \
+OPENARMS_FOLLOWER_PORT=/dev/tty.usbmodemXXXX OPENARMS_POSES=$PWD/path/to/poses.json \
+OPENARMS_EXECUTION=mujoco OPENARMS_EXPERT_PROFILE=sonnet OPENARMS_ENV_FILE=$PWD/agentic/.env \
+PORT=8010 .venv/bin/python -m agentic.openarms_lab
+```
+
+- Leave out `OPENARMS_FOLLOWER_PORT` for a stand-in arm (nothing moves, results labelled MOCK); leave out `OPENARMS_CAMERA` to track the object without a camera (real results then stay UNKNOWN).
+- The camera decides where the object is before planning and again just before running; if it moved in between, nothing starts. After the run the result is REAL only when the picture agrees with the plan.
+- The camera check is a colour-blob detector for an orange object inside taught picture regions. It needs a fixed, raised, angled view in which A and B are clearly apart; it reports a view where they coincide. It was developed on the eight real bench photos in `research/joseph/mandarin-transfer-2026-11-14/images` and has not yet been run on a live webcam.
+- **Pours are simulation only.** A command with pour, tip, empty, add or mix in it ("pour this into that") takes the overhead picture (`OPENARMS_OVERHEAD_CAMERA=N`, or `OPENARMS_OVERHEAD_PHOTO=path` to use a saved photo), finds the two red rulers and the containers (`firmware/openarms_camera/bench.py`), lets Claude decide what is poured into what and say why, rebuilds the simulation's demo bench at the positions the picture shows (a working copy, `simulation/config/setups/demo_live/`, not the committed layout) and plays the pour. The panel shows the flattened picture with its centimetre grid beside the preview. Execute stays disabled: no poses have been taught on the real arm for the beaker and container. When the rulers or a container are not found, the last known position is used and the panel says so.
+- The routes under `/api/bench` answer only to the computer the server runs on. The page's Stop button also stops the arm. A stop or failed run disarms the lane until the server restarts.
+- The Claude profiles call the `claude` CLI with `ANTHROPIC_API_KEY`; that spending is not counted by `agentic/openarms_agent/budget.py`.
+
 ## Which processes to run
 
 | Process | Start / inspect | Ownership |

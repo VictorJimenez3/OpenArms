@@ -8,6 +8,7 @@
   <title>OpenArms Lab</title>
   <link rel="stylesheet" href="/style.css">
   <script type="module" src="/app.js"></script>
+  <script type="module" src="/bench.js"></script>
 </head>
 <body>
   <a class="skip" href="#workspace">Skip to the lab</a>
@@ -35,6 +36,41 @@
       <label for="pairing-code">Pairing code</label>
       <div class="input-row"><input id="pairing-code" type="password" autocomplete="off" required><button class="primary" type="submit">Connect</button></div>
     </form>
+
+    <!-- Real bench (only when the server runs with OPENARMS_BENCH=1): camera, simulated preview, then the real arm. -->
+    <section id="bench" class="bench" aria-labelledby="bench-title" hidden>
+      <div class="section-head"><h2 id="bench-title">Real bench</h2><span id="bench-arm"></span></div>
+      <div class="bench-grid">
+        <figure class="bench-pane">
+          <figcaption>Camera <button id="bench-look" class="quiet" type="button">Look now</button></figcaption>
+          <div class="bench-stage"><img id="bench-frame" alt="Latest picture from the bench camera, with station regions drawn" hidden><p id="bench-frame-empty">No picture yet.</p></div>
+          <p id="bench-sight" class="field-hint" role="status"></p>
+          <div id="bench-side" hidden>
+            <figcaption>Side view</figcaption>
+            <div class="bench-stage"><img id="bench-side-frame" alt="Latest picture from the side camera"></div>
+            <p id="bench-side-text" class="field-hint"></p>
+          </div>
+        </figure>
+        <figure class="bench-pane">
+          <figcaption>Simulation preview <span id="bench-preview-badge" class="bench-badge" hidden>SIMULATED</span></figcaption>
+          <div class="bench-stage"><video id="bench-video" controls muted playsinline loop hidden aria-label="Simulated preview of the planned arm motion"></video><p id="bench-video-empty">Ask for an action to see it simulated first.</p></div>
+          <p id="bench-preview-status" class="field-hint" role="status"></p>
+        </figure>
+      </div>
+      <form id="bench-form" class="bench-form">
+        <label for="bench-text">What should the arm do?</label>
+        <div class="input-row"><input id="bench-text" type="text" maxlength="400" autocomplete="off" placeholder="move the mandarin from A to B, or: pour the beaker into the container"><button class="primary" type="submit">Plan and simulate</button></div>
+      </form>
+      <p id="bench-summary" class="bench-summary" hidden></p>
+      <ul id="bench-notes" class="bench-notes"></ul>
+      <div class="actions">
+        <button id="bench-execute" class="primary" type="button" disabled>Execute</button>
+        <button id="bench-cancel" class="secondary" type="button" disabled>Cancel</button>
+        <button id="bench-stop" class="stop" type="button">Stop arm</button>
+      </div>
+      <p id="bench-result" class="bench-result" role="status" hidden></p>
+      <details class="lab-details"><summary>Bench log</summary><div id="bench-log" class="messages" role="log" aria-live="polite"></div></details>
+    </section>
 
     <div class="lab-layout">
       <section id="workspace" class="workspace" aria-label="Lab conversation" tabindex="-1">

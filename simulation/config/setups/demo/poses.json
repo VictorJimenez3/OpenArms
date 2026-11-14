@@ -1,0 +1,49 @@
+{
+  "source": "placeholder",
+  "note": "Solved from bench.yaml by `python -m openarms_sim.ik --setup demo`; not recorded on the real arm. Replace with recorded poses and set source to 'recorded'.",
+  "units": "degrees per arm joint, as LeRobot reports them (use_degrees=true)",
+  "poses": {
+    "HOME": {
+      "shoulder_pan": 0.0,
+      "shoulder_lift": -83.08,
+      "elbow_flex": 77.35,
+      "wrist_flex": 57.3,
+      "wrist_roll": 90.0
+    },
+    "GRASP_A": {
+      "shoulder_pan": -12.0,
+      "shoulder_lift": 54.08,
+      "elbow_flex": 39.48,
+      "wrist_flex": -93.56,
+      "wrist_roll": 92.79
+    },
+    "ABOVE_A": {
+      "shoulder_pan": -12.0,
+      "shoulder_lift": -3.78,
+      "elbow_flex": 57.57,
+      "wrist_flex": -53.79,
+      "wrist_roll": 92.79
+    },
+    "LIFT_A": {
+      "shoulder_pan": -12.0,
+      "shoulder_lift": -3.78,
+      "elbow_flex": 57.57,
+      "wrist_flex": -53.79,
+      "wrist_roll": 92.79
+    },
+    "ABOVE_C": {
+      "shoulder_pan": 21.96,
+      "shoulder_lift": 18.27,
+      "elbow_flex": 52.22,
+      "wrist_flex": -70.49,
+      "wrist_roll": 92.79
+    },
+    "TIP_C": {
+      "shoulder_pan": 15.63,
+      "shoulder_lift": 29.76,
+      "elbow_flex": 48.59,
+      "wrist_flex": -78.35,
+      "wrist_roll": -22.21
+    }
+  }
+}
