@@ -1,6 +1,8 @@
 # OpenArms
 
-A HackPrinceton project for accessible lab work. A student speaks a command, previews it in simulation, then confirms before the physical arm moves.
+A HackPrinceton project for accessible lab work. A student speaks a command, reviews the interpreted transfer, then confirms before the physical arm moves. Simulation is deferred for the current mandarin demo.
+
+Start with the [demo runbook, next steps, and human to-do](research/joseph/mandarin-transfer-handoff.md).
 
 ## Where to start
 

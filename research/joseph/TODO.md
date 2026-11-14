@@ -1,6 +1,6 @@
 # OpenArms research to-do
 
-Start with the first three experiments to choose a demo action and test the handoff from command to motion. Use “move the block from A to B” as a shared test input while the [demo action](../../docs/PROJECT.md#open-decisions) is open.
+Current priority: finish the [mandarin demo next steps and human to-do](mandarin-transfer-handoff.md#next-steps). The broader experiments below remain follow-up work; simulation is deferred for the current command-to-robot rehearsal.
 
 ## First pass
 
