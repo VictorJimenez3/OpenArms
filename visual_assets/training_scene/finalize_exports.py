@@ -7,7 +7,11 @@ for path in Path(sys.argv[1]).glob('0*/*.usdc'):
  if path.name=='ColliderProxies.usdc':
   # Blender may omit render-hidden mesh data even with visible_objects_only=False.
   # Author the exact 1.00 x .75 x .044 m table box on the existing translated prim.
-  mesh=UsdGeom.Mesh.Define(stage,'/TrainingScene/ColliderProxies/Table_proxy')
+  proxy_path='/TrainingScene/ColliderProxies/Table_proxy'
+  existing=stage.GetPrimAtPath(proxy_path)
+  if existing:
+   for child in list(existing.GetChildren()):stage.RemovePrim(child.GetPath())
+  mesh=UsdGeom.Mesh.Define(stage,proxy_path)
   mesh.CreatePointsAttr([(-.5,-.375,-.022),(.5,-.375,-.022),(.5,.375,-.022),(-.5,.375,-.022),(-.5,-.375,.022),(.5,-.375,.022),(.5,.375,.022),(-.5,.375,.022)])
   mesh.CreateFaceVertexCountsAttr([4]*6)
   mesh.CreateFaceVertexIndicesAttr([0,3,2,1,4,5,6,7,0,1,5,4,1,2,6,5,2,3,7,6,3,0,4,7])
