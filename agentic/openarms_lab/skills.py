@@ -383,7 +383,14 @@ class SkillRegistry:
         tokens = 0
 
         planning_started=time.perf_counter()
-        if api_key:
+        if api_key and os.getenv('OPENARMS_EXPERT_TRANSPORT','generate')=='live':
+            from .live_expert import compose_live
+            proposal=await compose_live(instruction)
+            steps=proposal['steps']
+            model_calls=proposal['model_calls']
+            tokens=proposal['tokens']
+            expert_mode=proposal['model']+':expert'
+        elif api_key:
             from google import genai
             from google.genai import types
             client=genai.Client(api_key=api_key)
