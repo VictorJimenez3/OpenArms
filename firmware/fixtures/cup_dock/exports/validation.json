@@ -1,29 +1,16 @@
 {
-  "source-A.stl": {
+  "four-cup-platform.stl": {
     "watertight": true,
     "consistent_winding": true,
     "connected_solids": 1,
     "dimensions_mm": [
-      100.0,
-      132.0,
+      200.0,
+      200.0,
       9.0
     ],
-    "volume_cm3": 41.011,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 50.85
+    "geometric_volume_cm3": 126.235
   },
-  "receiver-C.stl": {
-    "watertight": true,
-    "consistent_winding": true,
-    "connected_solids": 1,
-    "dimensions_mm": [
-      100.0,
-      132.0,
-      9.0
-    ],
-    "volume_cm3": 41.806,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 51.84
-  },
-  "gauge-A-36mm.stl": {
+  "fit-gauge-36mm.stl": {
     "watertight": true,
     "consistent_winding": true,
     "connected_solids": 1,
@@ -32,10 +19,9 @@
       44.582,
       6.0
     ],
-    "volume_cm3": 2.02,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 2.51
+    "geometric_volume_cm3": 2.02
   },
-  "gauge-A-38mm.stl": {
+  "fit-gauge-38mm.stl": {
     "watertight": true,
     "consistent_winding": true,
     "connected_solids": 1,
@@ -44,10 +30,9 @@
       46.082,
       6.0
     ],
-    "volume_cm3": 2.095,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 2.6
+    "geometric_volume_cm3": 2.095
   },
-  "gauge-A-40mm.stl": {
+  "fit-gauge-40mm.stl": {
     "watertight": true,
     "consistent_winding": true,
     "connected_solids": 1,
@@ -56,50 +41,14 @@
       47.582,
       6.0
     ],
-    "volume_cm3": 2.171,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 2.69
+    "geometric_volume_cm3": 2.171
   },
-  "gauge-C-57mm.stl": {
-    "watertight": true,
-    "consistent_winding": true,
-    "connected_solids": 1,
-    "dimensions_mm": [
-      65.989,
-      60.492,
-      6.0
-    ],
-    "volume_cm3": 2.817,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 3.49
-  },
-  "gauge-C-59mm.stl": {
-    "watertight": true,
-    "consistent_winding": true,
-    "connected_solids": 1,
-    "dimensions_mm": [
-      67.989,
-      61.992,
-      6.0
-    ],
-    "volume_cm3": 2.891,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 3.59
-  },
-  "gauge-C-61mm.stl": {
-    "watertight": true,
-    "consistent_winding": true,
-    "connected_solids": 1,
-    "dimensions_mm": [
-      69.989,
-      63.492,
-      6.0
-    ],
-    "volume_cm3": 2.967,
-    "solid_PLA_equivalent_g_not_slicer_estimate": 3.68
-  },
+  "platform_raised_guide_count": 4,
   "qualification": {
-    "CAD_mesh": "validated",
+    "mesh": "passed",
+    "physical_cup_fit": "unverified",
+    "robot_clearance_and_reach": "unverified",
     "slicer": "not run",
-    "physical_fit": "not tested",
-    "robot_reach_and_collision": "not qualified",
-    "print_time": "unknown without printer/slicer profile"
+    "print_time_and_filament": "unknown without printer profile"
   }
 }

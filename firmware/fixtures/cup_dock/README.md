@@ -1,92 +1,64 @@
-# OpenArms cup fixture — provisional v0.3
+# One platform, four cups — OpenArms v0.4
 
-Two independent tabletop docks for the existing A → C pour. The source is now based on the **Diamond 2 oz clear shot glass**, Target TCIN 94991464. Target publishes **48 mm overall width × 51 mm height**; it does **not** publish the bottom diameter. The 38 mm source base is an engineering placeholder, not a product fact. Receiver dimensions remain provisional. Nothing attaches to the cup; the existing jaws grip it directly.
+**One continuous printable platform with four cup slots in a 2×2 layout.** All four cups sit on the same base. This replaces the earlier two-separate-dock design. Use ordinary small plastic cups from Target or another store; laboratory cups, custom handles and cup-mounted attachments are not required.
 
-Print a fit gauge first. These exports are CAD-validated, not physically qualified. No servo behavior, saved poses, calibration files or other live software was changed.
+The four slots are labeled A, B, C and D. Their experiment roles can be assigned after the actual cups and liquids are chosen. The current model uses four identical provisional small cups. Equipment we do not own can appear in a clearly identified simulation; physical-demo claims still come from observing the real cups and robot.
 
-## Parts and parameters
+## Files
 
-| Parameter | Source A | Receiver C | Evidence |
-|---|---:|---:|---|
-| Cup bottom outer diameter | 38 mm | 59 mm | Estimates; measure |
-| Cup top outer diameter | 48 mm | 73.7 mm | A uses published overall width as provisional rim diameter; C estimate |
-| Cup height | 51 mm | 63.5 mm | A published overall height; C estimate |
-| Radial running clearance | 0.8 mm | 0.8 mm | Starting design allowance |
-| Guide height above floor | 6 mm | 6 mm | Selected design, not measured requirement |
-| Guide wall thickness | 3 mm | 3 mm | Design |
-| Dock floor / overall height | 3 / 9 mm | 3 / 9 mm | Design |
-| Dock footprint | 100 × 132 mm | 100 × 132 mm | Design |
-| Fit-gauge cup-base candidates | 36 / 38 / 40 mm | 57 / 59 / 61 mm | Labels indicate cup diameter; bore adds clearance |
+- `four-cup-platform.stl`: the **single full platform**, including all four cup guides. Print once.
+- `fit-gauge-36mm.stl`, `fit-gauge-38mm.stl`, `fit-gauge-40mm.stl`: optional small fit checks, not separate cup stations.
+- `fixture.scad`: editable CAD; defaults to the full four-cup platform.
+- `four-cup-preview.png`: actual exported platform geometry with four illustrative translucent cups.
+- `printable-markers.pdf`: two platform reference markers, not two cup stations.
+- `fixture-reference.json` and `validation.json`: dimensions, coordinates and geometry checks.
 
-`fixture.scad` is the editable source. `source-A.stl` and `receiver-C.stl` are separate print parts. Each `gauge-*.stl` is one small connected part. Gauge labels are **assumed cup bottom diameters**, not bore diameters. The gauges have no floor: place the cup and gauge on the same flat surface. They reproduce the guide's cup-relative height and taper.
+## Starting dimensions — not measured cup fit
 
-The 240° U guides open toward local **−Y**. They are **top-drop / vertical-lift**, not slide-in holders. The tapered bore widens upward, has no lip or undercut, and leaves the front visible. A full ring would bound lateral play more tightly, but the U is easier to inspect and leaves front access. Neither shape removes the need to test extraction with the actual flexible cup.
+| Parameter | Default |
+|---|---:|
+| Platform | 200 × 200 mm |
+| Continuous floor | 3 mm |
+| Four guides above floor | 6 mm |
+| Overall printed height | 9 mm |
+| Cup base / rim / height | 38 / 48 / 51 mm, each slot |
+| Radial clearance | 0.8 mm |
+| Guide wall | 3 mm |
+| Column / row pitch | 90 / 82 mm |
+| Slot A / B centres | (55,78) / (145,78) mm |
+| Slot C / D centres | (55,160) / (145,160) mm |
 
-The 0.8 mm clearance is **not** a positioning-accuracy claim. With an ideal upright rigid cup, this U permits roughly 2.5 mm total fore–aft play (about 0.8 mm rearward and 1.7 mm toward the opening). Print error and cup flex add uncertainty. Manually reset against the same rear datum and measure the actual scatter. The robot's release and next grasp must tolerate that scatter. If necessary, reduce clearance only after fit and repeated return tests.
+The nominal 48 mm width and 51 mm height came from the previously considered [Diamond 2 oz retail cup](https://www.target.com/p/-/A-94991464). The 38 mm bottom diameter is an engineering estimate. **No specific brand is required.** Measure whichever cups are purchased. Larger Starbucks cups will need changed cup dimensions and may require a larger platform; do not assume they fit these small-cup slots.
 
-## Print and update
+Edit the top parameters in `fixture.scad`. `slot_cups` supports a different `[bottom_d, top_d, height]` for each of A/B/C/D. Adjust platform size, row/column pitch and first-row position when increasing cup size. Assertions check guide/rim separation and plate margins. They do not certify robot jaw clearance.
 
-Start with ordinary PLA, 0.4 mm nozzle, 0.2 mm layers, 3 walls and about 15–20% infill, subject to the printer's normal profile. Print the flat underside on the bed. The model has no designed support requirement. Preview the first layer and toolpath before printing. No slicer or printer profile was available here, so **print time and real filament consumption are unknown**. `validation.json` records geometric volumes and a clearly labeled solid-PLA equivalent, not a slicer estimate.
+## Fit, print and use
 
-1. Measure the cup's base outer diameter, outer diameter at 6 mm above its seating plane, rim diameter and height. Check for a flared foot, ribs or nonlinear taper. Measure the intended jaw-contact diameter and usable jaw opening with any pads installed.
-2. Edit `source_bottom_d`, `source_top_d`, `source_height` and the corresponding receiver values near the top of `fixture.scad`. For a nonlinear cup, fit the guide to the **local lower 6 mm**, not a guessed full-height taper. One equivalent CAD top value is `bottom + (measured_d_at_6-bottom)*height/6`; note that the preview rim will then be illustrative only.
-3. Export `part="gauge_single"`, `gauge_cup="source"` or `"receiver"`; `gauge_delta` shifts both diameters equally. Or use the supplied candidate gauges if their sizes bracket the measurements.
-4. Confirm easy insertion, consistent seating and free straight-up extraction. Print the full dock only after this check. The gauge is loose on the table; judge fit separately from its own weight.
-5. Secure each dock inside a rigid catch tray using tape on its margins/underside or the four 3.6 mm mounting holes. A lightweight unsecured dock can lift with the cup. Keep tape and anti-slip material thickness consistent when teaching.
+1. Measure the actual cup base, diameter 6 mm above its seating plane, rim and height. The linear taper is a provisional approximation; lower-wall ribs or a flared foot must be accounted for.
+2. Print a small matching gauge first. Gauge labels are assumed **cup base diameters**; the bore includes 1.6 mm diametral clearance. Put the floorless gauge and cup on the same flat surface. Check easy insertion and straight-up removal.
+3. Print **one** full platform flat on the bed. A usable bed larger than the 200×200 mm footprint is needed for any brim/margins; actual printer capacity is unconfirmed. Typical starting settings: PLA, 0.4 mm nozzle, 0.2 mm layers, 3 walls, 15–20% infill. Geometry is designed without support requirements, but inspect the slicer preview. No slicing or print-time estimate was performed.
+4. Secure the entire platform inside a catch tray using tape or the four mounting holes. The cup slots are shallow U-shaped top-drop/vertical-lift guides. They do not clamp the cups and are not lateral slide-in slots.
+5. Teach the existing jaws to grip the actual cup directly at a consistent height and closing position. Nothing needs to be mounted on the cup. The lowest swept jaw surface must clear the 9 mm guide top plus a tested margin. Grip position is not a measured-force guarantee; check empty-cup and then small-water tilt trials.
+6. Teach the desired four-slot routes only after securing the platform. Preserve existing operator confirmation and independent observations of lift, pour, spill, return and reset.
 
-To regenerate all artifacts, install the dependencies listed in `build.py`, then run:
+The U guides permit approximately 2.5 mm total ideal fore–aft play at the default clearance, before printing errors and cup flexibility. Seat cups consistently against the rear datum and test the actual reset scatter. Clearance can be tuned after a gauge test; it is not a positioning-accuracy claim.
+
+## Existing robot and camera integration
+
+Use the existing taught-pose workflow and `taught_fixture_only` mode. This change does not alter servo control, recorded poses or calibration. CAD coordinates belong to the **whole platform**, with origin at its front-left underside, +X right, +Y rear and +Z up. Each cup seating plane is z=3 mm. These are not automatically robot coordinates.
+
+The project already has `fixture_id`, `cup_id`, `calibration_id`, `camera_mount_id` and `robot_id` context fields. Record the secured four-slot arrangement and actual cup dimensions under a new setup identity, and teach/revalidate the relevant named poses. Do not reuse the previous two-independent-dock geometry or mandarin poses. Moving the platform, changing cup geometry or changing camera mounting requires the relevant retesting.
+
+The two paper fiducials belong to the **one platform**: DICT_4X4_50 IDs 10 and 12, centres (50,24) and (150,24) mm. The black square is 36 mm and paper is 44 mm. Print the PDF at Actual Size, verify its 100 mm line, and preserve the white margins. Surface height includes measured paper/adhesive thickness above the 3 mm floor.
+
+`bench_vision/geometry.py` maps pixels to measured positions on one plane, using at least four fit points and four independent check points. It does not determine arbitrary 3D depth or produce a grasp pose. These front markers alone do not surround the rear cup slots; later metric plane mapping needs same-plane reference points surrounding the region and camera calibration. Markers do not prove cup presence or successful pouring. Fixed taught positions and physical observation remain enough for bring-up.
+
+## Rebuild and evidence
+
+Install OpenSCAD and the Python dependencies named in `build.py`, then run:
 
 ```sh
 python build.py --out /absolute/path/to/exports
 ```
 
-For one STL using OpenSCAD directly:
-
-```sh
-openscad -o source-A.stl -D 'part="source"' fixture.scad
-```
-
-The default two-dock preview uses 125 mm centre spacing. This is **illustrative only**. Put the docks where the real arm can reach and pour, then secure them. No robot reach or full jaw-sweep clearance is asserted. Four cups can later use additional independently positioned docks, with distinct station labels/marker IDs and newly taught poses; the first working route needs only A and C.
-
-## Camera references and calibration
-
-Each tile's CAD origin is its front-left underside: +X right, +Y toward the rear, +Z up. The cup seat centre is `(50, 88, 3)` mm; the marker centre is `(50, 26)` mm. Each marker's **black square is 36 mm**, on a 44 mm paper square. A uses `DICT_4X4_50` ID 10; C uses ID 12. Keep printed orientation aligned with the preview (+Y toward marker top). The JSON records the corners. The paper surface height is 3 mm **plus measured paper and adhesive thickness**.
-
-Print `printable-markers.pdf` at **100% / Actual Size**, not Fit to Page. Measure its 100 mm line and each black square, cut while preserving the white border, and mount between the cross marks. The engraved ruler has ten 10 mm intervals. Printed dimensions must be measured; nominal CAD dimensions do not certify printer accuracy.
-
-These references can support identification and later calibration. They do not themselves estimate arbitrary depth, establish cup presence or certify seating. ArUco metric pose requires camera intrinsics/distortion calibration and measured marker size. The existing [`bench_vision/geometry.py`](https://github.com/VictorJimenez3/OpenArms/blob/171a21a393a12e37a2ad5e3e075ce5949b262bd4/bench_vision/geometry.py) instead fits a planar pixel-to-mm mapping from at least four measured fit points and checks it using at least four separate held-out points; inference checks current anchors, uncertainty, camera identity and plane height. Its output deliberately has `grasp_pose=None`.
-
-The front marker does **not** surround the cup centre. Its corners alone cannot qualify localization at the cup under the existing no-extrapolation checks. For a later plane map, add measured same-plane rear/outboard references around the relevant region. Never interpret elevated cup-rim pixels as tabletop points. Start with **`taught_fixture_only`**, already supported in [`bench_vision/skills.py`](https://github.com/VictorJimenez3/OpenArms/blob/171a21a393a12e37a2ad5e3e075ce5949b262bd4/bench_vision/skills.py), and operator observations.
-
-## Teach and qualify the real setup
-
-The existing [wet-lab workflow](https://github.com/VictorJimenez3/OpenArms/blob/171a21a393a12e37a2ad5e3e075ce5949b262bd4/docs/WET_LAB.md) already supplies `openarms capture water`, `openarms pour dry` and `openarms pour water`. Teach new `HOME`, `ABOVE_A`, `GRASP_A`, `ABOVE_C`, `TIP_C` and separate `open` / `cup` jaw settings. Do not reuse the mandarin poses or replace measured robot coordinates with CAD coordinates. The executor interpolates between named checkpoints, so inspect the entire swept path, not only its endpoints.
-
-With a 3 mm floor and 6 mm guide, the lowest part of the jaws must clear **z = 9 mm plus a physically checked margin** when approaching/closing. The smaller estimated source has about 41.9 mm diameter at 20 mm above its base and 43.9 mm at 30 mm. Actual jaw opening, grip setting, pad thickness and cup stiffness remain unknown. Neither the simulator's hinge angles nor servo torque establish usable millimetre opening or grip force. The saved grip is a position setting, not a measured force guarantee.
-
-After the gauge and mounting checks:
-
-1. Teach an empty-cup take, including vertical lift and return clearances.
-2. Run supervised empty-cup trials. Confirm lift, tilt clearance, controlled placement and free jaw release without moving the dock.
-3. Add one small pre-measured water portion; observe slip, deformation, delivery, spill, return and reset. Repeat the final setup before relying on it. Keep the last successful configuration.
-4. Record actual cup measurements, dock spacing/orientation relative to the secured arm, marker sizes, mounting thickness, jaw contact height/opening, recorded pose file and outcome evidence.
-5. Associate the installed setup with existing `fixture_id`, `cup_id`, `calibration_id`, `camera_mount_id`, `robot_id` and geometry fields in the skill context. `fixture-reference.json` is design metadata with null physical IDs, **not a runnable calibration or pose file**. The repository already checks changed setup IDs/geometry in offline adaptation; this design adds no registry.
-6. Moving a dock/camera, changing cups, pads or guide geometry requires updating the setup identity and rechecking the affected teaching/calibration. Fixed A/C transforms are meaningful only after measuring or teaching their relation to the actual arm.
-
-A fixed image region and reference-image comparison may eventually provide a cheap occupancy check. Transparent cups make that uncertain; the repository's orange-object detector is not a validated cup detector. For now a visible marker proves the dock is visible, not that a cup is present. Preserve independent operator confirmation and before/after evidence.
-
-## Evidence and sources
-
-- [Target Diamond product, TCIN 94991464](https://www.target.com/p/-/A-94991464): published overall size, not base geometry or local inventory.
-- [Live physical-demo decisions](https://app.notion.com/p/41871c9c107e816fab14f3549f6a8fd6): pH-only student demo, fixed fixtures and direct-grip first. One manually selected condition at A is enough initially.
-- [Existing physical transfer evidence](https://github.com/VictorJimenez3/OpenArms/blob/171a21a393a12e37a2ad5e3e075ce5949b262bd4/research/joseph/mandarin-transfer-2026-11-14/README.md): mandarin success does not establish cup or liquid readiness.
-- [Existing gripper uncertainty](https://github.com/VictorJimenez3/OpenArms/blob/171a21a393a12e37a2ad5e3e075ce5949b262bd4/research/victor/laboratory-experiments-and-feasibility.md): no measured usable jaw opening/force for these cups.
-- [OpenCV ArUco documentation](https://docs.opencv.org/4.13.0/d5/dae/tutorial_aruco_detection.html): marker size, calibration and pose prerequisites.
-
-Validation consists of OpenSCAD solid export and independent trimesh checks of watertightness, winding, connected-component count, positive volume, flat Z=0 underside and expected height for all eight individual STL parts. The preview uses those actual dock meshes, with estimated translucent cups. Marker images are decoded with OpenCV to check IDs. A slicer, real print, cup fit, robot collisions/reach, camera accuracy and liquid results remain unverified.
-
-## Demo supplies
-
-One shopping run: small source cups, a larger clear receiver, purple grape juice, household white vinegar, baking soda, tape, a rigid catch tray, paper towels, a ruler/calipers and matte white paper for markers. Dye is optional for a visible water-transfer rehearsal; dye mixing alone is not a pH experiment.
-
-Purple grape juice is a practical cabbage alternative: [Caltech's educational activity](https://www.its.caltech.edu/~ccc/participants/volunteers/Acids-and-Bases.pdf) reports a reddish-purple to bluish-purple/dark change with baking-soda solution and a return toward reddish-purple with vinegar. My shopping preference is 100% purple grape juice to avoid relying on artificial coloring; 100% is not a universal chemical purity requirement or a guarantee of a vivid transition. Test a small sample in the actual receiver under the demo lighting; juice acidity, concentration and camera exposure affect visibility. [ACS explains](https://www.acs.org/content/dam/acsorg/education/outreach/activities/fruit-juice-sleuth/fruit-juice-sleuth-home.pdf) that anthocyanins in real berry/grape juices change with acid/base conditions while common artificial food dyes may not. Other berry juices are candidates, but are not validated substitutes for this particular demo. Prepare and observe the chosen conditions before teaching a loaded run; keep them in open cups with headroom for fizzing.
+The builder exports the full platform and three gauges, validates each mesh as one watertight consistently wound positive-volume solid, checks dimensions and flat underside, and checks that a horizontal section above the base contains **exactly four separate cup-guide contours**. It also generates the preview and decodable markers. Physical cup fit, gripping, robot reach/collisions, printing and liquid behavior remain unverified.
