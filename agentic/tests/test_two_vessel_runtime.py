@@ -54,9 +54,12 @@ async def settled(lab, handle):
     ('Pour water from station B into C.', 'from A'),
     ('Pour water from A into receiver B.', 'into C'),
     ('Pour two portions of water from A to C.', 'one premeasured portion'),
+    ('Pour two premeasured water portions from A to C.', 'one premeasured portion'),
     ('Pour 5 mL of water from A to C.', 'one premeasured portion'),
     ('Pour citric acid from A into C.', 'water only'),
     ('Pour water from A into C, then return the donor to C.', 'return the donor to A'),
+    ('Pour water from the donor at B into the receiver at C.', 'from A'),
+    ('Pour water from A into C, then return the sample cup to C.', 'return the donor to A'),
 ])
 @pytest.mark.asyncio
 async def test_two_vessel_cannot_substitute_nominal_pour_for_explicit_unsupported_request(tmp_path, text, reason):
@@ -83,7 +86,7 @@ async def test_real_two_vessel_water_full_lab_consent_and_fresh_outcome(tmp_path
               backend_factory=lambda: TwoVesselBackend(scene), execution_scope='two-vessel-test')
     try:
         sid = (await lab.create())['session_id']
-        handle = await lab.start_task(sid, 'Pour water from A into C, then return the donor to A and go HOME.')
+        handle = await lab.start_task(sid, 'Pour water from A into C, then return the sample cup to A and go HOME.')
         await settled(lab, handle)
         snapshot = lab.snapshot(sid)
         assert snapshot['tasks'][-1]['status'] == 'awaiting_confirmation', snapshot['tasks'][-1]['summary']

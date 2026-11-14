@@ -42,20 +42,27 @@ async def settle(lab, sid, *, approve=False):
 
 def timing(state, started_at, acknowledged_at):
     task = state['tasks'][-1]
-    approved = next(r for r in reversed(state['requests']) if r['task_id'] == task['task_id'])
+    controller, = task['execution']
+    approved = next(r for r in state['requests'] if r['request_id'] == controller['request_id'])
     events = [e for e in state['notebook'] if e['request_id'] == approved['request_id']]
     proposed = next(e['time'] for e in events if e['kind'] == 'request_proposed')
     first_progress = next(e['time'] for e in events
                           if e['kind'] == 'execution_progress' and e['data'].get('phase'))
     finished = next(e['time'] for e in events if e['kind'] == 'execution_result')
-    observed = next(e['time'] for e in events if e['kind'] == 'observation')
+    outcome = task['observations'][-1]
+    observed = next(e['time'] for e in state['notebook'] if e['kind'] == 'observation'
+                    and e['data']['observation']['observation_id'] == outcome['observation_id'])
     confirmed = approved['confirmed_at']
+    assert controller['plan_hash'] == approved['plan_hash']
+    assert controller['task_id'] == approved['task_id'] == outcome['task_id'] == task['task_id']
+    assert controller['trial_id'] == approved['trial_id'] == outcome['trial_id'] == task['trial_id']
+    assert started_at <= proposed <= confirmed <= first_progress <= finished <= observed
     return {
         'request_acknowledgment_ms': (acknowledged_at-started_at)*1000,
         'request_to_proposal_ms': (proposed-started_at)*1000,
         'proposal_to_confirmation_ms': (confirmed-proposed)*1000,
         'confirmation_to_controller_progress_ms': (first_progress-confirmed)*1000,
-        'controller_elapsed_ms': approved['result']['elapsed_ms'],
+        'controller_elapsed_ms': controller['elapsed_ms'],
         'controller_receipt_to_observation_ms': (observed-finished)*1000,
         'request_to_observation_ms': (observed-started_at)*1000,
         'planning_metrics': approved['metrics'],

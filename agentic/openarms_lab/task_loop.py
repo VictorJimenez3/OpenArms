@@ -29,14 +29,14 @@ CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_
 VESSEL_LABELS = ('source', 'receiver')
 WATER_ROUTE = re.compile(
     r'\b(?P<direction>from|into|to)\s+'
-    r'(?:(?:the\s+)?(?:station|dock|cup|donor|receiver|vessel)\s+(?P<label>[a-z])\b|'
+    r'(?:(?:the\s+)?(?:station|dock|cup|donor|receiver|vessel)\s+(?:at\s+)?(?P<label>[a-z])\b|'
     r'(?P<short>[a-z])(?=\s+(?:into|to|then|and)\b|\s*[,.;!?]|\s*$))', re.I)
 WATER_DONOR_RETURN = re.compile(
-    r'\breturn\s+(?:the\s+)?(?:donor(?:\s+(?:cup|vessel))?|source\s+(?:cup|vessel))'
+    r'\breturn\s+(?:the\s+)?(?:donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
     r'\s+(?:back\s+)?to\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
 WATER_PORTION = re.compile(
     r'\b(\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|multiple)'
-    r'\s+(?:pre[- ]?measured\s+)?portions?\b', re.I)
+    r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?portions?\b', re.I)
 WATER_VOLUME = re.compile(r'\b\d+(?:\.\d+)?\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b', re.I)
 OTHER_LIQUID = re.compile(r'\b(?:vinegar|baking[- ]soda|citric[- ]acid|magic[- ]tea|indicator)\b', re.I)
 TOOLS = {
