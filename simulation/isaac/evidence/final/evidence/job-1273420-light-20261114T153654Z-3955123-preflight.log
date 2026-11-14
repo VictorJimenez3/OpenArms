@@ -1,0 +1,118 @@
+{"mode": "slurm", "hostname": "rlab7.cs.rutgers.edu", "fqdn": "rlab7.cs.rutgers.edu", "slurm_job_id": "1273420"}
+utc=2026-11-14T15:36:54Z
+host=rlab7.cs.rutgers.edu
+job=1273420
+step=2
+CUDA_VISIBLE_DEVICES=0
+SLURM_JOB_GPUS=unset
+SLURM_STEP_GPUS=5
+Linux rlab7.cs.rutgers.edu 7.0.0-43-generic #43~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Sat Oct 31 06:52:47 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+glibc 2.39
+               total        used        free      shared  buff/cache   available
+Mem:           499Gi        45Gi        33Gi       395Mi       424Gi       454Gi
+Swap:          511Gi        16Ki       511Gi
+JobId=1273420 JobName=openarms-contact-session
+   UserId=jdr317(1905244589) GroupId=jdr317(1905244589) MCS_label=N/A
+   Priority=746 Nice=0 Account=root QOS=normal
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:21:08 TimeLimit=00:30:00 TimeMin=N/A
+   SubmitTime=2026-11-14T09:46:18 EligibleTime=2026-11-14T09:46:18
+   AccrueTime=2026-11-14T09:46:18
+   StartTime=2026-11-14T10:15:46 EndTime=2026-11-14T10:45:48 Deadline=N/A
+   PreemptEligibleTime=2026-11-14T10:15:46 PreemptTime=None
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-11-14T10:15:46 Scheduler=Main
+   Partition=unlimited AllocNode:Sid=ilab3:72133
+   ReqNodeList=rlab7 ExcNodeList=(null)
+   NodeList=rlab7
+   BatchHost=rlab7
+   NumNodes=1 NumCPUs=2 NumTasks=1 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=1,mem=32G,node=1,billing=1,gres/gpu=1
+   AllocTRES=cpu=2,mem=32G,node=1,billing=1,gres/gpu=1
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*
+   MinCPUsNode=1 MinMemoryNode=32G MinTmpDiskNode=0
+   Features=(null) DelayBoot=00:00:00
+   OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null)
+   Command=/common/users/jdr317/openarms-isaac/isaac-session-job.sh
+   SubmitLine=/usr/bin/sbatch.real --parsable --job-name=openarms-contact-session --nodelist=rlab7 -G a6000:1 --mem=32G --time=00:30:00 --output=/common/users/jdr317/openarms-isaac/evidence/session-%j.log /common/users/jdr317/openarms-isaac/isaac-session-job.sh
+   WorkDir=/common/home/jdr317
+   StdErr=
+   StdIn=/dev/null
+   StdOut=/common/users/jdr317/openarms-isaac/evidence/session-1273420.log
+   TresPerJob=gres/gpu:a6000:1
+
+index, uuid, name, driver_version, memory.total [MiB], memory.free [MiB]
+0, GPU-54287caa-e189-5677-f348-761437529e82, NVIDIA RTX A6000, 580.178.04, 46068 MiB, 45485 MiB
+Sat Nov 14 10:36:54 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA RTX A6000               On  |   00000000:81:00.0 Off |                    0 |
+| 31%   55C    P8             24W /  300W |       1MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+Filesystem     Type  Size  Used Avail Use% Mounted on
+data/freespace zfs    13T  3.1T   10T  24% /freespace/local
+/dev/nvme0n1p4 ext4   98G   48M   93G   1% /tmp
+/usr/bin/singularity
+/usr/bin/python3.11
+/usr/bin/ffmpeg
+singularity-ce version 4.1.4-noble
+	libvulkan_virtio.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_virtio.so
+	libvulkan_radeon.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_radeon.so
+	libvulkan_nouveau.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_nouveau.so
+	libvulkan_lvp.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_lvp.so
+	libvulkan_intel_hasvk.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_intel_hasvk.so
+	libvulkan_intel.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_intel.so
+	libvulkan_gfxstream.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_gfxstream.so
+	libvulkan_asahi.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan_asahi.so
+	libvulkan.so.1 (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan.so.1
+	libvulkan.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libvulkan.so
+	libnvidia-encode.so.1 (libc6,x86-64) => /lib/x86_64-linux-gnu/libnvidia-encode.so.1
+	libnvidia-encode.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libnvidia-encode.so
+	libGLX_nvidia.so.0 (libc6,x86-64) => /lib/x86_64-linux-gnu/libGLX_nvidia.so.0
+	libGLX_mesa.so.0 (libc6,x86-64) => /lib/x86_64-linux-gnu/libGLX_mesa.so.0
+	libGLX.so.0 (libc6,x86-64) => /lib/x86_64-linux-gnu/libGLX.so.0
+	libGLX.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libGLX.so
+	libEGL_nvidia.so.0 (libc6,x86-64) => /lib/x86_64-linux-gnu/libEGL_nvidia.so.0
+	libEGL_mesa.so.0 (libc6,x86-64) => /lib/x86_64-linux-gnu/libEGL_mesa.so.0
+	libEGL.so.1 (libc6,x86-64) => /lib/x86_64-linux-gnu/libEGL.so.1
+	libEGL.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libEGL.so
+/etc/vulkan/icd.d:
+
+/usr/share/vulkan/icd.d:
+asahi_icd.json
+gfxstream_vk_icd.json
+intel_hasvk_icd.json
+intel_icd.json
+lvp_icd.json
+nouveau_icd.json
+nvidia_icd.json
+radeon_icd.json
+virtio_icd.json
+PREFLIGHT_ONLY: this is not proof Isaac launched.

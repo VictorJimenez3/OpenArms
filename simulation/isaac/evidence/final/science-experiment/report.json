@@ -1,0 +1,1444 @@
+{
+  "schema_version": 1,
+  "provenance": "SIMULATED",
+  "experiment": "mass_vs_weight",
+  "light": {
+    "schema_version": 1,
+    "provenance": "SIMULATED",
+    "experiment": "mass_vs_weight",
+    "condition": "light",
+    "mass_kg": 0.01,
+    "gravity_m_s2": 9.81,
+    "mean_support_force_N": 0.09809999906819714,
+    "std_support_force_N": 7.221380086477728e-08,
+    "min_support_force_N": 0.0980997234582901,
+    "max_support_force_N": 0.09810066968202591,
+    "std_definition": "population standard deviation across raw window samples",
+    "measurement": "contact_vectors_N[2][2]: signed +Z receiver normal force on cube",
+    "expected_weight_N": 0.0981,
+    "expected_weight_provenance": "ANALYTIC_PREDICTION",
+    "expected_weight_formula": "mass_kg * gravity_m_s2",
+    "relative_error": 9.498500213799378e-09,
+    "relative_error_definition": "abs(measured mean - analytic prediction) / analytic prediction",
+    "sample_count": 121,
+    "time_window": {
+      "start_sim_time_s": 23.000001199543476,
+      "end_sim_time_s": 24.00000125169754,
+      "duration_s": 1.0000000521540642,
+      "interval": "closed",
+      "requested_duration_s": 1.0,
+      "physics_dt_s": 0.008333333333333333,
+      "time_tolerance_s": 1e-05,
+      "total_recorded_samples": 2880
+    },
+    "source": {
+      "git_commit": "6afba01407b8036a0a22d5d8d6f261ac26424051",
+      "git_dirty": false,
+      "isaac_version": "5.1.0.0",
+      "workshop_commit": "ce807d99724cb65671abec01f908a2fcb4a6eab7",
+      "robot_asset": {
+        "path": "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop/source/sim_to_real_so101/assets/usd/SO-ARM101-USD-NO-CAMERA.usd",
+        "sha256": "71a03dd530e8dff75fd6de0cb4aacbb31653395fb01d9af835853f84841d4c77"
+      },
+      "gpu": "uuid, name, driver_version, memory.total [MiB]\nGPU-54287caa-e189-5677-f348-761437529e82, NVIDIA RTX A6000, 580.178.04, 46068 MiB\n",
+      "hostname": "rlab7.cs.rutgers.edu",
+      "execution_context": {
+        "mode": "slurm",
+        "hostname": "rlab7.cs.rutgers.edu",
+        "fqdn": "rlab7.cs.rutgers.edu",
+        "slurm_job_id": "1273420"
+      },
+      "command": [
+        "/common/users/jdr317/openarms-isaac/code-skill-6afba01/simulation/isaac/smoke.py",
+        "--output",
+        "/common/users/jdr317/openarms-isaac/evidence/job-1273420-light-20261114T153654Z-3955123/recording",
+        "--workshop",
+        "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop",
+        "--request-id",
+        "8c798d67-adb0-4ffb-a697-fba22b06f52a",
+        "--task",
+        "cube",
+        "--condition",
+        "light",
+        "--cleanup",
+        "sensors"
+      ],
+      "request_id": "8c798d67-adb0-4ffb-a697-fba22b06f52a",
+      "recording_dir": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording",
+      "receipt_path": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/receipt.json",
+      "receipt_sha256": "dbcf84e678bedd63c3949deca09d1e2b65c2d71eaae1389714886455df85c65f",
+      "artifact_paths": {
+        "camera.mp4": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/camera.mp4",
+        "execution.json": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/execution.json",
+        "trial-configuration.json": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/trial-configuration.json",
+        "scene.usda": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/scene.usda",
+        "first-frame.png": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/first-frame.png",
+        "state.jsonl": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/state.jsonl",
+        "events.jsonl": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-light-20261114T153654Z-3955123/recording/events.jsonl"
+      },
+      "artifact_sha256": {
+        "camera.mp4": "2636cd20205cfb6d92748caeb56068d9c58cbd52bf4b97a535bb6a8866dcdada",
+        "execution.json": "c29818281449d5be6387d0fc46a69a64a3a9def1f1a30aabb2aa838096c7d335",
+        "trial-configuration.json": "6d6d26f6f9ea4abb8402e69734e292c5b70242f675740bd301a13ea17dffed2a",
+        "scene.usda": "48ebf03c1c4e4451bcff92f2ec64e3b15166129c0c301a5aad1a31bc414fd253",
+        "first-frame.png": "074f61c3ec01d3b0e55cb07b8e8918fe94fbdfb5ceec55f418b065036e664769",
+        "state.jsonl": "cbe27b3f12c765fe7b0cc3dd8b59fb878527da1a5f3e1f1407d59b6880242a65",
+        "events.jsonl": "a266e277ea7995111311262431d939e9735d9054a1222b1bbf9663cbc5e02861"
+      }
+    },
+    "scene": {
+      "units": "meters",
+      "up_axis": "Z",
+      "physics_dt": 0.008333333333333333,
+      "video_fps": 30,
+      "gravity_m_s2": 9.81,
+      "appearance": {
+        "robot_asset": "SO-ARM101-USD-NO-CAMERA.usd",
+        "onboard_camera": false,
+        "plastic_color_rgb": [
+          0.95,
+          0.95,
+          0.95
+        ],
+        "material_shader": "/World/Robot/Looks/material_a_3d_printed/Shader",
+        "external_evidence_camera": true
+      }
+    },
+    "trial_configuration": {
+      "kind": "cube_to_receiver_candidate",
+      "source_m": [
+        0.23,
+        0.0,
+        0.01
+      ],
+      "destination_m": [
+        0.2,
+        0.1,
+        0.014
+      ],
+      "cube_edge_m": 0.02,
+      "cube_mass_kg": 0.01,
+      "cube_yaw_rad": -1.6925914313060815,
+      "experiment": {
+        "name": "mass_vs_weight",
+        "condition": "light",
+        "gravity_m_s2": 9.81
+      },
+      "collision_settings": {
+        "contact_offset_m": 0.0005,
+        "rest_offset_m": 0.0,
+        "torsional_patch_radius_m": 0.0,
+        "min_torsional_patch_radius_m": 0.0,
+        "collider_paths": [
+          "/World/defaultGroundPlane/GroundPlane/CollisionPlane",
+          "/World/Robot/base/collisions",
+          "/World/Robot/shoulder/collisions",
+          "/World/Robot/upper_arm/collisions",
+          "/World/Robot/lower_arm/collisions",
+          "/World/Robot/wrist/collisions",
+          "/World/Robot/gripper/collisions",
+          "/World/Robot/jaw/collisions",
+          "/World/Block",
+          "/World/Receiver/Floor",
+          "/World/Receiver/Left",
+          "/World/Receiver/Right",
+          "/World/Receiver/Back",
+          "/World/Receiver/Front"
+        ]
+      },
+      "material": {
+        "static_friction": 0.9,
+        "dynamic_friction": 0.8,
+        "restitution": 0.0
+      },
+      "contact_jaw_rad": 0.058077488073,
+      "closed_jaw_rad": 0.05,
+      "phases": [
+        {
+          "name": "approach",
+          "start_s": 0.0,
+          "end_s": 1.0,
+          "from_rad": [
+            0.06998765829216697,
+            0.14189219795215888,
+            0.011412779913903982,
+            1.4174975646991361,
+            -1.6033999996437294,
+            0.3
+          ],
+          "to_rad": [
+            0.06998765911409918,
+            0.14189221402961902,
+            0.011412760091717877,
+            1.4174975761674757,
+            -1.6033999996437382,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.2304859768348494,
+            0.003970368561728374,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 1.3921010631130332e-14,
+            "direction_error_rad": 1.3501908354113896e-06,
+            "position_residual_m": [
+              8.631984016460592e-15,
+              1.0337217193345793e-14,
+              3.524958103184872e-15
+            ],
+            "direction_residual": [
+              9.440975193539772e-08,
+              1.3468860719330696e-06,
+              9.12048214729566e-13
+            ],
+            "evaluations": 2,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "descend",
+          "start_s": 1.0,
+          "end_s": 4.0,
+          "from_rad": [
+            0.06998765911409918,
+            0.14189221402961902,
+            0.011412760091717877,
+            1.4174975761674757,
+            -1.6033999996437382,
+            0.3
+          ],
+          "to_rad": [
+            0.06998679075522571,
+            0.35013176101979293,
+            0.2695843166370304,
+            0.9510864827100285,
+            -1.6034000001802151,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.2304859768348494,
+            0.003970368561728374,
+            0.01
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.390506268967369e-10,
+            "direction_error_rad": 1.3369114351052349e-06,
+            "position_residual_m": [
+              3.35281163943435e-10,
+              -2.7160908071255374e-11,
+              4.212177637935577e-10
+            ],
+            "direction_residual": [
+              8.342219153480479e-08,
+              1.3343061579988317e-06,
+              8.942846463355636e-13
+            ],
+            "evaluations": 7,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "close",
+          "start_s": 4.0,
+          "end_s": 6.0,
+          "from_rad": [
+            0.06998679075522571,
+            0.35013176101979293,
+            0.2695843166370304,
+            0.9510864827100285,
+            -1.6034000001802151,
+            0.3
+          ],
+          "to_rad": [
+            0.08919911868265727,
+            0.34923086249781743,
+            0.2710033453193187,
+            0.9505683910659062,
+            -1.6034000001766102,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.23,
+            0.0,
+            0.01
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 9.510225144640576e-12,
+            "direction_error_rad": 1.3407476672141718e-06,
+            "position_residual_m": [
+              3.2239488856333764e-12,
+              8.946774744666985e-12,
+              7.587853956270152e-14
+            ],
+            "direction_residual": [
+              1.193811680445534e-07,
+              1.3354221968559173e-06,
+              8.990586053414518e-13
+            ],
+            "evaluations": 4,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "lift",
+          "start_s": 6.0,
+          "end_s": 9.0,
+          "from_rad": [
+            0.08919911868265727,
+            0.34923086249781743,
+            0.2710033453193187,
+            0.9505683910659062,
+            -1.6034000001766102,
+            0.05
+          ],
+          "to_rad": [
+            0.08919998634691004,
+            0.14078102743856294,
+            0.012885097271563858,
+            1.4171364653913177,
+            -1.6033999994711432,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.23,
+            0.0,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.703627089161122e-10,
+            "direction_error_rad": 1.354164348197353e-06,
+            "position_residual_m": [
+              -2.5182159135717086e-10,
+              2.530041237278069e-11,
+              -5.111353978959343e-10
+            ],
+            "direction_residual": [
+              1.2932341509688685e-07,
+              1.3479749761161436e-06,
+              9.174883075502294e-13
+            ],
+            "evaluations": 8,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "hold",
+          "start_s": 9.0,
+          "end_s": 11.0,
+          "from_rad": [
+            0.08919998634691004,
+            0.14078102743856294,
+            0.012885097271563858,
+            1.4171364653913177,
+            -1.6033999994711432,
+            0.05
+          ],
+          "to_rad": [
+            0.08919998636016369,
+            0.1407810416704661,
+            0.012885074614382805,
+            1.4171364825557675,
+            -1.603399999471157,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.23,
+            0.0,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 1.648890799790182e-14,
+            "direction_error_rad": 1.354136148252313e-06,
+            "position_residual_m": [
+              9.076073226310655e-15,
+              1.3303594337266134e-14,
+              3.5388358909926865e-15
+            ],
+            "direction_residual": [
+              1.2061898171628022e-07,
+              1.3487534130641583e-06,
+              9.173772852477668e-13
+            ],
+            "evaluations": 2,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "carry",
+          "start_s": 11.0,
+          "end_s": 14.0,
+          "from_rad": [
+            0.08919998636016369,
+            0.1407810416704661,
+            0.012885074614382805,
+            1.4171364825557675,
+            -1.603399999471157,
+            0.05
+          ],
+          "to_rad": [
+            -0.4326741031717403,
+            0.017792008557908915,
+            0.16969812835431652,
+            1.3833111778812461,
+            -1.6033999998311896,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.2,
+            0.1,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 4.0115908801630826e-10,
+            "direction_error_rad": 1.5857737303075023e-06,
+            "position_residual_m": [
+              3.6525721336388983e-10,
+              -1.3163224676926433e-10,
+              1.0093925695286998e-10
+            ],
+            "direction_residual": [
+              -6.692727237930351e-07,
+              1.4376203758008975e-06,
+              1.2577716645978398e-12
+            ],
+            "evaluations": 6,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "lower",
+          "start_s": 14.0,
+          "end_s": 17.0,
+          "from_rad": [
+            -0.4326741031717403,
+            0.017792008557908915,
+            0.16969812835431652,
+            1.3833111778812461,
+            -1.6033999998311896,
+            0.05
+          ],
+          "to_rad": [
+            -0.4326748593641613,
+            0.2092695957079268,
+            0.41187746414895443,
+            0.9496542586294918,
+            -1.6034000006515194,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.2,
+            0.1,
+            0.018
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.010678194622914e-10,
+            "direction_error_rad": 1.5702046483923697e-06,
+            "position_residual_m": [
+              2.3533630599814614e-10,
+              1.0526834959279086e-10,
+              4.296560919547776e-10
+            ],
+            "direction_residual": [
+              -6.660928548955839e-07,
+              1.4219222716055996e-06,
+              1.2331247134511614e-12
+            ],
+            "evaluations": 7,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "release",
+          "start_s": 17.0,
+          "end_s": 19.0,
+          "from_rad": [
+            -0.4326748593641613,
+            0.2092695957079268,
+            0.41187746414895443,
+            0.9496542586294918,
+            -1.6034000006515194,
+            0.05
+          ],
+          "to_rad": [
+            -0.45328583167543,
+            0.2101745535721687,
+            0.41056449616998864,
+            0.9500622130104067,
+            -1.6034000006348437,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.19844203608973293,
+            0.10368412112372354,
+            0.018
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 1.0910852276858732e-11,
+            "direction_error_rad": 1.5925618083612394e-06,
+            "position_residual_m": [
+              2.7291779947091754e-12,
+              -1.05634806457644e-11,
+              -1.056481291339395e-13
+            ],
+            "direction_residual": [
+              -6.973927132001846e-07,
+              1.431745968048788e-06,
+              1.2685408279367039e-12
+            ],
+            "evaluations": 5,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "retreat",
+          "start_s": 19.0,
+          "end_s": 22.0,
+          "from_rad": [
+            -0.45328583167543,
+            0.2101745535721687,
+            0.41056449616998864,
+            0.9500622130104067,
+            -1.6034000006348437,
+            0.3
+          ],
+          "to_rad": [
+            -0.4532850846127592,
+            0.018861601895682985,
+            0.16838766168529143,
+            1.3835519920704586,
+            -1.6033999997085395,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.19844203608973293,
+            0.10368412112372354,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.106595175866015e-10,
+            "direction_error_rad": 1.6081086743285118e-06,
+            "position_residual_m": [
+              -1.5767245842290833e-10,
+              -7.463232809534759e-11,
+              -4.799401570609874e-10
+            ],
+            "direction_residual": [
+              -6.978078869038348e-07,
+              1.4488194026251782e-06,
+              1.2935208459907699e-12
+            ],
+            "evaluations": 8,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "settle",
+          "start_s": 22.0,
+          "end_s": 24.0,
+          "from_rad": [
+            -0.4532850846127592,
+            0.018861601895682985,
+            0.16838766168529143,
+            1.3835519920704586,
+            -1.6033999997085395,
+            0.3
+          ],
+          "to_rad": [
+            -0.45328508460220085,
+            0.018861612649440595,
+            0.16838764491450303,
+            1.3835520052293477,
+            -1.6033999997085886,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.19844203608973293,
+            0.10368412112372354,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 9.338311340515115e-14,
+            "direction_error_rad": 1.6080928150164326e-06,
+            "position_residual_m": [
+              4.876654635666e-14,
+              -7.95752352900081e-14,
+              3.164135620181696e-15
+            ],
+            "direction_residual": [
+              -7.042284901073372e-07,
+              1.4456917843808839e-06,
+              1.293742890595695e-12
+            ],
+            "evaluations": 2,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        }
+      ],
+      "attachments": false,
+      "pose_writes_after_reset": false,
+      "receiver_kinematic_fixture": true,
+      "runtime_fk_errors": {
+        "/World/Robot/base": {
+          "position_error_m": 8.273153671877506e-05,
+          "rotation_error_rad": 0.0010692727298675134
+        },
+        "/World/Robot/shoulder": {
+          "position_error_m": 2.3119256714708847e-05,
+          "rotation_error_rad": 0.0010692193552948868
+        },
+        "/World/Robot/upper_arm": {
+          "position_error_m": 8.836802335499667e-05,
+          "rotation_error_rad": 0.0010692139635315415
+        },
+        "/World/Robot/lower_arm": {
+          "position_error_m": 0.00021204295549553107,
+          "rotation_error_rad": 0.001069448910185373
+        },
+        "/World/Robot/wrist": {
+          "position_error_m": 0.0002898785652016936,
+          "rotation_error_rad": 0.0010695332209453466
+        },
+        "/World/Robot/gripper": {
+          "position_error_m": 0.0002567929899855613,
+          "rotation_error_rad": 0.0010697546446657039
+        },
+        "/World/Robot/jaw": {
+          "position_error_m": 0.0002633798618671383,
+          "rotation_error_rad": 0.001069592919790842
+        }
+      }
+    },
+    "recording_configuration": {
+      "joint_names": [
+        "Rotation",
+        "Pitch",
+        "Elbow",
+        "Wrist_Pitch",
+        "Wrist_Roll",
+        "Jaw"
+      ],
+      "initial_joint_positions_rad": [
+        0.06998765829216697,
+        0.14189219795215888,
+        0.011412779913903982,
+        1.4174975646991361,
+        -1.6033999996437294,
+        0.3
+      ],
+      "launcher_config": {
+        "headless": true,
+        "width": 960,
+        "height": 720,
+        "renderer": "RayTracedLighting",
+        "multi_gpu": false,
+        "create_new_stage": true
+      },
+      "cleanup_mode": "sensors"
+    },
+    "limitations": [
+      "Simulated contact-force measurements; no physical robot or laboratory outcome established.",
+      "One trial per condition does not establish repeatability or statistical significance.",
+      "Artifact hashes are checked against the receipt, not independently authenticated.",
+      "Video visual review remains required; this helper audits numeric evidence."
+    ]
+  },
+  "heavy": {
+    "schema_version": 1,
+    "provenance": "SIMULATED",
+    "experiment": "mass_vs_weight",
+    "condition": "heavy",
+    "mass_kg": 0.04,
+    "gravity_m_s2": 9.81,
+    "mean_support_force_N": 0.39239999183938523,
+    "std_support_force_N": 7.13743769512644e-08,
+    "min_support_force_N": 0.3923998773097992,
+    "max_support_force_N": 0.3924001455307007,
+    "std_definition": "population standard deviation across raw window samples",
+    "measurement": "contact_vectors_N[2][2]: signed +Z receiver normal force on cube",
+    "expected_weight_N": 0.3924,
+    "expected_weight_provenance": "ANALYTIC_PREDICTION",
+    "expected_weight_formula": "mass_kg * gravity_m_s2",
+    "relative_error": 2.0796673789570585e-08,
+    "relative_error_definition": "abs(measured mean - analytic prediction) / analytic prediction",
+    "sample_count": 121,
+    "time_window": {
+      "start_sim_time_s": 23.000001199543476,
+      "end_sim_time_s": 24.00000125169754,
+      "duration_s": 1.0000000521540642,
+      "interval": "closed",
+      "requested_duration_s": 1.0,
+      "physics_dt_s": 0.008333333333333333,
+      "time_tolerance_s": 1e-05,
+      "total_recorded_samples": 2880
+    },
+    "source": {
+      "git_commit": "6afba01407b8036a0a22d5d8d6f261ac26424051",
+      "git_dirty": false,
+      "isaac_version": "5.1.0.0",
+      "workshop_commit": "ce807d99724cb65671abec01f908a2fcb4a6eab7",
+      "robot_asset": {
+        "path": "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop/source/sim_to_real_so101/assets/usd/SO-ARM101-USD-NO-CAMERA.usd",
+        "sha256": "71a03dd530e8dff75fd6de0cb4aacbb31653395fb01d9af835853f84841d4c77"
+      },
+      "gpu": "uuid, name, driver_version, memory.total [MiB]\nGPU-54287caa-e189-5677-f348-761437529e82, NVIDIA RTX A6000, 580.178.04, 46068 MiB\n",
+      "hostname": "rlab7.cs.rutgers.edu",
+      "execution_context": {
+        "mode": "slurm",
+        "hostname": "rlab7.cs.rutgers.edu",
+        "fqdn": "rlab7.cs.rutgers.edu",
+        "slurm_job_id": "1273420"
+      },
+      "command": [
+        "/common/users/jdr317/openarms-isaac/code-skill-6afba01/simulation/isaac/smoke.py",
+        "--output",
+        "/common/users/jdr317/openarms-isaac/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording",
+        "--workshop",
+        "/freespace/local/jdr317/openarms-isaac-5.1.0/workshop",
+        "--request-id",
+        "d81ef174-ea5c-46ad-bc47-9058d6f7034c",
+        "--task",
+        "cube",
+        "--condition",
+        "heavy",
+        "--cleanup",
+        "sensors"
+      ],
+      "request_id": "d81ef174-ea5c-46ad-bc47-9058d6f7034c",
+      "recording_dir": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording",
+      "receipt_path": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/receipt.json",
+      "receipt_sha256": "5ce256e82553f4b43fb8b762dca4bce92dfb1b58638cd4177c1efdc6eee92465",
+      "artifact_paths": {
+        "trial-configuration.json": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/trial-configuration.json",
+        "events.jsonl": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/events.jsonl",
+        "execution.json": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/execution.json",
+        "scene.usda": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/scene.usda",
+        "state.jsonl": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/state.jsonl",
+        "first-frame.png": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/first-frame.png",
+        "camera.mp4": "/Users/joeroche/Documents/Codex/2026-11-14/you-are-the-isaac-sim-runtime/outputs/evidence/job-1273420-heavy-20261114T153817Z-3955121/recording/camera.mp4"
+      },
+      "artifact_sha256": {
+        "trial-configuration.json": "7ca0f751ef802759a8ace295eceb63bde7bc565040127188cba2ecddc8dc9276",
+        "events.jsonl": "cfba5bbf9221113dcf4ef478848ded13f3cc418b93d5047fc9756418064825f9",
+        "execution.json": "faa29451899e1fea5affbe7e022f702e2705a49eddb0ed93ff6c6555db73f3a5",
+        "scene.usda": "237e2aa9ca79cd4794ab4e7dd94d357b813594f01c0dbe26b72c5d1ec7bdcedb",
+        "state.jsonl": "bdebb026b14948b857b183a378fcf862c808c9cfcc5a866d809632af00c33f7a",
+        "first-frame.png": "889ed24dbb702264b04083cf5eb99659e996af4316cef8277ab0f145abbd83ec",
+        "camera.mp4": "7caa23716eb3bf2676d3a55b3d246f0ee243c80bc807f07835ac9161ce054b7c"
+      }
+    },
+    "scene": {
+      "units": "meters",
+      "up_axis": "Z",
+      "physics_dt": 0.008333333333333333,
+      "video_fps": 30,
+      "gravity_m_s2": 9.81,
+      "appearance": {
+        "robot_asset": "SO-ARM101-USD-NO-CAMERA.usd",
+        "onboard_camera": false,
+        "plastic_color_rgb": [
+          0.95,
+          0.95,
+          0.95
+        ],
+        "material_shader": "/World/Robot/Looks/material_a_3d_printed/Shader",
+        "external_evidence_camera": true
+      }
+    },
+    "trial_configuration": {
+      "kind": "cube_to_receiver_candidate",
+      "source_m": [
+        0.23,
+        0.0,
+        0.01
+      ],
+      "destination_m": [
+        0.2,
+        0.1,
+        0.014
+      ],
+      "cube_edge_m": 0.02,
+      "cube_mass_kg": 0.04,
+      "cube_yaw_rad": -1.6925914313060815,
+      "experiment": {
+        "name": "mass_vs_weight",
+        "condition": "heavy",
+        "gravity_m_s2": 9.81
+      },
+      "collision_settings": {
+        "contact_offset_m": 0.0005,
+        "rest_offset_m": 0.0,
+        "torsional_patch_radius_m": 0.0,
+        "min_torsional_patch_radius_m": 0.0,
+        "collider_paths": [
+          "/World/defaultGroundPlane/GroundPlane/CollisionPlane",
+          "/World/Robot/base/collisions",
+          "/World/Robot/shoulder/collisions",
+          "/World/Robot/upper_arm/collisions",
+          "/World/Robot/lower_arm/collisions",
+          "/World/Robot/wrist/collisions",
+          "/World/Robot/gripper/collisions",
+          "/World/Robot/jaw/collisions",
+          "/World/Block",
+          "/World/Receiver/Floor",
+          "/World/Receiver/Left",
+          "/World/Receiver/Right",
+          "/World/Receiver/Back",
+          "/World/Receiver/Front"
+        ]
+      },
+      "material": {
+        "static_friction": 0.9,
+        "dynamic_friction": 0.8,
+        "restitution": 0.0
+      },
+      "contact_jaw_rad": 0.058077488073,
+      "closed_jaw_rad": 0.05,
+      "phases": [
+        {
+          "name": "approach",
+          "start_s": 0.0,
+          "end_s": 1.0,
+          "from_rad": [
+            0.06998765829216697,
+            0.14189219795215888,
+            0.011412779913903982,
+            1.4174975646991361,
+            -1.6033999996437294,
+            0.3
+          ],
+          "to_rad": [
+            0.06998765911409918,
+            0.14189221402961902,
+            0.011412760091717877,
+            1.4174975761674757,
+            -1.6033999996437382,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.2304859768348494,
+            0.003970368561728374,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 1.3921010631130332e-14,
+            "direction_error_rad": 1.3501908354113896e-06,
+            "position_residual_m": [
+              8.631984016460592e-15,
+              1.0337217193345793e-14,
+              3.524958103184872e-15
+            ],
+            "direction_residual": [
+              9.440975193539772e-08,
+              1.3468860719330696e-06,
+              9.12048214729566e-13
+            ],
+            "evaluations": 2,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "descend",
+          "start_s": 1.0,
+          "end_s": 4.0,
+          "from_rad": [
+            0.06998765911409918,
+            0.14189221402961902,
+            0.011412760091717877,
+            1.4174975761674757,
+            -1.6033999996437382,
+            0.3
+          ],
+          "to_rad": [
+            0.06998679075522571,
+            0.35013176101979293,
+            0.2695843166370304,
+            0.9510864827100285,
+            -1.6034000001802151,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.2304859768348494,
+            0.003970368561728374,
+            0.01
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.390506268967369e-10,
+            "direction_error_rad": 1.3369114351052349e-06,
+            "position_residual_m": [
+              3.35281163943435e-10,
+              -2.7160908071255374e-11,
+              4.212177637935577e-10
+            ],
+            "direction_residual": [
+              8.342219153480479e-08,
+              1.3343061579988317e-06,
+              8.942846463355636e-13
+            ],
+            "evaluations": 7,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "close",
+          "start_s": 4.0,
+          "end_s": 6.0,
+          "from_rad": [
+            0.06998679075522571,
+            0.35013176101979293,
+            0.2695843166370304,
+            0.9510864827100285,
+            -1.6034000001802151,
+            0.3
+          ],
+          "to_rad": [
+            0.08919911868265727,
+            0.34923086249781743,
+            0.2710033453193187,
+            0.9505683910659062,
+            -1.6034000001766102,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.23,
+            0.0,
+            0.01
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 9.510225144640576e-12,
+            "direction_error_rad": 1.3407476672141718e-06,
+            "position_residual_m": [
+              3.2239488856333764e-12,
+              8.946774744666985e-12,
+              7.587853956270152e-14
+            ],
+            "direction_residual": [
+              1.193811680445534e-07,
+              1.3354221968559173e-06,
+              8.990586053414518e-13
+            ],
+            "evaluations": 4,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "lift",
+          "start_s": 6.0,
+          "end_s": 9.0,
+          "from_rad": [
+            0.08919911868265727,
+            0.34923086249781743,
+            0.2710033453193187,
+            0.9505683910659062,
+            -1.6034000001766102,
+            0.05
+          ],
+          "to_rad": [
+            0.08919998634691004,
+            0.14078102743856294,
+            0.012885097271563858,
+            1.4171364653913177,
+            -1.6033999994711432,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.23,
+            0.0,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.703627089161122e-10,
+            "direction_error_rad": 1.354164348197353e-06,
+            "position_residual_m": [
+              -2.5182159135717086e-10,
+              2.530041237278069e-11,
+              -5.111353978959343e-10
+            ],
+            "direction_residual": [
+              1.2932341509688685e-07,
+              1.3479749761161436e-06,
+              9.174883075502294e-13
+            ],
+            "evaluations": 8,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "hold",
+          "start_s": 9.0,
+          "end_s": 11.0,
+          "from_rad": [
+            0.08919998634691004,
+            0.14078102743856294,
+            0.012885097271563858,
+            1.4171364653913177,
+            -1.6033999994711432,
+            0.05
+          ],
+          "to_rad": [
+            0.08919998636016369,
+            0.1407810416704661,
+            0.012885074614382805,
+            1.4171364825557675,
+            -1.603399999471157,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.23,
+            0.0,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 1.648890799790182e-14,
+            "direction_error_rad": 1.354136148252313e-06,
+            "position_residual_m": [
+              9.076073226310655e-15,
+              1.3303594337266134e-14,
+              3.5388358909926865e-15
+            ],
+            "direction_residual": [
+              1.2061898171628022e-07,
+              1.3487534130641583e-06,
+              9.173772852477668e-13
+            ],
+            "evaluations": 2,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "carry",
+          "start_s": 11.0,
+          "end_s": 14.0,
+          "from_rad": [
+            0.08919998636016369,
+            0.1407810416704661,
+            0.012885074614382805,
+            1.4171364825557675,
+            -1.603399999471157,
+            0.05
+          ],
+          "to_rad": [
+            -0.4326741031717403,
+            0.017792008557908915,
+            0.16969812835431652,
+            1.3833111778812461,
+            -1.6033999998311896,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.2,
+            0.1,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 4.0115908801630826e-10,
+            "direction_error_rad": 1.5857737303075023e-06,
+            "position_residual_m": [
+              3.6525721336388983e-10,
+              -1.3163224676926433e-10,
+              1.0093925695286998e-10
+            ],
+            "direction_residual": [
+              -6.692727237930351e-07,
+              1.4376203758008975e-06,
+              1.2577716645978398e-12
+            ],
+            "evaluations": 6,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "lower",
+          "start_s": 14.0,
+          "end_s": 17.0,
+          "from_rad": [
+            -0.4326741031717403,
+            0.017792008557908915,
+            0.16969812835431652,
+            1.3833111778812461,
+            -1.6033999998311896,
+            0.05
+          ],
+          "to_rad": [
+            -0.4326748593641613,
+            0.2092695957079268,
+            0.41187746414895443,
+            0.9496542586294918,
+            -1.6034000006515194,
+            0.05
+          ],
+          "target_xyz_m": [
+            0.2,
+            0.1,
+            0.018
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.010678194622914e-10,
+            "direction_error_rad": 1.5702046483923697e-06,
+            "position_residual_m": [
+              2.3533630599814614e-10,
+              1.0526834959279086e-10,
+              4.296560919547776e-10
+            ],
+            "direction_residual": [
+              -6.660928548955839e-07,
+              1.4219222716055996e-06,
+              1.2331247134511614e-12
+            ],
+            "evaluations": 7,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "release",
+          "start_s": 17.0,
+          "end_s": 19.0,
+          "from_rad": [
+            -0.4326748593641613,
+            0.2092695957079268,
+            0.41187746414895443,
+            0.9496542586294918,
+            -1.6034000006515194,
+            0.05
+          ],
+          "to_rad": [
+            -0.45328583167543,
+            0.2101745535721687,
+            0.41056449616998864,
+            0.9500622130104067,
+            -1.6034000006348437,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.19844203608973293,
+            0.10368412112372354,
+            0.018
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 1.0910852276858732e-11,
+            "direction_error_rad": 1.5925618083612394e-06,
+            "position_residual_m": [
+              2.7291779947091754e-12,
+              -1.05634806457644e-11,
+              -1.056481291339395e-13
+            ],
+            "direction_residual": [
+              -6.973927132001846e-07,
+              1.431745968048788e-06,
+              1.2685408279367039e-12
+            ],
+            "evaluations": 5,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "retreat",
+          "start_s": 19.0,
+          "end_s": 22.0,
+          "from_rad": [
+            -0.45328583167543,
+            0.2101745535721687,
+            0.41056449616998864,
+            0.9500622130104067,
+            -1.6034000006348437,
+            0.3
+          ],
+          "to_rad": [
+            -0.4532850846127592,
+            0.018861601895682985,
+            0.16838766168529143,
+            1.3835519920704586,
+            -1.6033999997085395,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.19844203608973293,
+            0.10368412112372354,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 5.106595175866015e-10,
+            "direction_error_rad": 1.6081086743285118e-06,
+            "position_residual_m": [
+              -1.5767245842290833e-10,
+              -7.463232809534759e-11,
+              -4.799401570609874e-10
+            ],
+            "direction_residual": [
+              -6.978078869038348e-07,
+              1.4488194026251782e-06,
+              1.2935208459907699e-12
+            ],
+            "evaluations": 8,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        },
+        {
+          "name": "settle",
+          "start_s": 22.0,
+          "end_s": 24.0,
+          "from_rad": [
+            -0.4532850846127592,
+            0.018861601895682985,
+            0.16838766168529143,
+            1.3835519920704586,
+            -1.6033999997085395,
+            0.3
+          ],
+          "to_rad": [
+            -0.45328508460220085,
+            0.018861612649440595,
+            0.16838764491450303,
+            1.3835520052293477,
+            -1.6033999997085886,
+            0.3
+          ],
+          "target_xyz_m": [
+            0.19844203608973293,
+            0.10368412112372354,
+            0.08
+          ],
+          "tcp_gripper_m": [
+            0.00210000038147,
+            0.0,
+            -0.1
+          ],
+          "ik": {
+            "success": true,
+            "position_error_m": 9.338311340515115e-14,
+            "direction_error_rad": 1.6080928150164326e-06,
+            "position_residual_m": [
+              4.876654635666e-14,
+              -7.95752352900081e-14,
+              3.164135620181696e-15
+            ],
+            "direction_residual": [
+              -7.042284901073372e-07,
+              1.4456917843808839e-06,
+              1.293742890595695e-12
+            ],
+            "evaluations": 2,
+            "optimizer_success": true,
+            "message": "accepted (kinematics only)"
+          }
+        }
+      ],
+      "attachments": false,
+      "pose_writes_after_reset": false,
+      "receiver_kinematic_fixture": true,
+      "runtime_fk_errors": {
+        "/World/Robot/base": {
+          "position_error_m": 8.273153671877506e-05,
+          "rotation_error_rad": 0.0010692727298675134
+        },
+        "/World/Robot/shoulder": {
+          "position_error_m": 2.3119256714708847e-05,
+          "rotation_error_rad": 0.0010692193552948868
+        },
+        "/World/Robot/upper_arm": {
+          "position_error_m": 8.836802335499667e-05,
+          "rotation_error_rad": 0.0010692139635315415
+        },
+        "/World/Robot/lower_arm": {
+          "position_error_m": 0.00021204295549553107,
+          "rotation_error_rad": 0.001069448910185373
+        },
+        "/World/Robot/wrist": {
+          "position_error_m": 0.0002898785652016936,
+          "rotation_error_rad": 0.0010695332209453466
+        },
+        "/World/Robot/gripper": {
+          "position_error_m": 0.0002567929899855613,
+          "rotation_error_rad": 0.0010697546446657039
+        },
+        "/World/Robot/jaw": {
+          "position_error_m": 0.0002633798618671383,
+          "rotation_error_rad": 0.001069592919790842
+        }
+      }
+    },
+    "recording_configuration": {
+      "joint_names": [
+        "Rotation",
+        "Pitch",
+        "Elbow",
+        "Wrist_Pitch",
+        "Wrist_Roll",
+        "Jaw"
+      ],
+      "initial_joint_positions_rad": [
+        0.06998765829216697,
+        0.14189219795215888,
+        0.011412779913903982,
+        1.4174975646991361,
+        -1.6033999996437294,
+        0.3
+      ],
+      "launcher_config": {
+        "headless": true,
+        "width": 960,
+        "height": 720,
+        "renderer": "RayTracedLighting",
+        "multi_gpu": false,
+        "create_new_stage": true
+      },
+      "cleanup_mode": "sensors"
+    },
+    "limitations": [
+      "Simulated contact-force measurements; no physical robot or laboratory outcome established.",
+      "One trial per condition does not establish repeatability or statistical significance.",
+      "Artifact hashes are checked against the receipt, not independently authenticated.",
+      "Video visual review remains required; this helper audits numeric evidence."
+    ]
+  },
+  "comparison": {
+    "measured_support_force_ratio_heavy_to_light": 3.999999954807305,
+    "known_mass_ratio_heavy_to_light": 4.0,
+    "analytic_weight_ratio_heavy_to_light": 4.0,
+    "analytic_ratio_provenance": "ANALYTIC_PREDICTION",
+    "relative_ratio_error": 1.1298173729912264e-08,
+    "matched_controls": true,
+    "excluded_observations_from_control_match": [
+      "runtime_fk_errors"
+    ]
+  },
+  "limitations": [
+    "Simulated contact-force measurements; no physical robot or laboratory outcome established.",
+    "One trial per condition does not establish repeatability or statistical significance.",
+    "Artifact hashes are checked against the receipt, not independently authenticated.",
+    "Video visual review remains required; this helper audits numeric evidence."
+  ]
+}
