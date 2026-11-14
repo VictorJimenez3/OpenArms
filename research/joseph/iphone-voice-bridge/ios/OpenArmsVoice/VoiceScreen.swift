@@ -387,13 +387,11 @@ struct VoiceScreen: View {
     private func proposalCard(_ proposal: Proposal) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Proposed action").font(.headline).accessibilityAddTraits(.isHeader)
-            let steps = proposal.reviewSteps
-            if !steps.isEmpty, steps.count == RecordPresentation.records(proposal.plan?["steps"]).count {
-                ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                    Text("\(index + 1). \(step)").font(.body)
-                }
+            if let summary = proposal.reviewSummary {
+                Text(summary).font(.body).textSelection(.enabled)
             } else {
-                Text(proposal.summary).font(.body).textSelection(.enabled)
+                Text("No preview is available. Ask for a fresh plan.")
+                    .font(.body).foregroundStyle(LabStyle.muted)
             }
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 let expired = (proposal.expiresAt ?? .infinity) <= context.date.timeIntervalSince1970
@@ -418,7 +416,7 @@ struct VoiceScreen: View {
         .padding(22).background(LabStyle.jade.opacity(0.08), in: RoundedRectangle(cornerRadius: 24))
         .id(proposal.id)
         .task(id: reviewableProposalID) {
-            if reviewableProposalID == proposal.id {
+            if reviewableProposalID == proposal.id, proposal.reviewSummary != nil {
                 client.proposalAppeared(proposal)
             } else {
                 client.proposalDisappeared(proposal.id)

@@ -349,6 +349,13 @@ final class VoiceClient: ObservableObject {
             acknowledgedProposal = nil
             presentationTask?.cancel(); presentingProposal = nil
         }
+        if let prior = snapshot?.pending, let pending = privateState.pending,
+           prior.id == pending.id, prior.reviewSummary != pending.reviewSummary {
+            // A replacement preview must be displayed before it can be acknowledged.
+            visibleProposal = nil
+            acknowledgedProposal = nil
+            presentationTask?.cancel(); presentingProposal = nil
+        }
         snapshot = privateState
         if restoring { transcripts.restore(state.messages) } else { transcripts.reconcile(state.messages) }
         messages = transcripts.turns

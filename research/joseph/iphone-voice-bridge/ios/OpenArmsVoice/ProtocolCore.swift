@@ -196,33 +196,13 @@ struct Proposal: Decodable, Equatable, Identifiable {
     func matchesCurrent(_ pending: Proposal?, generation: Int, now: TimeInterval) -> Bool {
         guard let pending else { return false }
         return requestID == pending.requestID && proposalVersion == pending.proposalVersion &&
+            reviewSummary != nil && summary == pending.summary &&
             pending.status == "requested" && (self.generation ?? generation) == generation &&
             (pending.generation ?? generation) == generation && (pending.expiresAt ?? .infinity) > now
     }
 
-    var reviewSteps: [String] {
-        RecordPresentation.records(plan?["steps"]).compactMap { step in
-            let args = step["arguments"]
-            switch step["operation"]?.string {
-            case "inspect_scene": return "Inspect the scene (\(args?["view"]?.string ?? "primary") view)"
-            case "localize_objects":
-                let labels = RecordPresentation.strings(args?["labels"]).joined(separator: ", ")
-                return labels.isEmpty ? "Locate labeled objects" : "Locate \(labels)"
-            case "mock_prepared_sample":
-                let sample = args?["condition_id"]?.string?.replacingOccurrences(of: "_", with: " ") ?? "the sample"
-                return "Test the prepared \(sample) sample from station \(args?["source"]?.string ?? "A") with the indicator at station \(args?["destination"]?.string ?? "C")"
-            case "mock_pick_up": return "Simulate picking up the sample cup at \(args?["station"]?.string ?? "its station")"
-            case "mock_put_down": return "Simulate putting down the sample cup at \(args?["station"]?.string ?? "its station")"
-            case "mock_pour":
-                let portions = args?["portions"]?.scalarText ?? "1"
-                return "Simulate pouring \(portions) prepared portion into the receiver at station \(args?["station"]?.string ?? "C")"
-            case "observe":
-                let view = args?["view"]?.string ?? "primary"
-                let fallback = args?["fallback_view"]?.string
-                return "Observe independently (\(view) view\(fallback.map { ", \($0) fallback" } ?? ""))"
-            default: return nil
-            }
-        }
+    var reviewSummary: String? {
+        summary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : summary
     }
 }
 struct Observation: Decodable, Equatable, Identifiable {
