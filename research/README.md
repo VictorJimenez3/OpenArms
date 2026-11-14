@@ -18,6 +18,7 @@ rg -ni -g '*.md' 'follower|teach.*pose|waypoint|teleop' research/
 | How could OpenArms fit Best Hardware Hack? | The note covers the award criteria and how OpenArms could demonstrate creative hardware integration. | [Hardware track notes](victor/tracks/hackprinceton-best-hardware-hack-openarms.md) |
 | How could OpenArms fit the Education track? | The note assesses how OpenArms could make hands-on lab learning more accessible and interactive. | [Education track notes](victor/tracks/hackprinceton-education-track-openarms.md) |
 | How could OpenArms fit Amazon’s Best Practical AI Innovation track? | The note assesses how a voice-guided lab assistant could make hands-on experiments more accessible in everyday use. | [Amazon track notes](victor/tracks/hackprinceton-amazon-practical-ai-openarms.md) |
+| What should the OpenArms simulation help students learn? | Research recommends pairing one student-chosen physical observation with a modeled result and one additional virtual trial. Dilution is conditional on a comparable measurement. | [Educational simulation and competitor research](victor/educational-simulation.md) |
 
 ## Research to-do
 
