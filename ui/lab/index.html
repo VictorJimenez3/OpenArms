@@ -1,477 +1,66 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="OpenArms Lab - Student-Directed Accessible Robotic Science Assistant">
-  <title>OpenArms Lab — Robotic Science Assistant</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f5ef">
+  <meta name="description" content="A student-led exploration of red-cabbage indicator. Choose, predict, and reason with clearly labeled mock evidence.">
+  <title>OpenArms — A study in color</title>
   <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
 </head>
 <body>
-  <a href="#main-content" class="skip-link">Skip to main content</a>
-
-  <!-- Offline Status Alert Banner -->
-  <aside id="offline-banner" class="offline-banner" role="alert" aria-live="assertive">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <span aria-hidden="true">⚠️</span>
-      <span id="offline-banner-text">Network disconnected. Reconnecting with exponential backoff...</span>
-    </div>
-    <button type="button" id="btn-retry-network" class="btn-icon" style="padding: 2px 8px; min-height: 32px;" aria-label="Retry connection">Retry</button>
-  </aside>
-
-  <!-- Sticky App Header -->
-  <header class="app-header" role="banner">
-    <div class="brand-section">
-      <div class="brand-icon" aria-hidden="true">🦾</div>
-      <div>
-        <h1 class="brand-title">OpenArms Lab</h1>
-        <span class="brand-subtitle">Accessible Robotic Science Assistant</span>
-      </div>
-    </div>
-
-    <!-- Health & State Badges -->
-    <div class="header-status-strip" role="region" aria-label="System status indicators">
-      <div id="badge-backend" class="pill pill-mock" title="Active execution backend">
-        <span class="pill-dot" aria-hidden="true"></span>
-        <span id="badge-backend-text">Backend: Mock</span>
-      </div>
-
-      <div id="badge-voice" class="pill pill-voice-unavailable" title="Gemini Live voice status">
-        <span class="pill-dot" aria-hidden="true"></span>
-        <span id="badge-voice-text">Voice: Inactive</span>
-      </div>
-
-      <div id="badge-connection" class="pill" title="Events stream status">
-        <span class="pill-dot" aria-hidden="true"></span>
-        <span id="badge-connection-text">Connecting...</span>
-      </div>
-
-      <div id="badge-session" class="pill" style="font-family: var(--font-mono); text-transform: none;" title="Current Session ID">
-        <span id="session-id-display">s-init</span>
-        <button type="button" id="btn-copy-session" class="btn-icon" style="padding: 0 4px; min-height: 24px; min-width: 24px; border: none;" aria-label="Copy Session ID" title="Copy Session ID">📋</button>
-      </div>
-    </div>
-
-    <!-- Header Actions & Always-Available Emergency Stop -->
-    <div class="header-controls">
-      <button type="button" id="btn-new-session" class="btn-icon" aria-label="Start new session" title="Start new session">
-        <span aria-hidden="true">🔄</span>
-        <span>New</span>
-      </button>
-
-      <button type="button" id="btn-header-stop" class="btn-emergency-stop" aria-label="Emergency Stop Robot Motion" title="Requests controller STOP, bypassing AI models (Esc)">
-        <span aria-hidden="true">🛑</span>
-        <span>STOP</span>
-      </button>
-    </div>
+  <a class="skip" href="#workspace">Skip to your trial</a>
+  <header class="masthead">
+    <a href="./" class="brand" aria-label="OpenArms home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 20V9m0 7c0 14 24 14 24 0V9M10 4v12m12-12v12M16 8v14"/></svg>OpenArms<span>Science, in your hands.</span></a>
+    <div class="session-indicator"><i id="connection-dot" aria-hidden="true"></i><span id="connection-label" role="status">Opening your notebook</span></div>
+    <button id="stop" class="stop" type="button">Stop trial</button>
   </header>
 
-  <!-- Main Application Body -->
-  <main id="main-content" class="app-container" role="main">
-    <!-- Live Proposal Confirmation Alert Banner (Visible only when pending proposal exists) -->
-    <section id="proposal-section" class="proposal-alert-card card" style="display: none;" role="alert" aria-live="assertive" aria-labelledby="proposal-title">
-      <div class="card-header" style="border-bottom-color: rgba(245, 158, 11, 0.3);">
-        <h2 id="proposal-title" class="card-title" style="color: #fbbf24;">
-          <span aria-hidden="true">⚠️</span> Review Robot Action Proposal
-        </h2>
-        <span class="proposal-badge">Explicit Approval Required</span>
-      </div>
+  <main>
+    <div id="notice" class="notice" role="alert" hidden><p id="notice-text"></p><button id="reconnect" type="button">Reconnect session</button><button id="dismiss-notice" class="quiet" aria-label="Dismiss notification" type="button">×</button></div>
+    <form id="pairing" class="pairing" hidden>
+      <h2>Connect to this lab</h2><p>This lab requires a pairing code. Ask your demo host for it.</p>
+      <label for="pairing-code">Pairing code</label><div class="input-row"><input id="pairing-code" type="password" autocomplete="off" required><button class="primary" type="submit">Connect</button></div>
+    </form>
 
-      <div class="proposal-body">
-        <p id="proposal-summary" class="proposal-summary">Transfer mandarin from Station A to Station B</p>
-
-        <table class="param-table" aria-label="Proposed Action Parameters">
-          <tbody>
-            <tr>
-              <th scope="row">Skill ID</th>
-              <td id="proposal-skill-id">skill_transfer_v1</td>
-            </tr>
-            <tr>
-              <th scope="row">Parameters</th>
-              <td id="proposal-parameters">{}</td>
-            </tr>
-            <tr>
-              <th scope="row">Request ID</th>
-              <td id="proposal-request-id" style="font-size: 0.75rem;">req-none</td>
-            </tr>
-            <tr id="proposal-expires-row" style="display: none;">
-              <th scope="row">Expires In</th>
-              <td id="proposal-expires-val" style="color: var(--accent-amber); font-weight: 700;">30s</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Confirmation Actions -->
-        <div class="proposal-actions">
-          <button type="button" id="btn-confirm-proposal" class="btn-confirm" aria-label="Confirm and execute proposed robot action">
-            <span aria-hidden="true">✅</span> Confirm &amp; Move Arm
-          </button>
-          <button type="button" id="btn-cancel-proposal" class="btn-cancel" aria-label="Cancel proposed robot action">
-            Cancel
-          </button>
-        </div>
-
-        <!-- Correction Pathway (Revokes Old Proposal) -->
-        <form id="proposal-correct-form" class="correction-box" aria-label="Parameter correction">
-          <label for="proposal-correct-input" class="sr-only" style="display:none;">Correct instruction</label>
-          <input type="text" id="proposal-correct-input" class="correction-input" placeholder="Want to adjust parameters? Type correction (e.g. 'test sample at C in B')..." aria-label="Correction instruction">
-          <button type="submit" id="btn-submit-correction" class="btn-correct">Submit Correction</button>
-        </form>
-      </div>
+    <section class="intro" aria-labelledby="page-title">
+      <div class="intro-copy"><p class="eyebrow">THE COLOR LAB <span>EXPLORATION 01</span></p><h1 id="page-title">A little color.<br>A bigger question.</h1><p class="dek">What can red cabbage tell us about the things we use every day?</p><p class="mode"><span aria-hidden="true">◈</span> Mock exploration <span class="mode-note">Reference outcomes. No physical experiment.</span></p></div>
+      <div class="color-study" aria-hidden="true"><div class="study-orbit"></div><div class="study-caption">ONE INDICATOR. MANY POSSIBILITIES.</div><div class="vessel vessel-one"><div class="liquid"></div><span>?</span></div><div class="vessel vessel-two"><div class="liquid"></div><span>?</span></div><div class="vessel vessel-three"><div class="liquid"></div><span>?</span></div><div class="study-baseline"></div><span class="study-number">Fig. 01 — Red-cabbage indicator</span></div>
     </section>
 
-    <!-- Main Dashboard Responsive Grid -->
-    <div class="dashboard-grid">
-      <!-- Left Column: Scientific Inquiry & Prediction -->
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <!-- Card: Scientific Experiment Selection -->
-        <section class="card" aria-labelledby="experiment-section-title">
-          <div class="card-header">
-            <h2 id="experiment-section-title" class="card-title">
-              <span aria-hidden="true">🔬</span> Experiment Setup
-            </h2>
-            <button type="button" id="btn-open-experiments" class="btn-icon" aria-label="Change experiment">Switch</button>
-          </div>
+    <section id="workspace" class="workspace" aria-labelledby="trial-title" tabindex="-1">
+      <div class="workspace-head"><div><p class="eyebrow" id="trial-number">YOUR FIRST TRIAL</p><h2 id="trial-title">Follow your curiosity.</h2></div><ol class="steps" aria-label="Trial progress"><li id="step-choose" aria-current="step"><span>1</span>Choose</li><li id="step-predict"><span>2</span>Predict</li><li id="step-reflect"><span>3</span>Reflect</li></ol></div>
 
-          <div id="experiment-details" class="experiment-meta-box">
-            <h3 id="experiment-title" style="font-size: 1.05rem; font-weight: 700; color: #fff;">Loading experiment...</h3>
-            <p id="experiment-question" class="experiment-question">Formulating scientific question...</p>
-            <p id="experiment-instructions" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;"></p>
+      <div class="trial-body">
+        <fieldset id="conditions" disabled><legend>What would you like to investigate?</legend><p class="field-hint">Choose a prepared sample. Keep the same indicator for a fair comparison.</p><div class="condition-grid">
+          <button class="condition" type="button" data-condition="vinegar" aria-pressed="false"><span class="sample-icon vinegar" aria-hidden="true"><svg viewBox="0 0 40 48"><path d="M16 4h8v12l7 9v16a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3V25l7-9Z"/><path d="M16 10h8M9 29h22M16 35h8"/></svg></span><span><strong>Vinegar</strong><small>A familiar kitchen ingredient</small></span><span class="choice-mark" aria-hidden="true">+</span></button>
+          <button class="condition" type="button" data-condition="baking_soda" aria-pressed="false"><span class="sample-icon soda" aria-hidden="true"><svg viewBox="0 0 40 48"><path d="m10 5 20 0 3 38H7ZM10 12h20M14 22h12M14 28h12"/><path d="M18 34h4"/></svg></span><span><strong>Baking-soda solution</strong><small>A little baking soda in water</small></span><span class="choice-mark" aria-hidden="true">+</span></button>
+          <button class="condition" type="button" data-condition="water" aria-pressed="false"><span class="sample-icon water" aria-hidden="true"><svg viewBox="0 0 40 48"><path d="M20 5S7 22 7 30a13 13 0 0 0 26 0C33 22 20 5 20 5Z"/><path d="M12 30a8 8 0 0 0 8 8"/></svg></span><span><strong>Water</strong><small>Your comparison control</small></span><span class="choice-mark" aria-hidden="true">+</span></button>
+        </div></fieldset>
 
-            <div class="experiment-vars" aria-label="Experiment variables">
-              <span id="experiment-indep-var" class="var-tag independent">Independent: Loading...</span>
-              <div id="experiment-controlled-vars" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
-            </div>
-          </div>
+        <form id="prediction-form" class="prediction-block"><div class="prompt-mark" aria-hidden="true">↳</div><div class="prompt-content"><label for="prediction">What do you think will happen?</label><p class="field-hint">Predict a color or an acid/base category, and tell us why.</p><textarea id="prediction" rows="2" placeholder="I think the indicator will… because…" maxlength="4000" required disabled></textarea><div class="prediction-footer"><span id="prediction-saved" role="status">Choose a sample to begin.</span><button id="save-prediction" type="submit" class="primary" disabled>Save prediction <span aria-hidden="true">↗</span></button></div></div></form>
+
+        <section class="conversation" aria-labelledby="conversation-title"><div class="section-heading"><h3 id="conversation-title">Think out loud.</h3><span>Speak or write. It’s your investigation.</span></div><div id="messages" class="messages" role="log" aria-label="Lab conversation" aria-live="polite" aria-relevant="additions text"><div class="welcome"><span class="companion-mark" aria-hidden="true">✳</span><p>Start with a sample and a prediction. We’ll review the trial together before anything runs.</p></div></div>
+          <section id="proposal" class="proposal" aria-labelledby="proposal-title" hidden><p class="eyebrow">PAUSE & REVIEW <span>MOCK TRIAL</span></p><h3 id="proposal-title">Here’s the plan.</h3><p id="proposal-summary"></p><p class="proposal-footnote">Confirm only if this is the trial you want. Changing your sample or prediction replaces this proposal.</p><div class="proposal-actions"><button id="confirm" class="primary" type="button" disabled>Confirm this trial</button><button id="cancel" class="secondary" type="button">Cancel</button></div><p id="proposal-status" class="field-hint" role="status"></p><button id="review-again" class="quiet" type="button" hidden>Present this proposal again</button></section>
+          <section id="task-progress" class="session-card" aria-labelledby="task-title" hidden>
+            <h4 id="task-title">Task progress</h4>
+            <div role="status"><p id="task-status"></p><p id="task-detail"></p></div>
+            <button id="answer-clarification" type="button" class="secondary" hidden>Reply to the question</button>
+          </section>
+          <form id="message-form" class="composer"><label class="sr-only" for="message">Message your science companion</label><textarea id="message" rows="1" placeholder="Ask a question, revise an idea…" maxlength="4000" required disabled></textarea><button id="send" type="submit" class="send" aria-label="Send message" disabled>↑</button></form><p class="composer-hint">You can complete the whole exploration with text. No microphone needed.</p>
         </section>
 
-        <!-- Card: Prediction & Hypothesis -->
-        <section class="card" aria-labelledby="prediction-section-title">
-          <div class="card-header">
-            <h2 id="prediction-section-title" class="card-title">
-              <span aria-hidden="true">💡</span> Student Prediction
-            </h2>
-          </div>
-
-          <!-- Existing Prediction View -->
-          <div id="prediction-saved-container" class="prediction-saved-card" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 0.72rem; font-weight: 700; color: var(--accent-green); text-transform: uppercase;">Hypothesis Recorded</span>
-              <button type="button" id="btn-edit-prediction" class="btn-icon" style="padding: 2px 6px; min-height: 28px; font-size: 0.75rem;">Edit</button>
-            </div>
-            <p id="prediction-saved-display" class="prediction-saved-text"></p>
-          </div>
-
-          <!-- New/Edit Prediction Form -->
-          <button type="button" id="btn-prepare-trial" class="btn-secondary">Prepare next mock trial</button>
-          <form id="prediction-form" class="prediction-form">
-            <label for="prediction-input" style="font-size: 0.82rem; color: var(--text-muted);">
-              Before the arm moves, predict what you expect to observe:
-            </label>
-            <textarea id="prediction-input" class="prediction-textarea" rows="3" placeholder="e.g. I predict Sample A will float because its density is lower than water..." required></textarea>
-            <button type="submit" id="btn-submit-prediction" class="btn-primary">
-              <span aria-hidden="true">📝</span> Save Prediction
-            </button>
-          </form>
-        </section>
-
-        <!-- Card: Quiz & Reflection -->
-        <section id="quiz-section" class="card" style="display: none;" aria-labelledby="quiz-section-title">
-          <div class="card-header">
-            <h2 id="quiz-section-title" class="card-title">
-              <span aria-hidden="true">🎯</span> Lab Checkpoint Quiz
-            </h2>
-          </div>
-          <div id="quiz-container" class="quiz-card">
-            <p id="quiz-prompt" class="quiz-prompt">Loading reflection question...</p>
-            <form id="quiz-form">
-              <div id="quiz-options-container" class="quiz-options-list"></div>
-              <div id="quiz-freeform-container" style="display: none; margin-top: 10px;">
-                <label for="quiz-freeform-input" class="sr-only">Your scientific explanation</label>
-                <textarea id="quiz-freeform-input" class="prediction-textarea" rows="3" placeholder="Enter your scientific reasoning..."></textarea>
-              </div>
-              <button type="submit" id="btn-submit-quiz" class="btn-primary" style="margin-top: 12px; width: 100%;">
-                Submit Answer
-              </button>
-            </form>
-          </div>
-        </section>
+        <section id="scene" class="session-card" aria-labelledby="scene-title" hidden><h3 id="scene-title">Scene evidence</h3><p id="scene-detail"></p><div id="scene-frames"></div></section>
+        <section id="evidence" class="evidence" aria-labelledby="evidence-title" hidden><div class="evidence-swatch" aria-hidden="true" hidden></div><div><p class="eyebrow" id="evidence-provenance"></p><h3 id="evidence-title">A result to reason with.</h3><p id="evidence-text"></p><p id="evidence-source" class="field-hint"></p><p id="evidence-limit" class="evidence-limit"></p></div></section>
+        <section id="active-skills" class="session-card" aria-labelledby="skills-title" hidden><h3 id="skills-title">Reusable skills</h3><ul id="skill-labels"></ul></section>
+        <form id="reflection-form" class="reflection" hidden><label for="reflection">How does this compare with your prediction?</label><p class="field-hint">Use the reference color to explain your reasoning. What would you test next?</p><textarea id="reflection" rows="3" placeholder="My prediction was… The reference suggests…" maxlength="4000" required></textarea><div class="reflection-actions"><span id="reflection-saved" role="status"></span><button class="secondary" type="submit">Save reflection</button><button id="new-trial" class="primary" type="button">Try another sample <span aria-hidden="true">↗</span></button></div></form>
       </div>
-
-      <!-- Center Column: Directing the Robot (Voice, Text, State, Evidence) -->
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <!-- Card: Robot Command & Voice Interaction -->
-        <section class="card" aria-labelledby="command-section-title">
-          <div class="card-header">
-            <h2 id="command-section-title" class="card-title">
-              <span aria-hidden="true">🎙️</span> Direct the Robot
-            </h2>
-            <div id="live-fallback-badge" class="pill" style="display: none;" title="Using local deterministic pathway">
-              Deterministic Mode
-            </div>
-          </div>
-
-          <!-- Voice Mic & Live Stream Area -->
-          <div class="voice-panel">
-            <div class="mic-toggle-wrapper">
-              <div id="mic-pulse-ring" class="mic-pulse-ring" aria-hidden="true"></div>
-              <button type="button" id="btn-toggle-mic" class="btn-mic" aria-label="Toggle voice microphone capture" title="Click to connect voice and speak commands">
-                <span id="mic-icon" aria-hidden="true">🎤</span>
-              </button>
-            </div>
-
-            <div style="text-align: center;">
-              <span id="voice-status-text" style="font-size: 0.92rem; font-weight: 600; color: #fff;">Start voice · stays on until stopped</span>
-              <p id="voice-hint-text" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                One click enables continuous listening. Choose a lesson, predict, correct, say “confirm” or “cancel”, and ask for the next trial.
-              </p>
-            </div>
-
-            <!-- Audio Level Visualizer Meter -->
-            <div class="audio-level-meter" aria-hidden="true">
-              <div id="audio-level-fill" class="audio-level-fill"></div>
-            </div>
-
-            <!-- Voice Controls (Mute / Stop) -->
-            <div class="voice-controls">
-              <button type="button" id="btn-toggle-mute" class="btn-icon" style="min-height: 38px;" disabled aria-label="Mute microphone">
-                <span id="mute-icon" aria-hidden="true">🔇</span>
-                <span id="mute-text">Mute</span>
-              </button>
-              <button type="button" id="btn-disconnect-voice" class="btn-icon" style="min-height: 38px;" disabled aria-label="Disconnect voice session">
-                Disconnect Voice
-              </button>
-            </div>
-
-            <!-- Live Fallback / Availability Notice -->
-            <div id="live-notice-box" class="live-fallback-notice">
-              <span aria-hidden="true">ℹ️</span>
-              <span id="live-notice-text">Gemini Live voice pathway ready. Text pathway is always active credential-free.</span>
-            </div>
-
-            <!-- Real-time Transcripts Stream -->
-            <div class="transcript-box" aria-label="Live Voice Transcript" aria-live="polite">
-              <div id="transcript-feed" style="display: flex; flex-direction: column; gap: 6px;">
-                <div class="transcript-entry" style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">
-                  Speech and assistant dialogue will stream here...
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Deterministic Text Command Input -->
-          <form id="command-form" class="command-form">
-            <label for="command-input" class="sr-only" style="display:none;">Robot command</label>
-            <input type="text" id="command-input" class="command-input" placeholder="Type command (e.g. 'Transfer mandarin to station B', 'Stop')..." aria-label="Robot command text input" required>
-            <button type="submit" id="btn-send-command" class="btn-send" aria-label="Send text command">
-              <span>Send</span>
-              <span aria-hidden="true">➤</span>
-            </button>
-          </form>
-        </section>
-
-        <!-- Card: Bench Visualizer & Arm State -->
-        <section class="card" aria-labelledby="bench-section-title">
-          <div class="card-header">
-            <h2 id="bench-section-title" class="card-title">
-              <span aria-hidden="true">🦾</span> Lab Bench State
-            </h2>
-            <span id="arm-stage-tag" class="pill pill-mock">Stage: pre_lab</span>
-          </div>
-
-          <!-- Visual Station Pods -->
-          <div class="station-visualizer" aria-label="Lab station status">
-            <div id="station-a-pod" class="station-pod active">
-              <span class="station-name">Station A (Source)</span>
-              <span id="station-a-contents" class="station-contents">mandarin</span>
-              <span id="station-a-status" class="station-status-tag">Ready</span>
-            </div>
-
-            <div id="station-c-pod" class="station-pod">
-              <span class="station-name">Station C (Source)</span>
-              <span id="station-c-contents" class="station-contents">unknown</span>
-              <span id="station-c-status" class="station-status-tag">Unknown</span>
-            </div>
-
-            <div id="station-b-pod" class="station-pod">
-              <span class="station-name">Station B (Destination)</span>
-              <span id="station-b-contents" class="station-contents">empty</span>
-              <span id="station-b-status" class="station-status-tag" style="color: var(--text-muted);">Awaiting Object</span>
-            </div>
-          </div>
-
-          <!-- Arm Metrics Grid -->
-          <div class="arm-state-grid">
-            <div class="arm-state-item">
-              <span class="arm-state-label">Arm Status</span>
-              <span id="arm-status-val" class="arm-state-val">idle</span>
-            </div>
-            <div class="arm-state-item">
-              <span class="arm-state-label">Gripper</span>
-              <span id="arm-gripper-val" class="arm-state-val">open</span>
-            </div>
-            <div class="arm-state-item">
-              <span class="arm-state-label">Arm Position</span>
-              <span id="arm-position-val" class="arm-state-val">home</span>
-            </div>
-            <div class="arm-state-item">
-              <span class="arm-state-label">Safety Hold</span>
-              <span id="arm-safety-val" class="arm-state-val" style="color: var(--accent-green);">armed</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Card: Observed Evidence with Explicit Provenance Badges -->
-        <section class="card" aria-labelledby="observations-section-title">
-          <div class="card-header">
-            <h2 id="observations-section-title" class="card-title">
-              <span aria-hidden="true">📊</span> Observed Outcomes &amp; Evidence
-            </h2>
-            <span id="observations-count" class="pill" style="font-size: 0.72rem;">0 observations</span>
-          </div>
-
-          <div class="scientific-integrity-alert" role="note">
-            <strong>Scientific Integrity Rule:</strong> Every observation is tagged with its origin. Simulated or model-predicted outcomes are strictly distinguished from genuine physical bench measurements.
-          </div>
-
-          <!-- Observations List -->
-          <div id="observations-list" class="observations-list" role="feed" aria-label="Observation feed">
-            <p id="no-observations-msg" style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; text-align: center; padding: 20px 0;">
-              No observations recorded yet. Issue a command to execute an action.
-            </p>
-          </div>
-        </section>
-      </div>
-
-      <!-- Right Column: Lab Notebook & History -->
-      <div style="display: flex; flex-direction: column; gap: 20px;">
-        <!-- Card: Lab Notebook -->
-        <section class="card" aria-labelledby="notebook-section-title">
-          <div class="card-header">
-            <h2 id="notebook-section-title" class="card-title">
-              <span aria-hidden="true">📓</span> Lab Notebook
-            </h2>
-            <button type="button" id="btn-export-notebook" class="btn-icon" aria-label="Export Lab Report">
-              <span aria-hidden="true">📥</span> Export
-            </button>
-          </div>
-
-          <div id="notebook-timeline" class="notebook-timeline" role="feed" aria-label="Lab events timeline">
-            <p id="no-notebook-msg" style="color: var(--text-muted); font-size: 0.82rem; font-style: italic; text-align: center; padding: 12px 0;">
-              Session notebook initialized.
-            </p>
-          </div>
-        </section>
-
-        <!-- Card: Dialogue & Messages History -->
-        <section class="card" aria-labelledby="messages-section-title">
-          <div class="card-header">
-            <h2 id="messages-section-title" class="card-title">
-              <span aria-hidden="true">💬</span> Dialogue History
-            </h2>
-          </div>
-
-          <div id="messages-timeline" class="notebook-timeline" style="max-height: 220px;" role="log" aria-label="Dialogue history">
-            <p id="no-messages-msg" style="color: var(--text-muted); font-size: 0.82rem; font-style: italic; text-align: center; padding: 12px 0;">
-              No chat messages yet.
-            </p>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <!-- Collapsible Developer & Diagnostics Panel (Two-Speed Agent Registry) -->
-    <details id="dev-panel" class="dev-panel-details">
-      <summary class="dev-panel-summary">
-        <span>⚙️ Developer &amp; Skill Diagnostics (Two-Speed Agent Registry)</span>
-        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">Collapsible expert authoring &amp; candidate review</span>
-      </summary>
-
-      <div class="dev-panel-content">
-        <!-- Integrity Disclaimer -->
-        <div class="disclaimer-banner" role="alert">
-          <strong>Notice:</strong> Expert skill candidates tested here do NOT imply physical validation. Bench verification and supervised operator approval are required before physical execution.
-        </div>
-
-        <!-- Skills Registry Table -->
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Registered Robot Skills</h3>
-            <button type="button" id="btn-refresh-skills" class="btn-icon" style="padding: 2px 8px; min-height: 30px;">Refresh Skills</button>
-          </div>
-          <div class="skills-table-scroll" tabindex="0" aria-label="Scrollable skills registry">
-          <table class="skills-table" aria-label="Skills Registry">
-            <thead>
-              <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="skills-table-body">
-              <tr>
-                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 12px;">Loading skills registry...</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-        </div>
-
-        <!-- Skill Composer (Expert Authoring Pathway) -->
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff;">Expert Skill Composer</h3>
-          <p style="font-size: 0.8rem; color: var(--text-muted);">
-            Compile high-level natural language instructions into reusable, parameterized robot skills:
-          </p>
-          <div class="skill-compose-form" style="display: flex; gap: 8px;">
-            <input type="text" id="skill-compose-input" class="command-input" placeholder="e.g. Pick mandarin with 35mm grip and transfer to receiver B..." aria-label="Skill compose instruction">
-            <button type="button" id="btn-compose-skill" class="btn-primary" style="white-space: nowrap;">Compose Candidate</button>
-          </div>
-          <div id="composed-candidate-preview" style="display: none; flex-direction: column; gap: 8px; margin-top: 6px;">
-            <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-cyan);">Composed Candidate Artifact:</span>
-            <pre id="candidate-json-preview" class="json-viewer" style="max-height: 140px;"></pre>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" id="btn-test-candidate" class="btn-secondary" style="font-size: 0.82rem; min-height: 36px;">Test Candidate</button>
-              <button type="button" id="btn-promote-candidate" class="btn-primary" disabled style="font-size: 0.82rem; min-height: 36px; background: var(--accent-green);">Promote Candidate</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Snapshot Inspector -->
-        <div>
-          <h3 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Live Snapshot State</h3>
-          <pre id="snapshot-inspector" class="json-viewer">{ "session_id": "none" }</pre>
-        </div>
-      </div>
-    </details>
+    </section>
+    <details class="history"><summary><span>Your lab notebook</span><span id="history-count">No trials yet</span></summary><div id="history-list"><p>Your predictions, reference outcomes, and reflections will stay here.</p></div></details>
+    <footer class="page-footer"><span>OpenArms / The color lab</span><p>Good science starts with a question.</p></footer>
   </main>
 
-  <!-- Mobile Bottom Sticky Bar (for phone-friendly thumb reach) -->
-  <div class="mobile-bottom-bar" role="toolbar" aria-label="Mobile quick actions">
-    <button type="button" id="btn-mobile-stop" class="btn-emergency-stop" aria-label="Emergency Stop Robot">
-      <span aria-hidden="true">🛑</span> STOP
-    </button>
-    <button type="button" id="btn-mobile-mic" class="btn-mic-mini" aria-label="Toggle voice microphone">
-      🎤
-    </button>
-  </div>
-
-  <!-- Experiment Selection Modal -->
-  <div id="experiment-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-dialog">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-        <h2 id="modal-title" style="font-size: 1.1rem; font-weight: 700; color: #fff;">Select Science Experiment</h2>
-        <button type="button" id="btn-close-experiment-modal" class="btn-icon" aria-label="Close dialog">✕</button>
-      </div>
-      <div id="experiments-list-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
-        <!-- Rendered experiment cards -->
-      </div>
-    </div>
-  </div>
-
-  <!-- App Entry Point (No Build Dependency, Native ES Modules) -->
-  <script type="module" src="app.js"></script>
+  <aside class="voice-dock" aria-label="Voice companion controls"><div class="voice-main"><button id="voice-toggle" type="button" class="voice-button" aria-label="Start voice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></button><div class="voice-copy"><strong id="voice-title" role="status">Your companion, a tap away.</strong><span id="voice-detail">Voice is optional. Your notebook is always here.</span></div></div><div class="voice-actions"><button id="mute" class="dock-action" type="button" disabled aria-pressed="false">Mute</button><button id="interrupt" class="dock-action" type="button" hidden>Interrupt</button><button id="voice-end" class="dock-action" type="button" hidden>End voice</button></div><div class="voice-signals" aria-label="Audio status"><span id="mic-state">Mic off</span><span id="provider-state">Voice off</span><span id="playback-state">Speaker idle</span></div></aside>
 </body>
 </html>
