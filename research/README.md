@@ -14,6 +14,10 @@ rg -ni -g '*.md' 'follower|teach.*pose|waypoint|teleop' research/
 | Why keep model calls out of the motor loop? | Astranomy's simulated direct-control trials motivate keeping motion local. OpenArms still needs its own command-to-preview timing. | [Paper takeaway and limits](duc/harness.md#part-a-design-rules-from-astranomy) · [Latency experiment](joseph/TODO.md#follow-up) |
 | What can the model ask the arm to do? | Duc's proposal gives the model a small action catalog and puts the executor behind validation and teacher approval. The final catalog depends on the demo action. | [Action catalog](duc/harness.md#part-b-tool-layers-and-the-action-catalog) · [Arm tool brief](duc/arm-tools.md) · [Draft team handoffs](duc/agentic-plan.md#finding) |
 | How does Duc split agentic work into lanes? | The foundation defines shared types and examples, then the core, brain, and API lanes build against them. | [Build plan](duc/harness.md#agenticopenarms_agent-duc-built-in-ralph-lanes) · [Workflow snapshot](#ducs-agent-workflow) |
+| How could OpenArms fit the Best Physical AI Hack track? | The note covers the sponsor's hardware and AI criteria, prior winners, and how they apply to OpenArms. | [Track guidance and OpenArms assessment](victor/tracks/best-physical-ai-hack-track-openarms.md) |
+| How could OpenArms fit Best Hardware Hack? | The note covers the award criteria and how OpenArms could demonstrate creative hardware integration. | [Hardware track notes](victor/tracks/hackprinceton-best-hardware-hack-openarms.md) |
+| How could OpenArms fit the Education track? | The note assesses how OpenArms could make hands-on lab learning more accessible and interactive. | [Education track notes](victor/tracks/hackprinceton-education-track-openarms.md) |
+| How could OpenArms fit Amazon’s Best Practical AI Innovation track? | The note assesses how a voice-guided lab assistant could make hands-on experiments more accessible in everyday use. | [Amazon track notes](victor/tracks/hackprinceton-amazon-practical-ai-openarms.md) |
 
 ## Research to-do
 
