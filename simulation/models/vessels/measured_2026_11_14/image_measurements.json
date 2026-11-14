@@ -1,0 +1,165 @@
+{
+  "method": "Manual endpoints on 2000x1500 resampling; original coordinates = displayed coordinates x 2.856. Apparent lengths are not perspective-corrected physical ground truth.",
+  "records": [
+    {
+      "photo": "IMG_9259",
+      "ruler": [
+        [
+          1074,
+          738
+        ],
+        [
+          1311,
+          730
+        ]
+      ],
+      "ruler_mm": 30,
+      "feature": [
+        [
+          1085,
+          900
+        ],
+        [
+          1415,
+          900
+        ]
+      ],
+      "description": "Donor circular lip (spout excluded)",
+      "limits": "Rim above ruler plane; apparent width only.",
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 7.904499421918576,
+      "apparent_feature_mm": 41.748374234165304
+    },
+    {
+      "photo": "IMG_9265",
+      "ruler": [
+        [
+          917,
+          1088
+        ],
+        [
+          1247,
+          1073
+        ]
+      ],
+      "ruler_mm": 40,
+      "feature": [
+        [
+          920,
+          625
+        ],
+        [
+          1324,
+          625
+        ]
+      ],
+      "description": "Donor outside height",
+      "limits": "Oblique view; opposite ruler edge gives a different scale.",
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 8.258518329579465,
+      "apparent_feature_mm": 48.91918669635891
+    },
+    {
+      "photo": "IMG_9261",
+      "ruler": [
+        [
+          1258,
+          682
+        ],
+        [
+          1524,
+          691
+        ]
+      ],
+      "ruler_mm": 50,
+      "feature": [
+        [
+          1173,
+          880
+        ],
+        [
+          1614,
+          880
+        ]
+      ],
+      "description": "Receiver rim in upright view",
+      "limits": "Rim raised above ruler; do not average with inverted view as independent data.",
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 5.323044241784958,
+      "apparent_feature_mm": 82.84732945449295
+    },
+    {
+      "photo": "IMG_9263",
+      "ruler": [
+        [
+          1008,
+          356
+        ],
+        [
+          1417,
+          312
+        ]
+      ],
+      "ruler_mm": 40,
+      "feature": [
+        [
+          800,
+          760
+        ],
+        [
+          1578,
+          760
+        ]
+      ],
+      "description": "Receiver circular outline in inverted view",
+      "limits": "Tilt and changing depth produce a smaller apparent width than 9261.",
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 10.283998492804246,
+      "apparent_feature_mm": 75.65150855908523
+    },
+    {
+      "photo": "IMG_9264",
+      "ruler": [
+        [
+          908,
+          889
+        ],
+        [
+          1202,
+          881
+        ]
+      ],
+      "ruler_mm": 30,
+      "feature": [
+        [
+          900,
+          1330
+        ],
+        [
+          1248,
+          1330
+        ]
+      ],
+      "description": "Receiver axial height (approximate plane centres)",
+      "limits": "Most uncertain outside dimension; oblique side view, direct measurement requested.",
+      "coordinates_image_pixels": [
+        2000,
+        1500
+      ],
+      "scale_px_per_mm": 9.803627446568495,
+      "apparent_feature_mm": 35.497064927922
+    }
+  ]
+}
