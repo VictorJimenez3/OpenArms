@@ -117,3 +117,73 @@ async def test_stop_revokes_live_evaluation_without_promotion(tmp_path):
             evaluation.cancel()
             await asyncio.gather(evaluation,return_exceptions=True)
         await lab.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_real_automatic_admission_then_warm_reuses_without_expert(tmp_path):
+    from agentic.tests.test_two_vessel_runtime import WaterExpert
+    from agentic.openarms_lab.two_vessel_configuration import execution_scope
+    expert = WaterExpert()
+    scene = TwoVesselSceneService(tmp_path/'scene')
+    evaluator = TwoVesselSkillEvaluator(tmp_path/'evaluation')
+    lab = Lab(tmp_path/'lab', expert=expert, perception=scene,
+              backend_factory=lambda: TwoVesselBackend(scene), evaluator=evaluator,
+              auto_evaluate=True, execution_scope=execution_scope(),
+              experiment=EXPERIMENT, conditions=CONDITIONS, expert_timeout=180)
+    try:
+        sid = (await lab.create())['session_id']
+        async def request_and_confirm():
+            state = await lab.converse(sid, 'Pour water from A to C.')
+            task_id = state['tasks'][-1]['task_id']
+            await asyncio.wait_for(asyncio.shield(lab.workers[task_id]), 30)
+            proposal = lab.snapshot(sid)['pending']
+            assert proposal and 'indicator' not in proposal['summary'].lower()
+            exact = (sid, proposal['request_id'], proposal['proposal_version'])
+            await lab.present(*exact)
+            await lab.confirm(*exact)
+            await asyncio.wait_for(asyncio.shield(lab.workers[task_id]), 180)
+            task = lab.snapshot(sid)['tasks'][-1]
+            assert task['status'] == 'completed', task.get('summary')
+            assert task['observations'][-1]['features']['receiver_appearance'] == 'water_appearance'
+            return task
+        cold = await request_and_confirm()
+        version = cold['plan']['skill_version']
+        assert lab.registry.get(cold['plan']['skill_id'])['version'] == version
+        assert lab.registry.data['decisions'][-1]['status'] == 'promoted'
+        assert lab.registry.data['evaluations'][-1]['metrics']['initial_admission']
+        assert not lab.registry.data['evaluations'][-1]['metrics']['substantive_improvement']
+        calls = len(expert.contexts)
+        assert calls > 0
+        await lab.prepare(sid)
+        warm = await request_and_confirm()
+        assert warm['plan']['skill_version'] == version
+        assert len(expert.contexts) == calls
+        assert lab.backends[sid].executions == 2
+    finally:
+        await lab.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_promotion_rejects_scope_changed_since_session_start(tmp_path):
+    from agentic.tests.test_task_loop import TestExpert, TestPerception, TestEvaluator
+    class ChangedScope(TestEvaluator):
+        async def evaluate_candidate(self, sid, candidate, baseline):
+            result = await super().evaluate_candidate(sid, candidate, baseline)
+            result['metrics'] = {'source_scope': 'two-vessel-after-source-edit'}
+            return result
+    lab = Lab(tmp_path, expert=TestExpert(), perception=TestPerception(unknown=False),
+              evaluator=ChangedScope(), execution_scope='two-vessel-at-startup')
+    try:
+        sid = (await lab.create())['session_id']
+        handle = await lab.start_task(sid, 'Test prepared vinegar')
+        await asyncio.wait_for(asyncio.shield(lab.workers[handle['task_id']]), 5)
+        proposal = lab.snapshot(sid)['pending']
+        exact = (sid, proposal['request_id'], proposal['proposal_version'])
+        await lab.present(*exact); await lab.confirm(*exact)
+        await asyncio.wait_for(asyncio.shield(lab.workers[handle['task_id']]), 5)
+        plan = lab.snapshot(sid)['tasks'][-1]['plan']
+        with pytest.raises(ValueError, match='source scope differs'):
+            await lab.evaluate_candidate(sid, plan['skill_id'], plan['skill_version'])
+        assert not lab.registry.data['active'] and not lab.registry.data['evaluations']
+    finally:
+        await lab.shutdown()

@@ -160,3 +160,127 @@ async def test_stop_reaps_renderer_and_blocks_late_publication(tmp_path, monkeyp
     finally:
         await backend.stop()
         await asyncio.gather(task,return_exceptions=True)
+
+
+def test_app_selects_water_only_scene_and_isolates_admission(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from agentic.openarms_lab.app import create_app
+    monkeypatch.setenv('OPENARMS_EXECUTION', 'mujoco')
+    monkeypatch.setenv('OPENARMS_SCENE', 'two_vessel')
+    monkeypatch.setenv('OPENARMS_DATA_DIR', str(tmp_path/'application'))
+    monkeypatch.delenv('OPENARMS_DEMO_TOKEN', raising=False)
+    with TestClient(create_app()) as client:
+        assert client.get('/api/health').json()['experiment_id'] == 'two_vessel_water'
+        session = client.post('/api/sessions').json()
+        assert session['experiment']['id'] == 'two_vessel_water'
+        assert [c['id'] for c in session['conditions']] == ['water']
+        assert session['capabilities']['evaluator_available'] is True
+        assert session['capabilities']['physical_execution'] is False
+        assert session['execution_scope'].startswith('two-vessel-')
+        headers = {'Authorization': 'Bearer '+session['access_token']}
+        url = '/api/sessions/'+session['session_id']
+        assert client.post(url+'/condition', json={'condition_id':'vinegar'}, headers=headers).status_code == 409
+        assert client.post(url+'/condition', json={'condition_id':'water'}, headers=headers).status_code == 200
+        assert 'pH' not in session['experiment']['description']
+
+
+@pytest.mark.parametrize('source', ['simulation/config/setups/liquid/bench.yaml',
+    'agentic/openarms_lab/two_vessel_evaluation.py', 'agentic/openarms_lab/runtime.py',
+    'agentic/openarms_lab/evaluation.py'])
+def test_two_vessel_admission_scope_changes_with_fixture(monkeypatch, source):
+    from pathlib import Path
+    from agentic.openarms_lab.two_vessel_configuration import execution_scope
+    before, read = execution_scope(), Path.read_bytes
+    def changed(path):
+        value = read(path)
+        return value+b'changed' if path.as_posix().endswith(source) else value
+    monkeypatch.setattr(Path, 'read_bytes', changed)
+    assert execution_scope() != before
+
+
+@pytest.mark.asyncio
+async def test_water_experiment_history_is_passive_and_keeps_conditions(tmp_path):
+    from agentic.openarms_lab.runtime import Lab
+    from agentic.openarms_lab.two_vessel_configuration import EXPERIMENT, CONDITIONS
+    from agentic.openarms_lab.backends import MockBackend
+    lab = Lab(tmp_path, experiment=EXPERIMENT, conditions=CONDITIONS,
+              backend_factory=MockBackend, execution_scope='water-test')
+    sid = (await lab.create())['session_id']
+    await lab.shutdown()
+    def forbidden():
+        raise AssertionError('History initialized a backend')
+    restored = Lab(tmp_path, experiment=EXPERIMENT, conditions=CONDITIONS,
+                   backend_factory=forbidden, execution_scope='water-test')
+    try:
+        state = restored.snapshot(sid)
+        assert state['history_only'] is False
+        assert [c['id'] for c in state['conditions']] == ['water']
+        assert not restored.backends
+    finally:
+        await restored.shutdown()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('channel', ['voice', 'text'])
+async def test_unsupported_correction_revokes_presented_water_before_confirm(tmp_path, channel):
+    from agentic.openarms_lab.backends import MockBackend
+    from agentic.openarms_lab.live import GeminiBridge
+    from agentic.openarms_lab.two_vessel_configuration import EXPERIMENT, CONDITIONS
+    from agentic.tests.test_task_loop import TestExpert, TestPerception
+    backend = MockBackend(delay=0)
+    lab = Lab(tmp_path, expert=TestExpert(), perception=TestPerception(unknown=False),
+              backend_factory=lambda: backend, experiment=EXPERIMENT, conditions=CONDITIONS)
+    try:
+        sid = (await lab.create())['session_id']
+        await lab.choose_condition(sid, 'water')
+        handle = await lab.start_task(sid, 'Test prepared water')
+        await settled(lab, handle)
+        proposal = lab.snapshot(sid)['pending']
+        await lab.present(sid, proposal['request_id'], proposal['proposal_version'])
+        async def emit(_):
+            pass
+        bridge = GeminiBridge(lambda: lab.snapshot(sid), lambda n,a: lab.tool(sid,n,a), emit)
+        if channel == 'voice':
+            bridge.controls.input('Actually, use vinegar instead.')
+            await bridge._finish_transcript()
+        else:
+            await lab.converse(sid, 'Actually, use vinegar instead.')
+        bridge.controls.input('Confirm.')
+        await bridge._finish_transcript()
+        state = lab.snapshot(sid)
+        assert state['pending'] is None and len(state['tasks']) == 1
+        assert state['requests'][-1]['status'] == 'cancelled'
+        assert not state['requests'][-1]['student_confirmed']
+        assert backend.executions == 0
+    finally:
+        await lab.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_stop_and_inspection_cancel_finish_worker_cleanup(tmp_path, monkeypatch):
+    import agentic.openarms_lab.two_vessel_scene as adapter
+    started, cleaning, release = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    cleaned = []
+    async def worker(*_args, **_kwargs):
+        started.set()
+        try:
+            await asyncio.Event().wait()
+        finally:
+            cleaning.set()
+            await release.wait()
+            cleaned.append(True)
+    monkeypatch.setattr(adapter, 'run_worker', worker)
+    scene = TwoVesselSceneService(tmp_path)
+    inspect = asyncio.create_task(scene.inspect_scene('s'))
+    await started.wait()
+    stop = asyncio.create_task(scene.cancel_captures('s'))
+    try:
+        await cleaning.wait()
+        inspect.cancel()
+        await asyncio.sleep(0)
+        release.set()
+        await asyncio.gather(inspect, stop, return_exceptions=True)
+        assert cleaned == [True] and not scene.frames
+    finally:
+        release.set()
+        await asyncio.gather(inspect, stop, return_exceptions=True)

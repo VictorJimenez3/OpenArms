@@ -64,7 +64,8 @@ class TwoVesselSceneService(MujocoSceneService):
         try:
             result = await asyncio.shield(capture)
         except asyncio.CancelledError:
-            capture.cancel()
+            if not capture.done() and not capture.cancelling():
+                capture.cancel()
             await asyncio.gather(capture, return_exceptions=True)
             raise
         finally:

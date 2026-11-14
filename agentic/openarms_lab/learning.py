@@ -11,7 +11,7 @@ from .contracts import Observation
 
 EXPERIMENT = {'id': 'indicator_ph', 'title': 'Indicator pH — optional simulation',
               'question': 'How does the simulated indicator respond to vinegar, baking-soda solution, and water?',
-              'mode': 'MOCK', 'description': 'Optional presentation simulation. Smartivity kit activity undecided; no kit or physical result.'}
+              'mode': 'MOCK', 'description': 'Historical indicator regression fixture, distinct from the current two-vessel kit candidate; no kit or physical result.'}
 EXPERIMENTS = [EXPERIMENT]
 CONDITIONS = (
     {'id': 'vinegar', 'title': 'Vinegar', 'color': 'pink', 'classification': 'acidic'},
