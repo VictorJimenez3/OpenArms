@@ -1,6 +1,6 @@
 # OpenArms architecture
 
-The current demo is a spoken mandarin transfer from A to B. Simulation is deferred. The phone shows the interpreted proposal, the student confirms, and a physical runner must obtain bench operator authorization before moving.
+The existing phone demo proposes a mandarin transfer. The real arm has performed a supervised, webcam-assisted C→B transfer using an offset pickup and the taught B release. For wet-lab bring-up, the shortest physical path is a fixed-fixture water pour through the local runner. See the [wet-lab bring-up and training plan](WET_LAB.md).
 
 ```mermaid
 flowchart LR
@@ -19,4 +19,22 @@ The agent interprets natural requests and can only propose a supported mandarin 
 
 Logs retain session/turn/plan IDs, transcripts, planning and execution timings, controls, errors, microphone-turn WAVs, and reply WAVs. Actual MCP traces are stored separately under the local log root. The phone displays when audio is retained.
 
-The mock runner reports simulated placement. The physical runner reports motion status and independently observed placement separately. No physical execution has been tested in this change. See [next steps and human to-do](../research/joseph/mandarin-transfer-handoff.md#next-steps).
+The mock runner reports simulated placement. The physical runner reports motion status and independently observed placement separately. Physical CLI tests and the staged C→B transfer provide bench evidence. Full phone-to-physical execution remains pending.
+
+## Physical lab and skill improvement
+
+```mermaid
+flowchart LR
+    Student[Voice or text request] --> Skill[Versioned skill and bounded arguments]
+    Skill --> Approve[Preview and operator approval]
+    Approve --> Arm[Deterministic pose runner]
+    Arm --> Outcome[Motion receipt and camera observation]
+    Teach[Leader takes and checkpoints] --> Compare[Offline phase comparison]
+    Outcome --> Compare
+    Compare --> Review[Candidate bench review]
+    Review --> Skill
+```
+
+The local pour uses the existing `add_sample` catalog and expands one approved portion into pickup, pour, cup return, and HOME. A capture stores both the full imitation sample stream and named checkpoints. For the minimum demo, one fixed fixture and one captured take supply the whole motion. The real demo adds student choice and observed results. The stretch path combines phases across takes offline and tests candidates against the retained baseline. Changes to a cup, fixture, camera calibration, or motion require evidence specific to that configuration.
+
+The agent can run offline comparisons without controlling the arm. It proposes motion candidates and reports their provenance. The operator supervises physical trials and confirms the lift before liquid or fruit is carried. Independently observed delivery and spill checks are recorded separately from controller completion.

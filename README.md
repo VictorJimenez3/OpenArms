@@ -21,4 +21,5 @@ Put research notes and source links in your folder. Use [GitHub Issues](https://
 - [Architecture and team to-do](docs/ARCHITECTURE.md) covers component ownership, the command flow, and issues you can claim.
 - [Interfaces](docs/INTERFACES.md) is where we record examples shared between areas.
 - [Arm setup and teleoperation](firmware/README.md) covers LeRobot, calibration, and the physical arms.
+- [Wet-lab bring-up and training](docs/WET_LAB.md) covers the first water pour, demo scopes, and reuse across recorded takes.
 - [Working project outline](voice-lab-arm-outline.md) has the longer concept and background.
