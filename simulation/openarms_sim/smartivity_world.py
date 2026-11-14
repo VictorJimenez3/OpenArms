@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import math
-from copy import deepcopy
-from dataclasses import replace
+from copy import copy, deepcopy
+from dataclasses import dataclass, replace
 from types import SimpleNamespace
 
 import mujoco
@@ -18,6 +18,8 @@ from .vessel_assets import DEFAULT as VESSELS, _wedge, cavity_volume_ml, load_pa
 
 JOINTS = (*ARM_JOINTS, "gripper")
 CAMERAS = ("overview", "side")
+REPLAY_CAMERAS = ("wide", "reaction")
+REPLAY_WIDTH, REPLAY_HEIGHT = 1280, 720
 UP = np.array([0., 0., 1.])
 BEAKER = "beaker"
 FLASK = "flask"
@@ -75,6 +77,43 @@ def _vessel_radius(profile):
     return profile["inner_profile"][-1][1] / 1000
 
 
+@dataclass(frozen=True, slots=True)
+class _VisualEffects:
+    water_ml: tuple[float, float]
+    rgba: tuple[tuple[float, ...], tuple[float, ...]]
+    foam: float
+    foam_peak: float
+    stream: tuple[float, ...] | None
+
+
+@dataclass(frozen=True, slots=True)
+class VisualState:
+    """Presentation-only immutable sample; all tuples own their data."""
+
+    sim_time: float
+    seed: int
+    scenario: str
+    qpos: tuple[float, ...]
+    mocap_pos: tuple[float, ...]
+    mocap_quat: tuple[float, ...]
+    effects: _VisualEffects
+
+    def __post_init__(self):
+        # Re-freeze arrays read back from a JSON recording.
+        for name in ("qpos", "mocap_pos", "mocap_quat"):
+            object.__setattr__(self, name, tuple(getattr(self, name)))
+        if isinstance(self.effects, dict):
+            saved = self.effects
+            effects = _VisualEffects(tuple(saved["water_ml"]), tuple(tuple(rgba) for rgba in saved["rgba"]),
+                                     float(saved["foam"]), float(saved["foam_peak"]),
+                                     tuple(saved["stream"]) if saved["stream"] is not None else None)
+            object.__setattr__(self, "effects", effects)
+
+    @property
+    def foam(self) -> float:
+        return self.effects.foam
+
+
 class World:
     """Bounded joint goals and a separate carrier-volume model."""
 
@@ -122,6 +161,7 @@ class World:
         self.drops = 0
         self._contacts = set()
         self._renderer = None
+        self._replay = None
         self._held = None
         self._placed = False
         self._fault = None
@@ -158,7 +198,7 @@ class World:
             self._cameras[name] = cam
         self._camera_options = mujoco.MjvOption()
         self._camera_options.geomgroup[3] = 0
-        self._render_liquid()
+        self._render_liquid(m, self.sim_time, self._visual_effects())
         mujoco.mj_forward(m, d)
 
     def _build(self):
@@ -469,45 +509,91 @@ class World:
             return RGBA_GREEN
         return RGBA_TEA
 
-    def _render_liquid(self):
-        for vessel, profile in ((BEAKER, self.beaker_profile), (FLASK, self.flask_profile)):
-            fill = np.clip(self.contents[vessel]["water_ml"] / self.capacity[vessel], 0., 1.)
-            geom = self.model.geom(vessel + "_liquid")
+    def _visual_effects(self):
+        volumes = tuple(self.contents[vessel]["water_ml"] for vessel in (BEAKER, FLASK))
+        colors = tuple(self._liquid_color(vessel) for vessel in (BEAKER, FLASK))
+        stream = (*self._lip.tolist(), float(self._stream_bottom)) if self._flow else None
+        return _VisualEffects(volumes, colors, self._foam, self._max_foam, stream)
+
+    def _render_liquid(self, model, sim_time, effects):
+        for index, (vessel, profile) in enumerate(((BEAKER, self.beaker_profile), (FLASK, self.flask_profile))):
+            fill = np.clip(effects.water_ml[index] / self.capacity[vessel], 0., 1.)
+            geom = model.geom(vessel + "_liquid")
             bottom = profile["inner_profile"][0][0] / 1000
             height = profile["inner_profile"][-1][0] / 1000 - bottom
             radius = np.interp(bottom + height * fill, np.array(profile["inner_profile"])[:, 0] / 1000,
                                np.array(profile["inner_profile"])[:, 1] / 1000)
             geom.pos[2] = bottom + height * fill * .5
             geom.size[:2] = [radius * .93, max(.0002, height * fill * .5)]
-            geom.rgba[:] = self._liquid_color(vessel)
+            geom.rgba[:] = effects.rgba[index]
             if fill <= .001:
                 geom.rgba[3] = 0.
         for i in range(24):
-            bubble = self.model.geom(f"foam_{i}")
-            alpha = (self.sim_time * (.37 + .025 * (i % 7)) + i * .173) % 1
-            angle = i * 2.39996 + self.sim_time * .75
-            scale = max(.005, self._foam)
+            bubble = model.geom(f"foam_{i}")
+            alpha = (sim_time * (.37 + .025 * (i % 7)) + i * .173) % 1
+            angle = i * 2.39996 + sim_time * .75
+            scale = max(.005, effects.foam)
             spread = alpha * .019 * scale
             bubble.pos[:] = self.receiver + [spread * math.cos(angle), spread * math.sin(angle),
                                              self.flask_height + (alpha * .064 - .009) * scale]
             bubble.size[0] = (.004 + .002 * (i % 4)) * max(.22, min(scale*2, 1.))
-            bubble.rgba[:] = [*self.foam_color[:3], min(scale * 3, 1.) if self._foam > .04 else 0.]
-        self.model.geom("foam_residue").rgba[3] = min(.94, self._max_foam) if self._max_foam > .22 else 0.
-        stream = self.model.geom("stream")
-        stream.rgba[:] = [*self._liquid_color(BEAKER)[:3], .86 if self._flow else 0.]
-        if self._flow:
-            stream.pos[:] = [*self._lip[:2], (self._lip[2] + self._stream_bottom) / 2]
-            stream.size[1] = max(.0005, (self._lip[2] - self._stream_bottom) / 2)
+            bubble.rgba[:] = [*self.foam_color[:3], min(scale * 3, 1.) if effects.foam > .04 else 0.]
+        model.geom("foam_residue").rgba[3] = min(.94, effects.foam_peak) if effects.foam_peak > .22 else 0.
+        stream = model.geom("stream")
+        stream.rgba[:] = [*effects.rgba[0][:3], .86 if effects.stream is not None else 0.]
+        if effects.stream is not None:
+            x, y, lip_z, end_z = effects.stream
+            stream.pos[:] = [x, y, (lip_z + end_z) / 2]
+            stream.size[1] = max(.0005, (lip_z - end_z) / 2)
 
     def rgb(self, camera):
         if camera not in self._cameras:
             raise ValueError("Unknown Smartivity camera.")
         if self._renderer is None:
             self._renderer = mujoco.Renderer(self.model, 480, 640)
-        self._render_liquid()
+        self._render_liquid(self.model, self.sim_time, self._visual_effects())
         mujoco.mj_kinematics(self.model, self.data)
         self._renderer.update_scene(self.data, self._cameras[camera], scene_option=self._camera_options)
         return self._renderer.render()
+
+    def visual_state(self):
+        """Sample a tick for presentation replay without rendering or touching the model."""
+        data = self.data
+        return VisualState(self.sim_time, self.seed, self.scenario, tuple(data.qpos.tolist()),
+                           tuple(data.mocap_pos.ravel().tolist()), tuple(data.mocap_quat.ravel().tolist()),
+                           self._visual_effects())
+
+    def replay_rgb(self, state, camera):
+        """Render a recorded sample without stepping or mutating the live world."""
+        if camera not in REPLAY_CAMERAS:
+            raise ValueError("Unknown Smartivity presentation camera.")
+        if not isinstance(state, VisualState) or (state.seed, state.scenario) != (self.seed, self.scenario):
+            raise ValueError("Visual sample belongs to a different Smartivity scene.")
+        if self._replay is None:
+            model = copy(self.model)
+            model.vis.global_.offwidth = REPLAY_WIDTH
+            model.vis.global_.offheight = REPLAY_HEIGHT
+            cameras = {}
+            for name, centre, distance, azimuth, elevation in (
+                ("wide", [.208, .025, .116], .54, 155, -30),
+                ("reaction", self.receiver + [-.013, .005, .081], .29, 175, -23),
+            ):
+                cam = mujoco.MjvCamera()
+                cam.lookat[:] = centre
+                cam.distance, cam.azimuth, cam.elevation = distance, azimuth, elevation
+                cameras[name] = cam
+            data = mujoco.MjData(model)
+            mujoco.mj_forward(model, data)
+            self._replay = (model, data, mujoco.Renderer(model, REPLAY_HEIGHT, REPLAY_WIDTH), cameras)
+        model, data, renderer, cameras = self._replay
+        data.time = state.sim_time
+        data.qpos[:] = state.qpos
+        data.mocap_pos.flat = state.mocap_pos
+        data.mocap_quat.flat = state.mocap_quat
+        self._render_liquid(model, state.sim_time, state.effects)
+        mujoco.mj_kinematics(model, data)
+        renderer.update_scene(data, cameras[camera], scene_option=self._camera_options)
+        return renderer.render()
 
     def proprioception(self):
         q = self.data.qpos[self._qaddr]
@@ -531,3 +617,6 @@ class World:
         if self._renderer is not None:
             self._renderer.close()
             self._renderer = None
+        if self._replay is not None:
+            self._replay[2].close()
+            self._replay = None
