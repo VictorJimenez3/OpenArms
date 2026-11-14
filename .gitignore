@@ -11,3 +11,6 @@ outputs/
 *.egg-info/
 # working copy of the demo bench, rebuilt from the overhead camera
 simulation/config/setups/demo_live/
+
+# Application environment, separate from the physical bench environment
+.venv-lab/

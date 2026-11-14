@@ -13,12 +13,12 @@ Receipts are retained locally under the software-integration worktree's ignored 
 
 ## Immediate assignment
 
-Existing runtime/voice integrator, [issue #19](https://github.com/VictorJimenez3/OpenArms/issues/19): qualify completed confirmation -> exactly one executor dispatch, and timestamp through first motion while Gemini remains responsive. Preserve STOP, existing authorization, correction/staleness and the working fallback. Reuse the active overhaul repair rather than creating another runtime. Finish with actual-device and supervised physical evidence through [#12](https://github.com/VictorJimenez3/OpenArms/issues/12).
+Existing runtime/voice integrator, [issue #19](https://github.com/VictorJimenez3/OpenArms/issues/19): qualify completed confirmation -> exactly one executor dispatch, and timestamp through first motion while Gemini Live remains responsive. Preserve STOP, existing authorization, correction/staleness and the working fallback. Reuse the active overhaul repair rather than creating another runtime. Finish with actual-device and supervised physical evidence through [#12](https://github.com/VictorJimenez3/OpenArms/issues/12).
 
 ## Smallest P1 experiment
 
-Compare familiar-request dispatch with and without unnecessary provider/setup work while preserving equivalent behavior and observation freshness. Current main `live.py:text_reply` opens an AUDIO Live connection for each typed question; that is a plausible setup overhead, not a proven cause of 11.93 s. Reusing the active session is a bounded candidate if current architecture permits. Known skills should avoid redundant expert calls without bypassing validation.
+Compare familiar-request dispatch with and without unnecessary provider/setup work while preserving equivalent behavior and observation freshness. The historical `live.py:text_reply` implementation opened an AUDIO Live connection per typed question; this was a hypothesis, not a measured cause of 11.93 s. PR #25 now records three local status/scene replies at 1.49–1.65 ms with zero expert calls and preserved proposals; those are server timings, not speech latency or physical first motion. Inspect the current path before proposing another optimization. Known skills should avoid redundant expert calls without bypassing validation.
 
-Optional simulator preview blocks proposal/confirmation when enabled and launches a rendering process. It is off by default. Keep it backstage unless needed for a verified control decision; do not claim a speedup by disabling something the baseline did not run.
+The old optional simulator-preview path is historical. The selected development backend runs MuJoCo only when explicitly configured. Familiar physical skills must not gain mandatory simulator previews or expert calls without a demonstrated need; do not claim a speedup by removing work the measured baseline did not perform.
 
 Measure the same task/setup before and after, including failures, human waits, first motion and outcome. Select only a demonstrated improvement; never add artificial baseline work. If a larger measured bottleneck appears, change this one experiment rather than expand into a research program.

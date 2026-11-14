@@ -1,0 +1,54 @@
+{
+  "four-cup-platform.stl": {
+    "watertight": true,
+    "consistent_winding": true,
+    "connected_solids": 1,
+    "dimensions_mm": [
+      200.0,
+      200.0,
+      9.0
+    ],
+    "geometric_volume_cm3": 126.245
+  },
+  "fit-gauge-36mm.stl": {
+    "watertight": true,
+    "consistent_winding": true,
+    "connected_solids": 1,
+    "dimensions_mm": [
+      44.776,
+      44.582,
+      6.0
+    ],
+    "geometric_volume_cm3": 2.02
+  },
+  "fit-gauge-38mm.stl": {
+    "watertight": true,
+    "consistent_winding": true,
+    "connected_solids": 1,
+    "dimensions_mm": [
+      46.776,
+      46.082,
+      6.0
+    ],
+    "geometric_volume_cm3": 2.095
+  },
+  "fit-gauge-40mm.stl": {
+    "watertight": true,
+    "consistent_winding": true,
+    "connected_solids": 1,
+    "dimensions_mm": [
+      48.776,
+      47.582,
+      6.0
+    ],
+    "geometric_volume_cm3": 2.171
+  },
+  "platform_raised_guide_count": 4,
+  "qualification": {
+    "mesh": "passed",
+    "physical_cup_fit": "unverified",
+    "robot_clearance_and_reach": "unverified",
+    "slicer": "not run",
+    "print_time_and_filament": "unknown without printer profile"
+  }
+}

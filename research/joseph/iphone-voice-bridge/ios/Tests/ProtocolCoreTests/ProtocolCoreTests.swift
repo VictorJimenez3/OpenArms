@@ -98,7 +98,22 @@ final class ProtocolCoreTests: XCTestCase {
         XCTAssertFalse(current.matchesCurrent(current, generation: 1, now: 100))
         XCTAssertFalse(current.matchesCurrent(current, generation: 0, now: 200))
         XCTAssertFalse(current.matchesCurrent(nil, generation: 0, now: 100))
-        XCTAssertEqual(current.reviewSteps, ["Locate cup"])
+        XCTAssertEqual(current.reviewSummary, "Inspect the scene")
+    }
+
+    func testWaterPourReviewUsesTheServerSummaryAndRequiresAReadablePreview() throws {
+        let plan = """
+        [{"operation":"mock_prepared_sample","arguments":{"condition_id":"water","source":"A","destination":"C"}}]
+        """
+        let summary = "Pour one premeasured water portion from A into C, return the donor to A and return HOME."
+        let current = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(version: "3", summary: summary, steps: plan)).pending)
+        XCTAssertEqual(current.reviewSummary, summary)
+        let changed = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(
+            version: "3", summary: "Different action", steps: plan)).pending)
+        XCTAssertFalse(current.matchesCurrent(changed, generation: 0, now: 100))
+        let blank = try XCTUnwrap(LabWire.snapshot(proposalSnapshot(version: "3", summary: " ", steps: plan)).pending)
+        XCTAssertNil(blank.reviewSummary)
+        XCTAssertFalse(blank.matchesCurrent(blank, generation: 0, now: 100))
     }
 
     func testDirectRequestNeedsOnlyTheStudentsMessage() throws {
@@ -344,15 +359,16 @@ final class ProtocolCoreTests: XCTestCase {
         }
     }
 
-    private func proposalSnapshot(version: String) -> Data {
+    private func proposalSnapshot(version: String, summary: String = "Inspect the scene",
+                                  steps: String = #"[{"operation":"localize_objects","arguments":{"evidence_id":"internal","labels":["cup"]}}]"#) -> Data {
         Data("""
         {"session_id":"s","backend":"mock","revision":2,"generation":0,"connected":true,
-        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "experiment":{"id":"indicator_ph","title":"Indicator pH","question":"What changes?"},
         "trial":{"trial_id":"t1","state":"awaiting_confirmation"},"conditions":[],"prediction":"",
         "observations":[],"messages":[],"notebook":[],"state":{},
-        "pending":{"request_id":"request","proposal_version":\(version),"summary":"Inspect the scene",
+        "pending":{"request_id":"request","proposal_version":\(version),"summary":"\(summary)",
                    "status":"requested","presented":false,"generation":0,"expires_at":200,
-                   "plan":{"steps":[{"operation":"localize_objects","arguments":{"evidence_id":"internal","labels":["cup"]}}]}}}
+                   "plan":{"steps":\(steps)}}}
         """.utf8)
     }
 
@@ -367,7 +383,7 @@ final class ProtocolCoreTests: XCTestCase {
                           extra: String = "") throws -> LabSnapshot {
         let base = """
         {"session_id":"\(id)","backend":"mock","revision":\(revision),"generation":\(generation),"connected":true,
-        "experiment":{"id":"red_cabbage_ph","title":"Red-cabbage pH","question":"What changes?"},
+        "experiment":{"id":"indicator_ph","title":"Indicator pH","question":"What changes?"},
         "trial":{"trial_id":"t1","state":"ready"},"conditions":[],"prediction":"",
         "observations":[],"messages":[],"notebook":[],"state":\(state)}
         """

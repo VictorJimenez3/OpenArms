@@ -1,0 +1,223 @@
+{
+  "provider": "openai_codex_cli",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "provenance": "SIMULATED",
+  "execution_backend": "mujoco",
+  "scene": "two_vessel",
+  "actual_expert": true,
+  "audible_voice_verified": false,
+  "cold_model_calls": 7,
+  "warm_model_calls": 0,
+  "warm_request": "Pour one premeasured portion of water from A into C, return the donor and check the result.",
+  "promotion": {
+    "skill_id": "two_vessel_water_pour",
+    "candidate_hash": "e2d147f38a76002afbe1089b7d21e555f03f573da7708fed9ae5fbb7915b2626",
+    "baseline_hash": null,
+    "rollback_target": null,
+    "evaluation_id": "7b571f145ad249f49b5aff9f95645b36",
+    "status": "promoted"
+  },
+  "elapsed_seconds": 148.62317679217085,
+  "requested_model": "gpt-6.1-sol",
+  "actual_model": null,
+  "model_verified": false,
+  "expert_runs": [
+    {
+      "kind": "plan",
+      "calls": 4,
+      "reasoning_effort": "high",
+      "actual_model": null,
+      "model_verified": false,
+      "elapsed_ms": 67051
+    },
+    {
+      "kind": "complete",
+      "calls": 2,
+      "reasoning_effort": "high",
+      "actual_model": null,
+      "model_verified": false,
+      "elapsed_ms": 22492
+    },
+    {
+      "kind": "complete",
+      "calls": 1,
+      "reasoning_effort": "high",
+      "actual_model": null,
+      "model_verified": false,
+      "elapsed_ms": 11903
+    }
+  ],
+  "warm_task": {
+    "status": "completed",
+    "route": "active_skill",
+    "skill_version": "e2d147f38a76002afbe1089b7d21e555f03f573da7708fed9ae5fbb7915b2626",
+    "observation": {
+      "observation_id": "a9d64cc4-4417-4508-adc9-8518889f1423",
+      "task_id": "a52cfb49-88a8-4501-bda3-9e10783b2e1c",
+      "request_id": "93035747-56dd-4eab-ae87-d5bedf637b16",
+      "trial_id": "7f9a9abe-f672-4385-b760-3e0f4049232d",
+      "status": "observed",
+      "provenance": "SIMULATED",
+      "text": "The simulated receiver shows water appearance; the donor is visible at A.",
+      "plan_hash": "d05f120f06f0cdf48fd4249a6014f65f804a306a5abbfbb24248985547a7e39a",
+      "skill_version": "e2d147f38a76002afbe1089b7d21e555f03f573da7708fed9ae5fbb7915b2626",
+      "source": "two-vessel-fiducials-rims-water-v1",
+      "evidence": [
+        "1bb3774d1eca408aa6642c1c48d960f2"
+      ],
+      "features": {
+        "readable": true,
+        "receiver_appearance": "water_appearance",
+        "sample_cup_station": "A",
+        "sample_cup_held": false
+      },
+      "value": {
+        "readable": true,
+        "receiver_appearance": "water_appearance",
+        "sample_cup_station": "A",
+        "sample_cup_held": false
+      },
+      "checks": {
+        "readable": true,
+        "receiver_appearance": true,
+        "sample_cup_station": true,
+        "sample_cup_held": true
+      },
+      "reason": null,
+      "receipt": {
+        "evidence_id": "1bb3774d1eca408aa6642c1c48d960f2",
+        "provenance": "SIMULATED",
+        "images": [
+          {
+            "path": "LOCAL_REHEARSAL_ARCHIVE/reconciliation-cold-warm/scene/cbac940b-b756-41e7-ae24-204acfc1a47a/1bb3774d1eca408aa6642c1c48d960f2.png",
+            "evidence_id": "1bb3774d1eca408aa6642c1c48d960f2",
+            "captured_at": 1794693587.2826822,
+            "provenance": "SIMULATED",
+            "sha256": "8c8ccd8beac3ccf3ee2d3c328765e2278faf686eda0c9631946658034d81bb9e"
+          }
+        ],
+        "scene": {
+          "scene_id": "two_vessel_docks",
+          "scene_version": 1,
+          "control_mode": "mujoco_kinematic_water_pour",
+          "camera_id": "two_vessel_overview",
+          "camera_config_id": "two_vessel_overview.v1",
+          "calibration_id": "two_vessel_nominal_pixels.v1",
+          "coordinate_frame": "image_pixels",
+          "units": "px",
+          "clock": "unix_seconds",
+          "geometry_valid": false,
+          "base_registration_id": null,
+          "physical_execution": false,
+          "frame_id": "1bb3774d1eca408aa6642c1c48d960f2",
+          "captured_at": 1794693587.2826822,
+          "fresh": true,
+          "expires_at": 1794693767.2826822,
+          "view": "primary",
+          "provenance": "SIMULATED",
+          "width": 800,
+          "height": 608,
+          "motion_seconds": 19.800000000000143,
+          "generation": 4,
+          "fixture_registration_valid": true,
+          "available_samples": [
+            "water"
+          ],
+          "recognition_labels": [
+            "source",
+            "receiver",
+            "A",
+            "C"
+          ],
+          "object_descriptions": {
+            "source": "small water donor in dock A",
+            "receiver": "wide clear receiver in dock C"
+          },
+          "observable_features": {
+            "readable": {
+              "type": "boolean"
+            },
+            "receiver_appearance": {
+              "enum": [
+                "dark_base_visible",
+                "water_appearance"
+              ]
+            },
+            "sample_cup_station": {
+              "enum": [
+                "A"
+              ]
+            },
+            "sample_cup_held": {
+              "type": "boolean"
+            }
+          },
+          "limitations": [
+            "Pixel localization in the rendered overview, with color-coded rim and tabletop fiducials.",
+            "Provisional fixture dimensions and camera reference. No measured grasp pose or physical calibration.",
+            "Water motion demonstration only; no indicator, pH, or kit recipe is modeled.",
+            "Kinematic commanded motion and rendered water appearance do not establish physical grasp, liquid delivery, or spill safety.",
+            "Primary and secondary both name the same overview camera."
+          ]
+        },
+        "status": "observed",
+        "observer_version": "two-vessel-fiducials-rims-water-v1",
+        "features": {
+          "readable": true,
+          "receiver_appearance": "water_appearance",
+          "sample_cup_station": "A",
+          "sample_cup_held": false
+        },
+        "pixel_observation": {
+          "status": "ok",
+          "ready": true,
+          "provenance": "SIMULATED",
+          "coordinate_frame": "overview_image",
+          "units": "px",
+          "method": "color-fiducials-and-rims-v1",
+          "limitations": [
+            "Pixel localization in the rendered overview, with color-coded rim and tabletop fiducials.",
+            "Provisional fixture dimensions and camera reference. No measured grasp pose or physical calibration."
+          ],
+          "camera_registration": "registered",
+          "stations": {
+            "A": {
+              "status": "identified",
+              "vessel": "donor",
+              "pixel": [
+                529.29,
+                334.69
+              ]
+            },
+            "C": {
+              "status": "identified",
+              "vessel": "receiver",
+              "pixel": [
+                287.8,
+                384.93
+              ]
+            }
+          },
+          "receiver_appearance": {
+            "state": "water_appearance",
+            "provenance": "SIMULATED",
+            "method": "registered-receiver-interior-v1"
+          },
+          "evidence_id": "1bb3774d1eca408aa6642c1c48d960f2",
+          "fiducial_drift_px": {
+            "f1": 0.0,
+            "f2": 0.0,
+            "f3": 0.0,
+            "f4": 0.0
+          },
+          "reason": null
+        },
+        "text": "The simulated receiver shows water appearance; the donor is visible at A.",
+        "reason": null
+      }
+    }
+  },
+  "source_commit": "355a224",
+  "script_change": "Added existing rehearsal --scene two_vessel; positive warm-version/image assertions were added after this run and separately checked against its saved artifacts."
+}

@@ -1,0 +1,29 @@
+{
+  "product_revision": "be0101e",
+  "python": {
+    "passed": 529,
+    "seconds": 46.76,
+    "command": "PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q"
+  },
+  "browser": {
+    "passed": 36,
+    "seconds": 19.9,
+    "platforms": [
+      "desktop Chromium",
+      "mobile Chromium"
+    ]
+  },
+  "audio_unit": {
+    "passed": 5
+  },
+  "independent_review": "Sol high; no blocking findings; final audio-duration change independently checked with20 bridge tests",
+  "final_live": {
+    "run": "openarms-live-warm-final-4",
+    "passed": true,
+    "warm_request_expert_calls": 0,
+    "corrected_request_expert_calls": 7
+  },
+  "hardware_verified": false,
+  "human_audibility_verified": false,
+  "iphone_verified": false
+}

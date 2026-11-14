@@ -18,7 +18,8 @@ let sceneView;
 const attemptedPresentations = new Set();
 const invalidatedProposals = new Set();
 const liveTurns = new Map();
-const names = { vinegar: 'Vinegar', baking_soda: 'Baking-soda solution', water: 'Water' };
+const conditionChoices = () => snapshot?.conditions || [];
+const waterFixture = () => snapshot?.experiment?.id === 'two_vessel_water';
 const text = (selector, value) => {
   const element = $(selector);
   const content = value || '';
@@ -65,6 +66,7 @@ function credentialsNeeded() {
   for (const selector of ['#task-progress', '#evidence', '#active-skills', '#reflection-panel', '#new-trial']) $(selector).hidden = true;
   $('#prediction').value = '';
   text('#prediction-saved', '');
+  renderTrialContext();
   renderMessages();
   renderHistory();
   controls();
@@ -162,12 +164,35 @@ function expired(proposal) {
   const value = typeof proposal.expires_at === 'number' ? proposal.expires_at * (proposal.expires_at < 1e12 ? 1000 : 1) : Date.parse(proposal.expires_at);
   return Number.isFinite(value) && value <= Date.now();
 }
-function render() {
-  const trial = snapshot.trial || {};
-  for (const element of document.querySelectorAll('[data-condition]')) {
-    const chosen = element.dataset.condition === trial.condition_id;
-    element.setAttribute('aria-pressed', String(chosen));
+function renderTrialContext() {
+  const experiment = snapshot?.experiment?.id;
+  $('#message').placeholder = waterFixture() ? 'Pour one premeasured portion of water from A into C.'
+    : experiment === 'indicator_ph' ? 'Check the color of the vinegar sample.' : 'Ask a question or request an action.';
+  text('#prediction-hint', waterFixture() ? 'Predict how much water reaches the receiver, and tell us why.'
+    : experiment === 'indicator_ph' ? 'Predict a color or an acid/base category, and tell us why.' : '');
+  const choices = conditionChoices();
+  const container = $('#condition-buttons');
+  const signature = JSON.stringify(choices.map(({id, title}) => [id, title]));
+  // Keep focus when polling updates a trial without changing the available samples.
+  if (container.dataset.signature !== signature) {
+    container.replaceChildren(...choices.map(({id, title}) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'condition secondary';
+      button.dataset.condition = id;
+      button.textContent = title;
+      return button;
+    }));
+    container.dataset.signature = signature;
   }
+  $('#conditions').hidden = !choices.length;
+  for (const button of container.children) {
+    button.setAttribute('aria-pressed', String(button.dataset.condition === snapshot?.trial?.condition_id));
+  }
+}
+
+function render() {
+  renderTrialContext();
   // Keep a student's in-progress correction intact while state updates arrive.
   if (document.activeElement !== $('#prediction') && !$('#prediction').dataset.dirty) $('#prediction').value = snapshot.prediction || '';
   text('#prediction-saved', snapshot.prediction ? 'Prediction saved in your notebook.' : '');
@@ -484,7 +509,10 @@ function renderHistory() {
   const fragment = document.createDocumentFragment();
   for (const [index, observation] of observations.entries()) {
     const entry = document.createElement('article'); entry.className = 'history-item';
-    const title = document.createElement('strong'); title.textContent = `Trial ${index + 1} · ${names[observation.condition_id] || 'Red-cabbage indicator'}`;
+    const sample = conditionChoices().find(choice => choice.id === observation.condition_id)?.title;
+    const setup = sample || (waterFixture() ? 'Premeasured water' : snapshot.experiment?.title);
+    const title = document.createElement('strong');
+    title.textContent = [`Trial ${index + 1}`, setup].filter(Boolean).join(' · ');
     const provenance = document.createElement('span'); provenance.className = 'history-label'; provenance.textContent = observationLabel(observation);
     const result = document.createElement('p'); result.textContent = observation.text || 'No observation recorded.';
     entry.append(title, provenance, result);
@@ -576,7 +604,9 @@ $('#reconnect').onclick = async () => {
 };
 $('#conditions').addEventListener('click', event => {
   const button = event.target.closest('[data-condition]');
-  if (button) void act('condition', { condition_id: button.dataset.condition });
+  if (button && !$('#conditions').disabled && conditionChoices().some(choice => choice.id === button.dataset.condition)) {
+    void act('condition', { condition_id: button.dataset.condition });
+  }
 });
 $('#prediction').oninput = () => { $('#prediction').dataset.dirty = 'true'; };
 $('#prediction-form').onsubmit = async event => {

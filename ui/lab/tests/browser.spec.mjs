@@ -94,7 +94,7 @@ test('complete a pH trial with text, reflection, history and a new sample',async
   await page.getByLabel('What did you learn?').fill('The pink reference supports my prediction of an acidic sample.');
   await page.getByRole('button',{name:'Save reflection'}).click();
   await expect(page.getByText('Reflection saved.',{exact:true})).toBeVisible();
-  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Why does cabbage change color?');
+  await page.getByRole('textbox', {name:'What would you like to do?'}).fill('Why does indicator change color?');
   await page.getByRole('button',{name:'Send request'}).click();
   await expect(page.locator('#messages')).toContainText('acid–base conditions');
   await disclose(page, 'history');
@@ -136,6 +136,42 @@ test('exact proposal must be visible before presentation and a newer server prop
     first.state.pending.request_id, second.state.pending.request_id,
   ]);
   expect(trace.filter(t=>t.action==='confirm')).toHaveLength(0);
+});
+
+test('the two-vessel setup shows only the available water choice and exact action', async ({page, request}) => {
+  await ready(page);
+  const {state} = await fixture(page, request, {state: {
+    experiment: {id:'two_vessel_water', title:'Two-vessel water pour — simulation'},
+    conditions: [{id:'water', title:'Premeasured water'}],
+  }});
+  await disclose(page, 'typing');
+  await expect(page.locator('#message')).toHaveAttribute('placeholder', 'Pour one premeasured portion of water from A into C.');
+  await disclose(page, 'trial-context');
+  await expect(page.locator('#conditions').getByRole('button')).toHaveCount(1);
+  await expect(page.getByRole('button', {name:'Premeasured water'})).toBeVisible();
+  await expect(page.locator('#prediction-hint')).toContainText('water reaches the receiver');
+  expect((await fixture(page, request)).trace.filter(entry => entry.action === 'condition')).toHaveLength(0);
+
+  const summary = 'In the simulation, pour one premeasured water portion from A into C, return the donor to A and return HOME.';
+  const pending = {
+    request_id:'water-pour', proposal_version:2, summary, condition_id:'water', status:'requested',
+    expires_at:new Date(Date.now()+300000).toISOString(), presented:false,
+  };
+  await fixture(page, request, {state:{pending}});
+  await expect(page.locator('#proposal-summary')).toHaveText(summary);
+  await reviewProposal(page);
+  expect((await fixture(page, request)).trace.filter(entry => entry.action === 'present')).toEqual([
+    expect.objectContaining({body:{request_id:'water-pour', proposal_version:2, channel:'text'}}),
+  ]);
+
+  await fixture(page, request, {state: {
+    pending:null,
+    observations:[{trial_id:state.trial.trial_id, condition_id:'water', status:'observed',
+      provenance:'SIMULATED', text:'Water is visible in the simulated receiver.'}],
+  }});
+  await disclose(page, 'history');
+  await expect(page.locator('#history-list')).toContainText('Premeasured water');
+  await expect(page.locator('#history-list')).not.toContainText('Indicator');
 });
 
 test('voice outage preserves the socket, coalesces turns and permits text',async({page,request})=>{

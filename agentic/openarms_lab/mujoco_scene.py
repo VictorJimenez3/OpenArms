@@ -14,6 +14,7 @@ from bench_vision.perception import observation
 from simulation.lab_demos.ph import CONDITIONS, HEIGHT, LIMITATIONS, SCENE, WIDTH
 
 from .mujoco_process import run_worker
+from .scene import camera_metadata
 
 PROVENANCE = 'SIMULATED'
 METHOD = 'mujoco-metered-dropper-pixels-v1'
@@ -26,6 +27,7 @@ REGIONS = {
 # Read the visible liquid surface on either side of the nozzle, relative to the dish base mark.
 LIQUID_OFFSET = {'primary': (-30, -9, -63, -44), 'secondary': (-22, 16, -45, -26)}
 HUES = {'pink': (150, 179), 'purple': (125, 149), 'blue': (96, 123)}
+FIXED_DOCKS = {'source': 'A', 'receiver': 'C'}
 ALIASES = {'a': 'source', 'source_cup': 'source', 'sample_cup': 'source',
            'c': 'receiver', 'cup': 'receiver', 'receiver_cup': 'receiver'}
 
@@ -144,12 +146,13 @@ class MujocoSceneService:
                 'scene': {**SCENE, 'frame_id': evidence_id, 'captured_at': captured, 'clock': 'unix_seconds',
                           'motion_seconds': result['motion_seconds'], 'width': WIDTH, 'height': HEIGHT,
                           'fresh': True, 'expires_at': captured + 180, 'view': view, 'provenance': PROVENANCE,
-                          'calibration_id': CAMERA_SETUP, 'coordinate_frame': 'image_pixels',
-                          'geometry_valid': False, 'physical_execution': False,
+                          **camera_metadata('mujoco-' + view, CAMERA_SETUP),
+                          # Authored fixed renderer views. This is not a robot-base transform.
+                          'fixture_registration_valid': True,
                           'available_samples': list(CONDITIONS),
-                          'recognition_labels': ['source', 'receiver'],
+                          'recognition_labels': ['source', 'receiver', 'A', 'C'],
                           'object_descriptions': {'source': 'fixed metered source dropper',
-                                                  'receiver': 'stationary cabbage indicator dish'},
+                                                  'receiver': 'stationary indicator dish'},
                           'observable_features': copy.deepcopy(self.feature_schema),
                           'limitations': [*LIMITATIONS, 'Recognition is limited to the rendered fixture and two fixed views.']}}
 
@@ -181,18 +184,23 @@ class MujocoSceneService:
     async def localize_objects(self, sid, evidence_id, labels):
         hsv, reference, view = self._read(sid, evidence_id)
         detections, verified = [], []
+        camera = camera_metadata('mujoco-' + view, CAMERA_SETUP)
         for label in labels:
             normalized = ALIASES.get(label.lower(), label.lower())
             box = _fixture_box(hsv, view, normalized)
             if box:
                 verified.append(label)
-            detections.append(observation({
-                'object_id': label, 'camera_id': 'mujoco-' + view,
-                'frame_id': evidence_id, 'timestamp_s': reference['captured_at'],
-                'calibration_id': CAMERA_SETUP, 'provenance': PROVENANCE,
-            }, METHOD, box=box, reason=None if box else 'Supported fixture mark is not visible.'))
+            detection = observation({'object_id': label, 'frame_id': evidence_id,
+                                     'timestamp_s': reference['captured_at'], 'provenance': PROVENANCE,
+                                     **camera}, METHOD, box=box,
+                                    reason=None if box else 'Supported fixture mark is not visible.')
+            detections.append({**detection, 'vessel_id': normalized if box else None,
+                               'dock_id': FIXED_DOCKS[normalized] if box else None, 'held': False,
+                               'fixture_registration_valid': True,
+                               'camera_config_id': camera['camera_config_id'], 'clock': camera['clock'],
+                               'coordinate_frame': camera['coordinate_frame'], 'units': camera['units']})
         return {'evidence_id': evidence_id, 'provenance': PROVENANCE, 'verified_labels': verified,
-                'supported_labels': ['source', 'receiver'], 'detections': detections, 'method': METHOD,
+                'supported_labels': ['source', 'receiver', 'A', 'C'], 'detections': detections, 'method': METHOD,
                 'limitations': ['Color mark localization in fixed MuJoCo views provides image coordinates.']}
 
     async def observe(self, sid, execution_receipt):

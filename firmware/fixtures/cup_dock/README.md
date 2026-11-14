@@ -1,63 +1,77 @@
-# One color, one platform, four cups — OpenArms v0.5
+# Two-vessel base plate
 
-**One continuous, single-material platform with four cup slots in a 2×2 layout.** All features print in the same filament color. Slot letters and ruler ticks are shallow recesses; no stickers, paper markers, paint or color changes are required. All four cups sit on the same base. This replaces the earlier two-separate-dock design. Use ordinary small plastic cups from Target or another store; laboratory cups, custom handles and cup-mounted attachments are not required.
+D1 bench fixture for [OpenArms #12](https://github.com/VictorJimenez3/OpenArms/issues/12). The Smartivity donor beaker sits at A and the wider stationary receiver sits at C. The latest [photo-derived vessel meshes](../../../simulation/models/vessels/measured_2026_11_14/README.md) supply the provisional profiles. Print the fixture and gauges. Use the original kit vessels for liquid.
 
-The four slots are labeled A, B, C and D. Their experiment roles can be assigned after the actual cups and liquids are chosen. The current model uses four identical provisional small cups. Equipment we do not own can appear in a clearly identified simulation; physical-demo claims still come from observing the real cups and robot.
+Two shallow chamfered nests share a rigid ribbed base. This keeps their spacing fixed in a single print and leaves the catch tray exposed between the supports. Individual nests allow easier spacing changes and require a common backing and measured assembly. Use the small gauges to tune each fit before printing the full base. The [four-cup design](four-cup-v0.5/) is archived.
 
 ## Files
 
-- `four-cup-platform.stl`: the **single full platform**, including all four cup guides. Print once.
-- `fit-gauge-36mm.stl`, `fit-gauge-38mm.stl`, `fit-gauge-40mm.stl`: optional small fit checks, not separate cup stations.
-- `fixture.scad`: editable CAD; defaults to the full four-cup platform.
-- `four-cup-preview.png`: only the actual printable platform STL, rendered in one gray material. Darker areas are lighting/shadows in recesses, not additional colors.
-- `fixture-reference.json` and `validation.json`: dimensions, coordinates and geometry checks.
+| File | Use |
+| --- | --- |
+| [Editable OpenSCAD](fixture.scad) | Plate, chamfers, approach openings, marker pockets and gauges |
+| [Base plate STL](exports/two-vessel-base.stl) | Slice in millimetres with the flat underside down |
+| [Gauge A](exports/fit-gauge-A.stl), [gauge C](exports/fit-gauge-C.stl) | Match the guide geometry at each station on a thin test floor |
+| [Assembly render](exports/two-vessel-preview.png) | Actual fixture STL, existing vessel meshes, marker art and a blue arrow for the donor approach |
+| [ArUco artwork](exports/aruco-markers.pdf) | One US Letter sheet for the four pockets |
+| [Fixture reference](exports/fixture-reference.json) | Dock placement, guide and vessel profiles, marker corners and setup provenance |
+| [Validation](exports/validation.json) | Build checks and pending bench qualification |
 
-## Starting dimensions — not measured cup fit
+## Geometry
 
-| Parameter | Default |
-|---|---:|
-| Platform | 200 × 200 mm |
-| Continuous floor | 3 mm |
-| Four guides above floor | 6 mm |
-| Overall printed height | 9 mm |
-| Cup base / rim / height | 38 / 48 / 51 mm, each slot |
-| Radial clearance | 0.8 mm |
-| Guide wall | 3 mm |
-| Column / row pitch | 90 / 82 mm |
-| Slot A / B centres | (55,78) / (145,78) mm |
-| Slot C / D centres | (55,160) / (145,160) mm |
+Coordinates are in millimetres. The origin is the front-left corner of the plate footprint projected onto its underside. +X points right, +Y rear, +Z up. Both vessels seat at Z=4 mm.
 
-The nominal 48 mm width and 51 mm height came from the previously considered [Diamond 2 oz retail cup](https://www.target.com/p/-/A-94991464). The 38 mm bottom diameter is an engineering estimate. **No specific brand is required.** Measure whichever cups are purchased. Larger Starbucks cups will need changed cup dimensions and may require a larger platform; do not assume they fit these small-cup slots.
+| Dimension | A | C |
+| --- | --- | --- |
+| Seat centre XYZ | (42, 76, 4) | (116, 80, 4) |
+| Vessel base envelope OD, photo estimate | 31 (28–34) | 59 (54–66) |
+| Circular rim OD, photo estimate | 41 (38–44) | 78 (75–82) |
+| Outside height, photo estimate | 51 (47–56) | 32 (30–35) |
+| Guide height above seat | 3.5 | 4.5 |
+| Guide opening centred on −Y | 110° | 60° |
+| Nominal radial clearance below the chamfer | 0.65 | 0.75 |
+| Extra radial relief at the top of the chamfer | 1.0 | 1.1 |
 
-Edit the top parameters in `fixture.scad`. `slot_cups` supports a different `[bottom_d, top_d, height]` for each of A/B/C/D. Adjust platform size, row/column pitch and first-row position when increasing cup size. Assertions check guide/rim separation and plate margins. They do not certify robot jaw clearance.
+The 4 mm deck has open spaces between ribs, a 2.6 mm minimum designed guide wall and two Ø3.6 mm through holes at XY (79, 48) and (79, 111). Use M3 hardware with an outside head/washer diameter up to 10 mm, or secure the flat underside to a dry catch tray with removable tape. The 170 × 156 × 8.5 mm envelope leaves the configured 4 mm margin per side on a usable 180 × 180 mm bed. Confirm the actual bed, reserved edges and any brim in the slicer.
 
-## Fit, print and use
+The seats constrain translation and allow straight-up removal. Set the donor spout by hand toward the engraved arrow (3.094° counterclockwise from +X). The round donor body can still rotate in its guide. The modeled smooth grip band is 10–40 mm above the donor seat. The lowest moving jaw surface needs to clear the guide through approach and release. Cup spacing, opening angles, grip height and spout alignment still need the dry bench check.
 
-1. Measure the actual cup base, diameter 6 mm above its seating plane, rim and height. The linear taper is a provisional approximation; lower-wall ribs or a flared foot must be accounted for.
-2. Print a small matching gauge first. Gauge labels are assumed **cup base diameters**; the bore includes 1.6 mm diametral clearance. Put the floorless gauge and cup on the same flat surface. Check easy insertion and straight-up removal.
-3. Print **one** full platform flat on the bed. A usable bed larger than the 200×200 mm footprint is needed for any brim/margins; actual printer capacity is unconfirmed. Typical starting settings: PLA, 0.4 mm nozzle, 0.2 mm layers, 3 walls, 15–20% infill. Geometry is designed without support requirements, but inspect the slicer preview. No slicing or print-time estimate was performed.
-4. Secure the entire platform inside a catch tray using tape or the four mounting holes. The cup slots are shallow U-shaped top-drop/vertical-lift guides. They do not clamp the cups and are not lateral slide-in slots.
-5. Teach the existing jaws to grip the actual cup directly at a consistent height and closing position. Nothing needs to be mounted on the cup. The lowest swept jaw surface must clear the 9 mm guide top plus a tested margin. Grip position is not a measured-force guarantee; check empty-cup and then small-water tilt trials.
-6. Teach the desired four-slot routes only after securing the platform. Preserve existing operator confirmation and independent observations of lift, pour, spill, return and reset.
+## Fit and print
 
-The U guides permit approximately 2.5 mm total ideal fore–aft play at the default clearance, before printing errors and cup flexibility. Seat cups consistently against the rear datum and test the actual reset scatter. Clearance can be tuned after a gauge test; it is not a positioning-accuracy claim.
+1. Print the A and C gauges flat. Try each empty vessel in its own gauge. It should sit level, lift out cleanly and settle when lowered slightly off centre. Check the lower outside diameter at the seat and at the guide height, including any ribs or flare. Note any bind, rocking, or excess play.
+2. Update `radial_clearances` in [fixture.scad](fixture.scad) for fit tuning. For a quick comparison, export a gauge directly with `part="gauge"`, `gauge_index=0` for A or `1` for C, and `gauge_radial_adjustment` set to an extra clearance per side. For new measured profiles, pass `--vessel-dir` with matching parameters and regenerated metre-scale meshes. The standalone CAD defaults reproduce the current revision 2 profiles.
+3. Slice the full plate with Z=0 on the bed. A starting profile is a 0.4 mm nozzle, 0.2 mm layers, at least three perimeters and 15–20% infill. The geometry is intended for support-free printing. Check the marker pocket floors and guide perimeter paths in the slicer. Print time and filament use still depend on the printer and profile.
+4. Place and secure the plate in the catch tray so it cannot move relative to the arm. Set the empty donor's yaw. The bench owner can check insertion and removal by hand, then teach and verify the empty pickup, carry, lip-over-receiver approach, tilt, recovery and return with the existing supervised procedure before water. Record any grip slip, collisions, seating errors and camera occlusion.
 
-## Existing robot and camera integration
+## Fiducials and camera handoff
 
-Use the existing taught-pose workflow and `taught_fixture_only` mode. This change does not alter servo control, recorded poses or calibration. CAD coordinates belong to the **whole platform**, with origin at its front-left underside, +X right, +Y rear and +Z up. Each cup seating plane is z=3 mm. These are not automatically robot coordinates.
+The four 40 mm pads and 37 mm square pockets are part of the print. Print the artwork at **Actual Size / 100%**, measure its 50 mm ruler and verify a **27 mm black square**. Cut and attach one 36 mm tile at a time with its 4.5 mm white border intact. Centre each tile in its pocket using thin removable adhesive. The artwork's top edges face +Y.
 
-The project already has `fixture_id`, `cup_id`, `calibration_id`, `camera_mount_id` and `robot_id` context fields. Record the secured four-slot arrangement and actual cup dimensions under a new setup identity, and teach/revalidate the relevant named poses. Do not reuse the previous two-independent-dock geometry or mandarin poses. Moving the platform, changing cup geometry or changing camera mounting requires the relevant retesting.
+| ArUco `DICT_4X4_50` ID | Pad centre XYZ |
+| --- | --- |
+| 20 | (20, 20, 3.6) |
+| 21 | (150, 20, 3.6) |
+| 22 | (20, 136, 3.6) |
+| 23 | (150, 136, 3.6) |
 
-The reference scale and A/B/C/D labels are recessed into the same material as the base. Measure the printed 100 mm scale to check print scaling. These monochrome features are not a validated automatic camera detector and do not independently establish depth.
+The manifest lists black-square corners in OpenCV's decoded top-left, top-right, bottom-right, bottom-left order. Z=3.6 mm is the bare pocket floor. The paper and adhesive set the final optical plane. Centre and survey the installed labels before relying on those coordinates.
 
-`bench_vision/geometry.py` maps pixels to measured positions on one plane, using at least four fit points and four independent check points. It does not determine arbitrary 3D depth or produce a grasp pose. This fixture adds no new vision pipeline. Use fixed taught positions and physical observation for bring-up.
+The current [bench vision geometry](../../../bench_vision/geometry.py) takes undistorted correspondences on one plane and independent check points. Its pad-plane homography can register the fixture. Resolve the seat plane, raised rims and grasp points separately. Camera-to-fixture and robot-to-fixture transforms are distinct. The manifest leaves physical fixture ID, calibration ID and robot registration unset. When physically qualified, record the secured setup identity, camera mount and taught poses through the bench workflow.
 
-## Rebuild and evidence
+## MuJoCo handoff
 
-Install OpenSCAD and the Python dependencies named in `build.py`, then run:
+Import the base STL as a visual mesh with scale `0.001 0.001 0.001`. The existing vessel meshes are already in metres. Translate each support datum to its exported seat XYZ divided by 1000. Rotate the donor by the exported asset yaw (about −86.906° around +Z), since its local spout points along +Y. Use the published profiles, guide radii and gap angles to approximate collisions with separate convex segments and a flat seating surface. Convexifying the entire plate fills both guide openings and spaces between ribs. Use this geometry as CAD-derived simulation input. Physical robot coordinates and pose qualification come from the secured bench setup.
+
+## Rebuild and status
 
 ```sh
-python build.py --out /absolute/path/to/exports
+python -m pip install numpy trimesh networkx rtree 'opencv-python-headless>=4.8' reportlab
+python firmware/fixtures/cup_dock/build.py
 ```
 
-The builder exports the full platform and three gauges, validates each mesh as one watertight consistently wound positive-volume solid, checks dimensions and flat underside, and checks that a horizontal section above the base contains **exactly four separate cup-guide contours**. It also renders the actual printable STL with one uniform material. Physical cup fit, gripping, robot reach/collisions, printing and liquid behavior remain unverified.
+OpenSCAD must be on PATH. Use `--out /absolute/path` to export a separate set. The builder checks the source meshes, plate and gauge solids and extents, guide walls and openings, nominal cup clearance, seating planes, marker pocket placement, screw holes and digital ArUco decoding. Independent CAD review checked the mesh sections and invalid parameter cases. Two builds reproduced the same mesh geometry. OpenCV decoded all four marker IDs from the PDF raster and from the assembled CAD view. MuJoCo 4.0.1 loaded the exported plate and both vessel meshes at the manifest positions. These checks cover the digital assets. The blue arrow in the preview shows the intended approach direction. Bench testing still needs the actual jaw envelope and camera view.
+
+- [x] Digital CAD, gauge exports, artwork, reference geometry and assembly preview.
+- [ ] Measure the actual lower profiles and confirm both gauge fits.
+- [ ] Confirm available printer area, slice the plate and verify the printed dimensions.
+- [ ] Secure the fixture, survey the applied markers and check visibility from the bench camera.
+- [ ] Verify empty and water trials with the supervised arm, including spout alignment, grip, clearance, recovery and reset.

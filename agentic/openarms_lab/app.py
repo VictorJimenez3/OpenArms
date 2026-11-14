@@ -137,8 +137,22 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             from .skills import SkillRegistry
             execution = os.getenv('OPENARMS_EXECUTION', 'mock').strip().lower()
             registry_scope = execution
+            experiment = conditions = None
             app.state.execution_mode = execution
-            if execution == 'mujoco':
+            scene_name = os.getenv('OPENARMS_SCENE', 'metered_dropper').strip().lower()
+            if execution == 'mujoco' and scene_name == 'two_vessel':
+                from .two_vessel_scene import TwoVesselSceneService
+                from .two_vessel_backend import TwoVesselBackend
+                from .two_vessel_evaluation import TwoVesselSkillEvaluator
+                from .two_vessel_configuration import EXPERIMENT, CONDITIONS, execution_scope
+                registry_scope = execution_scope()
+                experiment, conditions = EXPERIMENT, CONDITIONS
+                scene = TwoVesselSceneService(data / 'scene-evidence')
+                backend_factory = lambda: TwoVesselBackend(scene)
+                evaluator = TwoVesselSkillEvaluator(data / 'evaluations')
+            elif execution == 'mujoco':
+                if scene_name != 'metered_dropper':
+                    raise ValueError('OPENARMS_SCENE must be two_vessel or metered_dropper.')
                 from .mujoco_scene import MujocoSceneService
                 from .mujoco_backend import MujocoBackend
                 from .simulation_evaluation import SimulationSkillEvaluator
@@ -163,7 +177,8 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             app.state.lab = Lab(data, expert=expert, perception=scene,
                                 registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,
-                                auto_evaluate=True,
+                                auto_evaluate=evaluator is not None,
+                                experiment=experiment, conditions=conditions,
                                 execution_scope=registry_scope,
                                 backend_factory=backend_factory, expert_timeout=240)
         else:
@@ -223,9 +238,13 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         identity = expert.describe() if hasattr(expert, 'describe') else {
             'provider': getattr(expert, 'provider', None), 'model': getattr(expert, 'model', None),
             'reasoning_effort': getattr(expert, 'reasoning_effort', None)}
+        from .live import key
+        configured = voice_factory is not None or bool(key())
         return {'backend': app.state.execution_mode, 'hardware_enabled': False, 'protocol_version': 1,
-                'live_configured': voice_factory is not None, 'live_model': None,
-                'voice_status': 'injected' if voice_factory is not None else 'disabled_pending_replacement',
+                'live_configured': configured,
+                'live_model': os.getenv('GEMINI_LIVE_MODEL', 'gemini-3.8-live') if configured and voice_factory is None else None,
+                'voice_status': 'injected' if voice_factory is not None else ('configured' if configured else 'missing_key'),
+                'experiment_id': service().experiment['id'],
                 'expert_provider': identity.get('provider'), 'expert_model': identity.get('model'),
                 'expert_reasoning_effort': identity.get('reasoning_effort'), 'expert': identity,
                 'pairing_required': bool(os.getenv('OPENARMS_DEMO_TOKEN'))}
@@ -436,12 +455,17 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
 
         async def stop_voice():
             nonlocal voice, voice_task
-            if voice:
-                await voice.close()
-            if voice_task:
-                voice_task.cancel()
-                await asyncio.gather(voice_task, return_exceptions=True)
-            voice = voice_task = None
+            try:
+                if voice:
+                    # A departed client cannot receive the playback interruption.
+                    # Its failed send must not skip revoking this session below.
+                    with contextlib.suppress(WebSocketDisconnect, RuntimeError):
+                        await voice.close()
+            finally:
+                if voice_task:
+                    voice_task.cancel()
+                    await asyncio.gather(voice_task, return_exceptions=True)
+                voice = voice_task = None
 
         async def receive():
             nonlocal voice, voice_task, last_ping
@@ -457,11 +481,12 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                     elif kind == 'start_voice':
                         if voice_task and not voice_task.done():
                             continue
-                        if voice_factory is None:
+                        from .live import GeminiBridge, key
+                        if voice_factory is None and not key():
                             await emit({'type': 'status', 'status': 'unavailable',
-                                        'message': 'Voice is disabled while its replacement is being prepared. Text and STOP remain available.'})
+                                        'message': 'Gemini Live is not configured on this host. Text and STOP remain available.'})
                             continue
-                        factory = voice_factory
+                        factory = voice_factory or GeminiBridge
                         async def voice_tool(name, args):
                             if app.state.connections.get(sid) is not ws:
                                 raise ValueError('This connection has been replaced.')
@@ -498,9 +523,9 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                         if voice:
                             await voice.interrupt(msg.get('reply_id'))
                     elif kind == 'stop':
+                        await service().stop(sid)
                         if voice:
                             await voice.interrupt(None)
-                        await service().stop(sid)
                     elif kind == 'close':
                         return
                     else:
@@ -538,11 +563,11 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 for task in tasks:
                     task.cancel()
                 await asyncio.gather(*tasks, return_exceptions=True)
-                await stop_voice()
                 service().subscribers[sid].discard(queue)
                 if app.state.connections.get(sid) is ws:
                     app.state.connections.pop(sid, None)
                     await service().stop(sid, disconnect=True)
+                await stop_voice()
                 with contextlib.suppress(Exception):
                     await ws.close()
 

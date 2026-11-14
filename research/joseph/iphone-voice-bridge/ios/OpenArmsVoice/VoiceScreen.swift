@@ -331,7 +331,7 @@ struct VoiceScreen: View {
             if !lab.outcomeRecords.isEmpty { outcomes(lab) }
             if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
             if !lab.executionRecords.isEmpty { execution(lab) }
-            if lab.experiment.id == "red_cabbage_ph" { trial(lab) }
+            if lab.experiment.id == "indicator_ph" { trial(lab) }
             if !lab.skillRecords.isEmpty || !lab.evaluationRecords.isEmpty { skills(lab) }
             history(lab)
         } else if client.messages.isEmpty {
@@ -387,13 +387,11 @@ struct VoiceScreen: View {
     private func proposalCard(_ proposal: Proposal) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Proposed action").font(.headline).accessibilityAddTraits(.isHeader)
-            let steps = proposal.reviewSteps
-            if !steps.isEmpty, steps.count == RecordPresentation.records(proposal.plan?["steps"]).count {
-                ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                    Text("\(index + 1). \(step)").font(.body)
-                }
+            if let summary = proposal.reviewSummary {
+                Text(summary).font(.body).textSelection(.enabled)
             } else {
-                Text(proposal.summary).font(.body).textSelection(.enabled)
+                Text("No preview is available. Ask for a fresh plan.")
+                    .font(.body).foregroundStyle(LabStyle.muted)
             }
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 let expired = (proposal.expiresAt ?? .infinity) <= context.date.timeIntervalSince1970
@@ -418,7 +416,7 @@ struct VoiceScreen: View {
         .padding(22).background(LabStyle.jade.opacity(0.08), in: RoundedRectangle(cornerRadius: 24))
         .id(proposal.id)
         .task(id: reviewableProposalID) {
-            if reviewableProposalID == proposal.id {
+            if reviewableProposalID == proposal.id, proposal.reviewSummary != nil {
                 client.proposalAppeared(proposal)
             } else {
                 client.proposalDisappeared(proposal.id)
@@ -599,7 +597,7 @@ struct VoiceScreen: View {
                     }
                 }.padding(.vertical, 4)
             }
-            if lab.experiment.id == "red_cabbage_ph", ["reflecting", "complete", "stopped"].contains(lab.trial.state),
+            if lab.experiment.id == "indicator_ph", ["reflecting", "complete", "stopped"].contains(lab.trial.state),
                lab.observations.contains(where: { $0.trialID == lab.trial.trialID }) {
                 Divider()
                 DisclosureGroup("Optional reflection") {

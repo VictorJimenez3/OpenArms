@@ -1,16 +1,14 @@
 """MuJoCo preview of a proposed action, shown to the student before anything executes.
 
-Turned on with OPENARMS_PREVIEW=mujoco. For every proposed transfer it plays, in the
-simulation, the same waypoint script the arm runner would send to the real arm (same
-pose file, same seconds per move), and attaches the result to the proposal:
+Turned on with OPENARMS_PREVIEW=mujoco. Block transfers use their waypoint scripts.
+An A-to-C pour uses the separate provisional two-vessel motion and modeled inventory.
+The result has the following shape:
 
     {'status': 'ready' | 'blocked' | 'unavailable' | 'error', 'provenance': 'SIMULATED',
      'video': '/api/previews/<file>.mp4', 'warnings': [...], 'blocks': [...], ...}
 
-The runtime only lets a proposal execute when its status is 'ready', or 'unavailable'
-(the skill has no simulation model, for example the dilution pour). The simulation
-runs in a separate process: it needs `pip install -e simulation`, never opens a serial
-port, and never sends a motor command.
+The simulation runs in a separate process and needs `pip install -e simulation`.
+Results describe simulation evidence only.
 """
 from __future__ import annotations
 import json
@@ -24,7 +22,8 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[2]
 GRIPPER = 'gripper.pos'
 PAN = 'shoulder_pan.pos'
-VIDEO_NAME = re.compile(r'script-[0-9a-f]{16}\.mp4')
+VIDEO_NAME = re.compile(r'(?:script-)?[0-9a-f]{16}\.mp4')
+POUR_SKILL = 'premeasured_dilution.v1'
 
 
 def from_env():
@@ -85,9 +84,13 @@ class MujocoPreview:
         if 'sim' in request:
             # A composed plan arrives with its own targets (free_plan.FreePlans.sim_request).
             return {**request['sim'], '_poses_file': os.environ.get('OPENARMS_POSES', 'firmware/openarms_executor/poses.json'), '_note': None}, None
-        if request.get('skill_id') == 'premeasured_dilution.v1':
-            return None, 'The simulation has no model of the pour for this lesson yet.'
         p = request['parameters']
+        if request.get('skill_id') == POUR_SKILL:
+            if (p.get('source'), p.get('destination')) != ('A', 'C') or p.get('portions', 1) != 1:
+                return None, 'The MuJoCo pour supports one complete donor A to receiver C water transfer.'
+            if p.get('condition', 'water') != 'water' or p.get('substance', 'water') != 'water':
+                return None, 'The MuJoCo pour preview uses water and an initially empty receiver.'
+            return {'setup': 'liquid', 'source': 'A', 'destination': 'C'}, None
         source, destination, obj = p['source'], p['destination'], p['object']
         runner, poses_file = self._runner(backend)
         poses, scripts = runner.poses, runner.scripts
@@ -122,19 +125,32 @@ class MujocoPreview:
         except (SystemExit, Exception) as exc:
             return {**base, 'status': 'error', 'reason': f'Could not build the simulation request: {exc}'}
         if sim is None:
+            if request.get('skill_id') == POUR_SKILL:
+                return {**base, 'status': 'blocked', 'ok': False, 'reason': reason, 'blocks': [reason],
+                        'physical_execution': False}
             return {**base, 'status': 'unavailable', 'reason': reason}
-        poses_file, note = sim.pop('_poses_file'), sim.pop('_note')
+        pouring = sim.get('setup') == 'liquid'
+        if pouring:
+            command = ['-m', 'openarms_sim.two_vessel', '--pour-preview']
+        else:
+            poses_file, note = sim.pop('_poses_file'), sim.pop('_note')
+            command = ['-m', 'openarms_sim.script']
         try:
-            done = subprocess.run([self.python, '-m', 'openarms_sim.script'], input=json.dumps(sim),
+            done = subprocess.run([self.python, *command], input=None if pouring else json.dumps(sim),
                                   capture_output=True, text=True, timeout=self.timeout)
         except subprocess.TimeoutExpired:
             return {**base, 'status': 'error', 'reason': 'The simulation timed out.'}
+        except OSError:
+            return {**base, 'status': 'error', 'reason': 'The simulation interpreter is unavailable.'}
         if done.returncode != 0:
             missing = 'No module named' in done.stderr and 'openarms_sim' in done.stderr
             reason = ('The simulation package is not installed. Run: pip install -e simulation' if missing
                       else 'The simulation failed: ' + (done.stderr.strip().splitlines() or ['no output'])[-1])
             return {**base, 'status': 'error', 'reason': reason}
-        out = json.loads(done.stdout)
+        try:
+            out = json.loads(done.stdout)
+        except json.JSONDecodeError:
+            return {**base, 'status': 'error', 'reason': 'The simulation returned unreadable output.'}
         video = None
         if out.get('video_url'):
             path = Path(unquote(urlsplit(out['video_url']).path))
@@ -143,6 +159,14 @@ class MujocoPreview:
                 video = '/api/previews/' + path.name
         blocks = [i['message'] for i in out['issues'] if i['severity'] == 'block']
         notes = [i['message'] for i in out['issues'] if i['severity'] != 'block']
+        if pouring:
+            notes.append('The A-to-C preview uses attached-grasp motion and modeled water delivery in a provisional scene.')
+            return {**base, 'status': 'ready' if out['ok'] and out['transfer'] else 'blocked',
+                    'ok': bool(out['ok'] and out['transfer']), 'video': video, 'blocks': blocks, 'warnings': notes,
+                    'motion_seconds': out['motion_seconds'], 'physical_execution': False,
+                    'scene_id': out['scene_id'], 'scene_version': out['scene_version'],
+                    'transfer': out['transfer'], 'modeled_chemistry': out['predicted'],
+                    'returned_to_dock': out.get('returned_to_dock', False), 'home_reached': out.get('home_reached', False)}
         if note:
             notes.insert(0, note)
         return {**base, 'status': 'ready' if out['ok'] else 'blocked', 'ok': out['ok'], 'video': video,

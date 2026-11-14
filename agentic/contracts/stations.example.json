@@ -1,6 +1,6 @@
 {
   "A": { "kind": "source", "contents": "vinegar", "portions": 2 },
   "B": { "kind": "source", "contents": "baking soda water", "portions": 2 },
-  "C": { "kind": "receiver", "contents": "purple cabbage indicator", "capacity": 3 },
-  "D": { "kind": "receiver", "contents": "purple cabbage indicator", "capacity": 3 }
+  "C": { "kind": "receiver", "contents": "purple indicator", "capacity": 3 },
+  "D": { "kind": "receiver", "contents": "purple indicator", "capacity": 3 }
 }

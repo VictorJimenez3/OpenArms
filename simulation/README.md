@@ -1,21 +1,28 @@
 # Simulation
 
-A MuJoCo model of the SO-101 arm and the bench. Given a plan, it plays the arm's motion, reports what would go wrong, and says whether the plan is safe to run on the real arm.
+A MuJoCo model of the SO-101 arm and bench. It previews modeled motion and reports configured checks; it does not establish that a real trajectory is safe or physically qualified. **MuJoCo is active. Isaac is parked**, with its source and completed evidence preserved.
 
-There are two bench setups:
+Current setups:
 
-- **`block`** (the default): one block, moved between three marked points A, B and C.
-- **`liquid`**: mini-cups at A and B poured into receivers at C and D, with a predicted colour change.
+- **`liquid`**: exactly two active vessels, donor A and fixed receiver C. One premeasured water portion, donor return, HOME. This is the physical rehearsal baseline.
+- **`block`** (the standalone CLI default): retained block-transfer diagnostic, outside the selected physical chemistry demo.
+- **`liquid_legacy`**: retained four-station example under `config/setups/liquid/legacy/`, outside current physical scope.
 
-**Status:** both setups run end to end, but neither has been matched to the real arm yet. The poses and the bench positions are placeholders, and the joint mapping is unmeasured. Every result says so in its `warnings` until that is done. See [Matching the real arm](#matching-the-real-arm).
+**Status:** the two-vessel scene, renderer, image checks and return sequence are implemented. The poses, dock/robot placement and joint mapping remain provisional. The active liquid scene still uses provisional 70 mm donor / 60 mm receiver heights; it has not yet consumed the newer [photo-derived vessel meshes](models/vessels/measured_2026_11_14/README.md) or [two-seat CAD](../firmware/fixtures/cup_dock/README.md). Those inputs must be reconciled without silently resizing docks or claiming measured registration. See [Matching the real arm](#matching-the-real-arm).
+
+The student application selects this carried-donor apparatus with `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`; follow [the runbook](../docs/LAB_RUNBOOK.md). The earlier fixed-dispenser `metered_dropper` apparatus remains a distinct regression backend. No preview or simulator enables physical dispatch.
+
+`openarms_sim.two_vessel` captures fresh overview images and detects colored reference patches and vessel rims from pixels. These simulated color patches are **not ArUco/AprilTag markers**. Actual printable marker patterns and machine-readable fixture coordinates belong to the CAD directory. Both application view names currently use the same overview; there is no independent side-camera corroboration. Camera shifts, missing/swapped vessels, occlusion, stale timestamps and reset generations are rejection cases. Ground-truth state remains separate from image detections; receiver water appearance is not a measured transferred volume.
+
+Smartivity volcano and broader virtual experiments are an independently owned extension in development. Their apparatus may differ from the two-vessel physical demo. Modeled chemistry and attached-object grasp must remain explicit, and the hardware pour need not wait for simulation polish.
 
 ## Setup
 
-From the repo root, in the same conda environment as LeRobot:
+From the repo root, use a separate application/simulation environment and preserve the working hardware environment:
 
 ```bash
-conda activate lerobot
-pip install -e simulation
+python3 -m venv .venv-lab
+.venv-lab/bin/python -m pip install -e simulation -r agentic/requirements-lab.txt
 ```
 
 ## Try it
@@ -49,9 +56,9 @@ python -m openarms_sim --setup liquid --from A --to C --contents '{"A": {"bleach
 
 To make liquid the default for a terminal session, run `export OPENARMS_SETUP=liquid`.
 
-## From the simulation to the real arm
+## Historical taught-block integration procedure
 
-This path needs no ruler. You show the arm two spots once; after that the simulation plans moves between them and the real arm runs them. Run these from the repo root.
+The retained procedure below is separate from the current two-vessel application. It is not executed by software reconciliation. Physical operators own calibration and qualification; use the current [wet-lab runbook](../docs/WET_LAB.md) for A→C dry/water bring-up. A successful simulated preview alone cannot authorize this real-arm path.
 
 1. **Record one move with the leader arm**: pick the object up at A, put it down at B, and bring the arm back to rest before the time runs out.
 
@@ -313,13 +320,13 @@ The colour prediction is swappable. `RuleTableChemistry` in `chemistry.py` looks
 
 Safety is separate from the prediction and stays a list: only substances under `real_bench` may reach the real arm, and combinations under `hazards` are blocked. Anything not listed is simulation-only.
 
-## Open questions for the team
+## Current handoff and retained diagnostic questions
 
-- **Block or liquid for the demo** is still undecided in `docs/PROJECT.md`. Both work here; block is the default because it is simpler to get reliable on the real arm.
+- **Decided physical demo:** two vessels with preferred Smartivity indicator/citric-acid adaptation, pending actual packet, bench adaptation and outcome verification; contained fizz is fallback. Water qualifies motion. Block and four-station scenes are historical diagnostics.
 - **Action names.** `move_block(from, to)` follows the name suggested in `research/duc/harness.md`; the agent's catalog needs the same one.
 - **Who tracks where the block is.** The simulation takes the block's position as an input each time. The firmware's `state()` is the natural owner.
 - **Serving the video.** `video_url` is a `file://` link, which only works on the bench laptop. The UI needs it served over HTTP.
-- **Liquid only: showing the predicted result.** The preview shows the predicted colour, while the agent prompt currently says not to tell the student the expected result before testing.
+- **Science evidence:** distinguish a model prediction from independently observed results. Prediction/reflection is optional; the current water rehearsal makes no chemical claim.
 - **Liquid only: `portions` greater than 1.** `add_sample` expands to several `pour` steps with the same cup, which is empty after the first. The simulation reports this as a note.
 
 ## Credits

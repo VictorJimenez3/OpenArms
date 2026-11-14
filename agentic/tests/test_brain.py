@@ -85,10 +85,10 @@ def make_session(arm=None):
 
 # ---- B1 system prompt
 def test_prompt_renders_clean():
-    s = prompting.render_system_prompt(STATIONS, ARM_STATE, "See what vinegar does to cabbage indicator")
+    s = prompting.render_system_prompt(STATIONS, ARM_STATE, "See what vinegar does to indicator")
     assert isinstance(s, str) and len(s) > 500, "prompt too short"
     assert "{{" not in s and "}}" not in s, "unfilled placeholder left"
-    assert "See what vinegar does to cabbage indicator" in s, "objective missing"
+    assert "See what vinegar does to indicator" in s, "objective missing"
 
 
 def test_prompt_portions_not_ml():
@@ -101,7 +101,7 @@ def test_prompt_portions_not_ml():
 
 def test_prompt_has_station_contents_and_actions():
     s = prompting.render_system_prompt(STATIONS, ARM_STATE, "x")
-    for c in ("vinegar", "baking soda water", "purple cabbage indicator"):
+    for c in ("vinegar", "baking soda water", "purple indicator"):
         assert c in s, f"station contents {c!r} missing"
     for a in ("add_sample", "wait", "look"):
         assert a in s, f"plan action {a} missing"

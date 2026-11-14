@@ -18,7 +18,7 @@ const send = (socket, frame) => socket?.readyState === 1 && socket.send(JSON.str
 function publish(session) { session.revision++; send(clients.get(session.session_id), {type:'state',state:snapshot(session)}); return snapshot(session); }
 function stop(session) { session.pending = null; session.state = 'STOPPED'; session.generation++; }
 function proposal(session, condition) {
-  session.pending = {request_id:randomUUID(),proposal_version:1,skill_id:'red_cabbage_ph',skill_version:'1',summary:`Run one mock red-cabbage indicator trial with ${condition.title}. Use the reference color to discuss whether the sample is acidic, basic, or near neutral.`,condition_id:condition.id,status:'requested',expires_at:new Date(Date.now()+300000).toISOString(),presented:false};
+  session.pending = {request_id:randomUUID(),proposal_version:1,skill_id:'indicator_ph',skill_version:'1',summary:`Run one mock indicator trial with ${condition.title}. Use the reference color to discuss whether the sample is acidic, basic, or near neutral.`,condition_id:condition.id,status:'requested',expires_at:new Date(Date.now()+300000).toISOString(),presented:false};
 }
 function message(session, role, text, turnId=randomUUID()) { session.messages.push({id:randomUUID(),role,text,turn_id:turnId}); }
 const server = http.createServer(async (request, response) => {
@@ -29,7 +29,7 @@ const server = http.createServer(async (request, response) => {
   if (path === '/api/sessions' && request.method === 'POST') {
     if (request.headers['x-fixture-pairing'] && request.headers.authorization !== 'Bearer pair-test') return json(401,{detail:'Pairing required'});
     const sid=randomUUID();
-    const session={session_id:sid,token:`secret-${sid}`,backend:'mock',experiment:{id:'red_cabbage_ph',title:'Red-cabbage pH',question:'What does the color tell you?'},revision:1,generation:1,connected:true,trial:{trial_id:randomUUID(),condition_id:null,state:'prepare'},conditions,prediction:'',pending:null,requests:[],tasks:[],scene_images:[],observations:[],messages:[],notebook:[],state:'HOME',capabilities:{voice:true}};
+    const session={session_id:sid,token:`secret-${sid}`,backend:'mock',experiment:{id:'indicator_ph',title:'Indicator pH',question:'What does the color tell you?'},revision:1,generation:1,connected:true,trial:{trial_id:randomUUID(),condition_id:null,state:'prepare'},conditions,prediction:'',pending:null,requests:[],tasks:[],scene_images:[],observations:[],messages:[],notebook:[],state:'HOME',capabilities:{voice:true}};
     sessions.set(sid,session); traces.set(sid,[]);
     return json(200,{...snapshot(session),access_token:session.token});
   }
@@ -75,15 +75,15 @@ const server = http.createServer(async (request, response) => {
         if (!session.pending?.presented || body.request_id!==session.pending.request_id || body.proposal_version!==session.pending.proposal_version) return json(409,{detail:'Stale or unpresented proposal'});
         const outcomes={vinegar:'The expected reference color is pink: consistent with an acidic sample.',baking_soda:'The expected reference color is blue-green: consistent with a basic sample.',water:'The expected reference color is purple: consistent with a near-neutral control.'};
         const conditionId=session.pending.condition_id;
-        const observation={trial_id:session.trial.trial_id,request_id:session.pending.request_id,condition_id:conditionId,provenance:'MODEL-PREDICTED',text:outcomes[conditionId],source:'Prepared cabbage-indicator mock reference',evidence:[]};
+        const observation={trial_id:session.trial.trial_id,request_id:session.pending.request_id,condition_id:conditionId,provenance:'MODEL-PREDICTED',text:outcomes[conditionId],source:'Prepared indicator mock reference',evidence:[]};
         session.tasks.at(-1).status='completed';
         session.observations.push(observation); session.pending=null; session.trial.state='complete'; session.state='HOME'; message(session,'assistant',observation.text); break;
       }
       case 'cancel': session.pending=null; session.tasks.at(-1).status='cancelled'; message(session,'assistant','That proposal is canceled.'); break;
       case 'request':
         message(session,'user',body.text);
-        if (body.text === 'Why does cabbage change color?') {
-          message(session,'assistant','Red-cabbage indicator changes color with acid–base conditions.');
+        if (body.text === 'Why does indicator change color?') {
+          message(session,'assistant','Indicator changes color with acid–base conditions.');
           break;
         }
         session.pending=null;

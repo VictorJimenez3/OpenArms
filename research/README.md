@@ -1,6 +1,6 @@
 # OpenArms research
 
-**Current product:** qualitative red-cabbage pH is the only student demo. The app supports mock trials and the newer MuJoCo pH apparatus with independently observed, explicitly simulated images. Mandarin, dilution, buoyancy and virtual experiments below are historical research or separate hardware evidence; they are not alternative judged student flows. See the [current runbook](../docs/LAB_RUNBOOK.md).
+**Current target:** Smartivity My First Science Kit, with activity selection deferred. Simulation is optional Devpost/presentation material, not the main architecture or a kit implementation. The app supports mock trials and the newer MuJoCo pH apparatus with independently observed, explicitly simulated images. Mandarin, dilution, buoyancy and virtual experiments below are historical research or separate hardware evidence; they are not alternative judged student flows. See the [current runbook](../docs/LAB_RUNBOOK.md).
 
 Check the questions below before starting new research or repeating a test. Use the source links to confirm what was tried and which setup the result applies to. Search from the repo root for other questions or alternate terms.
 
@@ -10,6 +10,7 @@ rg -ni -g '*.md' 'follower|teach.*pose|waypoint|teleop' research/
 
 | Question | Current answer | Evidence |
 | --- | --- | --- |
+| What are the actual donor and receiver dimensions, and is matching manufacturer CAD available? | Reviewed photo-derived hollow models are on main via PR #23, with explicit uncertainty and unmeasured interiors. Six candidate families researched; exact identity and reusable manufacturer CAD not found. | [Vessel assets and dimensions](../simulation/models/vessels/measured_2026_11_14/README.md) · [Catalog comparison](joseph/vessel-catalog-2026-11-14.md) |
 | What is verified in the consolidated software? | Actual expert image/tool planning, updated MuJoCo cold/warm reuse, and a synthetic unchanged-baseline improvement. Voice replacement, actual phone and physical pH remain open. | [Software evidence index](joseph/software-consolidation-2026-11-14/README.md) |
 | Which four tiny experiments have MuJoCo videos? | Color comparison, single-step dilution, dissolution and titration have complete actuated runs, analytical scientific responses, and action-disabled controls. Contact qualification and physical science remain unverified. | [Four-video evidence](joseph/four-mujoco-lab-videos-2026-11-14.md) |
 | Which classic laboratory assets are ready? | Six detailed Blender candidates—dilution, titration, colorimetry, dissolution, filtration and precipitation—with 18 reviewed renders and six portable USD environments. Scientific responses and new runtime experiments remain unimplemented. | [Classic lab asset evidence](joseph/classic-lab-asset-candidates-2026-11-14.md) |

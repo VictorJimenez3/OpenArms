@@ -1,0 +1,1909 @@
+[
+  {
+    "passed": false,
+    "failure": "TimeoutError: Timed out waiting for spoken STOP.",
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mujoco",
+    "experiment": "two_vessel_water",
+    "name": "openarms-water-conversation",
+    "source": "larger integration 039f54a; separate unmerged simulator",
+    "result_sha256": "bada5a891dd2b22492dd18ab8abd3e06754e1e8a800ca4cad07f1055f8df89a0",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Will you pour one premeasured portion of water from cup A into cup C?",
+        "input_start_ms": 9407,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Will you pour one pre-measured portion of water from cup A into cup C?",
+        "user_final_ms": 14097,
+        "turn_id": "89ca31d8-8f1c-43a9-9eeb-1ff594c7dc1c"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 14133,
+        "task_count_before": 1,
+        "status_at_input": "running",
+        "proposal_at_input": null,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 16882,
+        "turn_id": "78eb65bd-ca2b-41f4-999e-51b4a5cf95f6",
+        "reply": "I am checking the scene to prepare your plan, and the action has not started yet.",
+        "reply_final_ms": 20396,
+        "first_audio_start_ms": 16468,
+        "task_count_after": 1
+      },
+      {
+        "input": "What can you do with the two cups?",
+        "input_start_ms": 112668,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What can you do with the two cups?",
+        "user_final_ms": 115601,
+        "turn_id": "01ec7144-f0cc-40cf-81e2-8e45d90cb702",
+        "reply": "In this simulation, I can only pour one premeasured water portion from cup A into cup C and return the donor to A.",
+        "reply_final_ms": 122254,
+        "first_audio_start_ms": 115048,
+        "task_count_after": 1
+      },
+      {
+        "input": "Can you repeat the plan?",
+        "input_start_ms": 129410,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "Can you repeat the plan?",
+        "user_final_ms": 132052,
+        "turn_id": "904135bc-9ada-4038-aa7b-27a14d56ad87",
+        "reply": "In the simulation, I will inspect the primary camera view, then pour one premeasured water portion from A into C, return the donor to A and return HOME, then check the result using the primary camera. Say confirm or cancel.",
+        "reply_final_ms": 144891,
+        "first_audio_start_ms": 131670,
+        "task_count_after": 1
+      },
+      {
+        "input": "Confirm.",
+        "input_start_ms": 158118,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "confirm",
+        "user_final_ms": 160190,
+        "turn_id": "4805fa2f-a4f0-4c4a-8223-f586cbf1d45f"
+      },
+      {
+        "input": "What did the observer actually see?",
+        "input_start_ms": 199471,
+        "task_count_before": 1,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What did the observer actually see?",
+        "user_final_ms": 202683,
+        "turn_id": "71ddd90d-a837-40e6-811e-76b3be0ce83b",
+        "reply": "In the simulation, the receiver shows water appearance, and the donor is visible at A.",
+        "reply_final_ms": 207980,
+        "first_audio_start_ms": 202724,
+        "task_count_after": 1
+      },
+      {
+        "input": "Stop.",
+        "input_start_ms": 213207,
+        "task_count_before": 1,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "Stap",
+        "user_final_ms": 215295,
+        "turn_id": "b3b952fd-7dfe-44a3-bb55-d4b133a06999"
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "2f970018-e8a5-4635-a25a-adb9abb4bfac",
+        "status": "completed",
+        "route": "expert",
+        "summary": "The simulated receiver shows water appearance; the donor is visible at A."
+      }
+    ],
+    "experts": [
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 4,
+        "elapsed_ms": 70337
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 2,
+        "elapsed_ms": 17050
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 1,
+        "elapsed_ms": 11745
+      }
+    ],
+    "observations": [
+      {
+        "status": "observed",
+        "provenance": "SIMULATED",
+        "text": "The simulated receiver shows water appearance; the donor is visible at A.",
+        "checks": {
+          "readable": true,
+          "receiver_appearance": true,
+          "sample_cup_station": true,
+          "sample_cup_held": true
+        }
+      }
+    ],
+    "transcripts": [
+      {
+        "ms": 5385,
+        "role": "assistant",
+        "text": "Welcome. The simulation is ready for the premeasured water trial."
+      },
+      {
+        "ms": 14097,
+        "role": "user",
+        "text": "Will you pour one pre-measured portion of water from cup A into cup C?"
+      },
+      {
+        "ms": 16882,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 20396,
+        "role": "assistant",
+        "text": "I am checking the scene to prepare your plan, and the action has not started yet."
+      },
+      {
+        "ms": 99523,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then pour one premeasured water portion from A into C, return the donor to A and return HOME, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 115601,
+        "role": "user",
+        "text": "What can you do with the two cups?"
+      },
+      {
+        "ms": 122254,
+        "role": "assistant",
+        "text": "In this simulation, I can only pour one premeasured water portion from cup A into cup C and return the donor to A."
+      },
+      {
+        "ms": 132052,
+        "role": "user",
+        "text": "Can you repeat the plan?"
+      },
+      {
+        "ms": 144891,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then pour one premeasured water portion from A into C, return the donor to A and return HOME, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 160190,
+        "role": "user",
+        "text": "confirm"
+      },
+      {
+        "ms": 162276,
+        "role": "assistant",
+        "text": "The action has started."
+      },
+      {
+        "ms": 165105,
+        "role": "assistant",
+        "text": "I am currently observing the scene."
+      },
+      {
+        "ms": 183310,
+        "role": "assistant",
+        "text": "The action is still in progress; I am monitoring the execution."
+      },
+      {
+        "ms": 194967,
+        "role": "assistant",
+        "text": "In the simulation, the water portion was successfully poured from cup A into cup C and the donor was returned to A."
+      },
+      {
+        "ms": 202683,
+        "role": "user",
+        "text": "What did the observer actually see?"
+      },
+      {
+        "ms": 207980,
+        "role": "assistant",
+        "text": "In the simulation, the receiver shows water appearance, and the donor is visible at A."
+      },
+      {
+        "ms": 215295,
+        "role": "user",
+        "text": "Stap"
+      },
+      {
+        "ms": 219744,
+        "role": "assistant",
+        "text": "Nothing was running, so the simulation remains in its completed state."
+      }
+    ]
+  },
+  {
+    "passed": true,
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mujoco",
+    "experiment": "two_vessel_water",
+    "name": "openarms-water-conversation-2",
+    "source": "larger integration f1cf4fd; separate unmerged simulator",
+    "result_sha256": "627b22bb100af02115196f34688089fe97d265b3844e03440a9a3aeb40d908e1",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Will you pour one premeasured portion of water from cup A into cup C?",
+        "input_start_ms": 7537,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Will you pour one pre-measured portion of water from cup A into cup C?",
+        "user_final_ms": 12314,
+        "turn_id": "4bff039a-b762-449b-b9a2-d0b6784ce249"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 12347,
+        "task_count_before": 1,
+        "status_at_input": "running",
+        "proposal_at_input": null,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 15082,
+        "turn_id": "b2c01fb8-d3a8-4abf-b66f-9f4f975efc9b",
+        "reply": "I'm checking the scene to prepare the water pour. The action hasn't started yet.",
+        "reply_final_ms": 19111,
+        "first_audio_start_ms": 14748,
+        "task_count_after": 1
+      },
+      {
+        "input": "What can you do with the two cups?",
+        "input_start_ms": 97041,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What can you do with the two cups?",
+        "user_final_ms": 99864,
+        "turn_id": "f14f5a45-367f-4e54-b37f-7f606e5eb40d",
+        "reply": "I can pour one premeasured portion of water from cup A into cup C, then return the donor to A and go back HOME.",
+        "reply_final_ms": 106634,
+        "first_audio_start_ms": 99433,
+        "task_count_after": 1
+      },
+      {
+        "input": "Can you repeat the plan?",
+        "input_start_ms": 113813,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "Can you repeat the plan?",
+        "user_final_ms": 116432,
+        "turn_id": "f4fd32a9-c19f-4333-8302-a256c8129a69",
+        "reply": "In the simulation, I will inspect the primary camera view, then pour one premeasured water portion from A into C, return the donor to A and return HOME, then check the result using the primary camera. Say confirm or cancel.",
+        "reply_final_ms": 131850,
+        "first_audio_start_ms": 118548,
+        "task_count_after": 1
+      },
+      {
+        "input": "Confirm.",
+        "input_start_ms": 145216,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "confirm",
+        "user_final_ms": 147319,
+        "turn_id": "bce4ca35-9284-4594-b33d-1c0239d6b05a"
+      },
+      {
+        "input": "What did the observer actually see?",
+        "input_start_ms": 183163,
+        "task_count_before": 1,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What did the observer actually see?",
+        "user_final_ms": 186344,
+        "turn_id": "fcfd28ad-c874-43c9-95a5-c25d3e5adcc3",
+        "reply": "In the simulation, the receiver shows water appearance and the donor cup has returned to A.",
+        "reply_final_ms": 191739,
+        "first_audio_start_ms": 186520,
+        "task_count_after": 1
+      },
+      {
+        "input": "Emergency stop.",
+        "input_start_ms": 196991,
+        "task_count_before": 1,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "emergency stop",
+        "user_final_ms": 199505,
+        "turn_id": "94a08081-3989-4ff6-a468-fcd6b6c18bcb"
+      },
+      {
+        "input": "What happened to the test?",
+        "input_start_ms": 199576,
+        "task_count_before": 1,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What happened to the test?",
+        "user_final_ms": 202185,
+        "turn_id": "06f3d5a9-190d-4134-808c-d48478580679",
+        "reply": "Nothing was running when the stop was applied, so the prior outcome is preserved.",
+        "reply_final_ms": 206469,
+        "first_audio_start_ms": 202324,
+        "task_count_after": 1
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "67255a1a-e5d3-40bd-8afc-288f0fc156ba",
+        "status": "completed",
+        "route": "expert",
+        "summary": "The simulated receiver shows water appearance; the donor is visible at A."
+      }
+    ],
+    "experts": [
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 3,
+        "elapsed_ms": 56321
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 2,
+        "elapsed_ms": 16040
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 1,
+        "elapsed_ms": 10488
+      }
+    ],
+    "observations": [
+      {
+        "status": "observed",
+        "provenance": "SIMULATED",
+        "text": "The simulated receiver shows water appearance; the donor is visible at A.",
+        "checks": {
+          "readable": true,
+          "receiver_appearance": true,
+          "sample_cup_station": true,
+          "sample_cup_held": true
+        }
+      }
+    ],
+    "transcripts": [
+      {
+        "ms": 4431,
+        "role": "assistant",
+        "text": "Welcome. We're ready for the water-only simulation."
+      },
+      {
+        "ms": 12314,
+        "role": "user",
+        "text": "Will you pour one pre-measured portion of water from cup A into cup C?"
+      },
+      {
+        "ms": 15082,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 19111,
+        "role": "assistant",
+        "text": "I'm checking the scene to prepare the water pour. The action hasn't started yet."
+      },
+      {
+        "ms": 83514,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then pour one premeasured water portion from A into C, return the donor to A and return HOME, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 99864,
+        "role": "user",
+        "text": "What can you do with the two cups?"
+      },
+      {
+        "ms": 106634,
+        "role": "assistant",
+        "text": "I can pour one premeasured portion of water from cup A into cup C, then return the donor to A and go back HOME."
+      },
+      {
+        "ms": 116432,
+        "role": "user",
+        "text": "Can you repeat the plan?"
+      },
+      {
+        "ms": 131850,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then pour one premeasured water portion from A into C, return the donor to A and return HOME, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 147319,
+        "role": "user",
+        "text": "confirm"
+      },
+      {
+        "ms": 150347,
+        "role": "assistant",
+        "text": "I\u2019ll check the setup before starting the water pour."
+      },
+      {
+        "ms": 179183,
+        "role": "assistant",
+        "text": "The water pour has started."
+      },
+      {
+        "ms": 186344,
+        "role": "user",
+        "text": "What did the observer actually see?"
+      },
+      {
+        "ms": 191739,
+        "role": "assistant",
+        "text": "In the simulation, the receiver shows water appearance and the donor cup has returned to A."
+      },
+      {
+        "ms": 199505,
+        "role": "user",
+        "text": "emergency stop"
+      },
+      {
+        "ms": 202185,
+        "role": "user",
+        "text": "What happened to the test?"
+      },
+      {
+        "ms": 206469,
+        "role": "assistant",
+        "text": "Nothing was running when the stop was applied, so the prior outcome is preserved."
+      }
+    ]
+  },
+  {
+    "passed": false,
+    "name": "openarms-live-dialogue-checks",
+    "source": "larger integration f1cf4fd, before polite STOP fix",
+    "result_sha256": "93ade9d8e5f50ef29354fe17cb62970d23319b4824159712ff7eb08d9bf53fd3",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Which cup do you mean?",
+        "input_start_ms": 8223,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Which cup do you mean?",
+        "user_final_ms": 10781,
+        "turn_id": "6a71c829-11de-4c71-8c5c-6ef8000b694f",
+        "reply": "The donor cup is at position A, and the receiver cup is at position C.",
+        "reply_final_ms": 14712,
+        "first_audio_start_ms": 10295,
+        "task_count_after": 0
+      },
+      {
+        "input": "Are you moving the real robot?",
+        "input_start_ms": 19135,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Are you moving the real robot?",
+        "user_final_ms": 21993,
+        "turn_id": "c2ab57b7-8556-4bf3-a404-02246c2fd2b0",
+        "reply": "This is a MuJoCo simulation, so there is no real robot moving in this lab.",
+        "reply_final_ms": 26184,
+        "first_audio_start_ms": 21544,
+        "task_count_after": 0
+      },
+      {
+        "input": "How much water is in cup A, exactly?",
+        "input_start_ms": 30857,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "How much water is in cup A exactly?",
+        "user_final_ms": 34749,
+        "turn_id": "c3aa82dc-1c9d-48ad-a75a-07c1cfbab932",
+        "reply": "It is a single premeasured portion, and no specific volume is modeled in this simulation.",
+        "reply_final_ms": 40330,
+        "first_audio_start_ms": 35155,
+        "task_count_after": 0
+      },
+      {
+        "input": "Can you explain what confirmation does?",
+        "input_start_ms": 45560,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Can you explain what confirmation does?",
+        "user_final_ms": 48935,
+        "turn_id": "83f02a63-c40d-4007-88a9-696724ef6ea0",
+        "reply": "Confirmation approves the planned action, allowing the expert to begin executing the pour you selected.",
+        "reply_final_ms": 54992,
+        "first_audio_start_ms": 48597,
+        "task_count_after": 0
+      },
+      {
+        "input": "Yes.",
+        "input_start_ms": 61392,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Yes.",
+        "user_final_ms": 63339,
+        "turn_id": "b7b5a739-5535-4d68-9c73-70ffeba95fbc",
+        "reply": "I'm ready when you are to proceed with the simulation.",
+        "reply_final_ms": 65705,
+        "first_audio_start_ms": 62976,
+        "task_count_after": 0
+      },
+      {
+        "input": "Please stop now.",
+        "input_start_ms": 68452,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please stop now.",
+        "user_final_ms": 70802,
+        "turn_id": "4fbaba22-f01b-48b7-a5ee-18fba048b95b",
+        "reply": "Nothing is currently running in the simulation, so there is nothing to stop.",
+        "reply_final_ms": 75420,
+        "first_audio_start_ms": 71397,
+        "task_count_after": 0,
+        "accepted_stop": false
+      },
+      {
+        "input": "Emergency stop.",
+        "input_start_ms": 79440,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "emergency stop",
+        "user_final_ms": 81921,
+        "turn_id": "2d1f41b1-43c6-4f67-b56e-660733a2c469",
+        "reply": "Nothing was running, so no action was stopped.",
+        "reply_final_ms": 85472,
+        "first_audio_start_ms": 82538,
+        "task_count_after": 0,
+        "accepted_stop": true
+      },
+      {
+        "input": "What happened just now?",
+        "input_start_ms": 88509,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "What happened just now?",
+        "user_final_ms": 91100,
+        "turn_id": "5c2d8ab1-d837-4344-9be2-e03dbf65c8e3",
+        "reply": "Nothing was running, so no action was stopped.",
+        "reply_final_ms": 106775,
+        "first_audio_start_ms": 103992,
+        "task_count_after": 0
+      }
+    ],
+    "tasks": [],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 4797,
+        "role": "assistant",
+        "text": "Welcome. The water-only simulation is ready for you."
+      },
+      {
+        "ms": 10781,
+        "role": "user",
+        "text": "Which cup do you mean?"
+      },
+      {
+        "ms": 14712,
+        "role": "assistant",
+        "text": "The donor cup is at position A, and the receiver cup is at position C."
+      },
+      {
+        "ms": 19067,
+        "role": "assistant",
+        "text": "Cup A is the small donor, and cup C is the wide receiver."
+      },
+      {
+        "ms": 21993,
+        "role": "user",
+        "text": "Are you moving the real robot?"
+      },
+      {
+        "ms": 26184,
+        "role": "assistant",
+        "text": "This is a MuJoCo simulation, so there is no real robot moving in this lab."
+      },
+      {
+        "ms": 34749,
+        "role": "user",
+        "text": "How much water is in cup A exactly?"
+      },
+      {
+        "ms": 40330,
+        "role": "assistant",
+        "text": "It is a single premeasured portion, and no specific volume is modeled in this simulation."
+      },
+      {
+        "ms": 48935,
+        "role": "user",
+        "text": "Can you explain what confirmation does?"
+      },
+      {
+        "ms": 54992,
+        "role": "assistant",
+        "text": "Confirmation approves the planned action, allowing the expert to begin executing the pour you selected."
+      },
+      {
+        "ms": 63339,
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "ms": 65705,
+        "role": "assistant",
+        "text": "I'm ready when you are to proceed with the simulation."
+      },
+      {
+        "ms": 70802,
+        "role": "user",
+        "text": "Please stop now."
+      },
+      {
+        "ms": 75420,
+        "role": "assistant",
+        "text": "Nothing is currently running in the simulation, so there is nothing to stop."
+      },
+      {
+        "ms": 81921,
+        "role": "user",
+        "text": "emergency stop"
+      },
+      {
+        "ms": 85472,
+        "role": "assistant",
+        "text": "Nothing was running, so no action was stopped."
+      },
+      {
+        "ms": 91100,
+        "role": "user",
+        "text": "What happened just now?"
+      },
+      {
+        "ms": 106775,
+        "role": "assistant",
+        "text": "Nothing was running, so no action was stopped."
+      }
+    ]
+  },
+  {
+    "passed": false,
+    "failure": "TimeoutError: Timed out waiting for first background task.",
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mock",
+    "experiment": "indicator_ph",
+    "name": "openarms-live-correction-final",
+    "source": "bounded candidate before completed-turn action routing",
+    "result_sha256": "373ddc7232f38c8b4471037c2ee2728832f57f587e7977db0444f724cec393d9",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared vinegar sample and check the indicator color.",
+        "input_start_ms": 11087,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared vinegar sample and check the indicator color.",
+        "user_final_ms": 15797,
+        "turn_id": "0bc91865-9549-43e1-bee4-b99ab2b804f6"
+      }
+    ],
+    "tasks": [],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 6162,
+        "role": "assistant",
+        "text": "Welcome! Let's explore how the simulated indicator responds to different samples."
+      },
+      {
+        "ms": 15797,
+        "role": "user",
+        "text": "Please test the prepared vinegar sample and check the indicator color."
+      },
+      {
+        "ms": 20824,
+        "role": "assistant",
+        "text": "In the simulation, the vinegar sample turns the indicator pink."
+      }
+    ]
+  },
+  {
+    "passed": false,
+    "failure": "TimeoutError: Timed out waiting for an answer to 'Which cup do you mean?'.",
+    "name": "openarms-live-dialogue-final",
+    "source": "bounded candidate; provider connection failure retained",
+    "result_sha256": "f7333671477b6ba3ca1198ebf5fc318c2b136245855e7a8789c4614b26a02f1e",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Which cup do you mean?",
+        "input_start_ms": 10506,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Which cup do you mean?",
+        "user_final_ms": 13055,
+        "turn_id": "61efe514-ad14-46ce-89a4-74ce7dc718ea"
+      }
+    ],
+    "tasks": [],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 5863,
+        "role": "assistant",
+        "text": "Welcome! I'm ready to help you explore how different samples react in the simulation."
+      },
+      {
+        "ms": 13055,
+        "role": "user",
+        "text": "Which cup do you mean?"
+      }
+    ]
+  },
+  {
+    "passed": true,
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mock",
+    "experiment": "indicator_ph",
+    "name": "openarms-live-correction-final-2",
+    "source": "bounded candidate with atomic exact correction; before later grammar/reset/preview refinements",
+    "result_sha256": "e546949eedee016dd51a31695fadb9b8a195c28f41a2c21b5085783eb578efe9",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared vinegar sample and check the indicator color.",
+        "input_start_ms": 8564,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared vinegar sample. And check the indicator color.",
+        "user_final_ms": 13357,
+        "turn_id": "3fb58c43-50ec-4fc2-9b09-1973b32c035e"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 13391,
+        "task_count_before": 1,
+        "status_at_input": "running",
+        "proposal_at_input": null,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 16130,
+        "turn_id": "40f746dc-fa33-4d3a-a96f-787607c88b28",
+        "reply": "I am checking the scene to set up the lab, and the action has not started yet.",
+        "reply_final_ms": 21453,
+        "first_audio_start_ms": 17306,
+        "task_count_after": 1
+      },
+      {
+        "input": "What is the water control for?",
+        "input_start_ms": 128568,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What is the water control for?",
+        "user_final_ms": 131474,
+        "turn_id": "bfc229e7-edc9-461a-9484-beff07bd44bb",
+        "reply": "The water serves as a neutral baseline to compare against the color changes caused by the acidic and basic samples.",
+        "reply_final_ms": 137471,
+        "first_audio_start_ms": 130961,
+        "task_count_after": 1
+      },
+      {
+        "input": "Actually, use water instead.",
+        "input_start_ms": 143982,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "Actually, use water instead.",
+        "user_final_ms": 147312,
+        "turn_id": "bddf846a-74e5-4ed8-aae0-ffc6d4801c81"
+      },
+      {
+        "input": "Confirm.",
+        "input_start_ms": 217860,
+        "task_count_before": 2,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 2,
+        "transcript": "confirm",
+        "user_final_ms": 219839,
+        "turn_id": "2e252d74-26f9-442f-91b3-ed11368279db"
+      },
+      {
+        "input": "What did the observer actually see?",
+        "input_start_ms": 247470,
+        "task_count_before": 2,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What did the observer actually see?",
+        "user_final_ms": 250691,
+        "turn_id": "ca55783c-d42a-4d16-8fd0-5a0e0370d9ee",
+        "reply": "In the simulation, the receiver appears purple. This is not a measured pH.",
+        "reply_final_ms": 255537,
+        "first_audio_start_ms": 251019,
+        "task_count_after": 2
+      },
+      {
+        "input": "Emergency stop.",
+        "input_start_ms": 260051,
+        "task_count_before": 2,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "emergency stop",
+        "user_final_ms": 262458,
+        "turn_id": "493b2226-bfe2-4680-97be-1bc16d0c84d9"
+      },
+      {
+        "input": "What happened to the test?",
+        "input_start_ms": 262490,
+        "task_count_before": 2,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What happened to the test?",
+        "user_final_ms": 265032,
+        "turn_id": "447fb566-6702-44ca-8076-cb50a62cc66c",
+        "reply": "The emergency stop was applied, but nothing was running when it was activated.",
+        "reply_final_ms": 269636,
+        "first_audio_start_ms": 265515,
+        "task_count_after": 2
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "e26cc871-d7f1-4218-a018-2c55f4987e4b",
+        "status": "cancelled",
+        "route": "expert",
+        "summary": null
+      },
+      {
+        "task_id": "c13c85d5-fa99-4194-bf54-6bc5c91f7c54",
+        "status": "completed",
+        "route": "expert",
+        "summary": "In the simulation, the receiver appears purple. This is not a measured pH."
+      }
+    ],
+    "experts": [
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 6,
+        "elapsed_ms": 90610
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 3,
+        "elapsed_ms": 45816
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 2,
+        "elapsed_ms": 16660
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 1,
+        "elapsed_ms": 10312
+      }
+    ],
+    "observations": [
+      {
+        "status": "observed",
+        "provenance": "SYNTHETIC",
+        "text": "In the simulation, the receiver appears purple. This is not a measured pH.",
+        "checks": {
+          "readable": true
+        }
+      }
+    ],
+    "transcripts": [
+      {
+        "ms": 5007,
+        "role": "assistant",
+        "text": "Welcome! The mock lab is ready for you to choose a sample to test."
+      },
+      {
+        "ms": 13357,
+        "role": "user",
+        "text": "Please test the prepared vinegar sample. And check the indicator color."
+      },
+      {
+        "ms": 16130,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 21453,
+        "role": "assistant",
+        "text": "I am checking the scene to set up the lab, and the action has not started yet."
+      },
+      {
+        "ms": 116633,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 131474,
+        "role": "user",
+        "text": "What is the water control for?"
+      },
+      {
+        "ms": 137471,
+        "role": "assistant",
+        "text": "The water serves as a neutral baseline to compare against the color changes caused by the acidic and basic samples."
+      },
+      {
+        "ms": 147312,
+        "role": "user",
+        "text": "Actually, use water instead."
+      },
+      {
+        "ms": 151332,
+        "role": "assistant",
+        "text": "I have selected the water control for this mock trial."
+      },
+      {
+        "ms": 154706,
+        "role": "assistant",
+        "text": "I am preparing the new plan for you."
+      },
+      {
+        "ms": 205924,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then test the prepared water sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 219839,
+        "role": "user",
+        "text": "confirm"
+      },
+      {
+        "ms": 222598,
+        "role": "assistant",
+        "text": "I will check the setup before starting."
+      },
+      {
+        "ms": 239114,
+        "role": "assistant",
+        "text": "The action has started."
+      },
+      {
+        "ms": 243894,
+        "role": "assistant",
+        "text": "In the simulation, the receiver appears purple. This is not a measured pH."
+      },
+      {
+        "ms": 250691,
+        "role": "user",
+        "text": "What did the observer actually see?"
+      },
+      {
+        "ms": 255537,
+        "role": "assistant",
+        "text": "In the simulation, the receiver appears purple. This is not a measured pH."
+      },
+      {
+        "ms": 262458,
+        "role": "user",
+        "text": "emergency stop"
+      },
+      {
+        "ms": 265032,
+        "role": "user",
+        "text": "What happened to the test?"
+      },
+      {
+        "ms": 269636,
+        "role": "assistant",
+        "text": "The emergency stop was applied, but nothing was running when it was activated."
+      }
+    ]
+  },
+  {
+    "passed": true,
+    "name": "openarms-live-dialogue-final-2",
+    "source": "4a379b8 product source",
+    "result_sha256": "90af80d4948f57827f8c472091d3606461ff5f0fbc28d98f6e3114db0a3f987c",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Which cup do you mean?",
+        "input_start_ms": 10994,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Which cup do you mean?",
+        "user_final_ms": 13533,
+        "turn_id": "e811f8e0-eee2-4bd1-8943-fecdd27f63f7",
+        "reply": "You can choose between vinegar, the baking-soda solution, or water.",
+        "reply_final_ms": 17572,
+        "first_audio_start_ms": 13183,
+        "task_count_after": 0
+      },
+      {
+        "input": "Are you moving the real robot?",
+        "input_start_ms": 21961,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Are you moving the real robot?",
+        "user_final_ms": 24797,
+        "turn_id": "d510033e-0e3d-480e-9421-8b7cc140ed1b",
+        "reply": "We are only running a mock simulation. There is no physical robot involved here.",
+        "reply_final_ms": 29055,
+        "first_audio_start_ms": 24443,
+        "task_count_after": 0
+      },
+      {
+        "input": "How much water is in cup A, exactly?",
+        "input_start_ms": 33630,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "How much water is in cup A exactly?",
+        "user_final_ms": 37483,
+        "turn_id": "06c76ccf-ca14-46be-8893-e1317f095304",
+        "reply": "The simulation does not measure specific fluid amounts. I can only perform the qualitative indicator color test.",
+        "reply_final_ms": 43834,
+        "first_audio_start_ms": 37137,
+        "task_count_after": 0
+      },
+      {
+        "input": "Can you explain what confirmation does?",
+        "input_start_ms": 50471,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Can you explain what confirmation does?",
+        "user_final_ms": 53827,
+        "turn_id": "1f815d7e-9e3e-4243-bd42-90b9adc74aa5",
+        "reply": "Confirmation is used to approve a proposed action or test so we can proceed with the simulation.",
+        "reply_final_ms": 58917,
+        "first_audio_start_ms": 53446,
+        "task_count_after": 0
+      },
+      {
+        "input": "Yes.",
+        "input_start_ms": 64386,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Yes.",
+        "user_final_ms": 66312,
+        "turn_id": "f605b1bf-5553-4153-a129-44de3532ceed",
+        "reply": "To proceed, please specify which cup or sample you would like to test first.",
+        "reply_final_ms": 70763,
+        "first_audio_start_ms": 66392,
+        "task_count_after": 0
+      },
+      {
+        "input": "Please stop now.",
+        "input_start_ms": 75117,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please stop now.",
+        "user_final_ms": 77464,
+        "turn_id": "24ffb051-61a4-4ab7-b289-55c9a547b7e9",
+        "reply": "Nothing was running, so the simulation remains idle.",
+        "reply_final_ms": 81460,
+        "first_audio_start_ms": 78235,
+        "task_count_after": 0,
+        "accepted_stop": true
+      },
+      {
+        "input": "Emergency stop.",
+        "input_start_ms": 84686,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "emergency stop",
+        "user_final_ms": 87125,
+        "turn_id": "636c22e4-bf1d-495c-8796-8cdcba860db2",
+        "reply": "Nothing was running, so the simulation remains idle.",
+        "reply_final_ms": 90879,
+        "first_audio_start_ms": 87690,
+        "task_count_after": 0,
+        "accepted_stop": true
+      },
+      {
+        "input": "What happened just now?",
+        "input_start_ms": 94071,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "What happened just now?",
+        "user_final_ms": 96860,
+        "turn_id": "3ff0078b-b530-406d-908b-7fa210cbc1d8",
+        "reply": "The emergency stop was applied, but since no action was running, the simulation stayed idle.",
+        "reply_final_ms": 101440,
+        "first_audio_start_ms": 96209,
+        "task_count_after": 0
+      }
+    ],
+    "tasks": [],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 6167,
+        "role": "assistant",
+        "text": "Welcome to the indicator lab. Please choose a sample to test its effect on the indicator."
+      },
+      {
+        "ms": 13533,
+        "role": "user",
+        "text": "Which cup do you mean?"
+      },
+      {
+        "ms": 17572,
+        "role": "assistant",
+        "text": "You can choose between vinegar, the baking-soda solution, or water."
+      },
+      {
+        "ms": 24797,
+        "role": "user",
+        "text": "Are you moving the real robot?"
+      },
+      {
+        "ms": 29055,
+        "role": "assistant",
+        "text": "We are only running a mock simulation. There is no physical robot involved here."
+      },
+      {
+        "ms": 37483,
+        "role": "user",
+        "text": "How much water is in cup A exactly?"
+      },
+      {
+        "ms": 43834,
+        "role": "assistant",
+        "text": "The simulation does not measure specific fluid amounts. I can only perform the qualitative indicator color test."
+      },
+      {
+        "ms": 53827,
+        "role": "user",
+        "text": "Can you explain what confirmation does?"
+      },
+      {
+        "ms": 58917,
+        "role": "assistant",
+        "text": "Confirmation is used to approve a proposed action or test so we can proceed with the simulation."
+      },
+      {
+        "ms": 66312,
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "ms": 70763,
+        "role": "assistant",
+        "text": "To proceed, please specify which cup or sample you would like to test first."
+      },
+      {
+        "ms": 77464,
+        "role": "user",
+        "text": "Please stop now."
+      },
+      {
+        "ms": 81460,
+        "role": "assistant",
+        "text": "Nothing was running, so the simulation remains idle."
+      },
+      {
+        "ms": 87125,
+        "role": "user",
+        "text": "emergency stop"
+      },
+      {
+        "ms": 90879,
+        "role": "assistant",
+        "text": "Nothing was running, so the simulation remains idle."
+      },
+      {
+        "ms": 96860,
+        "role": "user",
+        "text": "What happened just now?"
+      },
+      {
+        "ms": 101440,
+        "role": "assistant",
+        "text": "The emergency stop was applied, but since no action was running, the simulation stayed idle."
+      }
+    ]
+  },
+  {
+    "passed": true,
+    "voice_model": "gemini-3.8-live",
+    "stop_effect": "execution_stopped",
+    "barge_in_interrupted": true,
+    "name": "openarms-live-active-stop",
+    "source": "4a379b8 product source; test-only mock delay 3 seconds per phase",
+    "result_sha256": "c51f6e3936cb5762eaf97cb14c6f96f8298230abc67829fc6c6e96fb246267ee",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared water sample and check the indicator color.",
+        "input_start_ms": 13350,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared water sample and check the indicator color.",
+        "user_final_ms": 18118,
+        "turn_id": "4acf359a-373f-4a4b-b52b-8ae9d903b53d"
+      },
+      {
+        "input": "Confirm.",
+        "input_start_ms": 42354,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "confirm",
+        "user_final_ms": 44385,
+        "turn_id": "fc74c9c3-459c-40d5-a567-9f730f23be06"
+      },
+      {
+        "input": "Please stop now.",
+        "input_start_ms": 44456,
+        "task_count_before": 1,
+        "status_at_input": "executing",
+        "proposal_at_input": null,
+        "transcript": "Please stop now.",
+        "user_final_ms": 46793,
+        "turn_id": "fc653174-1935-4b3a-ae5a-23bb85d2f2b5"
+      },
+      {
+        "input": "What happened to the test?",
+        "input_start_ms": 46824,
+        "task_count_before": 1,
+        "status_at_input": "cancelled",
+        "proposal_at_input": null,
+        "transcript": "What happened to the test?",
+        "user_final_ms": 49365,
+        "turn_id": "527c7344-810a-4483-8f4f-3be86b4f9774",
+        "reply": "The active test was stopped at your request. What would you like to do next?",
+        "reply_final_ms": 53404,
+        "first_audio_start_ms": 49520,
+        "task_count_after": 1
+      },
+      {
+        "input": "Explain how indicators change color, with a few examples.",
+        "input_start_ms": 57290,
+        "task_count_before": 1,
+        "status_at_input": "cancelled",
+        "proposal_at_input": null,
+        "transcript": "Explain how indicators change color with a few examples.",
+        "user_final_ms": 61968,
+        "turn_id": "313ba1f5-dd99-4dee-a627-f75a089d3bb2"
+      },
+      {
+        "input": "Sorry, give me the short version.",
+        "input_start_ms": 61996,
+        "task_count_before": 1,
+        "status_at_input": "cancelled",
+        "proposal_at_input": null,
+        "transcript": "Sorry, give me the short version.",
+        "user_final_ms": 65089,
+        "turn_id": "b7003edd-9d6b-409e-b53c-af819254f65f",
+        "reply": "Indicators change color by reacting to the acidity or basicity. For example, cabbage juice turns pink in acid and green in a basic solution.",
+        "reply_final_ms": 73476,
+        "first_audio_start_ms": 64641,
+        "task_count_after": 1
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "939c2191-7b9f-4ec0-a9db-e2897d16db91",
+        "status": "cancelled",
+        "route": "active_skill",
+        "summary": null
+      }
+    ],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 7344,
+        "role": "assistant",
+        "text": "Welcome to the mock lab. Which sample would you like to test first: vinegar, baking-soda solution, or water?"
+      },
+      {
+        "ms": 18118,
+        "role": "user",
+        "text": "Please test the prepared water sample and check the indicator color."
+      },
+      {
+        "ms": 30620,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then test the prepared water sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 44385,
+        "role": "user",
+        "text": "confirm"
+      },
+      {
+        "ms": 46793,
+        "role": "user",
+        "text": "Please stop now."
+      },
+      {
+        "ms": 49365,
+        "role": "user",
+        "text": "What happened to the test?"
+      },
+      {
+        "ms": 53404,
+        "role": "assistant",
+        "text": "The active test was stopped at your request. What would you like to do next?"
+      },
+      {
+        "ms": 61968,
+        "role": "user",
+        "text": "Explain how indicators change color with a few examples."
+      },
+      {
+        "ms": 65089,
+        "role": "user",
+        "text": "Sorry, give me the short version."
+      },
+      {
+        "ms": 73476,
+        "role": "assistant",
+        "text": "Indicators change color by reacting to the acidity or basicity. For example, cabbage juice turns pink in acid and green in a basic solution."
+      }
+    ]
+  },
+  {
+    "passed": false,
+    "failure": "TimeoutError: Timed out waiting for exact first spoken preview.",
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mock",
+    "experiment": "indicator_ph",
+    "name": "openarms-live-warm-final",
+    "source": "4a379b8; exact preview paraphrase regression",
+    "result_sha256": "94d0bf0f0a656618dfb940bfa5fe84aad6562d61da04a268deabfc0c4a30e0d3",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared vinegar sample and check the indicator color.",
+        "input_start_ms": 10199,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared vinegar sample. And check the indicator color.",
+        "user_final_ms": 14997,
+        "turn_id": "5029fb33-ba6c-4d46-bfc5-81beb5f0e869"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 15065,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 17822,
+        "turn_id": "f52b7826-0939-487d-8767-213573b6a01c",
+        "reply": "I will inspect the camera, test the vinegar sample from station A with the indicator at station C, and check the result. Say confirm or cancel.",
+        "reply_final_ms": 27454,
+        "first_audio_start_ms": 18016,
+        "task_count_after": 1
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "5b7fe09f-58f7-48ba-9009-4df7f9426677",
+        "status": "awaiting_confirmation",
+        "route": "active_skill",
+        "summary": null
+      }
+    ],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 5802,
+        "role": "assistant",
+        "text": "Welcome to the indicator simulation. Which sample would you like to test first?"
+      },
+      {
+        "ms": 14997,
+        "role": "user",
+        "text": "Please test the prepared vinegar sample. And check the indicator color."
+      },
+      {
+        "ms": 17822,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 27454,
+        "role": "assistant",
+        "text": "I will inspect the camera, test the vinegar sample from station A with the indicator at station C, and check the result. Say confirm or cancel."
+      }
+    ]
+  },
+  {
+    "passed": false,
+    "failure": "TimeoutError: Timed out waiting for exact first spoken preview.",
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mock",
+    "experiment": "indicator_ph",
+    "name": "openarms-live-warm-final-2",
+    "source": "a52df7e product source; first repair did not read exact preview",
+    "result_sha256": "b07e30dd9e79576c4ded0323408eba42eccad5eb8684680cb91a873b9bff471b",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared vinegar sample and check the indicator color.",
+        "input_start_ms": 8512,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared vinegar sample. And check the indicator color.",
+        "user_final_ms": 13281,
+        "turn_id": "05c1f5b2-2351-47df-93dc-31dba3c3eea9"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 13317,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 16057,
+        "turn_id": "4bfc0b5d-45fe-4c68-b344-b8bae209670c",
+        "reply": "I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel.",
+        "reply_final_ms": 26853,
+        "first_audio_start_ms": 16106,
+        "task_count_after": 1
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "e0ee6e01-21a7-42d3-97fb-9f5ea352305a",
+        "status": "awaiting_confirmation",
+        "route": "active_skill",
+        "summary": null
+      }
+    ],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 5026,
+        "role": "assistant",
+        "text": "Welcome to the mock lab. I'm ready to help you test the samples."
+      },
+      {
+        "ms": 13281,
+        "role": "user",
+        "text": "Please test the prepared vinegar sample. And check the indicator color."
+      },
+      {
+        "ms": 16057,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 26853,
+        "role": "assistant",
+        "text": "I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 41339,
+        "role": "assistant",
+        "text": "I'm waiting for your response to proceed with the plan."
+      }
+    ]
+  },
+  {
+    "passed": false,
+    "failure": "TimeoutError: Timed out waiting for exact first spoken preview.",
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mock",
+    "experiment": "indicator_ph",
+    "name": "openarms-live-warm-final-3",
+    "source": "c925cd5 product source; long exact audio exceeded fixed ACK deadline",
+    "result_sha256": "c7a3f102f568ca51ea5124cb58c654608a75b2f5cfcf2bf876005e17dcf05b64",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared vinegar sample and check the indicator color.",
+        "input_start_ms": 9223,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared vinegar sample. And check the indicator color.",
+        "user_final_ms": 13987,
+        "turn_id": "63d2b8b1-cd4e-4833-87c0-c85313782ba9"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 14032,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 16769,
+        "turn_id": "19579174-bb28-406b-95dc-26908370362a",
+        "reply": "I'm preparing to inspect the primary camera view and test the vinegar sample. In the simulation, I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel.",
+        "reply_final_ms": 34084,
+        "first_audio_start_ms": 16916,
+        "task_count_after": 1
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "d93777cd-a6e7-48b6-93e6-1091f74a1cc8",
+        "status": "awaiting_confirmation",
+        "route": "active_skill",
+        "summary": null
+      }
+    ],
+    "experts": [],
+    "observations": [],
+    "transcripts": [
+      {
+        "ms": 5263,
+        "role": "assistant",
+        "text": "Welcome! The mock lab is ready for your indicator pH test."
+      },
+      {
+        "ms": 13987,
+        "role": "user",
+        "text": "Please test the prepared vinegar sample. And check the indicator color."
+      },
+      {
+        "ms": 16769,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 34084,
+        "role": "assistant",
+        "text": "I'm preparing to inspect the primary camera view and test the vinegar sample. In the simulation, I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      }
+    ]
+  },
+  {
+    "passed": true,
+    "voice_model": "gemini-3.8-live",
+    "execution_backend": "mock",
+    "experiment": "indicator_ph",
+    "name": "openarms-live-warm-final-4",
+    "source": "be0101e product source",
+    "result_sha256": "d88e796476c2d7083b65fe152a0637713e353785fa6e6a007206868620b0925d",
+    "input": "generated student audio",
+    "human_audibility_verified": false,
+    "physical_iphone_verified": false,
+    "turns": [
+      {
+        "input": "Please test the prepared vinegar sample and check the indicator color.",
+        "input_start_ms": 13188,
+        "task_count_before": 0,
+        "status_at_input": null,
+        "proposal_at_input": null,
+        "transcript": "Please test the prepared vinegar sample. And check the indicator color.",
+        "user_final_ms": 18050,
+        "turn_id": "00e794cb-1cc2-4416-9623-6c36ad3b4f12"
+      },
+      {
+        "input": "What are you checking right now?",
+        "input_start_ms": 18094,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What are you checking right now?",
+        "user_final_ms": 20829,
+        "turn_id": "ae825c22-1295-41bb-82e4-159a20a614f6",
+        "reply": "In the simulation, I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel.",
+        "reply_final_ms": 32768,
+        "first_audio_start_ms": 21128,
+        "task_count_after": 1
+      },
+      {
+        "input": "What is the water control for?",
+        "input_start_ms": 44417,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "What is the water control for?",
+        "user_final_ms": 47358,
+        "turn_id": "01b5bad3-786b-4388-9411-fa9da35b67f9",
+        "reply": "The water control provides a near-neutral reference point so you can compare how the indicator reacts to acidic or basic solutions.",
+        "reply_final_ms": 54399,
+        "first_audio_start_ms": 46809,
+        "task_count_after": 1
+      },
+      {
+        "input": "Actually, use water instead.",
+        "input_start_ms": 61983,
+        "task_count_before": 1,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 1,
+        "transcript": "Use water instead.",
+        "user_final_ms": 65274,
+        "turn_id": "3090fd25-4dc7-4c65-b709-24d52624626f"
+      },
+      {
+        "input": "Confirm.",
+        "input_start_ms": 131609,
+        "task_count_before": 2,
+        "status_at_input": "awaiting_confirmation",
+        "proposal_at_input": 2,
+        "transcript": "confirm",
+        "user_final_ms": 133697,
+        "turn_id": "dde388ed-d092-41ab-999f-f6cffceaa707"
+      },
+      {
+        "input": "What did the observer actually see?",
+        "input_start_ms": 166230,
+        "task_count_before": 2,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What did the observer actually see?",
+        "user_final_ms": 169436,
+        "turn_id": "83320d52-9ce2-48f9-9236-285e8db2c7b1",
+        "reply": "In the simulation, the receiver appears purple. This is not a measured pH.",
+        "reply_final_ms": 174563,
+        "first_audio_start_ms": 169729,
+        "task_count_after": 2
+      },
+      {
+        "input": "Emergency stop.",
+        "input_start_ms": 179364,
+        "task_count_before": 2,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "emergency stop",
+        "user_final_ms": 181826,
+        "turn_id": "dbf625ed-1aa9-4c73-bd0d-31b2eabc2e88"
+      },
+      {
+        "input": "What happened to the test?",
+        "input_start_ms": 181839,
+        "task_count_before": 2,
+        "status_at_input": "completed",
+        "proposal_at_input": null,
+        "transcript": "What happened to the test?",
+        "user_final_ms": 184494,
+        "turn_id": "ecf37622-e3b2-46e8-8868-ef3dc5d22fd1",
+        "reply": "Nothing was running, and the previously recorded observation has been preserved.",
+        "reply_final_ms": 189209,
+        "first_audio_start_ms": 184863,
+        "task_count_after": 2
+      }
+    ],
+    "tasks": [
+      {
+        "task_id": "a3efae4d-7ad9-48a4-b6e4-f68d5fa69067",
+        "status": "cancelled",
+        "route": "active_skill",
+        "summary": null
+      },
+      {
+        "task_id": "d6985cfa-fc28-47fc-8f52-1fe9e9fb9d17",
+        "status": "completed",
+        "route": "expert",
+        "summary": "In the simulation, the receiver appears purple. This is not a measured pH."
+      }
+    ],
+    "experts": [
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 4,
+        "elapsed_ms": 42668
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 2,
+        "elapsed_ms": 19289
+      },
+      {
+        "provider": "openai_codex_cli",
+        "requested_model": "gpt-6.1-sol",
+        "actual_model": null,
+        "model_verified": false,
+        "reasoning_effort": "high",
+        "calls": 1,
+        "elapsed_ms": 12781
+      }
+    ],
+    "observations": [
+      {
+        "status": "observed",
+        "provenance": "SYNTHETIC",
+        "text": "In the simulation, the receiver appears purple. This is not a measured pH.",
+        "checks": {
+          "readable": true
+        }
+      }
+    ],
+    "transcripts": [
+      {
+        "ms": 7337,
+        "role": "assistant",
+        "text": "Welcome! The mock lab is ready to explore how the simulated indicator responds to different samples."
+      },
+      {
+        "ms": 18050,
+        "role": "user",
+        "text": "Please test the prepared vinegar sample. And check the indicator color."
+      },
+      {
+        "ms": 20829,
+        "role": "user",
+        "text": "What are you checking right now?"
+      },
+      {
+        "ms": 32768,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then test the prepared vinegar sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 47358,
+        "role": "user",
+        "text": "What is the water control for?"
+      },
+      {
+        "ms": 54399,
+        "role": "assistant",
+        "text": "The water control provides a near-neutral reference point so you can compare how the indicator reacts to acidic or basic solutions."
+      },
+      {
+        "ms": 65274,
+        "role": "user",
+        "text": "Use water instead."
+      },
+      {
+        "ms": 69041,
+        "role": "assistant",
+        "text": "Selected Water control for this mock trial."
+      },
+      {
+        "ms": 74086,
+        "role": "assistant",
+        "text": "I am preparing the new plan and checking the scene; the action has not started."
+      },
+      {
+        "ms": 120049,
+        "role": "assistant",
+        "text": "In the simulation, I will inspect the primary camera view, then test the prepared water sample from station A with the indicator at station C, then check the result using the primary camera. Say confirm or cancel."
+      },
+      {
+        "ms": 133697,
+        "role": "user",
+        "text": "confirm"
+      },
+      {
+        "ms": 135957,
+        "role": "assistant",
+        "text": "I will check the setup before starting the simulation."
+      },
+      {
+        "ms": 156996,
+        "role": "assistant",
+        "text": "In the simulation, the action is now in progress."
+      },
+      {
+        "ms": 162621,
+        "role": "assistant",
+        "text": "In the simulation, the receiver appears purple. This is not a measured pH."
+      },
+      {
+        "ms": 169436,
+        "role": "user",
+        "text": "What did the observer actually see?"
+      },
+      {
+        "ms": 174563,
+        "role": "assistant",
+        "text": "In the simulation, the receiver appears purple. This is not a measured pH."
+      },
+      {
+        "ms": 181826,
+        "role": "user",
+        "text": "emergency stop"
+      },
+      {
+        "ms": 184494,
+        "role": "user",
+        "text": "What happened to the test?"
+      },
+      {
+        "ms": 189209,
+        "role": "assistant",
+        "text": "Nothing was running, and the previously recorded observation has been preserved."
+      }
+    ]
+  }
+]

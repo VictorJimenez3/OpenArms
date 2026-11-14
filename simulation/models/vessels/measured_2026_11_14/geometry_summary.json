@@ -1,0 +1,31 @@
+{
+  "donor_A": {
+    "axisymmetric_cavity_to_rim_ml": 38.47006915224396,
+    "dimensions_m": [
+      0.041,
+      0.045,
+      0.051
+    ],
+    "visual_triangles": 3072,
+    "nominal_identity": "unconfirmed",
+    "interior_status": "assumed profile constrained by coarse opening estimate; wall/base thickness unmeasured",
+    "graduation_check": {
+      "marked_ml": 25,
+      "model_ml": 23.7548649050555,
+      "difference_ml": -1.2451350949445015,
+      "height_above_interior_floor_mm": 32
+    }
+  },
+  "receiver_C": {
+    "axisymmetric_cavity_to_rim_ml": 110.23124170180667,
+    "dimensions_m": [
+      0.078,
+      0.078,
+      0.032
+    ],
+    "visual_triangles": 2560,
+    "nominal_identity": "unconfirmed",
+    "interior_status": "assumed tapered profile; floor and wall thickness unmeasured"
+  },
+  "parameters_sha256": "b898a6ae352e7c0f630662e9c9dac4e83d7b473c868af36a2e5cf32322c80b81"
+}

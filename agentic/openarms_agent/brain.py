@@ -16,7 +16,7 @@ MODEL = "claude-sonnet-5-5"
 MAX_TOOL_ROUNDS = 10
 AGENTIC = Path(__file__).resolve().parent.parent
 STOP_WORDS = re.compile(r"\b(stop|cancel)\b", re.IGNORECASE)
-DEFAULT_OBJECTIVE = "Test how each sample changes the color of the purple cabbage indicator."
+DEFAULT_OBJECTIVE = "Test how each sample changes the color of the purple indicator."
 
 
 def _load_key() -> str:

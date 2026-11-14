@@ -9,9 +9,9 @@ import re
 import uuid
 from .contracts import Observation
 
-EXPERIMENT = {'id': 'red_cabbage_ph', 'title': 'Red-cabbage pH investigation',
-              'question': 'How does red-cabbage indicator respond to vinegar, baking-soda solution, and water?',
-              'mode': 'MOCK', 'description': 'Qualitative reference outcomes; no physical measurement.'}
+EXPERIMENT = {'id': 'indicator_ph', 'title': 'Indicator pH — optional simulation',
+              'question': 'How does the simulated indicator respond to vinegar, baking-soda solution, and water?',
+              'mode': 'MOCK', 'description': 'Historical indicator regression fixture, distinct from the current two-vessel kit candidate; no kit or physical result.'}
 EXPERIMENTS = [EXPERIMENT]
 CONDITIONS = (
     {'id': 'vinegar', 'title': 'Vinegar', 'color': 'pink', 'classification': 'acidic'},
@@ -21,7 +21,7 @@ CONDITIONS = (
 
 def get_experiment(experiment_id):
     if experiment_id != EXPERIMENT['id']:
-        raise ValueError('Only the red-cabbage pH experiment is available.')
+        raise ValueError('Only the optional indicator pH simulation is available.')
     return copy.deepcopy(EXPERIMENT)
 
 def condition(condition_id):
@@ -38,7 +38,7 @@ def reference_observation(request_id, trial_id, condition_id, available=True):
             source='mock reference unavailable', evidence=[]).model_dump()
     return Observation(request_id=request_id, trial_id=trial_id, provenance='MODEL-PREDICTED',
         text=f"MOCK reference: {c['title']} is expected to appear {c['color']} and classify as {c['classification']}. This is not a measured color or pH.",
-        source='application-authored qualitative red-cabbage reference v1',
+        source='application-authored qualitative indicator reference v1',
         evidence=['ref-' + uuid.uuid4().hex],
         value={'color': c['color'], 'classification': c['classification'], 'condition_id': condition_id}).model_dump()
 
@@ -70,10 +70,10 @@ def science_reply(text, observations):
     if re.search(r'\b(result|happen|observe|evidence|see|saw)\b', norm) and observations:
         return observations[-1]['text'] + ' The observer and controller report separately.'
     if 'vinegar' in norm:
-        return 'Vinegar is acidic; the qualitative cabbage reference is pink. In this mock trial that is an expectation, not a measurement.'
+        return 'Vinegar is acidic; the qualitative indicator reference is pink. In this mock trial that is an expectation, not a measurement.'
     if 'baking' in norm or 'base' in norm or 'basic' in norm:
-        return 'Mild baking-soda solution is basic; the qualitative cabbage reference is blue-green. Actual color depends on preparation, so the mock reference is not a measured pH.'
+        return 'Mild baking-soda solution is basic; the qualitative indicator reference is blue-green. Actual color depends on preparation, so the mock reference is not a measured pH.'
     if 'water' in norm or 'neutral' in norm:
-        return 'Water is the near-neutral control; the qualitative cabbage reference is purple. A control gives us a comparison for the other prepared conditions.'
-    return ('Red-cabbage pigments change color with acid/base conditions: pink for an acidic reference, purple near neutral, '
+        return 'Water is the near-neutral control; the qualitative indicator reference is purple. A control gives us a comparison for the other prepared conditions.'
+    return ('This simulated indicator changes color with acid/base conditions: pink for an acidic reference, purple near neutral, '
             'and blue-green for this basic reference. These are qualitative expectations. Compare a readable observation with the water control; color alone here does not supply a measured pH.')
