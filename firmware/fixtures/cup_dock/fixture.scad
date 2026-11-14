@@ -1,7 +1,7 @@
-// OpenArms v0.4: ONE PLATFORM, FOUR CUP SLOTS. Millimetres.
+// OpenArms v0.5: ONE COLOR, ONE PLATFORM, FOUR CUP SLOTS. Millimetres.
 // Ordinary store-bought cups; no cup attachment or laboratory glassware required.
 // These cup measurements are placeholders. Adjust after buying the actual cups.
-part = "platform"; // platform, gauge, assembly
+part = "platform"; // platform or gauge; one material, no applied graphics
 cup_bottom_d = 38;
 cup_top_d = 48;
 cup_height = 51;
@@ -20,8 +20,6 @@ opening_degrees = 120;
 column_pitch = 90;
 row_pitch = 82;
 front_row_y = 78;
-marker_black_size = 36;
-marker_paper_size = 44;
 gauge_delta = 0;
 $fn = 96;
 eps = 0.02;
@@ -31,7 +29,6 @@ function lower(d,delta=0) = d[0]+delta+2*radial_clearance;
 function upper(d,delta=0) = lower(d,delta)+(d[1]-d[0])*guide_height/d[2];
 function radius(d) = max(lower(d),upper(d))/2+guide_wall;
 function label(i) = ["A","B","C","D"][i];
-function marker(i) = [platform_width*(i==0 ? 0.25 : 0.75),24];
 assert(len(slot_cups)==4,"Exactly four cup slots required");
 assert(base_thickness>=2 && radial_clearance>0 && guide_wall>=2);
 assert(opening_degrees>0 && opening_degrees<180);
@@ -56,19 +53,13 @@ module markings() {
     cube([0.7,i%5==0 ? 5 : 3,0.6+eps]);
   translate([platform_width/2,platform_depth-17,base_thickness-0.6])
     linear_extrude(0.6+eps) text("100 mm",size=4,halign="center");
-  for(i=[0:1],sx=[-1,1],sy=[-1,1]) {
-    p=marker(i);
-    translate([p[0]+sx*(marker_paper_size/2+1),p[1]+sy*(marker_paper_size/2+1),base_thickness-0.6]) {
-      translate([-1,-0.3,0]) cube([2,0.6,0.6+eps]);
-      translate([-0.3,-1,0]) cube([0.6,2,0.6+eps]);
-    }
-  }
+
 }
 module platform() {
   for(i=[0:3]) {
     p=center(i);r=radius(slot_cups[i]);
     assert(p[0]-r>24 && p[0]+r<platform_width-24,"Increase width/pitch to clear labels and edges");
-    assert(p[1]-r>marker(0)[1]+marker_paper_size/2+4,"Move cup row rearward or shrink cup");
+    assert(p[1]-r>12,"Move cup row rearward to clear front edge");
     assert(p[1]+r<platform_depth-15,"Increase platform depth for ruler clearance");
     for(j=[0:3]) if(i<j) {
       q=center(j);dist=norm(p-q);
@@ -98,17 +89,7 @@ module gauge() {
       text(str(d[0]+gauge_delta),size=4,halign="center",valign="center");
   }
 }
-module cup(d) {
-  color([0.75,0.87,0.94,0.25]) difference() {
-    cylinder(h=d[2],d1=d[0],d2=d[1]);
-    translate([0,0,0.8]) cylinder(h=d[2],d1=d[0]-1.2,d2=d[1]-1.2);
-  }
-}
 if(part=="platform") platform();
 else if(part=="gauge") gauge();
-else if(part=="assembly") {
-  color([0.08,0.42,0.48]) platform();
-  for(i=[0:3]) {p=center(i);translate([p[0],p[1],base_thickness]) cup(slot_cups[i]);}
-}
-else if(part=="config") echo([platform_width,platform_depth,base_thickness,guide_height,guide_wall,radial_clearance,opening_degrees,marker_black_size,marker_paper_size,slot_cups,[for(i=[0:3]) center(i)],[for(i=[0:1]) marker(i)]]);
-else assert(false,"Use platform, gauge or assembly");
+else if(part=="config") echo([platform_width,platform_depth,base_thickness,guide_height,guide_wall,radial_clearance,opening_degrees,slot_cups,[for(i=[0:3]) center(i)]]);
+else assert(false,"Use platform or gauge");

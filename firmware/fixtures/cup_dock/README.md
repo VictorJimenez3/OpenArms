@@ -1,6 +1,6 @@
-# One platform, four cups — OpenArms v0.4
+# One color, one platform, four cups — OpenArms v0.5
 
-**One continuous printable platform with four cup slots in a 2×2 layout.** All four cups sit on the same base. This replaces the earlier two-separate-dock design. Use ordinary small plastic cups from Target or another store; laboratory cups, custom handles and cup-mounted attachments are not required.
+**One continuous, single-material platform with four cup slots in a 2×2 layout.** All features print in the same filament color. Slot letters and ruler ticks are shallow recesses; no stickers, paper markers, paint or color changes are required. All four cups sit on the same base. This replaces the earlier two-separate-dock design. Use ordinary small plastic cups from Target or another store; laboratory cups, custom handles and cup-mounted attachments are not required.
 
 The four slots are labeled A, B, C and D. Their experiment roles can be assigned after the actual cups and liquids are chosen. The current model uses four identical provisional small cups. Equipment we do not own can appear in a clearly identified simulation; physical-demo claims still come from observing the real cups and robot.
 
@@ -9,8 +9,7 @@ The four slots are labeled A, B, C and D. Their experiment roles can be assigned
 - `four-cup-platform.stl`: the **single full platform**, including all four cup guides. Print once.
 - `fit-gauge-36mm.stl`, `fit-gauge-38mm.stl`, `fit-gauge-40mm.stl`: optional small fit checks, not separate cup stations.
 - `fixture.scad`: editable CAD; defaults to the full four-cup platform.
-- `four-cup-preview.png`: actual exported platform geometry with four illustrative translucent cups.
-- `printable-markers.pdf`: two platform reference markers, not two cup stations.
+- `four-cup-preview.png`: only the actual printable platform STL, rendered in one gray material. Darker areas are lighting/shadows in recesses, not additional colors.
 - `fixture-reference.json` and `validation.json`: dimensions, coordinates and geometry checks.
 
 ## Starting dimensions — not measured cup fit
@@ -49,9 +48,9 @@ Use the existing taught-pose workflow and `taught_fixture_only` mode. This chang
 
 The project already has `fixture_id`, `cup_id`, `calibration_id`, `camera_mount_id` and `robot_id` context fields. Record the secured four-slot arrangement and actual cup dimensions under a new setup identity, and teach/revalidate the relevant named poses. Do not reuse the previous two-independent-dock geometry or mandarin poses. Moving the platform, changing cup geometry or changing camera mounting requires the relevant retesting.
 
-The two paper fiducials belong to the **one platform**: DICT_4X4_50 IDs 10 and 12, centres (50,24) and (150,24) mm. The black square is 36 mm and paper is 44 mm. Print the PDF at Actual Size, verify its 100 mm line, and preserve the white margins. Surface height includes measured paper/adhesive thickness above the 3 mm floor.
+The reference scale and A/B/C/D labels are recessed into the same material as the base. Measure the printed 100 mm scale to check print scaling. These monochrome features are not a validated automatic camera detector and do not independently establish depth.
 
-`bench_vision/geometry.py` maps pixels to measured positions on one plane, using at least four fit points and four independent check points. It does not determine arbitrary 3D depth or produce a grasp pose. These front markers alone do not surround the rear cup slots; later metric plane mapping needs same-plane reference points surrounding the region and camera calibration. Markers do not prove cup presence or successful pouring. Fixed taught positions and physical observation remain enough for bring-up.
+`bench_vision/geometry.py` maps pixels to measured positions on one plane, using at least four fit points and four independent check points. It does not determine arbitrary 3D depth or produce a grasp pose. This fixture adds no new vision pipeline. Use fixed taught positions and physical observation for bring-up.
 
 ## Rebuild and evidence
 
@@ -61,4 +60,4 @@ Install OpenSCAD and the Python dependencies named in `build.py`, then run:
 python build.py --out /absolute/path/to/exports
 ```
 
-The builder exports the full platform and three gauges, validates each mesh as one watertight consistently wound positive-volume solid, checks dimensions and flat underside, and checks that a horizontal section above the base contains **exactly four separate cup-guide contours**. It also generates the preview and decodable markers. Physical cup fit, gripping, robot reach/collisions, printing and liquid behavior remain unverified.
+The builder exports the full platform and three gauges, validates each mesh as one watertight consistently wound positive-volume solid, checks dimensions and flat underside, and checks that a horizontal section above the base contains **exactly four separate cup-guide contours**. It also renders the actual printable STL with one uniform material. Physical cup fit, gripping, robot reach/collisions, printing and liquid behavior remain unverified.
