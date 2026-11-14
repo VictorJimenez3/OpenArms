@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .types import ArmError, ArmState, Station
-from .validator import apply_step
+from .validator import apply_step, initial_point_holds
 
 _STATIONS = Path(__file__).resolve().parents[1] / "contracts" / "stations.example.json"
 
@@ -21,6 +21,8 @@ class MockArm:
             "portions_left": {k: s.get("portions", 0) for k, s in self.stations.items() if s.get("kind") == "source"},
             "receiver_load": {k: 0 for k, s in self.stations.items() if s.get("kind") == "receiver"},
         }
+        if points := initial_point_holds(self.stations):
+            self._state["point_holds"] = points
 
     def run_step(self, action: str, args: dict[str, Any]) -> None:
         if self._stopped:

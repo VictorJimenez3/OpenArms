@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: openarms-sim
+Version: 0.1.0
+Summary: MuJoCo preview simulation for the OpenArms lab arm
+Requires-Python: >=3.10
+Requires-Dist: mujoco>=3.2
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: pyyaml
+Requires-Dist: pillow
+Requires-Dist: imageio
+Requires-Dist: imageio-ffmpeg
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"

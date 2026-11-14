@@ -31,8 +31,10 @@ _STATION = {"type": "string", "description": "Station name from the lab table"}
 _STEP = {
     "type": "object",
     "properties": {
-        "action": {"type": "string", "enum": ["add_sample", "wait", "look"]},
-        "args": {"type": "object", "description": 'add_sample: {"source","into","portions"}; wait: {"seconds"}; look: {"station"}'},
+        "action": {"type": "string", "enum": ["add_sample", "move_block", "go_to", "gripper", "wait", "look"]},
+        "args": {"type": "object", "description": 'add_sample: {"source","into","portions"}; move_block: {"from","to"}; '
+                                                  'go_to: {"pose"}; gripper: {"state": "open" or "close"}; '
+                                                  'wait: {"seconds"}; look: {"station"}'},
     },
     "required": ["action", "args"],
 }
@@ -42,7 +44,7 @@ TOOLS = [
      "description": "Send a plan for ONE student instruction to the validator. Only after the student said yes. "
                     "Returns a rejection reason to fix, or awaiting_teacher. Never moves the arm.",
      "input_schema": _obj({"student_instruction": {"type": "string"},
-                           "steps": {"type": "array", "items": _STEP, "minItems": 1, "maxItems": 6}},
+                           "steps": {"type": "array", "items": _STEP, "minItems": 1, "maxItems": 12}},
                           ["student_instruction", "steps"])},
     {"name": "record_prediction", "description": "Save the student's prediction, in their words, before any run.",
      "input_schema": _obj({"text": {"type": "string"}}, ["text"])},

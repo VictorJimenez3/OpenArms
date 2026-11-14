@@ -312,6 +312,80 @@ def test_cli_test_action_verified():
             outdir.rmdir()
 
 
+# --- arrival check: settle, then nudge past the target to cancel sag ---
+
+def sagging_robot(droop, start=None):
+    """A robot whose joints settle `droop` short of whatever they are commanded, like a loaded arm."""
+    from firmware.openarms_executor.motion import FakeRobot
+
+    class Sagging(FakeRobot):
+        def get_observation(self):
+            return {k: v - droop.get(k, 0.0) for k, v in self.pos.items()}
+
+    return Sagging(start)
+
+
+FAST_MOVE = dict(seconds=0.05, hz=60, settle=0.5)
+LIFT, ELBOW, PAN = "shoulder_lift.pos", "elbow_flex.pos", "shoulder_pan.pos"
+
+
+def test_sagging_arm_is_nudged_onto_its_target():
+    from firmware.openarms_executor.motion import move_to
+    # the shortfall measured on the real arm holding an object at 42 cm reach
+    robot = sagging_robot({LIFT: 6.2, ELBOW: 3.6})
+    target = {PAN: -21.0, LIFT: 47.0, ELBOW: -53.0}
+    assert move_to(robot, target, **FAST_MOVE) is True
+    obs = robot.get_observation()
+    for k, v in target.items():
+        assert abs(obs[k] - v) <= 3.0, f"{k} ended {obs[k] - v:+.1f} from target"
+    last = robot.sent[-1]
+    assert abs(last[LIFT] - (47.0 + 6.2)) < 1e-6 and abs(last[ELBOW] - (-53.0 + 3.6)) < 1e-6, last
+    assert last[PAN] == -21.0, "a joint that arrived must not be nudged"
+
+
+def test_nudge_never_commands_more_than_the_cap_past_the_target():
+    from firmware.openarms_executor.motion import move_to
+    robot = sagging_robot({LIFT: 11.5})  # under the snag limit, but more than the cap can correct
+    try:
+        move_to(robot, {LIFT: 40.0}, **FAST_MOVE)
+    except RuntimeError as e:
+        assert "after 2 nudges" in str(e), e
+    else:
+        raise AssertionError("no error for a sag the nudges cannot close")
+    assert abs(max(a[LIFT] for a in robot.sent) - 48.0) < 1e-6, "cap is 8 past the target"
+
+
+def test_blocked_joint_is_not_pushed_harder():
+    from firmware.openarms_executor.motion import move_to
+    robot = sagging_robot({LIFT: 20.0})  # far beyond sag: something is in the way
+    try:
+        move_to(robot, {LIFT: 40.0}, **FAST_MOVE)
+    except RuntimeError as e:
+        assert "blocking" in str(e), e
+    else:
+        raise AssertionError("no error for a blocked joint")
+    assert max(a[LIFT] for a in robot.sent) <= 40.0, "no command went past the target"
+
+
+def test_gripper_shortfall_is_never_nudged():
+    from firmware.openarms_executor.motion import move_to
+    robot = sagging_robot({"gripper.pos": 18.0})  # jaws stopped on the object
+    assert move_to(robot, {"gripper.pos": 5.0}, **FAST_MOVE) is True
+    assert robot.sent[-1] == {"gripper.pos": 5.0}
+
+
+def test_stop_while_waiting_for_a_sagging_arm_returns_false():
+    from firmware.openarms_executor.motion import move_to
+    robot, calls = sagging_robot({LIFT: 6.0}), [0]
+
+    def should_stop():
+        calls[0] += 1
+        return calls[0] > 6  # after the 3 interpolation steps, during the settle wait
+
+    assert move_to(robot, {LIFT: 40.0}, should_stop=should_stop, **FAST_MOVE) is False
+    assert max(a[LIFT] for a in robot.sent) <= 40.0, "stopped before any nudge"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in list(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0

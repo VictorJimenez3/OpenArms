@@ -1,0 +1,4 @@
+{
+  "A": { "kind": "point", "holds": "block" },
+  "B": { "kind": "point" }
+}

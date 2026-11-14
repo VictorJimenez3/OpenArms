@@ -4,7 +4,7 @@ import time
 from typing import Any
 
 from agentic.openarms_agent.types import ArmError, ArmState
-from agentic.openarms_agent.validator import apply_step
+from agentic.openarms_agent.validator import apply_step, initial_point_holds
 
 from .motion import move_to
 from .poses import GRIPPER
@@ -21,6 +21,10 @@ class PoseArm:
             "portions_left": {k: s.get("portions", 0) for k, s in stations.items() if s.get("kind") == "source"},
             "receiver_load": {k: 0 for k, s in stations.items() if s.get("kind") == "receiver"},
         }
+        if points := initial_point_holds(stations):
+            self._state["point_holds"] = points
+            # go_to may name any position that was really recorded, and no other
+            self._state["poses"] = sorted(poses["poses"])
 
     def run_step(self, action: str, args: dict[str, Any]) -> None:
         if self._stopped:
@@ -83,6 +87,13 @@ class PoseArm:
                 raise ArmError(action, f"slot {s}{n} needs both ABOVE_{s}{n} and GRASP_{s}{n}")
             return pose(f"{base}_{s}{n}" if all(have) else f"{base}_{s}")
 
+        if action in ("pick", "place") and self.stations[args["station"]].get("kind") == "point":
+            # a loose object on a marked point: no cup slots; "cup" is the gripper value closed on the object
+            s = args["station"]
+            above, grasp = pose(f"ABOVE_{s}"), pose(f"GRASP_{s}")
+            if action == "pick":
+                return [grip("open"), above, grasp, grip("cup"), above], None
+            return [above, grasp, grip("open"), above], None
         if action == "pick":
             s = args["station"]
             n = self.stations[s].get("portions", 0) - self._state["portions_left"][s] + 1  # 1st, 2nd... cup taken
@@ -93,6 +104,10 @@ class PoseArm:
         if action == "return_cup":
             s, n = args["station"], self._slot
             return [slotted("ABOVE", s, n), slotted("GRASP", s, n), grip("open"), slotted("ABOVE", s, n)], None
+        if action == "go_to":
+            return [pose(args["pose"])], self._slot
+        if action == "gripper":
+            return [grip("open" if args["state"] == "open" else "cup")], self._slot
         if action == "home":
             return [pose("HOME")], self._slot
         if action == "wait":
