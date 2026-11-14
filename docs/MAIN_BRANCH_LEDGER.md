@@ -1,6 +1,6 @@
 # Branch consolidation ledger
 
-Snapshot of all known local and origin branches after the full remote fetch. Each pinned head below is now retained as an ancestor of the local integration branch. Remote main remains at 171a21a until the reviewed integration PR is merged. Archived/superseded content is explained in [MAIN_INTEGRATION](MAIN_INTEGRATION.md). No branch has been deleted.
+Snapshot after fetching all origin heads and reconciling remote main 19a37ae. All listed heads are retained in the local integration history. The active model-compatibility worker may advance its existing branch after this snapshot; integrator must incorporate and review that handoff before the final merge. Nothing here claims remote main has already been updated. No branch was deleted.
 
 | Pinned head | Branch references | Included in integration history |
 | --- | --- | --- |
@@ -20,19 +20,20 @@ Snapshot of all known local and origin branches after the full remote fetch. Eac
 | `eaceb97c30` | `codex/mujoco-shared-session` | Yes |
 | `6423f32382` | `codex/mujoco-titration`, `origin/codex/mujoco-titration` | Yes |
 | `571dd07ab8` | `codex/mujoco-updated-scenes` | Yes |
-| `1db7624059` | `codex/ph-agent-overhaul` | Yes |
+| `4872a66ad5` | `codex/ph-agent-overhaul` | Yes |
 | `e4c4ff4b6c` | `codex/ph-browser` | Yes |
 | `a113541d9a` | `codex/ph-ios` | Yes |
 | `264e758047` | `codex/physical-mandarin-evidence`, `origin/codex/physical-mandarin-evidence` | Yes |
 | `a1e88da5e5` | `codex/preserve-dilution-intent` | Yes |
 | `0f70ae0828` | `codex/runtime-full-loop` | Yes |
 | `b49d3997a3` | `codex/software-integration` | Yes |
-| `0aa2741132` | `codex/task-evidence-review-repairs` | Yes |
+| `0e99a7111a` | `codex/task-evidence-review-repairs` | Yes |
 | `1d53190444` | `codex/voice-first-desktop` | Yes |
 | `84ac0ee684` | `codex/voice-first-native` | Yes |
 | `57b0a6ad62` | `codex/voice-review-repairs` | Yes |
 | `cc6cff5fe8` | `docs/demo-speed-contract`, `origin/docs/demo-speed-contract` | Yes |
-| `171a21a393` | `main`, `origin`, `origin/main` | Yes |
+| `171a21a393` | `main` | Yes |
+| `19a37aef0d` | `origin`, `origin/main` | Yes |
 | `531af9f231` | `origin/codex/langchain-deep-agents-track` | Yes |
 | `6d3fbc70a3` | `origin/codex/openarms-skill-harness` | Yes |
 | `6cb44cf53f` | `origin/codex/openarms-ui-agent-docs` | Yes |
@@ -45,7 +46,7 @@ Snapshot of all known local and origin branches after the full remote fetch. Eac
 | `bc33e997c1` | `origin/duc` | Yes |
 | `2709976511` | `origin/iphone-voice-bridge` | Yes |
 | `f5ad5199d1` | `origin/stefanie/arm-arrival-nudge` | Yes |
-| `c305f27938` | `origin/stefanie/free-plans` | Yes |
+| `0b90e36f78` | `origin/stefanie/free-plans` | Yes |
 | `f895a083af` | `origin/stefanie/sim-preview-app` | Yes |
 | `502e4e8042` | `origin/stefanie/simulation` | Yes |
 | `67fa9d9631` | `visual/accessible-lab` | Yes |

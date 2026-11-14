@@ -1,0 +1,23 @@
+{
+  "provider": "openai_codex_cli",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "provenance": "SIMULATED",
+  "execution_backend": "mujoco",
+  "actual_expert": true,
+  "audible_voice_verified": false,
+  "cold_model_calls": 7,
+  "warm_model_calls": 0,
+  "warm_request": "Test the prepared vinegar sample and check the cabbage indicator color.",
+  "promotion": {
+    "skill_id": "prepared_cabbage_indicator_test",
+    "candidate_hash": "87f32dcd08f996ce0e34efe1b5f649bd1529dbd151a277b8762e428e315e888e",
+    "baseline_hash": null,
+    "rollback_target": null,
+    "evaluation_id": "aa95211fcf7d4c1ca59d5e6226629a04",
+    "status": "promoted"
+  },
+  "elapsed_seconds": 107.35790754109621,
+  "_source_artifact_sha256": "6591993768bbbc62606a652d513a90bf2e73d5ea51742deb7b4828c357374a58",
+  "_source_run": "full-loop-updated-mujoco-1"
+}

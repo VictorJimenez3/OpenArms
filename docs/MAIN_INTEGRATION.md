@@ -41,7 +41,7 @@ Every merge below is local until independent review and the combined checks pass
 
 - Gemini was explicitly withdrawn. Its default application path is disabled even if old credentials remain. Replacement voice is not implemented/qualified; no OpenAI voice API key is configured. Preserve the Codex expert and common session instead of introducing another runtime.
 - Joseph explicitly removed the device/voice rehearsal merge gate on November 14: merge the reviewed software baseline now and finish those checks later. The unplugged physical iPhone remains unavailable, and replacement voice remains unfinished. This authorization permits consolidation; it does not establish voice or device acceptance.
-- Remote main advanced from `171a21a` to `19a37ae`, adding `0b90e36` to the older free-plan path. Its new Claude fallback is under reconciliation with the existing Codex expert. Do not restore a competing dispatcher.
+- Remote main advanced from `171a21a` to `19a37ae`. Its added `0b90e36` Claude fallback has been independently reviewed and reconciled into integration history. The current expert covers its useful planning behaviors; the older physical/free-plan dispatcher is superseded, not reactivated.
 - No physical pH actuation or physical reset is enabled or newly verified. The broader product's D1 milestone remains open.
 
 ## Current evidence
@@ -49,6 +49,8 @@ Every merge below is local until independent review and the combined checks pass
 Before the provider withdrawal guard, the combined suite passed 464 tests; desktop/mobile browser checks passed 36, audio checks passed 5, and portable native checks passed 17. A signed iOS Simulator build and fresh screenshots passed. The guard plus leading-decimal routing correction passed 13 focused tests, then 466 combined tests. The initial combined attempt found an unavailable-status protocol mismatch; the guard now emits the clients’ existing unavailable status, and the unchanged integration test passes. These are software evidence, not actual-phone acceptance.
 
 The actual Codex expert completed an updated-apparatus cold/warm simulation run (7 cold calls, 0 warm). A later actual-provider voice run reached observed simulated output; the extended registration/reuse voice rehearsal was interrupted at Joseph's instruction to stop Gemini and is not a completed acceptance trace. The latest actual-Codex improvement retained an unchanged baseline and promoted a secondary-view recovery change: 9 to 12 recovered outcomes across 24 frozen SYNTHETIC cases, with all routing/observation/consent/STOP gates passing. No physical qualification is claimed.
+
+The [software evidence index](../research/joseph/software-consolidation-2026-11-14/README.md) retains measured receipts and limitations.
 
 This document is an execution ledger; statuses are updated as merges and verification complete.
 
