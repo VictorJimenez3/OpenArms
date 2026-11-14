@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import importlib.metadata
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -15,6 +16,8 @@ parser.add_argument('--workshop', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--seconds', type=float, default=8)
 args = parser.parse_args()
+if not math.isfinite(args.seconds) or args.seconds <= 0:
+    parser.error('--seconds must be positive and finite')
 args.output.mkdir(parents=True, exist_ok=False)
 receipt = {
     'schema_version': 1, 'provenance': 'SIMULATED', 'kind': 'articulation_smoke',
@@ -84,7 +87,9 @@ try:
     camera_transform = Gf.Matrix4d().SetLookAt(eye,target,Gf.Vec3d(0,0,1)).GetInverse()
     rotation = camera_transform.ExtractRotationQuat()
     camera.set_world_pose(np.array(eye), np.array([rotation.GetReal(), *rotation.GetImaginary()]), camera_axes='usd')
-    camera.set_focal_length(24)
+    camera.set_horizontal_aperture(.036)
+    camera.set_vertical_aperture(.027)
+    camera.set_focal_length(.024)
     camera.set_clipping_range(.01, 20)
     world.reset()
     camera.initialize()
@@ -96,10 +101,11 @@ try:
     robot.apply_action(ArticulationAction(joint_positions=q0, joint_indices=indices))
     receipt['joint_names'] = names
     receipt['initial_joint_positions_rad'] = q0.tolist()
-    stage.GetRootLayer().Export(str(args.output/'scene.usda'))
+    stage.Flatten().Export(str(args.output/'scene.usda'))
     for _ in range(120):
-        world.step(render=True)
-    measured_start = robot.get_joint_positions()[indices].copy()
+        world.step(render=False)
+        world.render()
+    start_sim_time = world.current_time
     writer = imageio.get_writer(args.output/'camera.mp4', fps=30, codec='libx264', quality=8,
                                macro_block_size=1, ffmpeg_log_level='error')
     frame_count = 0
@@ -110,8 +116,9 @@ try:
             target_q = q0.copy()
             target_q[0] += .18*np.sin(2*np.pi*t/args.seconds)
             robot.apply_action(ArticulationAction(joint_positions=target_q, joint_indices=indices))
-            world.step(render=step%4==0)
+            world.step(render=False)
             if step%4==0:
+                world.render()
                 frame = camera.get_rgba()
                 if frame is None or frame.shape != (720,960,4):
                     raise RuntimeError('Camera did not return a valid RTX frame')
@@ -122,16 +129,16 @@ try:
                 frame_count += 1
                 actual = robot.get_joint_positions()[indices].tolist()
                 measured.append(actual)
-                states.write(json.dumps({'sim_time_s':t,'joint_command_rad':target_q.tolist(),
+                states.write(json.dumps({'sim_time_s':float(world.current_time-start_sim_time),'joint_command_rad':target_q.tolist(),
                                          'joint_measured_rad':actual})+'\n')
     writer.close()
     writer = None
     measured = np.asarray(measured)
     motion = float(np.ptp(measured[:,0]))
-    if motion < .1:
+    if not np.isfinite(measured).all() or not math.isfinite(motion) or motion < .1:
         raise RuntimeError(f'Insufficient measured articulation motion: {motion} rad')
     receipt.update(status='passed', frames=frame_count, measured_rotation_span_rad=motion,
-                   video='camera.mp4', result='Robot rendered and articulation moved; grasp/place not attempted')
+                   video='camera.mp4', visual_review='required', result='Robot rendered and articulation moved; grasp/place not attempted')
     receipt['sha256'] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in args.output.iterdir() if p.is_file() and p.name!='receipt.json'}
 except BaseException as exc:

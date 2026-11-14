@@ -6,6 +6,8 @@ set -euo pipefail
 : "${OMNI_KIT_ACCEPT_EULA:?Set YES after accepting NVIDIA Omniverse EULA}"
 [[ "$OMNI_KIT_ACCEPT_EULA" == YES ]]
 [[ $(uname -s) == Linux && $(uname -m) == x86_64 ]]
+glibc=$(getconf GNU_LIBC_VERSION | awk '{print $2}')
+[[ $(printf '%s\n' 2.35 "$glibc" | sort -V | head -1) == 2.35 ]] || { echo "GLIBC >= 2.35 required"; exit 1; }
 root=$(realpath "$OPENARMS_ISAAC_ROOT")
 mkdir -p "$root/cache" "$root/runs" "$root/tmp" "$root/data" "$root/config"
 export TMPDIR="$root/tmp"
