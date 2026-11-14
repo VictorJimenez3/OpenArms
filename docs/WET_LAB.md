@@ -1,8 +1,18 @@
 # Wet-lab bring-up and training
 
-> **Application boundary:** the app uses mock or MuJoCo execution with physical actuation disabled. The new Smartivity activity is undecided; [the architecture checklist](ARCHITECTURE.md#kit-scope-and-bench-handoff) records Victor's outstanding bench handoff. This runbook retains supervised hardware procedures and historical baseline evidence; none of these commands is dispatched by the student app. Normal successful return to the taught HOME may be automatic. Replenishing materials and recovery after faults are separate readiness checks.
+> **Application boundary:** the app uses mock or MuJoCo execution with physical actuation disabled. The selected two-vessel Smartivity direction is defined in [PROJECT](PROJECT.md); [the architecture checklist](ARCHITECTURE.md#kit-scope-and-bench-handoff) records the outstanding physical handoff. This runbook retains supervised hardware procedures and historical baseline evidence; none of these commands is dispatched by the student app. Normal successful return to the taught HOME may be automatic. Replenishing materials and recovery after faults are separate readiness checks.
 
 Start with one fixed-fixture water pour. Reuse the same robot calibration, leader/follower link, and saved-pose executor that moved the mandarin. The only geometry to teach is the cup, receiver, and clear travel path on the actual bench. Use the planned fixed webcam views for evidence: one wide view of the arm and fixtures, one close view of the stream and receiver. Camera calibration can follow after the first pour.
+
+## Current qualification and apparatus
+
+**Unverified:** physical two-vessel fit, dry/water pour, camera registration, selected chemistry, repeated reset and first-minute student action. The successful historical mandarin transfer proves none of these. Victor and Duc's physical bring-up continues independently of Joseph's simulation/camera/integration work.
+
+Use exactly two active vessels: donor A and stationary receiver C. The [photo-derived vessel models](../simulation/models/vessels/measured_2026_11_14/README.md) estimate donor height/rim/base near 51/41/31 mm and receiver near 32/78/59 mm; actual measurements and fit remain required. The receiver's underside `100ml.` mark is a nominal capacity label, not a visible fill line or verified maximum capacity. The existing two-vessel base-plate lane owns CAD and marker geometry. The locally integrated fixture `4b2e3df` (source `5c6ee1f`) has a 170×156 mm plate, fit gauges and ArUco 20–23 patterns at 27 mm with a manifest. Independent digital rebuild/review and marker decoding passed; print fit, grip clearance, robot registration and all physical checks remain unverified. The older four-slot export is not the final apparatus. Do not delay a secured working pour for elaborate CAD.
+
+The shared Notion physical page records review of the kit's Magic Potion 1 manual pages 30–31. Manual review does not qualify the robotic two-vessel adaptation, actual packet inventory, preparation or outcome. Use water for almost all calibration and preserve reagents for a few chemistry checks, rehearsals and retries. Food color can test visibility; it is not the final science result.
+
+Keep a handoff with measured vessel/fixture geometry and uncertainty, setup/pose/calibration versions, camera IDs and mounts, taught trajectory, water receipts including failures/spills, actual chemistry observations and reset readiness. Fiducial IDs/dimensions/placement and fixture-to-robot registration need their own evidence; recessed letters and rulers are not fiducials.
 
 ## Minimum working demo
 
@@ -29,11 +39,11 @@ The bench Mac already has a working environment. A clean checkout can reuse an e
 
 ## Real demo
 
-**Exit criterion:** A student uses voice or text to choose a prepared condition, states a prediction, confirms the plan, and sees one actual observation and a follow-up question. The operator can stop the arm independently.
+**Exit criterion:** A student uses voice or text to request a supported action, confirms the exact plan, and receives an independent observation. A visible physical action in the first minute is the timing target; measure it rather than claiming it from software tests. Prediction/reflection are optional. The operator can stop the arm independently.
 
-- Give the student two prepared conditions once the first route repeats. A human can load the chosen cup at the same A fixture for either condition. Keep the motion constant and record which prepared condition was loaded.
-- Route the confirmed request to a versioned `add_sample` skill with a fixed receiver and one portion. Expose one working route first. The current phone relay is mandarin-specific. Until water requests are wired and rehearsed, use the local terminal runner with a human operator and describe that setup accurately.
-- Record what the student can actually observe. For water delivery, use receiver fill or a tared scale and report measured mass when available. For a science comparison, the lab team should choose the approved materials and reference observations. A prepared buoyancy release is a fallback if the carried-cup pour is unreliable. [Experiment options and validation](../research/victor/laboratory-experiments-and-feasibility.md)
+- Optionally offer two prepared conditions only after the primary one-result workflow is reliable. This is not a first-minute judging gate. A human can load the chosen cup at the same A fixture; keep the motion constant and record the loaded condition.
+- Route the confirmed request to a versioned `add_sample` skill with a fixed receiver and one portion. Expose one working route first. The current browser/iPhone app uses the shared session service, with physical dispatch disabled. The historical mandarin relay is not its backend. Until the water skill is registered and rehearsed through the current app, use the supervised local runner and describe that setup accurately.
+- Record what the student can actually observe. For water delivery, use receiver fill or a tared scale and report measured mass when available. For chemistry, verify the preferred magic-tea/citric-acid preparation and visible response; use a small contained citric-acid/baking-soda reaction only as the selected fallback after its own check. Earlier buoyancy, grape-juice and food-color proposals are historical alternatives, not the selected physical demonstration.
 - Rehearse the complete interaction and reset twice on the final setup. Log outcome, elapsed time, interventions, and any spill. Keep a successful take and the receipts available for the demo.
 
 ## Stretch demo

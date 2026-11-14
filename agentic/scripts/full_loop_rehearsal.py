@@ -1,6 +1,6 @@
-"""Selected expert task rehearsal against synthetic images; no physical actuation.
+"""Selected expert task rehearsal against synthetic or MuJoCo images; no physical actuation.
 
-The harness acts as a test student and explicitly presents/confirms mock plans.
+The harness acts as a test student and explicitly presents/confirms simulated plans.
 It retains actual model/tool/image/task receipts. It is not an audible rehearsal.
 """
 import argparse
@@ -44,6 +44,7 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--execution', choices=['mock', 'mujoco'], default='mock')
+    parser.add_argument('--scene', choices=['metered_dropper', 'two_vessel'], default='metered_dropper')
     add_expert_arguments(parser)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
@@ -51,8 +52,22 @@ async def main():
     expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
     evaluator = SyntheticSkillEvaluator(args.out/'evaluations')
     factory = lambda: SceneBackend(scene, delay=.02)
-    scope = 'mock'
-    if args.execution == 'mujoco':
+    options = {'execution_scope': 'mock'}
+    request_text = 'Please test the prepared vinegar sample and check the indicator color.'
+    if args.scene == 'two_vessel':
+        if args.execution != 'mujoco':
+            parser.error('--scene two_vessel requires --execution mujoco')
+        from openarms_lab.two_vessel_scene import TwoVesselSceneService
+        from openarms_lab.two_vessel_backend import TwoVesselBackend
+        from openarms_lab.two_vessel_evaluation import TwoVesselSkillEvaluator
+        from openarms_lab.two_vessel_configuration import EXPERIMENT, CONDITIONS, execution_scope
+        scene = TwoVesselSceneService(args.out/'scene')
+        expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
+        evaluator = TwoVesselSkillEvaluator(args.out/'evaluations')
+        factory = lambda: TwoVesselBackend(scene)
+        options = {'experiment': EXPERIMENT, 'conditions': CONDITIONS, 'execution_scope': execution_scope()}
+        request_text = 'Please pour one premeasured portion of water from A into C, return the donor and check the result.'
+    elif args.execution == 'mujoco':
         from openarms_lab.mujoco_scene import MujocoSceneService
         from openarms_lab.mujoco_backend import MujocoBackend
         from openarms_lab.simulation_evaluation import SimulationSkillEvaluator, simulation_scope
@@ -60,13 +75,13 @@ async def main():
         expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
         evaluator = SimulationSkillEvaluator(args.out/'evaluations')
         factory = lambda: MujocoBackend(scene)
-        scope = simulation_scope()
+        options['execution_scope'] = simulation_scope()
     lab = Lab(args.out/'sessions', expert=expert, perception=scene, evaluator=evaluator,
-              backend_factory=factory, execution_scope=scope, expert_timeout=240)
+              backend_factory=factory, expert_timeout=240, **options)
     sid = (await lab.create())['session_id']
     try:
         began = time.perf_counter()
-        await lab.converse(sid, 'Please test the prepared vinegar sample and check the indicator color.', 'cold-request')
+        await lab.converse(sid, request_text, 'cold-request')
         cold = await settle(lab, sid, approve=True)
         (args.out/'cold.json').write_text(json.dumps(cold, indent=2))
         task = cold['tasks'][-1]
@@ -87,17 +102,23 @@ async def main():
         (args.out/'warm.json').write_text(json.dumps(warm, indent=2))
         task2 = warm['tasks'][-1]
         assert task2['status'] == 'completed' and task2['route'] == 'active_skill'
+        assert task2['plan']['skill_version'] == skill['version'], 'Warm request changed the admitted version'
         assert not task2['expert_runs'], 'Warm successful skill invoked the expert'
-        assert task2['plan']['skill_version'] == plan['skill_version']
         assert task2['plan']['bindings'] == plan['bindings']
         assert warm['pending'] is None and task2['observations'][-1]['status'] == 'observed'
+        if args.scene == 'two_vessel':
+            observed = task2['observations'][-1]
+            assert observed['status'] == 'observed' and observed['provenance'] == 'SIMULATED'
+            assert observed['features']['receiver_appearance'] == 'water_appearance'
+            assert all(observed['checks'].values()), observed
         summary = {'expert_configuration': expert.describe(), 'expert_runs': task['expert_runs'],
                    'provider': task['expert_runs'][0]['provider'], 'model': task['expert_runs'][0]['model'],
                    'requested_model': task['expert_runs'][0].get('requested_model'),
                    'actual_model': task['expert_runs'][0].get('actual_model'),
                    'reasoning_effort': task['expert_runs'][0]['reasoning_effort'],
                    'provenance': 'SIMULATED' if args.execution == 'mujoco' else 'SYNTHETIC',
-                   'execution_backend': args.execution, 'execution_scope': scope,
+                   'execution_backend': args.execution, 'execution_scope': options['execution_scope'],
+                   'scene': args.scene,
                    'actual_expert': True, 'audible_voice_verified': False,
                    'cold_model_calls': sum(run['calls'] for run in task['expert_runs']),
                    'warm_model_calls': 0, 'warm_request': request, 'promotion': decision,

@@ -141,3 +141,19 @@ def test_real_simulation_png_and_mp4_use_shared_authenticated_session_routes(tmp
         assert b'ftyp' in video.content[:32]
         name = simulation['video_url'].rsplit('/', 1)[1]
         assert client.get(f'{other_base}/media/{name}', headers=other_headers).status_code == 404
+
+
+def test_two_vessel_proposal_renders_pour_without_firmware_runner(monkeypatch):
+    pytest.importorskip('mujoco')
+    from agentic.openarms_lab.sim_preview import MujocoPreview
+
+    preview = MujocoPreview(timeout=30)
+    monkeypatch.setattr(preview, '_runner', lambda _: pytest.fail('A pour is not a firmware block move'))
+    request = {'skill_id': 'premeasured_dilution.v1', 'parameters': {'source': 'A', 'destination': 'C'}}
+    result = preview(None, request)
+    assert result['status'] == 'ready' and result['physical_execution'] is False, result
+    assert result['transfer'] == [{'source': 'A', 'into': 'C', 'added': {'water': 1}}]
+    assert result['modeled_chemistry'][0]['provenance'] == 'MODELED'
+    assert preview.video_path(result['video'].rsplit('/', 1)[-1]).is_file()
+    request['parameters']['destination'] = 'B'
+    assert preview(None, request)['status'] == 'blocked'

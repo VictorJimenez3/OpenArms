@@ -1,6 +1,6 @@
 # Client design notes
 
-The original delivery plan is superseded by [the current architecture](ARCHITECTURE.md) and [R1–R6 contract](FULL_SYSTEM_DELIVERY.md). PR #22 is merged. The kit activity is undecided, voice awaits a replacement, and simulation is optional Devpost/presentation material. The design decisions below remain useful; this document assigns no active lanes or extra merge gates.
+The original delivery plan is superseded by [the current architecture](ARCHITECTURE.md) and [R1–R6 contract](FULL_SYSTEM_DELIVERY.md). PR #22 and PR #25 are merged. The selected physical scope is the two-vessel Smartivity pour; Gemini Live provides speech and expert inference remains separate. MuJoCo is active development, with optional presentation experiments; Isaac is parked. The design decisions below remain useful; this document assigns no active lanes or extra merge gates.
 
 ## Visual direction
 

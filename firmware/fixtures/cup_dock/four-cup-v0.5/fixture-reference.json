@@ -1,0 +1,78 @@
+{
+  "design_id": "openarms-one-color-four-cups-v0.5-PROVISIONAL",
+  "platform_count": 1,
+  "cup_slot_count": 4,
+  "material_count": 1,
+  "applied_graphics": false,
+  "units": "mm",
+  "frame": "whole platform; origin front-left underside; X right, Y rear, Z up",
+  "platform_dimensions_mm": [
+    200,
+    200,
+    9
+  ],
+  "base_thickness_mm": 3,
+  "guide_height_mm": 6,
+  "radial_clearance_mm": 0.8,
+  "slot_geometry": [
+    {
+      "slot": "A",
+      "cup_bottom_top_height_mm": [
+        38,
+        48,
+        51
+      ],
+      "seat_center_mm": [
+        55,
+        78,
+        3
+      ]
+    },
+    {
+      "slot": "B",
+      "cup_bottom_top_height_mm": [
+        38,
+        48,
+        51
+      ],
+      "seat_center_mm": [
+        145,
+        78,
+        3
+      ]
+    },
+    {
+      "slot": "C",
+      "cup_bottom_top_height_mm": [
+        38,
+        48,
+        51
+      ],
+      "seat_center_mm": [
+        55,
+        160,
+        3
+      ]
+    },
+    {
+      "slot": "D",
+      "cup_bottom_top_height_mm": [
+        38,
+        48,
+        51
+      ],
+      "seat_center_mm": [
+        145,
+        160,
+        3
+      ]
+    }
+  ],
+  "cup_dimensions_status": "ALL provisional; use actual store-bought cups; bottom diameter unmeasured",
+  "references": "Recessed slot letters and 100 mm ruler, same printed material as platform",
+  "physical_fixture_id": null,
+  "calibration_id": null,
+  "robot_from_platform_transform": null,
+  "mode": "taught_fixture_only",
+  "warning": "CAD coordinates are not robot coordinates. Recessed ruler marks do not independently qualify camera localization or depth."
+}

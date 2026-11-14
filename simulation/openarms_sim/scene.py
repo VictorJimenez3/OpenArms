@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import mujoco
@@ -13,6 +14,14 @@ TABLE_THICKNESS = 0.02
 WALL_RGBA = [0.85, 0.90, 0.95, 0.30]
 STREAM_RADIUS = 0.004
 MARK_RGBA = {"source": [0.15, 0.45, 0.85, 1], "receiver": [0.90, 0.55, 0.10, 1], "point": [0.20, 0.60, 0.35, 1]}
+FIDUCIAL_COLORS = {
+    "f1": [0.82, 0.055, 0.04, 1],
+    "f2": [0.055, 0.69, 0.055, 1],
+    "f3": [0.10, 0.09, 0.82, 1],
+    "f4": [0.80, 0.65, 0.035, 1],
+}
+VESSEL_COLORS = {"cup": [0.74, 0.035, 0.65, 1], "receiver": [0.035, 0.68, 0.70, 1]}
+DOCK_RGBA = [0.19, 0.23, 0.26, 1]
 
 
 @dataclass
@@ -35,6 +44,7 @@ class Scene:
     geom: dict[str, int]  # key -> the geom used for collisions
     liquid_geom: dict[str, int]  # containers only
     stream_geom: int
+    fixture_geom: dict[int, str]
 
     def size(self, key: str) -> tuple[float, float]:
         """(radius or half-width, height) of the thing with this key."""
@@ -49,10 +59,56 @@ class Scene:
     def rest_position(self, key: str, station: str | None = None) -> np.ndarray:
         """Centre of the thing when it stands on a station (its own, for a container)."""
         x, y = self.bench.stations[station or key].pos
-        return np.array([x, y, self.size(key)[1] / 2])
+        return np.array([x, y, self.size(key)[1] / 2 + self.bench.dock_height])
 
 
-def build_scene(bench: Bench) -> Scene:
+def _box(body, name, pos, size, rgba, *, collidable=True, angle=0.0):
+    return body.add_geom(name=name, type=mujoco.mjtGeom.mjGEOM_BOX,
+                         pos=pos, size=size, rgba=rgba,
+                         quat=[math.cos(angle / 2), 0, 0, math.sin(angle / 2)],
+                         contype=int(collidable), conaffinity=int(collidable))
+
+
+def _dock(world, name: str, bench: Bench, r: float) -> list[str]:
+    x, y = bench.stations[name].pos
+    dock = bench.docks
+    edge = r + dock.radial_clearance
+    thickness = dock.backing_thickness
+    base = f"dock_{name}_base"
+    _box(world, base, [x, y, dock.base_height / 2],
+         [edge + thickness, edge + thickness, dock.base_height / 2], DOCK_RGBA)
+    names = [base]
+    # Three open-sided stops form the shallow nest and a rigid backing. The
+    # approach side remains open for the model's gripper and its return path.
+    for label, dx, dy, height in (("back", 1, 0, dock.backing_height),
+                                  ("left", 0, 1, dock.nest_height),
+                                  ("right", 0, -1, dock.nest_height)):
+        rail = f"dock_{name}_{label}"
+        offset = edge + thickness / 2
+        _box(world, rail, [x + dx * offset, y + dy * offset, dock.base_height + height / 2],
+             [thickness / 2 if dx else edge, thickness / 2 if dy else edge, height / 2], DOCK_RGBA)
+        names.append(rail)
+    return names
+
+
+def _vessel_visuals(body, name: str, kind: str, r: float, h: float, spout: float):
+    # Draw open walls separately from the conservative collision cylinder.
+    panels = 28
+    wall = [0.91, 0.88, 0.82, 0.50] if kind == "cup" else [0.75, 0.90, 0.94, 0.20]
+    half_span = r * math.tan(math.pi / panels)
+    for i in range(panels):
+        angle = i * math.tau / panels
+        x, y = r * math.cos(angle), r * math.sin(angle)
+        _box(body, f"wall_{name}_{i}", [x, y, -0.0015], [0.0009, half_span, h / 2 - 0.0015],
+             wall, collidable=False, angle=angle)
+        _box(body, f"rim_{name}_{i}", [x, y, h / 2 - 0.0015], [0.002, half_span, 0.0015],
+             VESSEL_COLORS[kind], collidable=False, angle=angle)
+    if spout:
+        _box(body, f"spout_{name}", [0, r + spout / 2, h / 2 - 0.0015], [0.003, spout / 2, 0.0015],
+             VESSEL_COLORS[kind], collidable=False)
+
+
+def build_scene(bench: Bench, *, view_variant: str = "nominal") -> Scene:
     spec = mujoco.MjSpec.from_file(str(ARM_XML))
     spec.modelname = "openarms_bench"
 
@@ -74,7 +130,11 @@ def build_scene(bench: Bench) -> Scene:
     )
 
     world = spec.worldbody
-    world.add_light(pos=[0.2, 0.0, 1.5], dir=[0, 0, -1], castshadow=False)
+    light = world.add_light(pos=[0.2, 0.0, 1.5], dir=[0, 0, -1], castshadow=False)
+    if bench.docks:
+        spec.visual.headlight.ambient = [0.30, 0.30, 0.30]
+        spec.visual.headlight.diffuse = [0.45, 0.45, 0.45]
+        light.diffuse = [0.35, 0.35, 0.35]
 
     # The grasp point: where the centre of a held cup or block sits, between the jaws.
     gripper = spec.body("gripper")
@@ -91,6 +151,13 @@ def build_scene(bench: Bench) -> Scene:
     )
 
     kind: dict[str, str] = {}
+    fixture_names = {}
+    if bench.camera:
+        for name, (x, y) in bench.camera.fiducials.items():
+            _box(world, f"marker_border_{name}", [x, y, 0.0005], [0.017, 0.017, 0.0005],
+                 [0.11, 0.13, 0.16, 1], collidable=False)
+            _box(world, f"marker_{name}", [x, y, 0.0011], [0.013, 0.013, 0.0004],
+                 FIDUCIAL_COLORS[name], collidable=False)
     for name, st in bench.stations.items():
         x, y = st.pos
         if st.kind == "point":
@@ -109,17 +176,20 @@ def build_scene(bench: Bench) -> Scene:
         kind[name] = "cup" if is_source else "receiver"
         r = bench.cup_radius if is_source else bench.receiver_radius
         h = bench.cup_height if is_source else bench.receiver_height
-        world.add_geom(
-            name=f"mark_{name}",
-            type=mujoco.mjtGeom.mjGEOM_CYLINDER,
-            size=[r + 0.008, 0.0005, 0],
-            pos=[x, y, 0.0005],
-            rgba=MARK_RGBA[st.kind],
-            contype=0,
-            conaffinity=0,
-        )
-        body = world.add_body(name=f"thing_{name}", pos=[x, y, h / 2], mocap=True)
-        body.add_geom(name=f"geom_{name}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, size=[r, h / 2, 0], rgba=WALL_RGBA)
+        if bench.docks:
+            fixture_names.update({geom: name for geom in _dock(world, name, bench, r)})
+        else:
+            world.add_geom(name=f"mark_{name}", type=mujoco.mjtGeom.mjGEOM_CYLINDER,
+                           size=[r + 0.008, 0.0005, 0], pos=[x, y, 0.0005], rgba=MARK_RGBA[st.kind],
+                           contype=0, conaffinity=0)
+        body = world.add_body(name=f"thing_{name}", pos=[x, y, h / 2 + bench.dock_height], mocap=True)
+        body.add_geom(name=f"geom_{name}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, size=[r, h / 2, 0],
+                      rgba=[0, 0, 0, 0] if bench.docks else WALL_RGBA)
+        if bench.docks:
+            _vessel_visuals(body, name, kind[name], r, h, bench.spout_extension if is_source else 0.0)
+        if view_variant == "occluded" and is_source:
+            _box(world, "view_occluder", [x + 0.014, y, h + bench.dock_height + 0.020],
+                 [0.043, 0.041, 0.007], [0.24, 0.25, 0.28, 1], collidable=False)
         body.add_geom(
             name=f"liquid_{name}",
             type=mujoco.mjtGeom.mjGEOM_CYLINDER,
@@ -174,6 +244,7 @@ def build_scene(bench: Bench) -> Scene:
         geom={k: model.geom(f"geom_{k}").id for k in kind},
         liquid_geom={k: model.geom(f"liquid_{k}").id for k in kind if kind[k] != "object"},
         stream_geom=model.geom("stream").id,
+        fixture_geom={model.geom(name).id: station for name, station in fixture_names.items()},
     )
     mujoco.mj_forward(model, data)
     return scene

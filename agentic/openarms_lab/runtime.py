@@ -10,7 +10,7 @@ from pathlib import Path
 from .backends import MockBackend
 from .contracts import LabExecutor
 from .conversation import condition_input, controller_state, conversation_reply, explicit_action, prediction_input, read_only_turn, reset_input, stop_input, words
-from .learning import CONDITIONS, EXPERIMENT, condition, reflection_feedback, unknown_observation
+from .learning import CONDITIONS, EXPERIMENT, reflection_feedback, unknown_observation
 from .skills import SkillRegistry, compute_skill_hash
 from .store import Store
 from .task_loop import TASK_BUSY, TASK_TERMINAL, TaskLoop
@@ -50,7 +50,8 @@ def _affirmative(value):
 class Lab(TaskLoop):
     def __init__(self, data_dir: Path, *, backend_factory=None, registry=None,
                  execution_timeout=60, confirmation_ttl=120, expert_timeout=90,
-                 expert=None, perception=None, evaluator=None, auto_evaluate=False, execution_scope=None):
+                 expert=None, perception=None, evaluator=None, auto_evaluate=False, execution_scope=None,
+                 experiment=None, conditions=None):
         if min(execution_timeout, confirmation_ttl, expert_timeout) <= 0:
             raise ValueError('Execution and confirmation timeouts must be positive.')
         data_dir = Path(data_dir)
@@ -60,6 +61,8 @@ class Lab(TaskLoop):
         self.expert, self.perception, self.evaluator = expert, perception, evaluator
         self.auto_evaluate = auto_evaluate
         self.execution_scope = execution_scope
+        self.experiment = copy.deepcopy(EXPERIMENT if experiment is None else experiment)
+        self.conditions = copy.deepcopy(list(CONDITIONS) if conditions is None else conditions)
         self.evaluations = {}
         self.expert_timeout = expert_timeout
         self.backend_factory = backend_factory
@@ -135,7 +138,7 @@ class Lab(TaskLoop):
             s['generation'] += 1
             s['pending'] = None
             self._cancel_tasks(s, 'Server restarted; tasks are never replayed.')
-            s['history_only'] = ((s.get('experiment') or {}).get('id') != EXPERIMENT['id'] or
+            s['history_only'] = ((s.get('experiment') or {}).get('id') != self.experiment['id'] or
                                  s.get('backend') not in ('mock', 'mujoco') or
                                  (self.execution_scope is not None and s.get('execution_scope') != self.execution_scope))
             for r in s['requests']:
@@ -161,7 +164,7 @@ class Lab(TaskLoop):
                 else:
                     s['state'] = MockBackend.home_state()
                     s['capabilities'] = self._capabilities(MockBackend.capabilities())
-                s['conditions'] = copy.deepcopy(list(CONDITIONS))
+                s['conditions'] = copy.deepcopy(self.conditions)
             else:
                 # Preserve original backend, observations, sources and evidence verbatim.
                 s['capabilities'] = {'mock_execution': False, 'physical_execution': False,
@@ -313,6 +316,10 @@ class Lab(TaskLoop):
                 if ((current_baseline or {}).get('version') != (baseline or {}).get('version') or
                         self.registry.get(skill_id, version)['status'] != 'task_validated'):
                     raise LabError('The active skill changed during evaluation; request a fresh comparison.')
+                evaluated_scope = (raw.get('metrics') or {}).get('source_scope')
+                if (self.execution_scope is not None and evaluated_scope is not None and
+                        evaluated_scope != self.execution_scope):
+                    raise LabError('Evaluation source scope differs from this session; restart with the current implementation.')
                 decision = self.registry.record_evaluation(skill_id, version, raw)
                 self._event(s, 'skill_evaluation', skill_id=skill_id, skill_version=version,
                             decision=decision, provenance='EVALUATOR', execution_scope=self.execution_scope)
@@ -349,16 +356,16 @@ class Lab(TaskLoop):
         b = self._backend(sid)
         b.prepare()
         s = {'session_id': sid, 'backend': b.mode, 'execution_scope': self.execution_scope,
-             'experiment': copy.deepcopy(EXPERIMENT),
+             'experiment': copy.deepcopy(self.experiment),
              'revision': 0, 'generation': 0, 'connected': True, 'trial': self._trial(),
-             'conditions': copy.deepcopy(list(CONDITIONS)), 'prediction': '', 'pending': None,
+             'conditions': copy.deepcopy(self.conditions), 'prediction': '', 'pending': None,
              'requests': [], 'tasks': [], 'scene': None, 'scene_images': [],
              'observations': [], 'messages': [], 'notebook': [],
              'state': b.state(), 'capabilities': self._capabilities(b.capabilities()), 'dedupe': {},
              'proposal_sequence': 0, 'history_only': False}
         self.sessions[sid] = s
         s['trial']['mode'] = 'SIMULATED' if b.mode == 'mujoco' else 'MOCK'
-        self._event(s, 'session_created', backend=b.mode, experiment_id=EXPERIMENT['id'])
+        self._event(s, 'session_created', backend=b.mode, experiment_id=self.experiment['id'])
         self._message(s, 'assistant', 'The MuJoCo simulation is ready.' if b.mode == 'mujoco' else 'The mock lab is ready.')
         if b.mode == 'mujoco' and self.perception is not None:
             try:
@@ -371,7 +378,7 @@ class Lab(TaskLoop):
 
     def _editable(self, s):
         if s.get('history_only'):
-            raise LabError('This historical session is read-only; create a new pH session.')
+            raise LabError('This historical session is read-only; create a new session.')
         if not s['connected']:
             raise LabError('Session disconnected. Reconnect before starting a fresh trial or proposal.')
 
@@ -393,10 +400,13 @@ class Lab(TaskLoop):
 
     def _choose(self, s, condition_id):
         self._idle(s)
-        try:
-            c = condition(condition_id)
-        except ValueError as exc:
-            raise LabError(str(exc)) from None
+        c = next((item for item in self.conditions if item['id'] == condition_id), None)
+        if c is None:
+            pending = s.get('pending')
+            if pending and self._prepared_sample(pending['plan']) and condition_id != pending['condition_id']:
+                self._invalidate(s, 'Requested condition is unsupported; previous proposal revoked.')
+            raise LabError('Choose a condition supported by this configured experiment: '+
+                           ', '.join(item['title'] for item in self.conditions)+'.')
         if s['trial']['condition_id'] == condition_id:
             return
         pending = s['pending']
@@ -406,7 +416,8 @@ class Lab(TaskLoop):
         if s['trial']['state'] == 'choosing_condition':
             s['trial']['state'] = 'predicting'
         self._event(s, 'condition_selected', condition_id=c['id'])
-        self._message(s, 'assistant', f"Selected {c['title']} for this mock trial.")
+        trial_kind = 'simulated' if s['backend'] == 'mujoco' else 'mock'
+        self._message(s, 'assistant', f"Selected {c['title']} for this {trial_kind} trial.")
 
     async def choose_condition(self, sid, condition_id, *, turn_id=None, voice_generation=None):
         async with self._lock(sid):
@@ -423,12 +434,18 @@ class Lab(TaskLoop):
                     s['dedupe'][key] = {'text': message['text'], 'task_id': task['task_id'] if task else None}
                     return await self.publish(s)
                 return self.snapshot(sid)
-            self._choose(s, condition_id)
+            pending_before = s.get('pending')
+            try:
+                self._choose(s, condition_id)
+            except LabError:
+                if pending_before is not None and s.get('pending') is None:
+                    await self.publish(s)
+                raise
             prior = s['tasks'][-1] if s['tasks'] else None
             if prior and prior['status'] == 'needs_clarification':
                 message = next((m for m in reversed(s['messages']) if m['turn_id'] == turn_id
                                 and m['role'] == 'user' and m.get('final')), None)
-                answer = message['text'] if message else condition(condition_id)['title']
+                answer = message['text'] if message else next(item['title'] for item in self.conditions if item['id'] == condition_id)
                 self._queue_task(s, answer, turn_id)
             return await self.publish(s)
 
@@ -603,7 +620,7 @@ class Lab(TaskLoop):
         async with self._lock(sid):
             s = self.get(sid)
             if s.get('history_only'):
-                raise LabError('Historical session is read-only; create a pH session.')
+                raise LabError('Historical session is read-only; create a new session.')
             s['connected'] = True
             self._event(s, 'reconnected', generation=s['generation'])
             return await self.publish(s)
@@ -650,9 +667,13 @@ class Lab(TaskLoop):
         pending = s.get('pending')
         sample = self._prepared_sample(pending['plan']) if pending else None
         correcting = bool(sample and condition_id != sample['arguments']['condition_id'])
+        supported = any(item['id'] == condition_id for item in self.conditions)
+        explicit_correction = bool(re.match(r'^(?:actually|instead|no|switch to|change to|make that)\b', words(text)))
+        if not supported and prior and prior['status'] in ('queued', 'running') and not explicit_correction:
+            raise LabError('Choose a condition supported by this configured experiment: '+
+                           ', '.join(item['title'] for item in self.conditions)+'.')
         if (prior and prior['status'] in ('queued', 'running') and
-                (condition_id != prior.get('condition_id') or
-                 re.match(r'^(?:actually|instead|no|switch to|change to|make that)\b', words(text)))):
+                (condition_id != prior.get('condition_id') or explicit_correction)):
             # The student can correct the condition while planning. No action
             # has started, and the old worker can never publish a proposal.
             self._cancel_tasks(s, 'Sample changed during planning.', target=prior['task_id'])

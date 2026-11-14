@@ -133,8 +133,22 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             from .skills import SkillRegistry
             execution = os.getenv('OPENARMS_EXECUTION', 'mock').strip().lower()
             registry_scope = execution
+            experiment = conditions = None
             app.state.execution_mode = execution
-            if execution == 'mujoco':
+            scene_name = os.getenv('OPENARMS_SCENE', 'metered_dropper').strip().lower()
+            if execution == 'mujoco' and scene_name == 'two_vessel':
+                from .two_vessel_scene import TwoVesselSceneService
+                from .two_vessel_backend import TwoVesselBackend
+                from .two_vessel_evaluation import TwoVesselSkillEvaluator
+                from .two_vessel_configuration import EXPERIMENT, CONDITIONS, execution_scope
+                registry_scope = execution_scope()
+                experiment, conditions = EXPERIMENT, CONDITIONS
+                scene = TwoVesselSceneService(data / 'scene-evidence')
+                backend_factory = lambda: TwoVesselBackend(scene)
+                evaluator = TwoVesselSkillEvaluator(data / 'evaluations')
+            elif execution == 'mujoco':
+                if scene_name != 'metered_dropper':
+                    raise ValueError('OPENARMS_SCENE must be two_vessel or metered_dropper.')
                 from .mujoco_scene import MujocoSceneService
                 from .mujoco_backend import MujocoBackend
                 from .simulation_evaluation import SimulationSkillEvaluator
@@ -159,7 +173,8 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             app.state.lab = Lab(data, expert=expert, perception=scene,
                                 registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,
-                                auto_evaluate=True,
+                                auto_evaluate=evaluator is not None,
+                                experiment=experiment, conditions=conditions,
                                 execution_scope=registry_scope,
                                 backend_factory=backend_factory, expert_timeout=240)
         else:
@@ -219,6 +234,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 'live_configured': configured,
                 'live_model': os.getenv('GEMINI_LIVE_MODEL', 'gemini-3.8-live') if configured and voice_factory is None else None,
                 'voice_status': 'injected' if voice_factory is not None else ('configured' if configured else 'missing_key'),
+                'experiment_id': service().experiment['id'],
                 'expert_provider': identity.get('provider'), 'expert_model': identity.get('model'),
                 'expert_reasoning_effort': identity.get('reasoning_effort'), 'expert': identity,
                 'pairing_required': bool(os.getenv('OPENARMS_DEMO_TOKEN'))}

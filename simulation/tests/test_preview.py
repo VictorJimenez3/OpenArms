@@ -17,7 +17,7 @@ def block(plan, **kw):
 
 
 def liquid(plan, **kw):
-    return preview(plan, render=False, setup="liquid", **kw)
+    return preview(plan, render=False, setup="liquid_legacy", **kw)
 
 
 def move(a, b):
@@ -25,7 +25,7 @@ def move(a, b):
 
 
 def add(source, into, portions=1):
-    return example_plan(source, into, portions, setup="liquid")
+    return example_plan(source, into, portions, setup="liquid_legacy")
 
 
 def codes(result):
@@ -122,8 +122,8 @@ def test_unknown_setup_is_a_programming_error():
 # ---- liquid setup: the normal case -----------------------------------------
 
 
-@pytest.mark.parametrize("source", load_bench("liquid").sources)
-@pytest.mark.parametrize("into", load_bench("liquid").receivers)
+@pytest.mark.parametrize("source", load_bench("liquid_legacy").sources)
+@pytest.mark.parametrize("into", load_bench("liquid_legacy").receivers)
 def test_every_pour_runs_clean(source, into):
     result = liquid(add(source, into))
     assert result["ok"], result["warnings"]
@@ -162,12 +162,12 @@ def test_simulation_only_substance_is_blocked_even_alone():
 
 
 def test_overflow_is_blocked():
-    full = {"C": {"ph_indicator": 1, "water": load_bench("liquid").receiver_capacity - 1}}
+    full = {"C": {"ph_indicator": 1, "water": load_bench("liquid_legacy").receiver_capacity - 1}}
     assert "overflow" in codes(liquid(add("A", "C"), contents=full))
 
 
 def test_gripper_that_misses_the_cup_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     poses["GRASP_A"]["shoulder_pan"] += 12
     result = liquid(add("A", "C"), poses=poses)
     assert "missed_grasp" in codes(result)
@@ -175,7 +175,7 @@ def test_gripper_that_misses_the_cup_is_blocked():
 
 
 def test_pouring_beside_the_receiver_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     for name in ("ABOVE_C", "TIP_C"):
         poses[name]["shoulder_pan"] -= 12  # swings the pour to the empty gap between B and C
     result = liquid(add("A", "C"), poses=poses)
@@ -184,13 +184,13 @@ def test_pouring_beside_the_receiver_is_blocked():
 
 
 def test_reaching_into_the_table_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     poses["GRASP_A"]["shoulder_lift"] += 14
     assert codes(liquid(add("A", "C"), poses=poses)) & {"hits_table", "held_hits_table"}
 
 
 def test_not_tipping_far_enough_is_blocked():
-    poses = copy.deepcopy(load_poses("liquid"))
+    poses = copy.deepcopy(load_poses("liquid_legacy"))
     poses["TIP_C"] = dict(poses["ABOVE_C"])
     assert "no_pour" in codes(liquid(add("A", "C"), poses=poses))
 

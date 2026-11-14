@@ -75,7 +75,7 @@
             <summary>Type instead</summary>
             <form id="message-form">
               <label for="message">What would you like to do?</label>
-              <textarea id="message" rows="2" placeholder="Check the color of the vinegar sample." maxlength="4000" required disabled></textarea>
+              <textarea id="message" rows="2" placeholder="Ask a question or request an action." maxlength="4000" required disabled></textarea>
               <button id="send" type="submit" class="primary" disabled>Send request</button>
             </form>
           </details>
@@ -113,17 +113,13 @@
 
         <details id="trial-context" class="lab-details">
           <summary>Optional sample and prediction</summary>
-          <fieldset id="conditions" disabled>
+          <fieldset id="conditions" disabled hidden>
             <legend class="sr-only">Prepared samples</legend>
-            <div class="actions">
-              <button class="condition secondary" type="button" data-condition="vinegar" aria-pressed="false">Vinegar</button>
-              <button class="condition secondary" type="button" data-condition="baking_soda" aria-pressed="false">Baking-soda solution</button>
-              <button class="condition secondary" type="button" data-condition="water" aria-pressed="false">Water</button>
-            </div>
+            <div id="condition-buttons" class="actions"></div>
           </fieldset>
           <form id="prediction-form">
             <label for="prediction">What do you think will happen?</label>
-            <p class="field-hint">Predict a color or an acid/base category, and tell us why.</p>
+            <p id="prediction-hint" class="field-hint"></p>
             <textarea id="prediction" rows="2" maxlength="4000" required disabled></textarea>
             <div class="actions"><button id="save-prediction" type="submit" class="primary" disabled>Save prediction</button><span id="prediction-saved" role="status"></span></div>
           </form>
