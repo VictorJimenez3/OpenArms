@@ -46,19 +46,22 @@ def build_model():
     vessel_geoms, water_geoms, bar_geoms, sugar_geoms = {}, {}, {}, {}
     for label, (x, y) in centers.items():
         wb.add_geom(name=f"base_{label}", type=mujoco.mjtGeom.mjGEOM_CYLINDER, pos=[x,y,.006], size=[.057,.005,0], rgba=[.70,.73,.72,1])
-        # Clear glass is an open cage of fine edge lines. A full alpha cylinder
-        # sorts in front of the contents in MuJoCo and hides the sugar.
+        # Thin transparent wall panels form an open beaker; no solid cylinder
+        # fills the vessel or hides the grains. Rims remain visible for legibility.
         radius=.052; bottom=.012; top=.116
-        for j in range(12):
-            a=2*math.pi*j/12
-            px,py=x+radius*math.cos(a),y+radius*math.sin(a)
-            wb.add_geom(name=f"glass_{label}_post_{j}",type=mujoco.mjtGeom.mjGEOM_CAPSULE,fromto=[px,py,bottom,px,py,top],size=[.0012],rgba=[.49,.65,.68,1],contype=0,conaffinity=0)
+        for j in range(48):
+            angle=2*math.pi*j/48
+            px,py=x+radius*math.cos(angle),y+radius*math.sin(angle)
+            yaw=angle+math.pi/2
+            wb.add_geom(name=f"glass_{label}_wall_{j}",type=mujoco.mjtGeom.mjGEOM_BOX,
+                pos=[px,py,(bottom+top)/2],size=[radius*math.tan(math.pi/48),.00035,(top-bottom)/2],
+                quat=[math.cos(yaw/2),0,0,math.sin(yaw/2)],rgba=[.80,.90,.94,.10],contype=0,conaffinity=0)
         for z,ring in ((bottom,"base"),(top,"rim")):
             for j in range(16):
                 a=2*math.pi*j/16; b=2*math.pi*(j+1)/16
                 p1=[x+radius*math.cos(a),y+radius*math.sin(a),z]
                 p2=[x+radius*math.cos(b),y+radius*math.sin(b),z]
-                wb.add_geom(name=f"glass_{label}_{ring}_{j}",type=mujoco.mjtGeom.mjGEOM_CAPSULE,fromto=p1+p2,size=[.0012],rgba=[.53,.68,.71,1],contype=0,conaffinity=0)
+                wb.add_geom(name=f"glass_{label}_{ring}_{j}",type=mujoco.mjtGeom.mjGEOM_CAPSULE,fromto=p1+p2,size=[.0008],rgba=[.65,.77,.80,.8],contype=0,conaffinity=0)
         vessel_geoms[label] = None
         # A faint, thin surface suggests clear water without filling the cup
         # with a translucent solid that occludes bottom details.

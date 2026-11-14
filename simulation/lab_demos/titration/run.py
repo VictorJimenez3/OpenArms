@@ -128,7 +128,7 @@ def run(out:Path,speed=1.0,negative=False,render=True):
             for a,v in zip(aid,command): d.ctrl[a]=float(v)
             mujoco.mj_step(m,d); simtime+=dt
             err=float(np.max(np.abs(np.array([d.qpos[q] for q in qadr])-target)))
-            if tick % max(1,round(.033*speed/dt))==0 and rec: rec.frame(m,d,label,f"Joint position control  •  max error {err:.3f} rad", "RUNNING", trial or current, drop_count)
+            if tick % max(1,round(.033*speed/dt))==0 and rec: rec.frame(m,d,label,"Move to the next dosing position", "RUNNING", trial or current, drop_count)
             if err < .035 and np.max(np.abs(target-command)) < 1e-5 and tick > 5: break
         current=goal_name
         timeline.append({"t_s":round(simtime,3),"event":"motion_complete","target":goal_name,"joint_error_rad":err,"elapsed_s":round(simtime-start,3)})

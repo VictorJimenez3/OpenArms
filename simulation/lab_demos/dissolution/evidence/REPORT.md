@@ -10,3 +10,5 @@
 - Focused pytest checks: 3 passed. Video stream checked with `ffprobe`.
 
 The first-order kinetic rates and clear-water visual are declared analytical assumptions. The glass is represented with thin open edge geometry for legibility; this is a visualization, not an optical or fluid simulation. The switch uses a geometric site-distance trigger, not a collision-validated button. The stir-bar spin is a visual cue; fluid motion and real dissolution are not simulated or measured. The waypoint policy is scripted, not learned.
+
+Final integration uses thin transparent wall panels and a thin clear-water surface; the visible grains and stir bars are not hidden inside solid translucent cylinders. The full final video was re-rendered with unchanged controller and kinetic results.

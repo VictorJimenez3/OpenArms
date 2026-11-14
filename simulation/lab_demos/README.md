@@ -1,5 +1,7 @@
 # Four tiny MuJoCo laboratory demonstrations
 
+[Watch the four videos](GALLERY.html) · [Video metadata and hashes](VIDEOS.json)
+
 The selected presentation experiments are color comparison, single-step dilution, stirred-versus-still dissolution, and titration. Each experiment owns its apparatus, policy, scientific model, recording command, tests, and evidence in its subdirectory. Original static Blender design candidates remain in `visual_assets/classic_lab/`; filtration and precipitation are outside this video scope.
 
 The robot is the existing licensed SO-101 model. Scientific responses are declared simplified models, not physical laboratory measurements. Read each experiment README for its controller mode, engagement checks, assumptions, and reproducible command. Video playback may be accelerated; elapsed model time and playback speed must remain explicit.

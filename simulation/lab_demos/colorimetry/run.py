@@ -72,9 +72,9 @@ def main():
   dr.rounded_rectangle([880,18,1248,54],radius=10,fill=(18,68,72,235));dr.text((899,26),"MuJoCo simulation | simplified science model",font=font(16),fill="white")
   dr.text((1100,80),f"{a.speed:g}× playback",font=font(16),fill=(25,42,50,255))
   if obs:
-   y=570;dr.rounded_rectangle([32,y,1248,690],radius=18,fill=(246,248,246,242));dr.text((54,y+12),"PHOTOMETER · rendered RGB proxy",font=font(18,1),fill=(28,48,53,255));x=55
+   y=570;dr.rounded_rectangle([32,y,1248,690],radius=18,fill=(246,248,246,242));dr.text((54,y+12),"PHOTOMETER · modeled optical reading",font=font(18,1),fill=(28,48,53,255));x=55
    for n in ("reference","unknown"):
-    if n in obs:dr.text((x,y+48),f"{n.title()}  A*={obs[n]['sensor_A']:.3f}  RGB {obs[n]['rgb']}",font=font(23,1),fill=(32,52,58,255));x+=565
+    if n in obs:dr.text((x,y+48),f"{n.title()}  A*={obs[n]['sensor_A']:.3f}",font=font(23,1),fill=(32,52,58,255));x+=565
   wr.append_data(np.asarray(im));frames+=1
  def step(label,cap,n=1000):
   nonlocal sim
@@ -94,12 +94,12 @@ def main():
   qtar=q;step(label,cap,max(750,round(3/dt)))
  def home():move([.27,0,.30],"Return home","Clear reader and return to home pose")
  draw("Color comparison","Two prepared samples · reference and unknown · start")
- move([.27,0,.30],"Approach samples","Position-controlled SO-101 moves under closed-loop joint feedback")
+ move([.27,0,.30],"Approach samples","Move from the starting position toward the prepared samples")
  for n in ("reference","unknown"):
   p=S[n]["p"];above=[p[0],p[1],.25];pick=[p[0],p[1],.147];slot=[R[0],R[1],.25];seat=[R[0],R[1],.166]
   if a.negative_control and n=="reference":ev("negative_control_missed_pick",sample=n);step("Missed-grasp control","Pickup disabled: reference remains on bench; no measurement",120);continue
   move(above,"Align sample",f"Align over the marked {n} station")
-  move(pick,"Engage sample",f"Lower to vial; geometric grasp tolerance 18 mm")
+  move(pick,"Engage sample",f"Lower to vial; align the gripper around the sample")
   e=float(np.linalg.norm(d.site_xpos[site]-pick));grasp=e<.018;ev("grasp_attempt",sample=n,error_m=round(e,5),engaged=bool(grasp));held=n if grasp else None
   step("Close gripper",f"{n.title()} grasp {'engaged' if grasp else 'missed'}",150)
   move(above,"Lift upright",f"Lift {n} upright for a short transfer")
@@ -111,17 +111,17 @@ def main():
    prediction=beer_lambert(S[n]["c"]);rgb=tuple(round(255*v) for v in S[n]["rgb"]);sensor=rgb_sensor_proxy(rgb)
    obs[n]={"beer_lambert_prediction_A":round(prediction,4),"sensor_A":round(sensor,4),"rgb":rgb,"measurement_type":"rendered-material RGB sensor proxy"}
    ev("sample_measured",sample=n,prediction_A=round(prediction,4),sensor_proxy_A=round(sensor,4),rgb=rgb)
-  step("Read sample","Beer-Lambert prediction and rendered RGB proxy are distinct",150)
+  step("Read sample","Record the modeled optical reading with the sample seated",150)
   held=None;ev("release",sample=n,location="reader" if placed else "unmeasured")
   move([R[0],R[1],.27],"Clear reader","Open jaws after seating")
-  move(seat,"Regrasp sample","Geometric re-engagement inside accessible bay")
+  move(seat,"Regrasp sample","Pick up the measured sample from the reader")
   e=float(np.linalg.norm(d.site_xpos[site]-seat));held=n if e<.022 else None;ev("regrasp_attempt",sample=n,error_m=round(e,4),engaged=held==n)
   move(slot,"Lift from reader","Lift vial vertically")
   move(above,"Return sample","Return vial upright above its marked station")
   move(pick,"Set down sample","Lower vial onto its rack stand before releasing")
   held=None;ev("returned_to_station",sample=n);home()
  if set(obs)=={"reference","unknown"}:
-  delta=obs["unknown"]["sensor_A"]-obs["reference"]["sensor_A"];ev("comparison",delta_sensor_A=round(delta,4));draw("Comparison complete",f"Unknown rendered RGB proxy is higher by {delta:.3f} A*")
+  delta=obs["unknown"]["sensor_A"]-obs["reference"]["sensor_A"];ev("comparison",delta_sensor_A=round(delta,4));draw("Comparison complete",f"Unknown modeled optical reading is higher by {delta:.3f} A*")
  else:draw("Control complete","No two-sample comparison: measurement gate correctly withheld")
  wr.close();rend.update_scene(d,cam);imageio.imwrite(out/"final.png",rend.render());rend.close()
  import subprocess
@@ -137,4 +137,3 @@ def main():
    if p.is_file():shutil.copy2(p,dest/p.name)
  print(json.dumps({"success":summary["success"],"sim_s":sim,"observations":obs,"frames":int(frames)},indent=2))
 if __name__=="__main__":main()
-
