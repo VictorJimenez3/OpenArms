@@ -33,6 +33,11 @@ class Body:
 
 
 class CubeObservationTests(unittest.TestCase):
+    @staticmethod
+    def empty_contact_data(**_):
+        return (np.zeros((1, 1)), np.zeros((1, 3)), np.zeros((1, 3)),
+                np.zeros((1, 1)), np.zeros((1, 3)), np.zeros((1, 3)))
+
     def trial(self, quaternion):
         trial = CubeTrial.__new__(CubeTrial)
         trial.model = types.SimpleNamespace(gripper_path='gripper', base_path='base')
@@ -43,7 +48,8 @@ class CubeObservationTests(unittest.TestCase):
                               'base_quat': np.array([1., 0., 0., 0.]),
                               'receiver_quat': np.array([1., 0., 0., 0.])}
         trial.contact = types.SimpleNamespace(get_contact_force_matrix=lambda **_: np.array(
-            [[[0., 0., 0.], [0., 0., 0.], [0., 0., .0981]]]))
+            [[[0., 0., 0.], [0., 0., 0.], [0., 0., .0981]]]),
+            get_contact_force_data=self.empty_contact_data)
         trial.check = TransferCheck((.23, 0., .01), (.2, .1, .014), retreat_m=.05,
                                     max_linear_speed=.01, max_angular_speed=.1)
         trial.check.verified_lift = True  # Deliberate prior measurement fixture.
@@ -70,7 +76,8 @@ class CubeObservationTests(unittest.TestCase):
         trial = self.trial([1., 0., 0., 0.])
         trial.phase = 'carry'
         trial.contact = types.SimpleNamespace(get_contact_force_matrix=lambda **_: np.array(
-            [[[0., 2., 0.], [0., -2., 0.], [0., 0., 0.]]], dtype=np.float32))
+            [[[0., 2., 0.], [0., -2., 0.], [0., 0., 0.]]], dtype=np.float32),
+            get_contact_force_data=self.empty_contact_data)
         trial.cube.position = np.array([.2104272, .0831413, .0802642], dtype=np.float32)
         json.dumps(trial.observe(13.191667), allow_nan=False)
         trial = self.trial([1., 0., 0., 0.])

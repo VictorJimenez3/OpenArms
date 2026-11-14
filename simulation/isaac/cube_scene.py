@@ -11,6 +11,7 @@ from manipulation_checks import Sample, TransferCheck
 
 class CubeTrial:
     def __init__(self, world, stage, asset_dir, condition='light'):
+        from pxr import PhysxSchema
         masses = {'light': .010, 'heavy': .040}
         if condition not in masses:
             raise ValueError('Expected light or heavy mass condition')
@@ -50,6 +51,15 @@ class CubeTrial:
             reset_xform_properties=False, track_contact_forces=True,
             contact_filter_prim_paths_expr=['/World/Robot/gripper', '/World/Robot/jaw',
                                            '/World/Receiver/Floor'], max_contact_count=256))
+        collision_paths = []
+        for prim in stage.Traverse():
+            if prim.HasAPI(UsdPhysics.CollisionAPI):
+                collision = PhysxSchema.PhysxCollisionAPI.Apply(prim)
+                collision.CreateContactOffsetAttr(.0005)
+                collision.CreateRestOffsetAttr(0.)
+                collision.CreateTorsionalPatchRadiusAttr(0.)
+                collision.CreateMinTorsionalPatchRadiusAttr(0.)
+                collision_paths.append(str(prim.GetPath()))
         self.bodies = {path: SingleRigidPrim(path, name='measure_'+path.rsplit('/', 1)[-1],
                                           reset_xform_properties=False)
                        for path in self.model.authored_body_poses}
@@ -61,6 +71,10 @@ class CubeTrial:
                        'cube_mass_kg': mass, 'cube_yaw_rad': yaw,
                        'experiment': {'name': 'mass_vs_weight', 'condition': condition,
                                       'gravity_m_s2': 9.81},
+                       'collision_settings': {'contact_offset_m': .0005, 'rest_offset_m': 0.,
+                                              'torsional_patch_radius_m': 0.,
+                                              'min_torsional_patch_radius_m': 0.,
+                                              'collider_paths': collision_paths},
                        'material': {'static_friction': .9, 'dynamic_friction': .8, 'restitution': 0.},
                        'contact_jaw_rad': contact_jaw, 'closed_jaw_rad': closed_jaw,
                        'phases': self.phases, 'attachments': False,
@@ -105,7 +119,25 @@ class CubeTrial:
         linear = float(np.linalg.norm(self.cube.get_linear_velocity()))
         angular = float(np.linalg.norm(self.cube.get_angular_velocity()))
         matrix = np.asarray(self.contact.get_contact_force_matrix(dt=1/120))
-        self.last_observation.update(contact_matrix_N=matrix.tolist(), linear_speed_m_s=linear,
+        normal, points, normals, separation, counts, starts = (
+            np.asarray(value) for value in self.contact.get_contact_force_data(dt=1/120))
+        if counts.shape != (1, 3) or starts.shape != (1, 3):
+            raise RuntimeError('Unexpected detailed contact pair layout')
+        contact_details = []
+        for index, body in enumerate(('gripper', 'jaw', 'receiver')):
+            start, count = int(starts[0, index]), int(counts[0, index])
+            if count == 0:
+                start = 0  # Unused buffer offsets are not measurements.
+            if start < 0 or count < 0 or start+count > len(points):
+                raise RuntimeError('Invalid contact buffer range')
+            section = slice(start, start+count)
+            if not all(np.isfinite(value[section]).all() for value in (normal, points, normals, separation)):
+                raise RuntimeError('Nonfinite detailed contact measurement')
+            contact_details.append({'body': body, 'count': count,
+                'points_m': points[section].tolist(), 'normals': normals[section].tolist(),
+                'normal_force_N': normal[section].reshape(-1).tolist(),
+                'separation_m': separation[section].reshape(-1).tolist()})
+        self.last_observation.update(contact_matrix_N=matrix.tolist(), contact_details=contact_details, linear_speed_m_s=linear,
                                      angular_speed_rad_s=angular)
         if matrix.shape != (1, 3, 3):
             raise RuntimeError(f'Unexpected contact matrix {matrix.shape}')
@@ -119,6 +151,7 @@ class CubeTrial:
                                  'object_position_m': pos.tolist(),
                                  'object_quaternion_wxyz': quat.tolist(),
                                  'contact_vectors_N': matrix[0].tolist(),
+                                 'contact_details': contact_details,
                                  'linear_speed_m_s': linear, 'angular_speed_rad_s': angular}
         sample = Sample(t, tuple(pos), linear, angular, tuple(forces[:2]), distance,
                         self.phase in ('retreat', 'settle'))
@@ -140,6 +173,7 @@ class CubeTrial:
         return {'phase': self.phase, 'object_position_m': pos.tolist(),
                 'object_quaternion_wxyz': quat.tolist(), 'linear_speed_m_s': linear,
                 'angular_speed_rad_s': angular, 'contact_vectors_N': matrix[0].tolist(),
+                'contact_details': contact_details,
                 'finger_forces_N': forces[:2].tolist(), 'receiver_force_N': float(forces[2]),
                 'base_position_m': base_pos.tolist(), 'receiver_position_m': receiver_pos.tolist(),
                 'base_quaternion_wxyz': base_quat.tolist(), 'receiver_quaternion_wxyz': receiver_quat.tolist(),
