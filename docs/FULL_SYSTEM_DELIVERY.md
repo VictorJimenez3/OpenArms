@@ -1,10 +1,10 @@
 # OpenArms full-system delivery contract
-Architecture correction · November 14, 2026 · supersedes the narrow pH-runtime assignment
+Reconciled November 14, 2026 · current two-vessel product and shared runtime
 
 ## Product and evidence boundary
-The Smartivity kit is the new demonstration target; Joseph deferred activity selection. Simulation is optional Devpost/presentation material, not the main architecture or a required demonstration. The product is a continuous conversational agent connected to a background expert, scene evidence and perception tools, deterministic execution, independent observations, and an evaluated reusable-skill library. Physical actuation is disabled for this delivery. That does not exclude reasoning, image inspection, perception integration, skill authoring, or improvement.
+The selected physical direction is the two-vessel Smartivity A→C pour defined in [PROJECT](PROJECT.md). Preferred chemistry and fallback need physical verification. MuJoCo is active for development; Isaac is parked. The physical demonstration does not require a simulator preview. The product is a continuous conversational agent connected to a background expert, scene evidence and perception tools, deterministic execution, independent observations, and an evaluated reusable-skill library. Physical actuation is disabled for this delivery. That does not exclude reasoning, image inspection, perception integration, skill authoring, or improvement.
 
-The reviewed software baseline is merged on main through PR #22 (`0ab5819`). Preserve it while implementing the selected kit activity. Use isolated worktrees for new concurrent tasks; archive completed lanes after integration. No second runtime or registry. No further push until the integrator reviews changes against R1–R6. Component tests alone do not meet completion.
+The reviewed software baseline includes PR #22 (`0ab5819`) and PR #25 (`4f9c3ec`), which preserves actual Gemini Live conversation. [MAIN_INTEGRATION](MAIN_INTEGRATION.md) separates merged work from the two-vessel/camera prototype and independent evaluator. Preserve it while implementing the selected kit activity. Use isolated worktrees for new concurrent tasks; archive completed lanes after integration. No second runtime or registry. No further push until the integrator reviews changes against R1–R6. Component tests alone do not meet completion.
 
 Sources: [01 — current product vision](https://app.notion.com/p/41871c9c107e8133aa70cf1588e620e4), [02 — skills](https://app.notion.com/p/41871c9c107e811d875beeab9dd78d26), [03 — interfaces](https://app.notion.com/p/41871c9c107e810aad00c2bd7d99014e), [10 — perception/improvement](https://app.notion.com/p/41871c9c107e8185977ce8c72365fcff), [P1 — agent harness](https://app.notion.com/p/41871c9c107e81bf8598e4f84fd29798).
 
@@ -22,7 +22,7 @@ November 14 provider compatibility correction: Joseph requested shared Codex/Cla
 
 ## Responsibility map
 
-The [root ownership rules](../AGENTS.md#ownership) name the current area owners. The roles below describe how components connect. Victor handles integration into `main` and coordinates shared changes with the affected owners.
+The [root ownership rules](../AGENTS.md#ownership) name the current area owners. The roles below describe how components connect. Victor retains integration ownership. Joseph has authorized the existing reconciliation coordinator to review, integrate and push this task; shared changes remain coordinated with affected owners.
 
 | Accountable owner / isolated lane | Requirements and owned connection | Dependencies | Required evidence / remaining gap |
 | --- | --- | --- | --- |
@@ -42,7 +42,7 @@ Every event carries event_id, session_id, turn_id where applicable, task_id, tri
 
 | Record | Required contents and rules |
 | --- | --- |
-| ExperimentCommand / TaskContext | Original natural request, relevant conversation and prediction, task goal, backend/capability limits, current scene and evidence references, available tool schemas, registered skills, budget/deadline and cancellation token. |
+| ExperimentCommand / TaskContext | Original natural request, relevant conversation and optional prediction, task goal, backend/capability limits, current scene and evidence references, available tool schemas, registered skills, budget/deadline and cancellation token. |
 | SceneEvidence | Frame/episode/camera IDs, capture timestamp and clock, original image bytes via immutable artifact reference + hash, provenance (recorded real, recorded simulation, synthetic), freshness, labels/detections with method/model/version, uncertainty, coordinate frame/units/calibration or explicit unknown. Replay age is measured against the episode clock; recorded footage is never presented as a live camera. |
 | ExpertTask | Task ID and status queued/running/needs_clarification/awaiting_confirmation/executing/observing/completed/failed/cancelled; actual provider/model/configuration, tool receipts, concise decision rationale, measured calls/tokens/latency, maximum two replans with bounded tools/time. Never store hidden reasoning as a deliverable. |
 | PlanProposal | Immutable plan/version hash, ordered bounded tool/skill operations and parameter bindings, referenced scene/evidence/skill versions, preconditions, expected observation checks, supported backend, student-readable exact preview, expiry and presentation binding. A changed plan requires new presentation and confirmation. |
@@ -65,10 +65,10 @@ The expert is the robot agent: it uses fresh images and tool receipts DURING a t
 8. A task-validated candidate may be invoked once under that task's explicit consent. Reusable activation requires its evaluation/observation evidence and a promotion decision. Equivalent subsequent requests use the exact active skill version without reauthoring it.
 9. STOP/cancel invalidate task generations, pending approvals and scheduled expert actions. No automatic resumption of execution on reconnect. History is passive and preserves backend/provenance.
 
-### Supported capabilities and optional simulation
-The selected kit activity will determine material bindings, supported primitives and independently observable outcomes. Until those are specified and implemented, report that capability gap explicitly. Preserve one task loop, registry and executor interface. Recorded or synthetic inputs may verify software contracts with their provenance intact.
+### Supported capabilities and active simulation
+The physical contract is donor A → receiver C → donor A → HOME, with exactly two active vessels. Actual prepared material bindings and independently observable chemistry remain unqualified. Main's older fixed-dispenser `indicator_ph` backend is a regression fixture; the separate carried-donor prototype requires reviewed integration and fresh skill admission. Preserve one task loop, registry and executor interface.
 
-MuJoCo and other retained simulations are optional Devpost/presentation material. Their supported operations and limitations belong in [their own guide](../simulation/lab_demos/ph/README.md); they are not requirements or the architecture of the main product. No simulation result qualifies physical actuation or the new kit.
+MuJoCo is the active development simulator; Isaac is parked. [The simulation guide](../simulation/README.md) distinguishes existing alternatives from the active slice. Optional volcano/additional-vessel simulations do not expand physical scope. Rendered liquid, rule-based color and illustrative motion are modeling assumptions, not fluid dynamics or chemical measurements. The expert may request frames on demand; camera acquisition, inference and motor cadence are separate. Freshness/identity checks continue on warm reuse, without mandatory simulation previews or model calls in the motor loop.
 
 ## One improvement cycle to demonstrate
 Freeze clear-view, occluded-view, distractor, missing-object and stale-frame cases before revision. Retain the unchanged baseline skill. Run it and record an actual limitation such as UNKNOWN when the receiver is occluded. Give the expert that failure receipt and permitted tools. It proposes a substantive revision, for example a bounded secondary-view observation and an explicit ambiguity/freshness check. Compare baseline and candidate on the same frozen cases, including held-out cases not shown during revision. Promote only with improved recovery and no new false-success/consent/STOP regressions; otherwise record rejection. Preserve both artifacts and replay the decision. This is skill/workflow improvement, not an unproven motor-policy claim.
@@ -98,8 +98,8 @@ The merged implementation and historical measured results are in [the main ledge
 
 ## Remaining delivery work
 1. Keep Gemini Live and the shared expert/session working; qualify responsive progress, results, cancellation and actual-device audio.
-2. Once Joseph chooses the kit activity, inspect its instructions and map actual supported actions, materials and independent observations through the existing runtime.
+2. Verify actual kit packets, the manual-reviewed two-vessel adaptation and visible chemistry with the physical team; map the supported actions and independent observations through the existing runtime.
 3. Verify the complete cold loop, skill admission, equivalent warm reuse and one substantive improvement on that supported task. Preserve an unchanged baseline and failures.
-4. Complete the supervised bench and real-device checks in the architecture checklist. Review all requirement connections before claiming completion.
+4. Complete supervised dry/water/chemistry trials, first-minute timing and real-device checks in the architecture checklist. Current tasks and statuses are in [the repository TODO](../research/joseph/TODO.md). Review all requirement connections before claiming completion.
 
-Every assignment and PR includes requirement IDs, owned connections, integration dependencies, produced evidence, remaining gaps and baseline/rollback impact. Optional presentation simulations are not on this critical path.
+Every assignment and PR includes requirement IDs, owned connections, integration dependencies, produced evidence, remaining gaps and baseline/rollback impact. Independent MuJoCo/camera work continues while hardware evidence is pending; extra presentation experiments are optional.

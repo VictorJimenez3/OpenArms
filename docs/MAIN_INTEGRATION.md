@@ -2,17 +2,31 @@
 
 The consolidation is **merged**: [PR #22](https://github.com/VictorJimenez3/OpenArms/pull/22), main commit `0ab58195781893594a8e8c2421f41facd713e962`. The earlier baseline `171a21a` remains in history. The old integration/worker branches are no longer the place to start work: branch from current main for a bounded task, review, integrate, then archive its worktree.
 
-## Current direction
+## Current direction and audited baseline
 
-Joseph selected the Smartivity My First Science Kit and deferred activity selection. [Architecture](ARCHITECTURE.md#kit-scope-and-bench-handoff) owns the inventory and Victor's outstanding physical handoff. Simulation is an optional Devpost/presentation extra, outside the core architecture and acceptance requirements. The app still has one shared session, task loop, registry and deterministic execution boundary. Physical actuation is disabled. Joseph retained Gemini Live speech and withdrew only Gemini thinking; expert profiles remain independent. Actual-device voice acceptance remains open.
+Current reviewed main is **`4f9c3ec`**, [PR #25](https://github.com/VictorJimenez3/OpenArms/pull/25), following PR #22 and photo-derived vessel models in PR #23 and v2 refinement in PR #24 (`e3ede414`). The active physical target is the **two-vessel A→C pour**, donor return and HOME, with preferred Smartivity indicator chemistry and fallback fizz pending actual preparation/outcome verification. MuJoCo is active development; Isaac is parked. First-minute physical action remains a target. [PROJECT](PROJECT.md) owns scope and [current TODO](../research/joseph/TODO.md) owns next work.
 
-Tracking: [#19](https://github.com/VictorJimenez3/OpenArms/issues/19) full system, [#9](https://github.com/VictorJimenez3/OpenArms/issues/9) interfaces, [#10](https://github.com/VictorJimenez3/OpenArms/issues/10) connected loop, [#4](https://github.com/VictorJimenez3/OpenArms/issues/4) actual iPhone acceptance. The user waived audible/device rehearsals as a merge gate; they remain unmet product acceptance checks.
+Gemini Live speech is preserved; Joseph withdrew only Gemini thinking. Expert profiles remain independent, with Fable requiring an explicit actual-model binding. The application preserves one shared session/task loop/registry and disables physical dispatch. The user waived audible/device rehearsals as a software merge gate; those remain unmet product acceptance checks.
 
-## Branch and worktree disposition
+| State at reconciliation audit | Evidence / limitation |
+| --- | --- |
+| Merged and software-tested: PR #25 conversation | 529 Python, 36 browser and 5 audio checks; actual Gemini Live generated-speech cold/warm, correction, exact consent, mock STOP and barge-in receipts. Mac human audibility and unplugged iPhone remain unverified. |
+| Merged: PR #23 / PR #24 vessel models | Original photo-derived donor/receiver v2 geometry. Estimates, not manufacturer identification, caliper measurement, printed fit or physical qualification. |
+| Main regression backend | `indicator_ph` fixed-dispenser scene; supports synthetic/MuJoCo software evidence, not the selected carried-donor physical kit workflow. |
+| Separate unmerged prototype | `codex/openarms-conversation-integration` at `f1cf4fd` contains two-vessel/camera/runtime work. Review/port only the needed slice onto current main; preserve newer PR #25 voice fixes and dirty documentation. |
+| Separate evaluator lane | `codex/openarms-harness-improvement` at `3f47ada` adds initial capability. It does not establish D4 or a measured improvement without completed comparative trials. |
+| Active independent lanes | Model two-vessel base plate owns fixture/assets; Build Smartivity volcano simulation owns its scene; Improve harness self-improvement owns its trials. Coordinate them instead of creating duplicate writers. |
+| Physical acceptance | Actual fixture fit/registration, repeated water pour, chemistry adaptation/outcome, first-minute action and real-camera/device qualification remain open. |
+
+This is an audit snapshot, not a claim that separate work has since merged. Update this table with the resulting commits and reviewed checks when integration lands. Preserve original receipts and their provenance.
+
+Tracking: [#19](https://github.com/VictorJimenez3/OpenArms/issues/19) full system, [#9](https://github.com/VictorJimenez3/OpenArms/issues/9) interfaces, [#10](https://github.com/VictorJimenez3/OpenArms/issues/10) connected loop, [#12](https://github.com/VictorJimenez3/OpenArms/issues/12) physical work, [#4](https://github.com/VictorJimenez3/OpenArms/issues/4) actual iPhone acceptance. Joseph authorized the existing coordinator to review, integrate and push this reconciliation; coordinate Victor's existing integration ownership and preserve teammate changes.
+
+## Historical PR #22 branch and worktree disposition
 
 [The historical ref ledger](MAIN_BRANCH_LEDGER.md) records the heads incorporated by PR #22. The cleanup verifies each local worktree against main, preserves ignored evidence in local checksum-verified archives, and removes completed clean checkouts. Main's local bench environment, credentials and rehearsal records are preserved. Shared branch deletion is restricted to unchanged, fully merged heads; no force-push or unique work deletion.
 
-Two remote branches advanced after consolidation and are deliberately retained:
+At the earlier consolidation audit, two remote branches had advanced and were retained. Re-fetch and inspect their current state before using or changing them:
 
 | Branch / audited head | Disposition |
 | --- | --- |
@@ -33,7 +47,7 @@ Record D1–D4 / R1–R6 requirements, changed files, dependencies, evidence, re
 
 ## Cleanup review
 
-The kit/terminology cleanup passed 493 Python tests, 36 browser checks, and 17 portable Swift tests; a subsequent wording-only change passed the seven focused learning tests. No new test files were added. Account 2 independently reviewed the full rename diff, session-history guards and scope hashing. Its three documentation findings were resolved: the mandatory pH delivery tail was replaced, the old demo plan became current design notes, and the native guide now awaits replacement voice. This is software verification, not kit, hardware or live-voice acceptance.
+The kit/terminology cleanup passed 493 Python tests, 36 browser checks, and 17 portable Swift tests; a subsequent wording-only change passed the seven focused learning tests. No new test files were added. Account 2 independently reviewed the full rename diff, session-history guards and scope hashing. Its three documentation findings were resolved: the mandatory pH delivery tail was replaced, the old demo plan became current design notes, and the native guide then awaited a provider decision. The later Gemini Live correction and PR #25 supersede that historical voice state. This is software verification, not kit, hardware or live-voice acceptance.
 
 Finished worktree contents were verified against merged main; ignored run evidence was archived locally and reopened for checksum comparison before removal. The main bench environment and local rehearsal records remain intact. New application setup uses `.venv-lab` so it does not overwrite the existing bench `.venv`.
 

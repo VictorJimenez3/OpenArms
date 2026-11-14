@@ -1,30 +1,28 @@
 # Working in OpenArms
 
-- Before planning, assigning, implementing, reviewing or pushing, read [the demo architecture](docs/ARCHITECTURE.md). Read [the software delivery contract](docs/FULL_SYSTEM_DELIVERY.md) for R1–R6 and the [integration ledger](docs/MAIN_INTEGRATION.md) when merging branches. The architecture defines D1–D4: fast physical student control and responsive conversation first, optimized reusable skills and measured improvement next. The Smartivity kit is the demo target; its activity is undecided. The retained simulation is optional Devpost/presentation material, outside the core architecture and acceptance requirements.
-- Read [current interfaces](docs/INTERFACES.md) before connecting components. Distinguish target behavior, implemented behavior and demonstrated behavior. Preserve the working physical fallback; no unsupported claims.
-- Every substantial task names D1–D4, its GitHub issue, owned files, producer/consumer dependency, baseline and acceptance evidence. Keep assignments short. No general framework or research expansion without a demonstrated demo need.
-- Only Victor works on and pushes or merges into `main`. Everyone else works on their own branch/worktree and hands changes to Victor. Keep one application runtime and coordinate shared changes as described below.
-- Before creating a worktree, pull `main` with `git pull --ff-only origin main` in the main checkout; preserve uncommitted user changes.
-- Before research or rerunning an experiment, check [the research index](research/README.md) and search existing evidence. Reuse tools and measurements before adding dependencies.
-- Before every push, inspect the diff against D1–D4 and record requirement, evidence, remaining gaps and reviewer in an issue/PR or local receipt. Substantial changes get independent review. First-push receipts can be local; draft/partial work is explicitly labeled. Do not equate unit tests with physical or conversational proof.
-- Only Joseph can authorize a material change to the agreed vision. Missing hardware, model access or time is a reported blocker, not permission to replace the product with a scripted mock.
-- Preserve physical authorization, deterministic limits and STOP. Simulation is development evidence; do not activate hardware or candidate motions through a documentation task.
+- Before planning, assigning or implementing, read [the architecture](docs/ARCHITECTURE.md). Joseph's latest explicit decisions govern product intent; verified code/evidence governs what works; current specifications supersede older plans. Report conflicts instead of changing requirements to match code.
+- The physical goal is a student-directed, first-minute **two-vessel A→C pour**, donor return and HOME. Preferred Smartivity magic-tea/citric-acid chemistry and fallback fizz remain physically unverified. [Project](docs/PROJECT.md) owns the demo definition; [wet-lab](docs/WET_LAB.md) owns supervised bench readiness. Prediction/reflection and simulation previews are optional.
+- MuJoCo is the active simulator for independent software development; Isaac is parked. Keep simulation provenance distinct from physical qualification. Read [simulation guidance](simulation/README.md) before scene work.
+- Read [interfaces](docs/INTERFACES.md) before connecting components, [R1–R6 delivery](docs/FULL_SYSTEM_DELIVERY.md) before assigning work, and [the integration ledger](docs/MAIN_INTEGRATION.md) before merging. Preserve one application task loop, registry and deterministic executor.
+- Preserve working Gemini Live speech. Expert inference is separate and selected through shared Codex/Claude profiles; report requested and actual identity without silent substitution. Fable needs an explicit supported provider/model binding. Authentication stays local.
+- Each substantial assignment names D1–D4/R1–R6, issue, owned files/worktree, producer/consumer dependency, baseline and acceptance evidence. Coordinate with active owners before editing their files. Use [the team plan](docs/TEAM_WORK_PLAN.md) and [current TODO](research/joseph/TODO.md); avoid competing writers or runtimes.
+- Work in isolated branches/worktrees. Victor retains team integration ownership; Joseph has explicitly authorized the existing reconciliation coordinator to review, integrate and push this reconciliation. Coordinate shared changes and preserve Victor's active work. Preserve dirty teammate files. Refresh from current main before creating a new lane; archive only completed, safely preserved worktrees.
+- Before every push, review the actual diff against requirements and record evidence, gaps and reviewer in its issue/PR or local receipt. Substantial work requires independent review. Software tests, simulator results and physical acceptance are separate statuses.
+- Preserve operator authorization, deterministic limits and STOP/cancellation. Late tools, reconnect and stale observations cannot restart cancelled work. No unattended motor motion, calibration edits or physical candidate promotion through documentation/software work.
+- Before research or repeated trials, check [existing evidence](research/README.md). Preserve recordings, failed attempts, calibration and working fallback behavior. Only Joseph authorizes material product-scope changes.
 
-Codex and Claude use this same instruction source; `CLAUDE.md` imports it. Select expert providers/models through the shared profile configuration, never by forking the task loop, tool contracts or skills. Provider-specific authentication stays local. Report requested and actual model identity, and never substitute a model silently.
-
-Where local `TODO.md` and `.openarms/` lane tooling are installed, pick one folder ticket and use that runner. Review and land or close each lane before opening another for the folder. Shared requirements and current work remain in the architecture and GitHub issues.
+Codex and Claude use this source; `CLAUDE.md` imports it. Local lane tooling may help execute one bounded ticket, but does not supersede current ownership or shared requirements.
 
 ## Ownership
 
-| Owner | Area |
+| Owner / active lane | Responsibility |
 | --- | --- |
-| Victor | [`agentic/`](agentic/), including the AI harness, expert routing, skills and student-loop behavior. Active branch is `victor/agentic-student-loop`. |
-| Joe (Joseph) | [`ui/`](ui/), including the browser UI, and the [native iPhone UI](research/joseph/iphone-voice-bridge/ios/), plus lab scans and [fixture CAD](firmware/fixtures/). Joe can take AI tasks after coordinating the specific files with Victor. |
-| Stefanie | [Simulation](simulation/) scenes, robot and lab assets, and simulated motion. |
-| Duc | [Firmware controls](firmware/openarms_executor/), [calibration](calibration/) and simulation feedback tests. |
+| Victor | Existing `agentic/` owner and `main` integrator; coordinate runtime changes with his student-loop work and physical bring-up. |
+| Duc | Firmware controls, calibration and physical bring-up; preserve the existing supervised executor and taught trajectories. |
+| Joe (Joseph) | Current focus: MuJoCo, camera-aware agent integration, architecture/docs and coordination; retains browser/iPhone ownership. |
+| Stefanie | Existing simulation work and assets remain hers; coordinate file ownership rather than assigning competing scene work. |
+| Model two-vessel base plate | Active fixture/measured-vessel lane: `firmware/fixtures/cup_dock/` and its agreed vessel assets. Other lanes consume its handoff. |
+| Build Smartivity volcano simulation | Active simulation implementation lane; additional vessels are optional simulation scope, not extra physical demo vessels. |
+| Improve harness self-improvement | Existing evaluator/improvement lane; independent trials do not establish D4 until comparable evidence is reviewed. |
 
-Use the [team work plan](docs/TEAM_WORK_PLAN.md) for current deliverables and handoffs. Coordinate shared session, UI and executor interface changes with the affected owners and record agreed examples in [INTERFACES.md](docs/INTERFACES.md). Before editing files another person is actively working on, agree on who will make the change.
-
-## Assignment format
-
-Issue + D1–D4; concrete outcome; owned files/worktree; dependency and consumer; baseline to preserve; acceptance trace and measured evidence; explicit exclusions. Return commit, checks, evidence and remaining gaps. Victor reviews changes before they land on `main`. Keep runtime and documentation synchronized.
+The [team plan](docs/TEAM_WORK_PLAN.md) records handoffs. Changes to session, UI, scene or executor seams require agreed examples in [INTERFACES.md](docs/INTERFACES.md) and coordination with the affected owner. Existing hardware work continues while software uses explicitly provisional inputs.

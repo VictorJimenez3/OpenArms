@@ -2,7 +2,7 @@
 
 [Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
 
-The student app targets continuous voice on Mac and iPhone. The Smartivity kit is the new target, with activity selection deferred. The retained indicator-pH simulation is optional Devpost/presentation material, not the main architecture or a required demo. **Gemini Live provides speech** when configured. Joseph withdrew only Gemini thinking; expert inference remains independently selectable. Text, the shared session and direct STOP remain available if voice is unavailable. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
+The student app targets continuous voice on Mac and iPhone. The selected physical target is the two-vessel Smartivity pour in [PROJECT](PROJECT.md). MuJoCo is active for development; Isaac is parked. The retained indicator-pH apparatus is a regression implementation, not the carried-donor kit experiment. **Gemini Live provides speech** when configured. Joseph withdrew only Gemini thinking; expert inference remains independently selectable. Text, the shared session and direct STOP remain available if voice is unavailable. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.
 
 ## Start
 
@@ -18,7 +18,7 @@ Authenticate the chosen expert independently; see [model profiles and switching]
 
 Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same session with the simulator, actual expert/tool trace, observations and skill evaluations. Both views use the same bearer grant and voice connection. A phone needs a reachable configured HTTPS endpoint; localhost refers to the phone itself. Browser microphone access requires localhost or HTTPS.
 
-`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression; it does not implement the undecided kit activity. `mujoco` runs the updated lab apparatus, selected explicitly; failure never falls back to mock. The older `openarms_sim.Player` preview is historical and is not the current student simulator. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
+`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression; it does not implement the selected physical kit activity. `mujoco` runs the updated lab apparatus, selected explicitly; failure never falls back to mock. The older `openarms_sim.Player` preview is historical and is not the current student simulator. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
 
 ## Which processes to run
 
@@ -35,9 +35,9 @@ For another device, serve the app through a trusted HTTPS endpoint reaching the 
 
 Stop the application with Ctrl-C. The server cancels active work; reopening a session restores history but never replays execution or consent. Use a fresh `OPENARMS_DATA_DIR` for an isolated rehearsal rather than deleting someone else’s notebook.
 
-## Optional simulation for Devpost or a presentation
+## Current MuJoCo regression run
 
-This is separate from core product acceptance. To use the retained MuJoCo example, restart the server with `OPENARMS_EXECUTION=mujoco` in the command above. Its fixed-dispenser layout and indicator rules do not describe the new kit.
+On main `4f9c3ec`, restart with `OPENARMS_EXECUTION=mujoco` for the retained fixed-dispenser pH apparatus. Its indicator rules do not implement the selected kit. The separate two-vessel/camera prototype is tracked in [MAIN_INTEGRATION](MAIN_INTEGRATION.md); its options are not assumed available on this baseline. No physical preview gate is introduced by selecting a development simulator.
 
 1. Use **Talk** or **Type instead** and request, “Please test the prepared vinegar sample and check the indicator color.”
 2. Follow progress while the expert examines the scene. Ask a follow-up while planning runs; questions must preserve the task and pending proposal.
