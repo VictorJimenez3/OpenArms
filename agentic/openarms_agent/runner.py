@@ -3,7 +3,7 @@ from .catalog import expand
 from .types import ArmError, ArmPort, ExecutionResult, Plan
 
 
-def run(plan: Plan, arm: ArmPort, should_stop=lambda: False) -> ExecutionResult:
+def run(plan: Plan, arm: ArmPort, should_stop=lambda: False, *, verify_step=None, stop_on_request=True) -> ExecutionResult:
     done: list[str] = []
 
     def result(status, failed=None, reason=None) -> ExecutionResult:
@@ -11,10 +11,13 @@ def run(plan: Plan, arm: ArmPort, should_stop=lambda: False) -> ExecutionResult:
 
     for step in expand(plan):
         if should_stop():
-            arm.stop()
+            if stop_on_request:
+                arm.stop()
             return result("stopped", reason="stopped before " + step["action"])
         try:
             arm.run_step(step["action"], step["args"])
+            if verify_step is not None:
+                verify_step(step)
         except ArmError as e:
             return result("failed", e.step, e.reason)
         except Exception as e:  # serial/timeout errors from firmware must still end the run as failed
