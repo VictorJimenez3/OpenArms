@@ -20,7 +20,7 @@ import copy
 import json
 import os
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, AsyncMock, patch
 
 import pytest
 
@@ -296,7 +296,9 @@ def test_compose_with_mocked_genai_sdk(registry: SkillRegistry) -> None:
         })
 
         mock_client = MagicMock()
-        mock_client.models.generate_content.return_value = mock_response
+        mock_response.usage_metadata.total_token_count=42
+        mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
+        mock_client.aio.aclose = AsyncMock()
 
         mock_genai_module = MagicMock()
         mock_genai_module.Client.return_value = mock_client
@@ -325,7 +327,9 @@ def test_compose_with_mocked_genai_sdk_rejects_unapproved_primitives(registry: S
             ]
         })
         mock_client = MagicMock()
-        mock_client.models.generate_content.return_value = mock_response
+        mock_response.usage_metadata.total_token_count=42
+        mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
+        mock_client.aio.aclose = AsyncMock()
         mock_genai_module = MagicMock()
         mock_genai_module.Client.return_value = mock_client
         mock_google = MagicMock()
@@ -333,7 +337,7 @@ def test_compose_with_mocked_genai_sdk_rejects_unapproved_primitives(registry: S
 
         with patch.dict(os.environ, {"GEMINI_API_KEY": "fake_test_key"}):
             with patch.dict("sys.modules", {"google": mock_google, "google.genai": mock_genai_module}):
-                with pytest.raises(ValueError, match="unapproved primitive action"):
+                with pytest.raises(ValueError, match="unsupported steps"):
                     await registry.compose("transfer and drill")
 
     asyncio.run(_run())

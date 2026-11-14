@@ -10,6 +10,11 @@ import { LabApiClient, ApiError } from './api.js';
 import { EventsClient } from './events-client.js';
 import { LiveClient } from './live-client.js';
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function epochDate(value) { return new Date(typeof value === 'number' ? value * 1000 : value); }
+
 class OpenArmsApp {
   constructor() {
     this.api = new LabApiClient();
@@ -196,6 +201,14 @@ class OpenArmsApp {
       }
     });
 
+    const prepareButton = document.getElementById('btn-prepare-trial');
+    prepareButton.addEventListener('click', async () => {
+      try {
+        const snapshot = await this.api._request(`/api/sessions/${this.sessionId}/prepare`, {method:'POST',body:{}});
+        this._updateSnapshot(snapshot);
+        this._showToast('Mock apparatus prepared. Record a new prediction and choose the next sample.');
+      } catch (err) { this._showToast(err.message,true); }
+    });
     // Offline banner retry
     this.dom.btnRetryNetwork.addEventListener('click', () => {
       this._syncSnapshot();
@@ -207,7 +220,7 @@ class OpenArmsApp {
       try {
         const updated = await this.api.confirmProposal(this.sessionId, this.snapshot.pending.request_id);
         this._updateSnapshot(updated);
-        this._showToast('Action proposal confirmed. Executing arm motion...');
+        this._showToast('Student confirmed. Waiting for backend and any required operator authorization.');
       } catch (err) {
         this._showToast(`Confirmation failed: ${err.message}`, true);
       }
@@ -518,7 +531,7 @@ class OpenArmsApp {
 
       const updated = await this.api.emergencyStop(this.sessionId);
       this._updateSnapshot(updated);
-      this._showToast('EMERGENCY STOP ACTIVATED. Arm movement halted.', true);
+      this._showToast('STOP requested. Check execution status; controller stop behavior applies.', true);
     } catch (err) {
       this._showToast(`Emergency STOP request error: ${err.message}`, true);
     }
@@ -659,6 +672,7 @@ class OpenArmsApp {
   _updateSnapshot(snap) {
     if (!snap) return;
     this.snapshot = snap;
+    document.getElementById('btn-prepare-trial').hidden = snap.backend !== 'mock';
 
     // 1. Session ID display
     if (snap.session_id) {
@@ -717,7 +731,7 @@ class OpenArmsApp {
     if (pending.expires_at) {
       this.dom.proposalExpiresRow.style.display = 'table-row';
       const updateTimer = () => {
-        const remainingMs = new Date(pending.expires_at).getTime() - Date.now();
+        const remainingMs = epochDate(pending.expires_at).getTime() - Date.now();
         if (remainingMs <= 0) {
           this.dom.proposalExpiresVal.textContent = 'Expired';
           if (this.proposalCountdownInterval) {
@@ -774,9 +788,9 @@ class OpenArmsApp {
       card.style.cursor = 'pointer';
 
       card.innerHTML = `
-        <h3 style="font-size: 1rem; font-weight: 700; color: #fff;">${exp.title || exp.id}</h3>
-        <p style="font-size: 0.9rem; color: #38bdf8; font-weight: 600;">${exp.question || ''}</p>
-        <p style="font-size: 0.8rem; color: var(--text-secondary);">${exp.instructions || ''}</p>
+        <h3 style="font-size: 1rem; font-weight: 700; color: #fff;">${escapeHtml(exp.title || exp.id)}</h3>
+        <p style="font-size: 0.9rem; color: #38bdf8; font-weight: 600;">${escapeHtml(exp.question || '')}</p>
+        <p style="font-size: 0.8rem; color: var(--text-secondary);">${escapeHtml(exp.instructions || '')}</p>
         <div style="margin-top: 6px;">
           <button type="button" class="btn-primary" style="font-size: 0.82rem; min-height: 36px; padding: 6px 12px;">Select This Experiment</button>
         </div>
@@ -787,7 +801,7 @@ class OpenArmsApp {
           const updated = await this.api.selectExperiment(this.sessionId, exp.id);
           this._updateSnapshot(updated);
           this.dom.experimentModal.classList.remove('active');
-          this._showToast(`Switched experiment to: ${exp.title || exp.id}`);
+          this._showToast(`Switched experiment to: ${escapeHtml(exp.title || exp.id)}`);
         } catch (err) {
           this._showToast(`Failed to switch experiment: ${err.message}`, true);
         }
@@ -817,14 +831,14 @@ class OpenArmsApp {
     this.dom.armStageTag.textContent = `Stage: ${stage}`;
 
     // Arm state metrics
-    this.dom.armStatusVal.textContent = s.arm_status || s.status || 'idle';
+    this.dom.armStatusVal.textContent = this.snapshot?.requests?.at(-1)?.status || 'idle';
     this.dom.armGripperVal.textContent = s.gripper || (s.holding ? 'closed (holding)' : 'open');
     this.dom.armPositionVal.textContent = s.at || s.arm_pose || s.position || 'home';
     this.dom.armSafetyVal.textContent = s.armed === false ? 'disarmed' : 'armed';
 
     // Station pods
-    const staContents = s.station_a?.contents || (s.holding === 'mandarin' ? 'empty' : 'mandarin');
-    const stbContents = s.station_b?.contents || (s.at === 'B' && s.holding === 'mandarin' ? 'mandarin arriving' : 'empty');
+    const staContents = s.point_holds?.A || 'empty';
+    const stbContents = s.point_holds?.B || 'empty';
 
     this.dom.stationAContents.textContent = staContents;
     this.dom.stationBContents.textContent = stbContents;
@@ -863,12 +877,15 @@ class OpenArmsApp {
       let provClass = 'provenance-unknown';
       let provLabel = 'UNKNOWN PROVENANCE';
 
-      if (prov.includes('PHYSICAL') || prov.includes('BENCH') || prov.includes('REAL')) {
+      if (prov === 'MOCK') {
+        provClass = 'provenance-model-predicted';
+        provLabel = 'MOCK';
+      } else if (prov.includes('PHYSICAL') || prov.includes('BENCH') || prov.includes('REAL')) {
         provClass = 'provenance-physical';
         provLabel = 'PHYSICAL BENCH';
       } else if (prov.includes('SIMULAT') || prov.includes('ISAAC')) {
         provClass = 'provenance-simulated';
-        provLabel = 'SIMULATED (ISAAC)';
+        provLabel = 'SIMULATED';
       } else if (prov.includes('MODEL') || prov.includes('PREDICT')) {
         provClass = 'provenance-model-predicted';
         provLabel = 'MODEL-PREDICTED';
@@ -881,7 +898,7 @@ class OpenArmsApp {
           <span class="provenance-tag ${provClass}">${provLabel}</span>
           <span class="observation-time">${timeFormatted}</span>
         </div>
-        <p class="observation-text">${obs.text || JSON.stringify(obs)}</p>
+        <p class="observation-text">${escapeHtml(obs.text || JSON.stringify(obs))}</p>
       `;
 
       this.dom.observationsList.appendChild(item);
@@ -893,12 +910,15 @@ class OpenArmsApp {
   _renderQuiz(quiz) {
     if (!quiz) {
       this.dom.quizSection.style.display = 'none';
+      this.renderedQuizId = null;
       return;
     }
 
     this.dom.quizSection.style.display = 'flex';
     this.dom.quizPrompt.textContent = quiz.prompt || 'Reflection Question';
 
+    if (this.renderedQuizId === quiz.id) return;
+    this.renderedQuizId = quiz.id;
     this.dom.quizOptionsContainer.innerHTML = '';
     if (quiz.type === 'multiple_choice' && Array.isArray(quiz.options)) {
       this.dom.quizOptionsContainer.style.display = 'flex';
@@ -908,8 +928,8 @@ class OpenArmsApp {
         const label = document.createElement('label');
         label.className = 'quiz-option-label';
         label.innerHTML = `
-          <input type="radio" name="quiz_choice" value="${opt}" id="quiz_opt_${idx}" required>
-          <span style="font-size: 0.9rem; color: #fff;">${opt}</span>
+          <input type="radio" name="quiz_choice" value="${escapeHtml(opt)}" id="quiz_opt_${idx}" required>
+          <span style="font-size: 0.9rem; color: #fff;">${escapeHtml(opt)}</span>
         `;
         this.dom.quizOptionsContainer.appendChild(label);
       });
@@ -935,16 +955,16 @@ class OpenArmsApp {
       const entry = document.createElement('div');
       entry.className = 'notebook-entry';
 
-      const timeStr = evt.time ? new Date(evt.time).toLocaleTimeString() : '';
+      const timeStr = evt.time ? epochDate(evt.time).toLocaleTimeString() : '';
       const kind = evt.kind || 'event';
       const dataStr = typeof evt.data === 'string' ? evt.data : JSON.stringify(evt.data || {});
 
       entry.innerHTML = `
         <div style="display:flex; justify-content:space-between;">
-          <strong style="color:var(--accent-cyan); text-transform:uppercase; font-size:0.75rem;">${kind}</strong>
+          <strong style="color:var(--accent-cyan); text-transform:uppercase; font-size:0.75rem;">${escapeHtml(kind)}</strong>
           <span class="notebook-entry-time">${timeStr}</span>
         </div>
-        <div style="color:var(--text-secondary); word-break:break-word;">${dataStr}</div>
+        <div style="color:var(--text-secondary); word-break:break-word;">${escapeHtml(dataStr)}</div>
       `;
 
       this.dom.notebookTimeline.appendChild(entry);
@@ -972,9 +992,9 @@ class OpenArmsApp {
 
       entry.innerHTML = `
         <strong style="font-size:0.72rem; color:${msg.role === 'user' ? '#93c5fd' : '#86efac'}; text-transform:uppercase;">
-          ${msg.role || 'message'}
+          ${escapeHtml(msg.role || 'message')}
         </strong>
-        <div style="color:#f8fafc; font-size:0.85rem; margin-top:2px;">${msg.text || ''}</div>
+        <div style="color:#f8fafc; font-size:0.85rem; margin-top:2px;">${escapeHtml(msg.text || '')}</div>
       `;
 
       this.dom.messagesTimeline.appendChild(entry);
@@ -1057,13 +1077,14 @@ class OpenArmsApp {
     }
 
     this.skills.forEach((skill) => {
+      skill = {...skill, id: skill.skill_id || skill.id};
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="font-family:var(--font-mono);font-weight:600;color:var(--accent-cyan);">${skill.id}</td>
-        <td>${skill.name || skill.id}</td>
-        <td style="color:var(--text-secondary);">${skill.description || 'No description'}</td>
+        <td style="font-family:var(--font-mono);font-weight:600;color:var(--accent-cyan);">${escapeHtml(skill.id)}</td>
+        <td>${escapeHtml(skill.name || skill.id)}</td>
+        <td style="color:var(--text-secondary);">${escapeHtml(skill.description || 'No description')}</td>
         <td>
-          <button type="button" class="btn-icon btn-test-skill" data-id="${skill.id}" style="padding:2px 8px;font-size:0.75rem;min-height:28px;">Test</button>
+          <button type="button" class="btn-icon btn-test-skill" data-id="${escapeHtml(skill.id)}" style="padding:2px 8px;font-size:0.75rem;min-height:28px;">Test</button>
         </td>
       `;
 
@@ -1090,7 +1111,9 @@ class OpenArmsApp {
     try {
       this._showToast('Expert agent compiling skill candidate...');
       const candidate = await this.api.composeSkill(instruction);
-      this.composedCandidate = candidate;
+      this.composedCandidate = {...candidate, id: candidate.skill_id || candidate.id};
+      this.candidateEvidenceId = null;
+      this.dom.btnPromoteCandidate.disabled = true;
       this.dom.candidateJsonPreview.textContent = JSON.stringify(candidate, null, 2);
       this.dom.composedCandidatePreview.style.display = 'flex';
       this._showToast('Skill candidate compiled!');
@@ -1107,6 +1130,8 @@ class OpenArmsApp {
 
     try {
       const res = await this.api.testSkill(this.composedCandidate.id);
+      this.candidateEvidenceId = res.evidence_id;
+      this.dom.btnPromoteCandidate.disabled = !res.evidence_id;
       this._showToast(`Candidate test completed: ${JSON.stringify(res)}`);
     } catch (err) {
       this._showToast(`Candidate test error: ${err.message}`, true);
@@ -1120,7 +1145,8 @@ class OpenArmsApp {
     }
 
     try {
-      const evidenceId = `ev-${Date.now()}`;
+      const evidenceId = this.candidateEvidenceId;
+      if (!evidenceId) throw new Error("Test this candidate before promotion.");
       const res = await this.api.promoteSkill(this.composedCandidate.id, evidenceId);
       this._showToast(`Candidate promoted to active skills: ${this.composedCandidate.id}`);
       this._loadSkills();

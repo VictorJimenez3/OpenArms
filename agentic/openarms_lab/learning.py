@@ -216,7 +216,7 @@ def model_observation(experiment_id: str, parameters: Optional[dict[str, Any]] =
 
     if target_id == "buoyancy_trial":
         params = parameters or {}
-        sample_key = str(params.get("sample_id") or params.get("sample") or "").strip().upper()
+        sample_key = str(params.get("source") or params.get("sample_id") or params.get("sample") or "").strip().upper()
 
         # Fluid density defaults to water 1.0 g/mL
         fluid_density = float(params.get("fluid_density", 1.0))
@@ -310,6 +310,8 @@ def _has_unknown_outcome(observations: list[dict[str, Any]]) -> bool:
     for obs in observations:
         if not isinstance(obs, dict):
             continue
+        if obs.get("provenance") == "UNKNOWN":
+            return True
         # Check explicit outcome / result keys
         outcome = str(obs.get("outcome") or obs.get("result") or "").strip().lower()
         if outcome in ("unknown", "inconclusive", "unclear", "unverified", "failed", "error"):
@@ -403,7 +405,7 @@ def make_quiz(
             "id": "quiz_buoyancy_fr_comparative_synthesis",
             "type": "free_response",
             "prompt": (
-                "Compare your observations across the trials (Sample A vs Sample C). Explain the difference "
+                "Compare the labeled evidence and model predictions across your trials (Sample A vs Sample C). Explain the expected difference "
                 "in their floating and sinking behavior using density (mass and volume) and Archimedes' "
                 "displacement principle."
             ),
@@ -670,8 +672,8 @@ def _evaluate_fr_buoyancy_comparison(
         + ("Explained density comparison between samples (0.8 g/mL vs 1.2 g/mL) and water (1.0 g/mL)." if has_density else "Missing explicit analysis of sample density (mass/volume) relative to water (1.0 g/mL)."),
         f"- **Displacement & Archimedes' Buoyant Force**: {'[✓ Met]' if has_displacement else '[✗ Incomplete]'} "
         + ("Referenced Archimedes' displacement and buoyant force vs gravity." if has_displacement else "Missing explanation of Archimedes' principle (buoyant force equals weight of displaced fluid)."),
-        f"- **Grounded Empirical Synthesis**: {'[✓ Met]' if has_observation_grounding else '[✗ Incomplete]'} "
-        + ("Grounded explanation in actual trial observations of Sample A and Sample C." if has_observation_grounding else "Must explicitly reference the observed outcomes of Sample A and Sample C.")
+        f"- **Connection to Recorded Evidence**: {'[✓ Met]' if has_observation_grounding else '[✗ Incomplete]'} "
+        + ("Referenced the recorded trials; distinguish model predictions from physical observations." if has_observation_grounding else "Must explicitly reference the observed outcomes of Sample A and Sample C.")
     ]
 
     is_correct = has_density and has_displacement and has_observation_grounding
@@ -679,12 +681,12 @@ def _evaluate_fr_buoyancy_comparison(
     feedback = (
         f"### Transparent Rubric Assessment: {'[✓ Satisfactory Explanation]' if is_correct else '[✗ Incomplete Explanation]'}\n"
         + "\n".join(rubric_items) + "\n\n"
-        f"**Recorded Empirical Trials**: {obs_summary}\n"
+        f"**Recorded Evidence and Models**: {obs_summary}\n"
         "**Theoretical Model Alignment**: "
         "Sample A (density 0.8 g/mL < water 1.0 g/mL) experiences buoyant force equal to its weight "
         "when 80% submerged, so it floats. Sample C (density 1.2 g/mL > water 1.0 g/mL) has a gravitational "
         "weight greater than the maximum buoyant force of fully displaced water, so it sinks. "
-        "Model predictions (provenance: MODEL-PREDICTED) align with mock observations (provenance: MOCK-OBSERVATION)."
+        "These are MODEL-PREDICTED values. MOCK transfer state does not measure floating or sinking; physical agreement remains unverified."
     )
 
     if is_correct:
@@ -804,42 +806,20 @@ def evaluate_answer(
     raise ValueError(f"Unknown quiz type '{quiz_type}' in quiz dict")
 
 
-# ==============================================================================
-# Optional Async Gemini Tutoring Function (Graceful Offline Fallback)
-# ==============================================================================
-
-async def tutor_reflection_async(
-    experiment_id: str,
-    quiz: dict[str, Any],
-    student_answer: str,
-    observations: Optional[list[dict[str, Any]]] = None,
-    api_key: Optional[str] = None
-) -> dict[str, Any]:
-    """Optional asynchronous conversational tutoring evaluation powered by Gemini.
-
-    If an API key is not provided or the Gemini service is unavailable offline,
-    this function gracefully falls back to the deterministic evaluate_answer() rubric.
-    Parent OpenArms Live handles real-time conversational voice interaction; this
-    function serves as a supplementary analytical tutoring hook.
-
-    Args:
-        experiment_id: Experiment identifier.
-        quiz: Quiz dictionary.
-        student_answer: Student's response string.
-        observations: Session observation list.
-        api_key: Optional Gemini API key.
-
-    Returns:
-        Dict with keys {feedback, correct, follow_up, provenance}.
-    """
-    # Deterministic offline evaluation is always available
-    fallback_result = evaluate_answer(experiment_id, quiz, student_answer, observations)
-
-    # In sandboxed / offline test environments or without explicit Gemini configuration,
-    # cleanly return the deterministic rubric result.
-    if not api_key:
-        return fallback_result
-
-    # Note: If an API key is supplied in a connected production runtime, parent
-    # Live services may extend this with full generative dialogue.
-    return fallback_result
+async def tutor_reflection_async(experiment_id, quiz, student_answer, observations=None, api_key=None):
+    """Optional Gemini feedback grounded in evidence; offline rubric stays usable."""
+    rubric=evaluate_answer(experiment_id,quiz,student_answer,observations)
+    if not api_key:return rubric
+    import asyncio,json,os
+    from google import genai
+    from google.genai import types
+    client=genai.Client(api_key=api_key)
+    try:
+        response=await asyncio.wait_for(client.aio.models.generate_content(
+            model=os.getenv('OPENARMS_TEXT_MODEL','gemini-3.8-flash'),
+            contents=json.dumps({'experiment':get_experiment(experiment_id),'question':quiz,'answer':student_answer,
+                                 'evidence':observations or [],'advisory_rubric':rubric}),
+            config=types.GenerateContentConfig(system_instruction='Give concise science feedback and a targeted follow-up. Never invent observations. Explicitly label MODEL-PREDICTED and MOCK values. Return JSON {feedback,follow_up}.',response_mime_type='application/json')),timeout=20)
+        generated=json.loads(response.text)
+        return {**rubric,'feedback':generated['feedback'],'follow_up':generated['follow_up'],'provenance':'GEMINI-FEEDBACK','correct':None}
+    finally:await client.aio.aclose()

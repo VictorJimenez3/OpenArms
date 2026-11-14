@@ -110,7 +110,7 @@ SEED_KNOWN_STATION_TRANSFER: Dict[str, Any] = {
 
 def compute_skill_hash(skill_data: Dict[str, Any]) -> str:
     """Compute deterministic SHA256 of skill definition excluding volatile runtime fields."""
-    volatile = {"evidence", "evidence_id", "promoted_at", "updated_at", "status"}
+    volatile = {"evidence", "evidence_id", "promoted_at", "updated_at", "status", "content_hash"}
     frozen = {k: v for k, v in skill_data.items() if k not in volatile}
     payload = json.dumps(frozen, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -220,6 +220,13 @@ class SkillRegistry:
                     },
                 }
 
+        # Ambiguous alternatives, negation, repetition and unrecognized control modifiers
+        # must never be silently discarded while extracting an otherwise valid route.
+        if re.search(r"\b(don[’']t|do not|never|instead of|unless|maybe|or|twice|three times|repeat|fast|faster|servo|joint|degrees|arbitrary|anywhere)\b",lowered):
+            return {"status":"clarify","message":"Please give one affirmative action, one object, source A or C, and destination B. Repeats or motion changes need a separately validated skill.","metrics":{"model_calls":0,"tokens":0,"planning_ms":(time.perf_counter()-start_time)*1000}}
+        if not re.search(r"\b(move|transfer|carry|take|bring|put|place|pick|pickup|test|release|transport|deliver|relocate|send|shift)\b",lowered) and not re.fullmatch(r"(?:mandarin|orange|sample)\s+[ac]\s+(?:to|->)\s+b",lowered):
+            return {"status":"clarify","message":"What action would you like? Say, for example, test sample at A in B.","metrics":{"model_calls":0,"tokens":0,"planning_ms":(time.perf_counter()-start_time)*1000}}
+
         # Check for observation intent
         observe_match = re.search(
             r"\b(observe|inspect|inspection|check\s+placement|verify\s+placement|watch)\b",
@@ -258,7 +265,7 @@ class SkillRegistry:
 
         # Pattern A: Lesson buoyancy request syntax: "test sample at A in B" or "test sample at C in B"
         buoyancy_pattern = re.search(
-            r"\btest\s+(?:the\s+)?sample\s+at\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9]+)\s+in\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9]+)\b",
+            r"\btest\s+(?:the\s+)?sample\s+at\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9])\s+in\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9])\b",
             lowered,
         )
         if buoyancy_pattern:
@@ -269,7 +276,7 @@ class SkillRegistry:
         else:
             # Pattern B: Explicit source: "from [the] [source] [station] X" / "pickup from X"
             from_match = re.search(
-                r"\b(?:from|source|pickup\s+from|pick\s+up\s+from)\s+(?:the\s+)?(?:source\s+)?(?:station\s+)?([A-Za-z0-9]+)\b",
+                r"\b(?:from|source|pickup\s+from|pick\s+up\s+from)\s+(?:the\s+)?(?:source\s+)?(?:station\s+)?([A-Za-z0-9])\b",
                 lowered,
             )
             if from_match:
@@ -277,7 +284,7 @@ class SkillRegistry:
             else:
                 # "at [the] [station] X" when followed later by "to" or "in"
                 at_match = re.search(
-                    r"\bat\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9]+)\b(?=.*?\b(?:to|into|in)\b)",
+                    r"\bat\s+(?:the\s+)?(?:station\s+)?([A-Za-z0-9])\b(?=.*?\b(?:to|into|in)\b)",
                     lowered,
                 )
                 if at_match:
@@ -285,7 +292,7 @@ class SkillRegistry:
 
             # Pattern C: Explicit destination: "to [the] [destination] [station] Y" / "into Y" / "in Y"
             to_match = re.search(
-                r"\b(?:to|into|in|destination)\s+(?:the\s+)?(?:destination\s+)?(?:station\s+)?([A-Za-z0-9]+)\b",
+                r"\b(?:to|into|in|destination)\s+(?:the\s+)?(?:destination\s+)?(?:station\s+)?([A-Za-z0-9])\b",
                 lowered,
             )
             if to_match:
@@ -488,67 +495,25 @@ class SkillRegistry:
         model_calls = 0
         tokens = 0
 
+        planning_started=time.perf_counter()
         if api_key:
-            # Attempt to use Google GenAI SDK if available
-            called_sdk = False
+            from google import genai
+            from google.genai import types
+            client=genai.Client(api_key=api_key)
             try:
-                # Try new google.genai SDK
-                from google import genai
-                from google.genai import types
-
-                client = genai.Client(api_key=api_key)
-                prompt = (
-                    f"You are the OpenArms expert robotics composer. Allowed primitive actions are: "
-                    f"{list(ALLOWED_PRIMITIVES)}. Allowed parameters are $source, $destination, $object.\n"
-                    f"Instruction: {instruction}\n"
-                    f"Respond ONLY with a valid JSON object matching this schema:\n"
-                    f'{{"steps": [{{"action": "transfer", "args": {{"source": "$source", "destination": "$destination", "object": "$object"}}}}, {{"action": "observe", "args": {{"station": "$destination"}}}}]}}'
-                )
-                response = client.models.generate_content(
-                    model=expert_model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                    ),
-                )
-                model_calls = 1
-                expert_mode = expert_model
-                raw_text = str(response.text) if response.text else "{}"
-                parsed = json.loads(raw_text)
-                if "steps" in parsed and isinstance(parsed["steps"], list):
-                    for step in parsed["steps"]:
-                        if step.get("action") not in ALLOWED_PRIMITIVES:
-                            raise ValueError(f"SDK returned unapproved primitive action: {step.get('action')}")
-                        steps.append(step)
-                called_sdk = True
-            except ImportError:
-                # Try legacy google.generativeai SDK
-                try:
-                    import google.generativeai as genai_legacy
-
-                    genai_legacy.configure(api_key=api_key)
-                    model = genai_legacy.GenerativeModel(expert_model)
-                    prompt = (
-                        f"Allowed primitives: {list(ALLOWED_PRIMITIVES)}. "
-                        f"Instruction: {instruction}. Output JSON with 'steps' array containing primitive actions."
-                    )
-                    res = model.generate_content(prompt)
-                    model_calls = 1
-                    expert_mode = expert_model
-                    parsed = json.loads(res.text)
-                    if "steps" in parsed and isinstance(parsed["steps"], list):
-                        for step in parsed["steps"]:
-                            if step.get("action") not in ALLOWED_PRIMITIVES:
-                                raise ValueError(f"SDK returned unapproved primitive action: {step.get('action')}")
-                            steps.append(step)
-                    called_sdk = True
-                except ImportError:
-                    pass
-
-            if not called_sdk and not steps:
-                # API key was provided but neither SDK is installed; fall back to local compiler
-                expert_mode = "local_composer"
-                model_calls = 0
+                response=await client.aio.models.generate_content(model=expert_model,contents=(
+                    "Compose a reusable OpenArms skill for: "+instruction+
+                    '. Allowed steps are exactly [{"action":"transfer","args":{"source":"$source","destination":"$destination","object":"$object"}},'
+                    '{"action":"observe","args":{"station":"$destination"}}]. Return JSON {"steps":[...]}. '
+                    'Use existing transfer then observe. No motor code, new parameters or extra actions.'),
+                    config=types.GenerateContentConfig(response_mime_type='application/json'))
+                model_calls=1
+                expert_mode=expert_model
+                parsed=json.loads(response.text)
+                steps=parsed.get('steps',[])
+                tokens=getattr(response.usage_metadata,'total_token_count',None)
+            finally:
+                await client.aio.aclose()
 
         # Fallback deterministic compiler: expert_mode='local_composer', model_calls=0
         if not steps:
@@ -573,6 +538,10 @@ class SkillRegistry:
                 },
             ]
 
+        expected_steps=[{'action':'transfer','args':{'source':'$source','destination':'$destination','object':'$object'}},
+                        {'action':'observe','args':{'station':'$destination'}}]
+        if steps!=expected_steps:
+            raise ValueError('Expert candidate has unsupported steps, order or parameter bindings.')
         # Validate steps against whitelist
         for step in steps:
             action = step.get("action")
@@ -580,6 +549,8 @@ class SkillRegistry:
                 raise ValueError(f"Invalid primitive '{action}' in composed candidate. Allowed: {ALLOWED_PRIMITIVES}")
 
         candidate_id = "transfer_and_observe.v1"
+        if candidate_id in self._skills:
+            raise ValueError('This version already exists. Reuse its artifact; a new version requires explicit review.')
         candidate_skill: Dict[str, Any] = {
             "skill_id": candidate_id,
             "name": "Transfer and Observe",
@@ -631,6 +602,7 @@ class SkillRegistry:
             "expert_mode": expert_mode,
             "model_calls": model_calls,
             "tokens": tokens,
+            "planning_ms":(time.perf_counter()-planning_started)*1000,
             "versions": ["1.0.0"],
             "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         }
@@ -682,6 +654,10 @@ class SkillRegistry:
                         raise ValueError(f"Candidate step {i} references undeclared parameter '{param_name}'.")
         tests_passed.append("parameter_bindings_check")
 
+        expected_steps=[{'action':'transfer','args':{'source':'$source','destination':'$destination','object':'$object'}},
+                        {'action':'observe','args':{'station':'$destination'}}]
+        if steps!=expected_steps:
+            raise ValueError('Candidate must bind one transfer and then destination observation exactly.')
         # 4. Mock Execution Simulation
         # Simulate route A -> B
         state: Dict[str, Any] = {"A": "sample", "B": None, "C": None, "observed": None}

@@ -183,9 +183,8 @@ export class LiveClient {
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      this.reconnectAttempts = 0;
       this.isLiveAvailable = true;
-      this._updateStatus(this.isMuted ? 'muted' : 'active', 'Live voice active');
+      this._updateStatus('connecting', 'Connecting to Gemini Live...');
     };
 
     this.ws.onmessage = (event) => {
@@ -242,7 +241,9 @@ export class LiveClient {
           this.isLiveAvailable = false;
           this._updateStatus('unavailable', msg.message || 'Live voice service unavailable on this host');
         } else {
-          this._updateStatus(msg.status, msg.message);
+          if (['connected','listening'].includes(msg.status)) this.reconnectAttempts = 0;
+          const normalized = ['connected','listening'].includes(msg.status) ? (this.isMuted ? 'muted' : 'active') : msg.status;
+          this._updateStatus(normalized, msg.message);
         }
         break;
 

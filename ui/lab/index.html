@@ -60,7 +60,7 @@
         <span>New</span>
       </button>
 
-      <button type="button" id="btn-header-stop" class="btn-emergency-stop" aria-label="Emergency Stop Robot Motion" title="Directly halts robot motion and bypasses AI models (Esc)">
+      <button type="button" id="btn-header-stop" class="btn-emergency-stop" aria-label="Emergency Stop Robot Motion" title="Requests controller STOP, bypassing AI models (Esc)">
         <span aria-hidden="true">🛑</span>
         <span>STOP</span>
       </button>
@@ -115,7 +115,7 @@
         <!-- Correction Pathway (Revokes Old Proposal) -->
         <form id="proposal-correct-form" class="correction-box" aria-label="Parameter correction">
           <label for="proposal-correct-input" class="sr-only" style="display:none;">Correct instruction</label>
-          <input type="text" id="proposal-correct-input" class="correction-input" placeholder="Want to adjust parameters? Type correction (e.g. 'Use station C instead')..." aria-label="Correction instruction">
+          <input type="text" id="proposal-correct-input" class="correction-input" placeholder="Want to adjust parameters? Type correction (e.g. 'test sample at C in B')..." aria-label="Correction instruction">
           <button type="submit" id="btn-submit-correction" class="btn-correct">Submit Correction</button>
         </form>
       </div>
@@ -164,11 +164,12 @@
           </div>
 
           <!-- New/Edit Prediction Form -->
-          <form id="prediction-form" class="prediction-form">
+          <button type="button" id="btn-prepare-trial" class="btn-secondary">Prepare next mock trial</button>
+<form id="prediction-form" class="prediction-form">
             <label for="prediction-input" style="font-size: 0.82rem; color: var(--text-muted);">
               Before the arm moves, predict what you expect to observe:
             </label>
-            <textarea id="prediction-input" class="prediction-textarea" rows="3" placeholder="e.g. I predict that the fruit weight will trigger the station B threshold without slipping..." required></textarea>
+            <textarea id="prediction-input" class="prediction-textarea" rows="3" placeholder="e.g. I predict Sample A will float because its density is lower than water..." required></textarea>
             <button type="submit" id="btn-submit-prediction" class="btn-primary">
               <span aria-hidden="true">📝</span> Save Prediction
             </button>
@@ -222,7 +223,7 @@
             <div style="text-align: center;">
               <span id="voice-status-text" style="font-size: 0.92rem; font-weight: 600; color: #fff;">Click mic to start voice</span>
               <p id="voice-hint-text" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                Real-time 16kHz PCM AudioWorklet mic &amp; 24kHz speaker stream
+                Speak naturally, or type your instructions below.
               </p>
             </div>
 
