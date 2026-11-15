@@ -586,6 +586,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     async def index():
         return FileResponse(static / 'index.html')
 
+    app.mount('/student', StaticFiles(directory=ROOT / 'ui/student', html=True), name='student-lab')
     app.mount('/', StaticFiles(directory=static), name='student')
     return app
 
