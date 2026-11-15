@@ -90,6 +90,16 @@ def make_poses(scene: Scene) -> tuple[dict[str, list[float]], dict[str, float]]:
         x, y = b.stations[s].pos
         grip_height = b.grasp_height + b.dock_height
         grasp = add(f"GRASP_{s}", [x, y, grip_height], level)
+        if errors[f"GRASP_{s}"] >= 0.003:
+            # Near the edge of its reach a level gripper needs the wrist to bend past the model's limit, so the
+            # grasp misses by a few millimetres. A slight nose-down tilt reaches it (the real arm, recorded, does
+            # the same). The tilt stays under the 8 degrees the player allows when the cup is set back down.
+            from .reach import solve as solve_tilted
+            for tilt_deg in (2, 4, 6):
+                q, err, aim = solve_tilted(scene, np.array([x, y, grip_height]), level, math.radians(tilt_deg))
+                if err < 0.003 and aim < 3.0:
+                    poses[f"GRASP_{s}"], errors[f"GRASP_{s}"], grasp = [float(v) for v in q], err, q
+                    break
         above = add(f"ABOVE_{s}", [x, y, grip_height + b.lift], level, seed=grasp)
         poses[f"LIFT_{s}"], errors[f"LIFT_{s}"] = list(poses[f"ABOVE_{s}"]), errors[f"ABOVE_{s}"]
         del above
