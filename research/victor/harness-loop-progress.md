@@ -166,3 +166,30 @@ Priority order, chosen from the traces:
 3. **Skip the clean completion call** (about 10 s) when the independent observation and controller facts are clean; escalate otherwise.
 4. **Fewer planning turns**: host pre-localization and identical-duplicate normalization (7 of 16 live traces wasted a turn on the duplicate-field rejection).
 5. Model choice last: Devin Sol Fast is already measured; Astra Fast / Opus Fast are available as profiles for a later matched comparison.
+
+## Latency Checkpoint 6: Cold Under 30 s, Repeats About 9 s (02:00 EST)
+
+Changes (all on Victor's branch; model unchanged, Devin `gpt-6-1-sol-medium-priority`):
+
+1. **Learned routes + "do it again"** (`91094ee`): after a consented, independently observed success, the host routes the student's own words to that exact active skill version; "do it again" re-proposes the last observed success. Consent is still required every time.
+2. **Demo fast path** (`b85886e`, on by default in the demo-bench app, `OPENARMS_DEMO_FAST_PATH=0` to disable): guarded pre-action checkpoint, guarded completion (skip the clean post-observation expert call), host localization before cold planning, and exact duplicated definition fields no longer rejected. Unknown, failed, stale or changed evidence still escalates to the expert (tested).
+
+Live app runs on main's simulation, each a fresh exact present+confirm, one dispatch and a fresh independent observation:
+
+| Request | Route | Proposal | Request to answer | Model calls |
+| --- | --- | ---: | ---: | ---: |
+| "Pour the beaker at A into the container at C once, put the beaker back at A and go home." (new) | expert | 14.3 s | **22.7 s** | 3 |
+| same wording again | learned route | 0.6 s | **8.9 s** | 0 |
+| "Do it again" | repeat | 0.6 s | **9.2 s** | 0 |
+| "Please pour beaker A into container C, then return it to A and go home." (new) | expert | 13.7 s | 21.8 s | 3 |
+| "Take the beaker from A, pour it into C, put it back on A, then go home." (new) | expert | 12.5 s | 20.5 s | 3 |
+| "Pour from A to C one time, then return the beaker and go home." (new) | expert | 15.6 s | 23.8 s | 3 |
+| "Take the beaker from A, ..." again | learned route | 0.7 s | 9.1 s | 0 |
+
+**7/7 succeeded.** Cold new wording: median **22.2 s** (was 66.5 s with Codex Sol medium + guard, 80.8 s baseline). Repeats: about **9 s**, zero model calls; that 9 s is now almost all simulated motion and rendering (23.7 simulated seconds) plus a 0.5 s observation.
+
+Small sample (4 cold, 3 warm), one simulated motion, scripted consent; not a voice, physical or chemistry result.
+
+Tests: full suite **808 passed, 1 skipped**.
+
+Remaining cold time is about 13 to 15 s of planning (3 model calls: plan, validate, final). Next options: fold validation into one call, a faster model profile (`devin-sol-fast` with low effort, `devin-astra-fast`, `devin-opus-fast`), or more seeded/learned wording. The motion itself (about 8 s wall) dominates repeats.
