@@ -497,7 +497,11 @@ async def test_reconnect_recovers_subscription_and_replays_real_correlated_feedb
         assert replay.id == 'watch-1' and replay.will_continue
         assert replay.response['subscription'] == ('resumed' if resumed else 'current')
         assert replay.response['state']['generation'] == 1
-        assert not second.turns
+        if resumed:
+            assert not second.turns
+        else:
+            start, = second.turns
+            assert start['turns'].parts[0].text == 'Start voice.'
         assert replay.response['after_sequence'] == (1 if resumed else 0)
         assert replay.response['through_sequence'] == 6
         events = replay.response['events'][-4:]
@@ -729,6 +733,30 @@ async def test_initial_subscription_can_prompt_voice_greeting_without_task_event
         assert subscription.response['events'] == []
         assert subscription.scheduling.value == 'WHEN_IDLE'
         assert 'greet' in subscription.response['instruction'].lower()
+    finally:
+        await finish(bridge, runner)
+
+
+async def test_start_voice_reaches_fresh_provider_after_failed_handshake():
+    class FlakyStartupClient(Client):
+        def connect(self, **kwargs):
+            if not self.configs:
+                self.configs.append(kwargs)
+                raise ConnectionError('Provider setup unavailable')
+            return super().connect(**kwargs)
+
+    client = FlakyStartupClient()
+
+    async def noop(*_):
+        pass
+
+    bridge = live.GeminiBridge(context, noop, noop, client_factory=lambda: client, reconnect_delay=0)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: client.sessions and client.sessions[0].turns)
+        assert len(client.configs) == 2
+        start, = client.sessions[0].turns
+        assert start['turn_complete'] and start['turns'].parts[0].text == 'Start voice.'
     finally:
         await finish(bridge, runner)
 

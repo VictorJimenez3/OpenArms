@@ -797,14 +797,15 @@ class GeminiBridge:
                             self.ready = True
                             self.suppress_output = self.discard_transcript = False
                             await self.emit({'type': 'status', 'status': 'muted' if self.muted else 'listening'})
-                            if attempt == 0:
-                                # The student's actual Start Voice gesture.
-                                await session.send_client_content(turns=types.Content(role='user', parts=[types.Part(text='Start voice.')]), turn_complete=True)
                             if handle and self.resume_watcher_id:
                                 # The model already subscribed. Reattach the same
                                 # outstanding tool on the resumed transport.
                                 cid = self.watcher_id = self.resume_watcher_id
                                 self.pending_tools[cid] = asyncio.create_task(self._watch(session, cid, resumed=True))
+                            else:
+                                # A fresh provider session must handle the Start Voice gesture,
+                                # even when an earlier connection attempt failed.
+                                await session.send_client_content(turns=types.Content(role='user', parts=[types.Part(text='Start voice.')]), turn_complete=True)
                             tasks = [asyncio.create_task(self._upstream(session)), asyncio.create_task(self._downstream(session))]
                             done, _ = await asyncio.wait([*tasks, self.watch_failure], return_when=asyncio.FIRST_COMPLETED)
                             for task in tasks:
