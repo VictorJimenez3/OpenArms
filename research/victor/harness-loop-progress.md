@@ -33,7 +33,7 @@ Next bounded measurements: try low effort combined with the guard, then choose a
 - Deterministic expert plus real simulator: development **76/76 baseline and 76/76 candidate**; four optimizer-held-out cases **32/32 each**. Zero correctness regressions. Deterministic timings do not establish a live-model speedup.
 - Existing setup-scoped evaluator admitted the same frozen seed separately in baseline and guarded policy scopes. Warm tests copy that seed outside timed requests; this does not claim every live cold-authored skill was admitted.
 - Initial instrumentation batch was 60/76 and is retained. Runner fixes corrected post-action occlusion injection, STOP reason capture and missing-donor detection; expected case behavior did not change.
-- Baseline full suite: **686 passed**. Benchmark unit tests: **19 passed**. Candidate focused checks: **65 passed**. Candidate full suite is **still running at this checkpoint**; no pass is claimed yet.
+- Baseline full suite: **686 passed**. Benchmark unit tests: **19 passed**. Candidate focused checks: **65 passed**. Candidate full suite completed after checkpoint 1: **747 passed, 11 existing warnings, 310.18 s**.
 - Independent built-in evidence review found no blocker to retaining the isolated opt-in. A real saved local reviewer, **`lucky-brook`**, independently reached the same conclusion and completed a follow-up.
 
 ## Revisions And Evidence
@@ -62,3 +62,7 @@ python3 /Users/victor/.config/devin/skills/local-devin-sessions/scripts/local_se
 ```
 
 That worker owns read-only review, not simulator execution. Initial full-session launches were blocked on per-worktree trust; Victor approved the review worktree and exited the idle CLI. The real session ID, actual review and successful follow-up are now verified. New workers should use Victor's requested 6.1 Sol Fast once its exact CLI catalog identifier is verified; this reviewer was started before that request and used the existing default.
+
+## Checkpoint 1 Verification Update
+
+The candidate full suite completed with **747 passing tests**. The real saved reviewer completed both its initial review and follow-up; no blocker to the isolated opt-in was found. The coordinator still makes no default-enablement or physical-acceptance claim. The next latency experiment remains unmeasured.
