@@ -44,3 +44,11 @@ html, body { width:1920px; height:1080px; overflow:hidden; background:var(--crea
 .buddy .ollie { width:190px; height:160px; margin:30px 0 0 -10px; overflow:visible; }
 .bubble { position:absolute; right:60px; bottom:290px; max-width:520px; background:var(--cream); color:var(--ink); font-size:32px; font-weight:800; line-height:1.2; padding:18px 26px; border-radius:26px; }
 .cap span { max-width:1260px; }
+.circ { position:absolute; right:40px; bottom:34px; width:300px; height:300px; border-radius:50%; background:var(--ink); box-shadow:0 0 0 8px var(--cream); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--cream); }
+.circ span { font-family:"Bagel"; font-size:48px; color:var(--pink); } .circ small { font-size:24px; font-weight:800; opacity:.8; }
+.name { position:absolute; right:40px; bottom:360px; background:var(--pink); color:var(--ink); font-size:30px; font-weight:800; padding:10px 24px; border-radius:999px; }
+.learn { position:absolute; left:150px; top:150px; width:800px; color:var(--cream); }
+.learn h2 { font-family:"Bagel"; font-weight:400; font-size:56px; line-height:1.05; margin-bottom:28px; }
+.learn ul { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:14px 30px; } .learn li { font-size:34px; font-weight:800; } .learn b { color:var(--green); margin-right:12px; }
+.hw-copy { position:absolute; left:760px; top:300px; color:var(--cream); } .hw-copy h2 { font-family:"Bagel"; font-weight:400; font-size:200px; line-height:1; } .hw-copy p { font-size:48px; font-weight:800; max-width:900px; }
+.cap span { max-width:1180px; }

@@ -2,7 +2,7 @@
 
 Sunday, November 15 · Devpost hard cutoff **8:00 a.m. ET** (rules; the header says 8:30, ignore it) · in-person judging 9:30 a.m.–2:00 p.m.
 
-Film plan and exact lines: [FILM.md](FILM.md). Facts and sources you can say out loud: [FACTS.md](FACTS.md). Devpost copy: [research/victor/hackprinceton-devpost-draft.md](../research/victor/hackprinceton-devpost-draft.md).
+**Your lines and how to record them: [SCRIPTS.md](SCRIPTS.md).** Film plan: [FILM.md](FILM.md). Facts and sources you can say out loud: [FACTS.md](FACTS.md). Devpost copy: [research/victor/hackprinceton-devpost-draft.md](../research/victor/hackprinceton-devpost-draft.md).
 
 ## Schedule
 
@@ -10,7 +10,7 @@ Film plan and exact lines: [FILM.md](FILM.md). Facts and sources you can say out
 | --- | --- | --- |
 | 5:45 | Bench dressed: white backdrop, A and C with coloured water, cables hidden, lab coats on | Stef, Duc |
 | 6:30 | Shots H1–H10 and T1–T4 filmed and AirDropped to Victor's Mac (`openarms-film/footage/hand/`) | Victor films, Stef and Duc on the arm |
-| 6:30 | Four voice memos and one music track in `openarms-film/audio/` | everyone; Joseph picks music |
+| 6:30 | Four talking-head takes (`talk-<name>.mp4`, see SCRIPTS.md), the opening skit and one music track sent to Victor | everyone; Joseph picks music |
 | 6:30 | Repository public and readable signed out, README merged | Victor |
 | 7:15 | First full cut rendered | Devin |
 | 7:30 | Team watches once with sound; one round of fixes | everyone |
