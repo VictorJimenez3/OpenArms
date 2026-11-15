@@ -110,3 +110,23 @@ Live blockers right now:
 - Claude profiles (Opus/Sonnet): local Claude CLI says `OAuth session expired and could not be refreshed`. It needs Victor to log in again; credentials are never copied between tools.
 
 Work that continues without live access: the two opt-in implementation workers (they run unit tests, not live models) and deterministic simulator correctness runs. When live access returns, the plan is matched, interleaved runs: guard alone vs guard + planning-turn change vs guard + guarded completion vs all three, then fast tier on the winner.
+
+## Checkpoint 4: Agentic App Running On Main's Updated Simulation (00:50 EST)
+
+On Victor's branch `victor/integration-device-expert` (main itself untouched; merged `origin/main` 1034075 into the branch, clean merge, no conflicts):
+
+- Full suite on the merged simulation: **720 passed, 4 skipped** (agentic, simulation and overhead-camera tests). Branch HEAD focused checks: **133 passed, 1 skipped**.
+- Simulator benchmark with the deterministic test expert on the merged simulation: **38/38** development cases (familiar, paraphrase, correction, unsupported, stale/missing/occluded evidence, STOP) in cold and warm, proposal-only and end-to-end. Motion still 23.67 simulated seconds.
+- **Base demo setting works in the real app**: new `agentic/scripts/seed_demo_skill.py` admits an operator-seeded base pour through the existing setup-scoped evaluator. In the running app (port 8011), "pour A into C" produced the exact proposal in **0.54 s with zero expert calls**, then exact present+confirm, one dispatch, fresh independent observation and the student answer at **9.46 s request-to-result** (`outputs/sim-main-demo-app`, SIMULATED).
+- Still pending: a live-model cold request on the merged simulation (Codex usage limit until about 03:08; Claude login expired). Wording outside the seeded templates still goes to the live expert (about 66 s today with the guard).
+- Main's bench lane (camera, recorded pour plus `shift.py` correction to the real arm) is unchanged and separate (`OPENARMS_BENCH=1`). The agentic sim uses IK poses from the same `setups/demo` the team aligns to the recording; replaying the recording itself in the agentic sim would need `outputs/pour-take-1.json` and its layout, which are not on this machine.
+
+## Checkpoint 4: Agentic App Running On Main's Updated Simulation (00:50 EST)
+
+On Victor's branch `victor/integration-device-expert` (main itself untouched; merged `origin/main` 1034075 into the branch, clean merge, no conflicts):
+
+- Full suite on the merged simulation: **720 passed, 4 skipped** (agentic, simulation and overhead-camera tests). Branch HEAD focused checks: **133 passed, 1 skipped**.
+- Simulator benchmark with the deterministic test expert on the merged simulation: **38/38** development cases (familiar, paraphrase, correction, unsupported, stale/missing/occluded evidence, STOP) in cold and warm, proposal-only and end-to-end. Motion still 23.67 simulated seconds.
+- **Base demo setting works in the real app**: new `agentic/scripts/seed_demo_skill.py` admits an operator-seeded base pour through the existing setup-scoped evaluator. In the running app (port 8011), "pour A into C" produced the exact proposal in **0.54 s with zero expert calls**, then exact present+confirm, one dispatch, fresh independent observation and the student answer at **9.46 s request-to-result** (`outputs/sim-main-demo-app`, SIMULATED).
+- Still pending: a live-model cold request on the merged simulation (Codex usage limit until about 03:08; Claude login expired). Wording outside the seeded templates still goes to the live expert (about 66 s today with the guard).
+- Main's bench lane (camera, recorded pour plus `shift.py` correction to the real arm) is unchanged and separate (`OPENARMS_BENCH=1`). The agentic sim uses IK poses from the same `setups/demo` the team aligns to the recording; replaying the recording itself in the agentic sim would need `outputs/pour-take-1.json` and its layout, which are not on this machine.
