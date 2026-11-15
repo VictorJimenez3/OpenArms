@@ -24,7 +24,8 @@ def execution_scope():
     sources += [root/'agentic/openarms_lab'/name for name in (
         'two_vessel_backend.py', 'two_vessel_scene.py', 'two_vessel_worker.py', 'two_vessel_evaluation.py',
         'mujoco_backend.py', 'mujoco_scene.py', 'mujoco_process.py', 'scene.py',
-        'contracts.py', 'skills.py', 'task_loop.py', 'runtime.py', 'evaluation.py', 'store.py')]
+        'contracts.py', 'skills.py', 'task_loop.py', 'runtime.py', 'evaluation.py', 'store.py',
+        'request_intent.py', 'conversation.py')]
     sources += sorted((root/'simulation/openarms_sim').glob('*.py'))
     sources += [root/'simulation/config'/name for name in (
         'setups/liquid/bench.yaml', 'setups/liquid/poses.json', 'joint_map.yaml', 'chemistry.yaml')]

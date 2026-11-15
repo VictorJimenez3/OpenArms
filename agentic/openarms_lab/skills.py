@@ -115,7 +115,10 @@ class SkillRegistry:
                 pattern = re.escape(parts[0])
                 for slot, literal in zip(parts[1::2], parts[2::2]):
                     spec = schema[slot]
-                    if slot in aliases or not spec['enum']:
+                    if slot in aliases:
+                        pattern += f'(?P={slot})' + re.escape(literal)
+                        continue
+                    if not spec['enum']:
                         break
                     aliases[slot] = {_normalize(str(v).replace('_', ' ')): v for v in spec['enum']}
                     if len(aliases[slot]) != len(spec['enum']):

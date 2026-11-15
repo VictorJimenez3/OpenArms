@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .contracts import ACTION_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
 from .skills import compute_skill_hash
+from .request_intent import RETURN_CLAUSE as WATER_DONOR_RETURN, positive_pour_request
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
@@ -27,25 +28,18 @@ UNSUPPORTED_FIXTURE_REQUEST = re.compile(
     r'(?:measure|read|check) (?:the )?temperature|temperature measurement)\b', re.I)
 CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_frame', 'units', 'clock')
 VESSEL_LABELS = ('source', 'receiver')
-WATER_ROUTE = re.compile(
-    r'\b(?P<direction>from|onto|into|to)\s+'
-    r'(?:(?:the\s+)?(?:station|dock|cup|beaker|container|donor|receiver|vessel)\s+(?:at\s+)?(?P<label>[a-z])\b|'
-    r'(?P<short>[a-z])(?=\s+(?:into|to|then|and)\b|\s*[,.;!?]|\s*$))', re.I)
-WATER_DONOR_RETURN = re.compile(
-    r'\b(?:return|leave|put|place|set|keep)\s+(?:the\s+)?(?:it|beaker|donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
-    r'\s+(?:back\s+)?(?:to|at|on)\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
-# A source named straight after the verb ("pour B into C") has no "from" for WATER_ROUTE to see.
-POUR_SOURCE = re.compile(r'\bpour\s+(?:the\s+)?(?:(?:station|dock|cup|beaker|container|donor|vessel)\s+(?:at\s+)?)?'
-                         r'(?P<label>[a-z])\b(?=\s+(?:onto|into|to|in)\b)', re.I)
 WATER_PORTION = re.compile(
     r'\b(\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|multiple)'
-    r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?portions?\b', re.I)
-WATER_VOLUME = re.compile(r'\b\d+(?:\.\d+)?\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b', re.I)
+    r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?(?:portions?|pours?|transfers?)\b', re.I)
+WATER_VOLUME = re.compile(
+    r'\b(?:\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|a|an)'
+    r'\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?|g|grams?|oz|ounces?|drops?)\b', re.I)
 OTHER_LIQUID = re.compile(r'\b(?:vinegar|baking[- ]soda|citric[- ]acid|magic[- ]tea|indicator)\b', re.I)
 # The demo bench beaker holds citric acid; any other named liquid is a different request.
 DEMO_OTHER_LIQUID = re.compile(r'\b(?:water|vinegar|baking[- ]soda|indicator|soap|bleach|ammonia)\b', re.I)
 # Amounts and routes the fixed one-portion A-to-C action cannot honour.
-UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|again|all\s+of|everything|half|double|triple)\b|'
+UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|all\s+of|everything|half|double|triple)\b|'
+                                     r'\b(?:again\s+and\s+again|over\s+and\s+over|keep\s+pouring)\b|'
                                      r'\b(?:two|three|four|five|several|many|multiple|\d+)\s+times\b|'
                                      r'\b\d+(?:\.\d+)?\s*(?:g|grams?|oz|ounces?|cups?|drops?)\b|'
                                      r'\b(?:left|right)\s+(?:one|side|cup|beaker|container|vessel)\b', re.I)
@@ -174,6 +168,12 @@ class TaskLoop:
             if key in self.workers:
                 self.cancel_signals[key].set()
                 self.workers[key].cancel()
+
+    @staticmethod
+    def _decision_summary(decision):
+        question = decision['payload'].get('question') if decision['kind'] == 'clarification' else None
+        return (question.strip() if isinstance(question, str) and question.strip() and len(question) <= 4000
+                else decision['summary'])
 
     async def _set_status(self, s, task, status, summary=None, **data):
         self._guard_task(s, task)
@@ -433,8 +433,13 @@ class TaskLoop:
                                   'replans_remaining': 2 - task['replans']},
             'instructions': ('Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
                              'or clarification/reject. Use only listed primitives. Never claim expected state as observed. '
-                             'A prepared sample requires an explicit condition in its arguments. Use the requested sample '
+                             + ('A prepared sample requires an explicit condition in its arguments. Use the requested sample '
                              'or the selected condition. Ask which sample when neither is specified. '
+                             if 'mock_prepared_sample' in supported_operations else
+                             'Use the prepared contents already bound to the current scene for add_sample. '
+                             'Do not require a separate sample selection for this operation. '
+                             'If the student requests different contents, clarify rather than relabeling the scene. ')
+                             +
                              'If correction is present, use its sample selection while retaining the rest of the request. '
                              'If the request requires multiple actions or an unsupported result, clarify before proposing any action. '
                              'Prediction is optional notebook context. '
@@ -600,8 +605,12 @@ class TaskLoop:
             if action['operation'] not in capabilities.get('supported_operations', ACTION_OPERATIONS):
                 raise ValueError('The current setup does not support this operation.')
             if capabilities.get('experiment_id') in ('two_vessel_water', 'demo_bench_pour'):
+                source, into = capabilities['routes'][0]
+                source = action['arguments'].get('source', source)
+                into = action['arguments'].get('into', into)
                 for text in dict.fromkeys((intent, task['request'])):
-                    self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour')
+                    self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour',
+                                              source=source, into=into)
             backend.check_step(action['operation'], action['arguments'])
             # Success must rest on the observer's reading of the pour, not on features that never change.
             planned = {(c['feature'], compute_skill_hash(c['expected'])) for c in plan['outcome_checks']}
@@ -624,28 +633,20 @@ class TaskLoop:
             raise ValueError(self._perception_error(exc)) from exc
 
     @staticmethod
-    def _check_water_request(text, liquids=False):
+    def _check_water_request(text, liquids=False, *, source='A', into='C'):
+        text = positive_pour_request(text, source, into)
         # The demo bench holds the kit liquids, so only the water scene rejects them by name.
         if not liquids and OTHER_LIQUID.search(text):
             raise ValueError('This two-vessel setup supports water only. No pour was approved.')
         if liquids and DEMO_OTHER_LIQUID.search(text):
             raise ValueError('This setup pours only the prepared beaker at A. No pour was approved.')
         if UNBOUND_AMOUNT_OR_ROUTE.search(text):
-            raise ValueError('This setup supports one premeasured portion from A into C only. No pour was approved.')
+            raise ValueError(f'This setup supports one premeasured portion from {source} into {into} only. No pour was approved.')
         if WATER_VOLUME.search(text) or any(match[1].lower() not in ('one', '1', '1.0')
                                             for match in WATER_PORTION.finditer(text)):
             raise ValueError('This setup supports one premeasured portion with no specified volume.')
-        if any(match['label'].upper() != 'A' for match in WATER_DONOR_RETURN.finditer(text)):
-            raise ValueError('This setup can only return the donor to A. No pour was approved.')
-        if any(match['label'].upper() != 'A' for match in POUR_SOURCE.finditer(text)):
-            raise ValueError('This setup can only pour from A. No pour was approved.')
-        for match in WATER_ROUTE.finditer(WATER_DONOR_RETURN.sub('', text)):
-            label = (match['label'] or match['short']).upper()
-            source = match['direction'].lower() == 'from'
-            if source and label != 'A':
-                raise ValueError('This setup can only pour from A. No pour was approved.')
-            if not source and label != 'C':
-                raise ValueError('This setup can only pour into C. No pour was approved.')
+        if any(match['label'].upper() != source for match in WATER_DONOR_RETURN.finditer(text)):
+            raise ValueError(f'This setup can only return the donor to {source}. No pour was approved.')
 
     def _check_improvement(self, task, draft, plan):
         pinned = task['improvement']['baseline_plan'] or {}
@@ -763,7 +764,7 @@ class TaskLoop:
                 await self._propose_task(s, task, draft, phase, began)
             elif response['kind'] in ('clarification', 'reject', 'complete'):
                 status = {'clarification': 'needs_clarification', 'reject': 'failed', 'complete': 'completed'}[response['kind']]
-                await self._set_status(s, task, status, response['summary'])
+                await self._set_status(s, task, status, self._decision_summary(response))
             else:
                 raise ValueError('Expert returned an invalid planning decision.')
         except asyncio.CancelledError:
@@ -995,7 +996,7 @@ class TaskLoop:
             status = 'needs_clarification' if kind == 'clarification' else 'failed'
             request.update(status='cancelled' if kind == 'clarification' else 'failed', result=receipt)
             s['trial']['state'] = 'stopped'
-            await self._set_status(s, task, status, decision['summary'])
+            await self._set_status(s, task, status, self._decision_summary(decision))
             return True
         if failure:
             if not is_final:
