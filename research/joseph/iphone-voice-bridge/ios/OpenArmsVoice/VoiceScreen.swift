@@ -4,10 +4,9 @@ import UIKit
 private enum LabStyle {
     static let background = color(0xfbfdfc)
     static let subtle = color(0xf7f9f8)
-    static let line = color(0xdfe4e2)
     static let ink = color(0x1a211e)
     static let muted = color(0x5f6563)
-    static let jade = color(0x208368)
+    static let jade = color(0x14664f)
     static let stop = color(0xb42318)
 
     private static func color(_ rgb: UInt32) -> Color {
@@ -38,24 +37,28 @@ struct VoiceScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider().overlay(LabStyle.line)
             ScrollViewReader { scroll in
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 16) {
-                        camera
-                        voiceControl
-                        if let proposal = client.snapshot?.pending, client.connected {
-                            proposalCard(proposal)
+                GeometryReader { viewport in
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 20) {
+                            // Reserve space for the controls; larger text can scroll naturally.
+                            camera(height: max(220, min(520, viewport.size.height - 310)))
+                            voiceControl
+                            if let proposal = client.snapshot?.pending, client.connected {
+                                proposalCard(proposal)
+                            }
+                            clarification
+                            if let notice = client.notice { noticeCard(notice) }
+                            secondaryActions
                         }
-                        clarification
-                        if let notice = client.notice { noticeCard(notice) }
-                        secondaryActions
+                        .padding(.horizontal, 20).padding(.vertical, 16)
+                        .frame(maxWidth: 680)
+                        .frame(minHeight: viewport.size.height, alignment: .top)
+                        .frame(maxWidth: .infinity)
                     }
-                    .padding(.horizontal, 20).padding(.vertical, 16)
-                    .frame(maxWidth: 560).frame(maxWidth: .infinity)
-                }
-                .onChange(of: reviewableProposalID, initial: true) { _, id in
-                    if let id { scroll.scrollTo(id, anchor: .top) }
+                    .onChange(of: reviewableProposalID, initial: true) { _, id in
+                        if let id { scroll.scrollTo(id, anchor: .top) }
+                    }
                 }
             }
         }
@@ -70,7 +73,7 @@ struct VoiceScreen: View {
                     if let notice = client.notice { noticeCard(notice) }
                 }
             case .history:
-                detailSheet("History") { historyContent }
+                detailSheet("Results & history") { historyContent }
             case .settings:
                 ConnectionSettings(client: client, address: $address, localDevelopment: $localDevelopment)
             }
@@ -120,21 +123,23 @@ struct VoiceScreen: View {
                 connectionIndicator
                 stopButton(client) { focusedField = nil }
             }
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    appTitle
-                    Spacer()
+            .fixedSize(horizontal: true, vertical: true)
+            VStack(alignment: .leading, spacing: 8) {
+                appTitle
+                HStack(alignment: .top) {
+                    connectionIndicator
+                    Spacer(minLength: 8)
                     stopButton(client) { focusedField = nil }
                 }
-                connectionIndicator
             }
         }
-        .padding(.horizontal, 20).padding(.vertical, 4)
-        .frame(maxWidth: 560).frame(maxWidth: .infinity)
+        .padding(.horizontal, 20).padding(.vertical, 8)
+        .frame(maxWidth: 680).frame(maxWidth: .infinity)
     }
 
     private var appTitle: some View {
         Text("OpenArms").font(.title2.weight(.semibold))
+            .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
     }
 
@@ -145,6 +150,7 @@ struct VoiceScreen: View {
                 .accessibilityHidden(true)
             Text(client.connected ? "Connected" : (client.connecting ? "Connecting" : "Offline"))
                 .foregroundStyle(LabStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(.subheadline)
         .accessibilityElement(children: .ignore)
@@ -152,7 +158,7 @@ struct VoiceScreen: View {
         .accessibilityIdentifier("connectionState")
     }
 
-    private var camera: some View {
+    private func camera(height: CGFloat) -> some View {
         let lab = client.snapshot
         let frame = lab?.imageRecords.last
         let simulationFrame = lab?.simulationFrame
@@ -163,18 +169,19 @@ struct VoiceScreen: View {
             Group {
                 if showingSimulation, let simulationFrame {
                     EvidenceImage(client: client, id: simulationFrame.id, path: simulationFrame.path,
-                                  scope: client.evidenceScope, maxHeight: 246, label: "MuJoCo simulation frame")
+                                  scope: client.evidenceScope, maxHeight: height, label: "MuJoCo simulation frame")
                 } else if let frame {
-                    sceneImage(frame, maxHeight: 246)
+                    sceneImage(frame, maxHeight: height)
                 } else {
                     Label(client.connected ? "Waiting for a scene image" : "Camera offline",
                           systemImage: "camera")
-                        .font(.subheadline).foregroundStyle(LabStyle.muted)
+                        .font(.body).foregroundStyle(LabStyle.muted)
+                        .padding(20)
                 }
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
-            .frame(height: 246)
+            .frame(minHeight: height)
             if showingSimulation {
                 cameraCaption("MuJoCo simulation frame")
             } else if let frame {
@@ -183,20 +190,18 @@ struct VoiceScreen: View {
         }
         .background(LabStyle.subtle, in: RoundedRectangle(cornerRadius: 16))
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(LabStyle.line))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Lab camera")
     }
 
     private func cameraCaption(_ source: String, time: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(source).font(.caption.weight(.semibold))
-            if let time { Text(time).font(.caption2) }
+            Text(source).font(.subheadline.weight(.semibold))
+            if let time { Text(time).font(.footnote) }
         }
         .foregroundStyle(LabStyle.muted)
         .padding(.horizontal, 14).padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .overlay(alignment: .top) { Divider().overlay(LabStyle.line) }
     }
 
     @ViewBuilder
@@ -244,9 +249,10 @@ struct VoiceScreen: View {
     }
 
     private var voiceControl: some View {
-        VStack(spacing: 10) {
-            Text(activityStatus).font(.subheadline.weight(.medium))
-                .foregroundStyle(LabStyle.muted).multilineTextAlignment(.center)
+        VStack(spacing: 12) {
+            Text(activityStatus).font(.headline)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("labActivity")
             Button {
                 focusedField = nil
@@ -255,15 +261,21 @@ struct VoiceScreen: View {
                 else { open(.settings) }
             } label: {
                 Label(voiceAction.title, systemImage: voiceAction.icon)
-                    .font(.title3.weight(.semibold))
+                    .font(.title2.weight(.semibold))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16).padding(.vertical, 18)
-                    .frame(maxWidth: .infinity, minHeight: 68)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20).padding(.vertical, 24)
+                    .frame(maxWidth: .infinity, minHeight: 88)
+                    .foregroundStyle(.white)
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.roundedRectangle(radius: 16))
             .disabled(client.connecting && !client.voiceWanted)
             .accessibilityIdentifier("primaryVoice")
+            .accessibilityValue(activityStatus)
+            .accessibilityHint(client.voiceWanted
+                ? "Ends voice. Your lab session stays connected."
+                : (client.connected ? "Starts voice conversation with your lab." : "Opens lab connection settings."))
         }
     }
 
@@ -280,27 +292,35 @@ struct VoiceScreen: View {
                 historyButton
                 settingsButton
             }
+            .fixedSize(horizontal: true, vertical: true)
             VStack(spacing: 0) {
                 typeButton
                 historyButton
                 settingsButton
             }
         }
-        .font(.subheadline.weight(.medium))
+        .font(.body.weight(.medium))
         .foregroundStyle(LabStyle.jade)
         .frame(maxWidth: .infinity)
     }
 
     private var typeButton: some View {
-        Button { open(.type) } label: { Text("Type instead").frame(minHeight: 44) }
+        Button { open(.type) } label: {
+            Text("Type instead").fixedSize(horizontal: false, vertical: true).frame(minHeight: 44)
+        }
     }
 
     private var historyButton: some View {
-        Button { open(.history) } label: { Text("History").frame(minHeight: 44) }
+        Button { open(.history) } label: {
+            Text("Results").fixedSize(horizontal: false, vertical: true).frame(minHeight: 44)
+        }
+        .accessibilityHint("Shows lesson results, observations, and conversation history.")
     }
 
     private var settingsButton: some View {
-        Button { open(.settings) } label: { Text("Settings").frame(minHeight: 44) }
+        Button { open(.settings) } label: {
+            Text("Settings").fixedSize(horizontal: false, vertical: true).frame(minHeight: 44)
+        }
             .accessibilityIdentifier("connectionSettings")
     }
 
@@ -324,18 +344,24 @@ struct VoiceScreen: View {
 
     @ViewBuilder
     private var historyContent: some View {
-        if !client.messages.isEmpty { conversation }
         if let lab = client.snapshot {
-            if !lab.taskRecords.isEmpty { taskUpdates(lab) }
+            if lab.observations.isEmpty && lab.outcomeRecords.isEmpty {
+                Text("Your results will appear here after the lab checks an action.")
+                    .foregroundStyle(LabStyle.muted)
+            }
             if !lab.observations.isEmpty { evidence(lab) }
             if !lab.outcomeRecords.isEmpty { outcomes(lab) }
+            if !lab.taskRecords.isEmpty { taskUpdates(lab) }
+            if !client.messages.isEmpty { conversation }
             if !lab.sceneRecords.isEmpty || !lab.imageRecords.isEmpty { sceneEvidence(lab) }
             if !lab.executionRecords.isEmpty { execution(lab) }
             if lab.experiment.id == "indicator_ph" { trial(lab) }
             if !lab.skillRecords.isEmpty || !lab.evaluationRecords.isEmpty { skills(lab) }
             history(lab)
-        } else if client.messages.isEmpty {
-            Text("Your conversation and trial evidence will appear here.")
+        } else if !client.messages.isEmpty {
+            conversation
+        } else {
+            Text("Your results and conversation will appear here after you connect to the lab.")
                 .foregroundStyle(LabStyle.muted)
         }
     }
@@ -583,7 +609,7 @@ struct VoiceScreen: View {
 
     private func evidence(_ lab: LabSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 18) {
-            Label("Independent observations", systemImage: "sparkle.magnifyingglass").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+            Text("Lesson results").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
             ForEach(lab.observations.suffix(3)) { observation in
                 VStack(alignment: .leading, spacing: 8) {
                     Text(observation.provenance)
