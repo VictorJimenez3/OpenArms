@@ -737,6 +737,48 @@ async def test_initial_subscription_can_prompt_voice_greeting_without_task_event
         await finish(bridge, runner)
 
 
+async def test_watch_subscription_answers_even_when_the_current_reply_has_started():
+    state = {**context(), 'notebook': []}
+    client, sent = Client(), []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(*_):
+        pass
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        partial = output_reply('Welcome to the lab.')
+        partial.server_content.turn_complete = False
+        session.incoming.put_nowait(partial)
+        await until(lambda: any(event['type'] == 'audio' for event in sent))
+        rid = bridge.reply_id
+
+        # The provider can require the tool result before this turn ends.
+        session.incoming.put_nowait(function_calls(tool_call('watch', 'watch_lab_events')))
+        await until(lambda: len(session.tools) == 1)
+        assert session.tools[0].will_continue
+        assert bridge.reply_id == rid
+        assert not any(event['type'] == 'reply_end' for event in sent)
+
+        # Later asynchronous updates still must wait for actual playback.
+        add_event(state, 'task_status', status='completed')
+        await bridge.state_changed()
+        await until(bridge.state_updates.empty)
+        session.incoming.put_nowait(response(server_content=content(turn_complete=True)))
+        await until(lambda: any(event['type'] == 'reply_end' for event in sent))
+        assert len(session.tools) == 1
+        await bridge.played(rid)
+        await until(lambda: len(session.tools) == 2)
+        assert session.tools[-1].response['events'][0]['kind'] == 'task_status'
+    finally:
+        await finish(bridge, runner)
+
+
 async def test_start_voice_reaches_fresh_provider_after_failed_handshake():
     class FlakyStartupClient(Client):
         def connect(self, **kwargs):
