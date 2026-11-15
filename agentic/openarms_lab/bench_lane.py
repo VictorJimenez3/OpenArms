@@ -1356,7 +1356,8 @@ class BenchLane:
         note('start_pose', joints=start)
         from firmware.openarms_executor.pour_once import bench_limits
         arm = ObservedPour(robot, pour_poses, note=note, fake=not self.real_arm,
-                           limits=bench_limits() if self.real_arm else None)  # raised carry poses stay in range
+                           limits=bench_limits() if self.real_arm else None,  # raised carry poses stay in range
+                           seconds=self.seconds)  # OPENARMS_SECONDS, at least 1 s per move
         verdict = validate(PLAN, arm.state(), STATIONS)
         if not verdict['ok']:
             return not_started(verdict['reason'])

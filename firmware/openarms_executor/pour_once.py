@@ -48,8 +48,8 @@ def bench_limits() -> dict:
 
 
 class ObservedPour(PoseArm):
-    def __init__(self, robot, poses, *, note, fake: bool, limits: dict | None = None):
-        super().__init__(robot, poses, STATIONS, seconds=0.01 if fake else 3, pour_hold=0 if fake else 2,
+    def __init__(self, robot, poses, *, note, fake: bool, limits: dict | None = None, seconds: float = 3.0):
+        super().__init__(robot, poses, STATIONS, seconds=0.01 if fake else max(1.0, float(seconds)), pour_hold=0 if fake else 2,
                          stop_within_move=True, give=GIVE_DEG,
                          on_give=lambda pose, report: note("arrival_accepted", pose=pose, **report), limits=limits)
         self.note = note

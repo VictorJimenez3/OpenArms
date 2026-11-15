@@ -36,6 +36,7 @@ OPENARMS_EXECUTION=mujoco OPENARMS_EXPERT_PROFILE=sonnet OPENARMS_ENV_FILE=$PWD/
 PORT=8010 .venv/bin/python -m agentic.openarms_lab
 ```
 
+- `OPENARMS_SECONDS` is the time per move (default 3) for mandarin moves and pours alike; a pour never goes below 1 s. Faster moves lag more at long reach, so more stops land in the 7° allowance or past it.
 - Leave out `OPENARMS_FOLLOWER_PORT` for a stand-in arm (nothing moves, results labelled MOCK); leave out `OPENARMS_CAMERA` to track the object without a camera (real results then stay UNKNOWN).
 - The camera decides where the object is before planning and again just before running; if it moved in between, nothing starts. After the run the result is REAL only when the picture agrees with the plan.
 - The camera check is a colour-blob detector for an orange object inside taught picture regions. It needs a fixed, raised, angled view in which A and B are clearly apart; it reports a view where they coincide. It was developed on the eight real bench photos in `research/joseph/mandarin-transfer-2026-11-14/images` and has not yet been run on a live webcam.
