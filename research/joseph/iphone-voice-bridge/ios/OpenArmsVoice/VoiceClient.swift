@@ -325,6 +325,8 @@ final class VoiceClient: ObservableObject {
             do { try audio.append(bytes, replyID: id) } catch { voiceFailed(error) }
         case "reply_end": if let id = event.replyID { audio.endReply(id) }
         case "interrupted":
+            transcripts.discardPartialOutput(replyID: event.replyID)
+            messages = transcripts.turns
             if event.replyID == nil || event.replyID == audio.activeReply { flushAudio(notify: false); updateCapture() }
         case "error":
             // Never render raw provider errors, which can contain remote URLs or credentials.
@@ -524,6 +526,7 @@ final class VoiceClient: ObservableObject {
         if let id = audio.interruptPlayback(), notify { fifo?.enqueue(.reply("interrupt", id: id)) }
         speakerActive = false
         transcripts.discardPartialInput()
+        transcripts.discardPartialOutput()
         messages = transcripts.turns
     }
     private func voiceFailed(_ error: Error) {

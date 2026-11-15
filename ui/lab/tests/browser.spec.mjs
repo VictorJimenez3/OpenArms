@@ -260,6 +260,25 @@ test('voice outage preserves the socket, coalesces turns and permits text',async
   expect((await fixture(page,request)).trace.filter(t=>t.frame?.type==='hello')).toHaveLength(1);
 });
 
+test('cancelled voice drafts disappear without clearing completed turns', async ({page, request}) => {
+  await ready(page);
+  await page.getByRole('button', {name:'Talk', exact:true}).click();
+  await expect(page.locator('#provider-state')).toHaveText('Voice listening');
+  const send = frame => fixture(page, request, {frame});
+  const fragment = (turn_id, text, final = false) => send({type:'transcript', role:'assistant', turn_id, text, final});
+  const messages = page.locator('#messages');
+  await fragment('finished', 'The lab is ready.', true);
+  await fragment('aborted', 'Hello! Today we are');
+  await fragment('next', 'I am checking');
+  await expect(messages).toContainText('Hello! Today we are');
+  await send({type:'interrupted', reply_id:'aborted'});
+  await expect(messages).not.toContainText('Hello! Today we are');
+  await expect(messages).toContainText('I am checking');
+  await page.getByRole('button', {name:'End voice', exact:true}).click();
+  await expect(messages).not.toContainText('I am checking');
+  await expect(messages).toContainText('The lab is ready.');
+});
+
 test('network error preserves draft and reconnect never replays a command or approval',async({page,request})=>{
   await ready(page);
   await fixture(page,request,{fail:'request'});

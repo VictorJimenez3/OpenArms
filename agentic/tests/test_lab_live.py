@@ -168,7 +168,7 @@ async def test_pcm_turn_records_usage_and_exact_stop_without_a_model_tool():
             output_transcription=NS(text='Check the evidence.'),
             model_turn=NS(parts=[NS(inline_data=NS(data=pcm))]), turn_complete=True),
             usage_metadata=NS(model_dump=lambda **_: {'total_token_count': 17})))
-        await until(lambda: len(session.realtime) == 2 and len(calls) == 4)
+        await until(lambda: len(session.realtime) == 2 and len(calls) == 3)
         assert session.realtime[0]['audio'].data == pcm
         assert session.realtime[0]['audio'].mime_type == 'audio/pcm;rate=16000'
         assert session.realtime[1] == {'audio_stream_end': True}
@@ -178,6 +178,7 @@ async def test_pcm_turn_records_usage_and_exact_stop_without_a_model_tool():
         assert user_final['turn_id'] == user_partial['turn_id']
         audio, = [m for m in sent if m['type'] == 'audio']
         assert base64.b64decode(audio['data']) == pcm
+        await bridge.played(audio['reply_id'])
         assert ('_record_transcript', {'role': 'assistant', 'text': 'Check the evidence.',
                                        'turn_id': audio['reply_id'], 'final': True}) in calls
         assert calls.count(('stop_lab', {})) == 1 and not session.tools
@@ -185,6 +186,43 @@ async def test_pcm_turn_records_usage_and_exact_stop_without_a_model_tool():
     finally:
         await finish(bridge, runner)
     await assert_clean(bridge, client)
+
+
+async def test_assistant_transcript_is_saved_only_after_playback():
+    client, sent, saved = Client(), [], []
+
+    async def emit(message):
+        sent.append(message)
+
+    async def tool(name, args):
+        if name == '_record_transcript':
+            saved.append(args)
+
+    bridge = live.GeminiBridge(context, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(response(server_content=content(
+            output_transcription=NS(text='Hello! Today we are'), turn_complete=True)))
+        session.incoming.put_nowait(output_reply('The lab is ready.'))
+        await until(lambda: any(
+            e['type'] == 'reply_end' and e['reply_id'] in bridge.replies for e in sent))
+        assert not any(e.get('text') == 'Hello! Today we are' for e in sent)
+        assert not saved
+        reply_id = next(e['reply_id'] for e in sent if e['type'] == 'audio')
+        await bridge.played(reply_id)
+        assert [e['text'] for e in saved] == ['The lab is ready.']
+
+        session.incoming.put_nowait(output_reply('This reply was interrupted.'))
+        await until(lambda: any(e['type'] == 'reply_end' and e['reply_id'] != reply_id for e in sent)
+                    and bridge.replies)
+        discarded, = bridge.replies
+        await bridge.interrupt(discarded)
+        await bridge.played(discarded)
+        assert [e['text'] for e in saved] == ['The lab is ready.']
+    finally:
+        await finish(bridge, runner)
 
 
 async def test_duplicate_tool_id_returns_cached_reply_and_cancelled_id_never_reenters():
@@ -631,7 +669,10 @@ async def test_stop_revokes_buffered_playback_and_discards_superseded_stream_tai
         assert not any('Still executing' in m.get('text', '') for m in sent)
         session.incoming.put_nowait(transcript('What happened?'))
         session.incoming.put_nowait(output_reply('The task stopped.'))
-        await until(lambda: any(m.get('text') == 'The task stopped.' and m['final'] for m in sent))
+        await until(lambda: any(m.get('text') == 'The task stopped.' for m in sent))
+        fresh_reply = next(iter(bridge.replies))
+        await bridge.played(fresh_reply)
+        assert any(m.get('text') == 'The task stopped.' and m['final'] for m in sent)
     finally:
         await finish(bridge, runner)
 

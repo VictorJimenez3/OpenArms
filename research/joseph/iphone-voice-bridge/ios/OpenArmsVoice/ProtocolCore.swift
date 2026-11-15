@@ -473,6 +473,9 @@ struct TranscriptStore {
     mutating func discardPartialInput() {
         turns.removeAll { $0.role == "user" && $0.final == false }
     }
+    mutating func discardPartialOutput(replyID: String? = nil) {
+        turns.removeAll { $0.role == "assistant" && $0.final == false && (replyID == nil || $0.turnID == replyID) }
+    }
     // State broadcasts may lag a live turn; preserve only live turns absent from canonical history.
     mutating func reconcile(_ messages: [LabMessage]) {
         let ids = Set(messages.filter { $0.final != false }.map(\.id))
