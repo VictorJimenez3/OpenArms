@@ -53,7 +53,7 @@ EVENT_BATCH = 12
 INITIAL_REPLAY = 24
 PLAYBACK_ACK_TIMEOUT = 15
 
-OBSERVATION_FIELDS = ('observation_id', 'task_id', 'trial_id', 'request_id', 'plan_hash',
+OBSERVATION_FIELDS = ('observation_id', 'task_id', 'trial_id', 'request_id', 'plan_hash', 'operation',
                       'skill_version', 'status', 'text', 'provenance', 'source',
                       'features', 'checks', 'reason', 'evidence', 'evidence_id', 'color')
 RECEIPT_FIELDS = ('receipt_id', 'task_id', 'trial_id', 'request_id', 'skill_id', 'skill_version',
@@ -123,7 +123,7 @@ def compact_snapshot(snap):
     capabilities = snap.get('capabilities') or {}
     result['capabilities'] = brief(capabilities, ('supported_operations', 'limitations', 'physical_execution',
                                                  'expert_available', 'perception_available', 'history_only',
-                                                 'action_description', 'routes'))
+                                                 'action_description', 'supported_actions', 'routes'))
     result['tasks'] = []
     for task in snap.get('tasks', [])[-2:]:
         summary = brief(task, ('task_id', 'trial_id', 'turn_id', 'request_id', 'request', 'status',
@@ -156,18 +156,26 @@ def compact_snapshot(snap):
 
 def system_prompt(context):
     state = compact(context)
-    experiment = state.get('experiment') or {}
-    if experiment.get('id') == 'demo_bench_pour':
+    experiment_id = (state.get('experiment') or {}).get('id')
+    if experiment_id == 'demo_bench_pour':
         activity = (
-            'The current lab is the two-vessel MuJoCo demo bench. Name the selected experiment from experiment.title. '
-            'A is the donor beaker and C is the receiver. Use the actions listed in capabilities.supported_operations. '
+            'Name the selected experiment from experiment.title and invite the student to choose a single supported action. '
+            'Use capabilities.supported_actions to describe what they can ask for. '
+            'If available, “pick up the beaker” lifts it and leaves it in the gripper. '
+            'A separate “pour it into the container” can pour while holding it, and '
+            '“put the beaker back” returns it to its original mark and parks the arm. '
+            'The student can also request a full pour starting at the mark. Never expand a pickup into a pour. '
+            'Pass each completed instruction verbatim to request_action and let the background task resolve '
+            'vessels and positions from the current camera view. Do not assert locations or a grasp before '
+            'the camera verifies them. For clarification, use everyday vessel names or positions. '
             'Present the exact proposal and wait for student confirmation. '
         )
         science = (
-            'Report the appearance of the vessels only from the current independent simulated observation. '
-            'The simulation displays modeled liquid colors. Do not report a physical reaction, measured pH or quantity. '
+            'Report whether the beaker is held, back on its mark, or appears empty only from its independent image observation. '
+            'The receiver’s color comes from the model. Do not report a physical reaction, measured pH or quantity. '
+            'Use everyday vessel names when describing results. Always read the exact proposal verbatim. '
         )
-    elif experiment.get('id') == 'two_vessel_water':
+    elif experiment_id == 'two_vessel_water':
         activity = (
             'The current lab is the water-only, two-vessel MuJoCo simulation. Donor A holds one premeasured water portion. '
             'Receiver C stays fixed; the donor returns to A before the arm returns HOME. '

@@ -434,8 +434,9 @@ class Player:
         self._write_mocap()
         mujoco.mj_forward(m, d)
 
-    def run(self, segments: list[Segment], fps: int = 30, on_frame: Callable[["Player"], None] | None = None):
-        """Plays the moves in order. Calls `on_frame(self)` after every frame."""
+    def run(self, segments: list[Segment], fps: int = 30,
+            on_frame: Callable[["Player"], None] | None = None, *, allow_held: bool = False):
+        """Play the moves and report every frame. Only interactive simulation may end holding."""
         last_index = None
         for seg in segments:
             if seg.step_index != last_index:
@@ -469,6 +470,6 @@ class Player:
         self._pour = None
         self._refresh_liquids()
         self.step = ""
-        if self.holding:
+        if self.holding and not allow_held:
             self._add("block", "still_holding", f"The plan ends with the {self._name(self.holding)} still in the gripper.")
         return self.issues

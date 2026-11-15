@@ -4,12 +4,15 @@ import hashlib
 import tempfile
 import time
 import unittest
+
+import pytest
 from pathlib import Path
 
 from PIL import Image
 
 from agentic.openarms_lab.backends import MockBackend
 from agentic.openarms_lab.runtime import Lab, LabError
+from agentic.openarms_lab.task_loop import TaskLoop
 
 HASH = '1' * 64
 DEFINITION = {
@@ -407,3 +410,31 @@ class TaskLoopTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(snap['generation'], generation + 1)
         self.assertIsNone(snap['pending'])
         self.assertEqual(self.lab.backends[self.sid].executions, 0)
+
+
+
+@pytest.mark.parametrize(('request_text', 'operation'), [
+    ('Could you pick up the beaker?', 'pick'),
+    ('Lift the beaker.', 'pick'),
+    ('Pour it into the receiver.', 'pour'),
+    ('Put the beaker back on its mark.', 'return_cup'),
+    ('Pour the beaker from A into C and return it to A.', 'add_sample'),
+])
+def test_demo_gate_keeps_the_requested_single_action(request_text, operation):
+    TaskLoop._check_demo_request([request_text], operation)
+
+
+@pytest.mark.parametrize(('request_text', 'operation', 'error'), [
+    ('Pick up the beaker.', 'add_sample', 'differs'),
+    ('Pick up the bowl.', 'pick', 'small beaker'),
+    ('Pick up the wide container.', 'pick', 'Only the small beaker'),
+    ('Pick up the beaker and return it.', 'pick', 'multiple actions'),
+    ("Don't pick up the beaker.", 'pick', 'Clarify the positive action'),
+    ('Don’t put the beaker back.', 'return_cup', 'Clarify the positive action'),
+    ('Put the beaker down at B.', 'return_cup', 'original mark'),
+    ('Put the beaker down at C.', 'return_cup', 'original mark'),
+    ('Pour it into the receiver and put it down.', 'pour', 'multiple actions'),
+])
+def test_demo_gate_rejects_substitution_and_unsupported_targets(request_text, operation, error):
+    with pytest.raises(ValueError, match=error):
+        TaskLoop._check_demo_request([request_text], operation)

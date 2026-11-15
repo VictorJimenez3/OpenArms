@@ -1,8 +1,7 @@
 """Lab adapter for the openarms_sim `demo` bench (ruler bench matched to a recorded real pour).
 
-One typed action, `add_sample(source=A, into=C, portions=1)`: pick the beaker at A, pour once
-into the container at C, return the beaker to A and go HOME. Reuses the two-vessel consent,
-STOP, receipt and evidence machinery through its worker/command seams.
+Runs a complete pour or separate pick, pour and return actions on the same
+simulated bench. The existing lab owns consent, STOP and evidence.
 """
 from __future__ import annotations
 
@@ -15,7 +14,7 @@ import numpy as np
 from bench_vision.perception import observation
 from simulation.openarms_sim.render import OVERVIEW_HEIGHT, OVERVIEW_WIDTH
 
-from .contracts import AddSampleArguments
+from .contracts import PRIMITIVE_SCHEMAS
 from .demo_bench_worker import (CONFIGURATION_ID, CAMERA_ID, EXPERIMENTS_FILE, SETUP, experiment_contents,
                                 experiment_name, experiments, run_worker)
 from .scene import camera_metadata
@@ -26,15 +25,27 @@ from .two_vessel_scene import TwoVesselSceneService
 from . import two_vessel_scene
 
 OPERATION = 'add_sample'
+ACTIONS = {
+    'pick': 'Pick up the small beaker from A and hold it above the bench.',
+    'pour': 'Pour the held beaker into the receiver at C and keep holding it.',
+    'return_cup': 'Put the held beaker back on mark A and park the arm.',
+    OPERATION: 'Pick up the beaker from A, pour into C, put the beaker back on A and park the arm.',
+}
+ACTION_CHECKS = {
+    'pick': [{'feature': 'sample_cup_held', 'expected': True}],
+    'pour': [{'feature': 'sample_cup_held', 'expected': True}, {'feature': 'donor_appearance', 'expected': 'empty'}],
+    'return_cup': [{'feature': 'sample_cup_held', 'expected': False}, {'feature': 'sample_cup_station', 'expected': 'A'}],
+    OPERATION: [{'feature': 'donor_appearance', 'expected': 'empty'}],
+}
 PROVENANCE = 'SIMULATED'
-METHOD = 'demo-bench-markers-vessel-appearance-v2'
-SCENE = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': SETUP,
-         'control_mode': 'mujoco_kinematic_add_sample'}
+METHOD = 'demo-bench-vessel-marks-and-appearance-v5'
+SCENE = {'scene_id': 'openarms_sim_demo', 'scene_version': 3, 'setup': SETUP,
+         'control_mode': 'mujoco_kinematic_beaker_actions'}
 CAMERA = {**camera_metadata(CAMERA_ID, CONFIGURATION_ID), 'calibration_id': CONFIGURATION_ID}
 LIMITATIONS = [
     'Poses are solved by the simulation from bench.yaml, matched to one recorded real pour; joint_map.yaml is unmeasured.',
     'Liquid is drawn, not simulated: colours come from chemistry.yaml, so receiver colour is not a chemistry result.',
-    'Pixel observation of the rendered overview: vessel appearance and station markers; no measured volume.',
+    'The rendered overview tracks the beaker mark and reads vessel appearance; no measured volume.',
     'No physical grasp, liquid delivery or spill safety is established. Physical dispatch is disabled.',
 ]
 
@@ -43,7 +54,7 @@ def experiment_metadata(name):
     """One Smartivity experiment on the unchanged demo bench; the id stays the bench's own capability."""
     config = experiments()[name]
     base = {'id': 'demo_bench_pour', 'variant': name, 'mode': 'SIMULATED',
-            'question': 'Can the arm pour the beaker at A into the container at C, return the beaker and go HOME?'}
+            'question': 'What would you like the arm to do with the beaker?'}
     if name == 'volcano':
         return {**base, 'title': 'Demo bench pour — simulation',
                 'description': 'openarms_sim demo setup: citric acid beaker at A, volcano mix container at C.'}
@@ -89,8 +100,8 @@ def _masks(pixels):
     r, g, b = pixels.transpose(2, 0, 1)
     low = np.zeros_like(r, bool)
     low[OVERVIEW_HEIGHT * 54 // 100:] = True  # Below the arm, where the station markers lie.
-    return {'marker_a': (b > 180) & (r < 120) & low, 'marker_c': (r > 200) & (g > 130) & (g < 200) & (b < 80) & low,
-            'red': (r > 180) & (g < 160) & (b < 160) & (r - g > 60)}
+    return {'marker_a': (b > 180) & (r < 120) & low,
+            'marker_c': (r > 200) & (g > 130) & (g < 200) & (b < 80) & low}
 
 
 def _centre(mask, minimum=60):
@@ -144,9 +155,27 @@ def anchors(reference):
     if (not np.isfinite(blend) or
             np.linalg.norm(rendered - (255 - blend * gap)) > RECEIVER_COLOUR_TOLERANCE):
         raise ValueError('The reference frame cannot calibrate the receiver appearance.')
-    return {'A': a, 'C': c, 'red_c': int(masks['red'][cy-30:cy+20, cx-45:cx+45].sum()),
-            'receiver_count': int(receiver.sum()), 'receiver_rgb': rendered, 'blend': blend,
+    return {'A': a, 'C': c, 'receiver_count': int(receiver.sum()), 'receiver_rgb': rendered, 'blend': blend,
             'donor_rgb': reference[ay-10:ay, ax-6:ax+6].reshape(-1, 3).astype(int).mean(0)}
+
+
+def _donor_marker(pixels):
+    r, g, b = pixels.transpose(2, 0, 1).astype(int)
+    return _centre((r > 150) & (b > 150) & (g < 120) & (r - g > 80) & (b - g > 80), minimum=12)
+
+
+def _held_donor_reading(pixels, marker):
+    # The mark travels with the beaker. The nearby interior patch stays clear of it.
+    x, y = np.rint(marker).astype(int) + (9, 9)
+    fill = pixels[y-3:y+4, x-3:x+4]
+    if fill.shape != (7, 7, 3):
+        return 'unknown'
+    r, g, b = fill.transpose(2, 0, 1).astype(int)
+    if ((r >= 155) & (r < 235) & (g - b >= 7)).mean() >= .7:
+        return 'liquid_visible'
+    if ((r >= 140) & (r < 240) & (b - r >= 12) & (b >= g)).mean() >= .7:
+        return 'empty'
+    return 'unknown'
 
 
 def read_pixels(pixels, anchor, tolerance_px=6):
@@ -154,8 +183,10 @@ def read_pixels(pixels, anchor, tolerance_px=6):
     masks = _masks(pixels)
     result = {'status': 'unknown', 'ready': False, 'camera_registration': 'unknown', 'method': METHOD,
               'provenance': PROVENANCE, 'donor': 'unknown', 'receiver': 'unknown', 'reason': None}
-    drift = {k: (None if (p := _centre(masks['marker_' + k.lower()])) is None else float(np.linalg.norm(p - anchor[k])))
-             for k in ('A', 'C')}
+    centres = {station: _centre(masks['marker_' + station.lower()]) for station in ('A', 'C')}
+    drift = {station: None if centre is None else float(np.linalg.norm(centre - anchor[station]))
+             for station, centre in centres.items()}
+    result['marker_centres_px'] = {station: centre.tolist() for station, centre in centres.items() if centre is not None}
     result['marker_drift_px'] = drift
     if any(d is None or d > tolerance_px for d in drift.values()):
         result.update(camera_registration='shifted', reason='Station markers moved or are hidden; camera registration failed.')
@@ -181,6 +212,27 @@ def read_pixels(pixels, anchor, tolerance_px=6):
         result['reason'] = 'The receiver appearance does not match a known simulated colour.'
         return result
     result['receiver'] = receiver_label
+    marker = _donor_marker(pixels)
+    if marker is None:
+        result['reason'] = 'The small beaker mark is missing or obscured.'
+        return result
+    # In this fixed camera setup the rest region is directly above A. The other
+    # recognized endpoints are the two verified upright poses above A and C.
+    rest = centres['A'] + (-11, -19)
+    lifted = centres['A'] + (-13, -90)
+    over_receiver = centres['C'] + (-36, -55)
+    if min(np.linalg.norm(marker - lifted), np.linalg.norm(marker - over_receiver)) <= 10:
+        donor = _held_donor_reading(pixels, marker)
+        if donor == 'unknown':
+            result['reason'] = 'The beaker mark is visible but the beaker itself is unreadable.'
+            return result
+        x, y = np.rint(marker).astype(int)
+        result.update(status='ok', ready=True, held=True, donor=donor,
+                      donor_box=[int(x - 7), int(y - 25), int(x + 31), int(y + 28)])
+        return result
+    if np.linalg.norm(marker - rest) > 10:
+        result['reason'] = 'The small beaker is outside the observable dock and gripper positions.'
+        return result
     wall = (slice(ay-24, ay-17), slice(ax-6, ax+6))
     r, b = frame[..., 0], frame[..., 2]
     # The beaker's upper wall reads near-white over a pale fill, or glass-blue over a coloured one.
@@ -195,7 +247,8 @@ def read_pixels(pixels, anchor, tolerance_px=6):
     else:
         result['reason'] = 'The beaker at A is missing, hidden or unreadable.'
         return result
-    result.update(status='ok', ready=True)
+    result.update(status='ok', ready=True, held=False,
+                  donor_box=[int(ax - 17), int(ay - 46), int(ax + 18), int(ay + 9)])
     return result
 
 
@@ -205,6 +258,9 @@ class DemoBenchSceneService(TwoVesselSceneService):
                       'receiver_appearance': {'enum': sorted(receiver_palette())},
                       'sample_cup_station': {'enum': ['A']}, 'sample_cup_held': {'type': 'boolean'}}
     worker = staticmethod(run_worker)
+
+    def continuation(self, sid):
+        return self._saved_states.get(sid)
 
     async def inspect_scene(self, sid, view='primary'):
         result = await super().inspect_scene(sid, view)
@@ -237,25 +293,25 @@ class DemoBenchSceneService(TwoVesselSceneService):
     async def localize_objects(self, sid, evidence_id, labels):
         result = self._observe_pixels(sid, evidence_id)
         reference, _view = self.frames[sid, evidence_id]
-        boxes = {}
-        if result['ready']:
-            anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
-            boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
+        centres = result.get('marker_centres_px', {})
+        cx, cy = centres.get('C', (0, 0))
+        boxes = {'source': result.get('donor_box'),
+                 'receiver': [int(cx - 45), int(cy - 30), int(cx + 46), int(cy + 21)] if result['ready'] else None}
+        aliases = {**two_vessel_scene.ALIASES, 'beaker': 'source', 'container': 'receiver'}
         detections, verified = [], []
         for label in labels:
-            name = two_vessel_scene.ALIASES.get(label.lower(), label.lower())
-            found = result['ready'] and name in boxes
-            box = None
+            name = aliases.get(label.lower(), label.lower())
+            box = boxes.get(name)
+            found = box is not None
+            held = (name == 'source' and result['held']) if found else None
             if found:
-                (x, y), half, up, down = boxes[name]
-                box = [int(x - half), int(y - up), int(x + half) + 1, int(y + down) + 1]
                 verified.append(label)
             detection = observation({'object_id': label, 'frame_id': evidence_id, 'timestamp_s': reference['captured_at'],
                                      'provenance': PROVENANCE, **CAMERA}, METHOD, box=box,
                                     reason=None if found else result.get('reason') or 'Unsupported vessel label.')
             detections.append({**detection, **CAMERA, 'vessel_id': name if found else None,
-                               'dock_id': {'source': 'A', 'receiver': 'C'}[name] if found else None,
-                               'held': False if found else None,
+                               'dock_id': {'source': 'A', 'receiver': 'C'}[name] if found and not held else None,
+                               'held': held,
                                'fixture_registration_valid': result['camera_registration'] == 'registered'})
         return {'evidence_id': evidence_id, 'provenance': PROVENANCE, 'verified_labels': verified,
                 'supported_labels': ['source', 'receiver', 'A', 'C'], 'detections': detections, 'method': METHOD,
@@ -267,13 +323,19 @@ class DemoBenchSceneService(TwoVesselSceneService):
         raw = self._observe_pixels(sid, frame['evidence_id'])
         features = {'readable': raw['ready']}
         if raw['ready']:
-            features.update(donor_appearance=raw['donor'], receiver_appearance=raw['receiver'],
-                            sample_cup_station='A', sample_cup_held=False)
-        colour = str(raw.get('receiver', 'unknown')).replace('_liquid', '') + ' liquid'
-        text = (f'The beaker at A looks empty and is back on its mark; the container at C shows {colour}.'
-                if raw['ready'] and raw['donor'] == 'empty' else
-                f'The beaker at A still shows liquid; the container at C shows {colour}.' if raw['ready'] else
-                'The overview is unreadable or unregistered; the outcome is unknown.')
+            features.update(receiver_appearance=raw['receiver'], sample_cup_held=raw['held'])
+            if raw['donor'] != 'unknown':
+                features['donor_appearance'] = raw['donor']
+            if not raw['held']:
+                features['sample_cup_station'] = 'A'
+        if not raw['ready']:
+            text = 'The overview is unreadable or unregistered; the outcome is unknown.'
+        else:
+            colour = raw['receiver'].replace('_liquid', '') + ' liquid'
+            location = 'The arm is holding the beaker' if raw['held'] else 'The beaker is back on its mark'
+            fill = {'empty': 'looks empty', 'liquid_visible': 'still shows liquid',
+                    'unknown': 'has unreadable fill'}[raw['donor']]
+            text = f'{location}. The beaker {fill}; the container at C shows {colour}.'
         return {**frame, 'status': 'observed' if raw['ready'] else 'unknown', 'observer_version': METHOD,
                 'features': features, 'pixel_observation': raw, 'text': text,
                 'reason': None if raw['ready'] else raw.get('reason') or 'Outcome is unknown.'}
@@ -293,32 +355,45 @@ class DemoBenchBackend(TwoVesselBackend):
     def capabilities():
         return {'experiment_id': EXPERIMENT['id'], 'conditions': ['prepared'], 'routes': [['A', 'C']],
                 'mock_execution': False, 'physical_execution': False, 'simulation_execution': True,
-                'supported_operations': [OPERATION], **SCENE, 'measurement': False,
+                'supported_operations': list(ACTIONS), 'supported_actions': dict(ACTIONS),
+                'operation_outcome_checks': copy.deepcopy(ACTION_CHECKS),
+                **SCENE, 'measurement': False,
                 'observation_provenance': PROVENANCE,
                 'skill_admission': {
                     'required_expected_state': {'at': 'HOME'},
                     'expected_state_contract': 'SkillDefinition.expected_state describes the final controller state. '
-                        'Declare at=HOME; it is not a camera-observed feature or physical success.',
-                    'required_outcome_checks': [{'feature': 'donor_appearance', 'expected': 'empty'}],
+                        'Full-pour admission requires final HOME. Held actions end above the bench.',
+                    'required_outcome_checks': copy.deepcopy(ACTION_CHECKS[OPERATION]),
                     'outcome_checks_contract': 'outcome_checks are checked independently against fresh SIMULATED '
                         'image features in scene.observable_features. The transfer is evidenced by the beaker at A '
                         'reading empty; the receiver colour is reported from the image and may or may not change.',
                     'qualification': 'Simulated capability on the openarms_sim demo setup only; not chemistry or physical readiness.',
                 },
                 'action_description': 'pour the beaker at A into the container at C once, return the beaker to A and go HOME',
-                'limitations': [*LIMITATIONS, 'One pour from the beaker at A into the container at C; no other route or amount.']}
+                'limitations': [*LIMITATIONS, 'Only the small beaker at A moves. The receiver at C stays fixed.']}
 
     def check_step(self, operation, arguments):
-        if operation != OPERATION:
-            raise ValueError('The demo bench supports only add_sample from A into C.')
-        request = AddSampleArguments.model_validate(arguments)
-        if self.session_id is None or self._state['simulation']['status'] != 'ready' or not self._idle.is_set():
+        if operation not in ACTIONS:
+            raise ValueError('The simulated bench supports picking up the beaker, pouring into C, and returning it to A.')
+        request = PRIMITIVE_SCHEMAS[operation].model_validate(arguments)
+        status = self._state['simulation']['status']
+        if self.session_id is None or status not in ('ready', 'completed') or not self._idle.is_set():
             raise ValueError('Prepare a fresh MuJoCo trial before executing.')
+        holding = self._state['holding'] == 'sample_cup'
+        if holding and operation in ('pick', OPERATION):
+            raise ValueError('The arm is already holding the beaker.')
+        if not holding and operation in ('pour', 'return_cup'):
+            raise ValueError('The arm needs to pick up the beaker first.')
+        if operation in ('pour', OPERATION) and not self._state['cup_portions']:
+            raise ValueError('The beaker is empty. Prepare a new trial for another pour.')
         return request
 
-    @staticmethod
-    def _command(request):
-        return {'source': request.source, 'into': request.into, 'portions': request.portions}
+    def _worker_arguments(self, operation, request):
+        return {'operation': operation, **request.model_dump(mode='json'),
+                'state': self.scene_service.continuation(self.session_id)}
+
+    def _completed_state(self, operation, result):
+        return {**result['controller_state'], 'armed': True} if result['ok'] else None
 
 
 class DemoBenchSkillEvaluator(TwoVesselSkillEvaluator):
