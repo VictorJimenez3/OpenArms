@@ -1,25 +1,77 @@
-# OpenArms
+# OpenArms · Ollie
 
-The product gives students control of accessible lab work through responsive conversation, camera-aware expert tools and fast, improving reusable skills. Start with [the runbook](docs/LAB_RUNBOOK.md) to run the app. Read [the architecture](docs/ARCHITECTURE.md) before assigning work and [the consolidation ledger](docs/MAIN_INTEGRATION.md) before merging branches.
+**You're the scientist. Ollie's the hands.**
 
-The [project objective](PROJECT_OBJECTIVE.md) explains what students should be able to do. Start Victor’s harness work with the [student and agent flow](research/victor/student-and-agent-flow.md), which records the demo direction, current gaps and first tests.
+Ollie is a robot lab partner for students who can't hold the beaker. The student talks; Ollie looks at the bench, plans from moves tested on a real arm, says its plan and waits for a yes. A camera then checks what actually happened, and the student decides what to test next. Every task Ollie gets right becomes a saved skill, so the next time is a single tool call.
 
-**The physical demo is a student-directed two-vessel A→C pour, donor return and HOME.** Preferred Smartivity magic-tea/citric-acid chemistry and fallback fizz still need actual preparation and outcome verification. Use water for calibration. [Project](docs/PROJECT.md) owns the current definition and [wet-lab](docs/WET_LAB.md) the physical checks. First-minute physical action is an unmet target. Prediction and reflection are optional.
+Built at HackPrinceton Fall 2026 by Victor Jimenez, Duc Duong, Joseph Roche and Stefanie Nguyen.
 
-The [student app](docs/LAB_RUNBOOK.md) uses one Mac/iPhone session, an image-aware Codex expert, and a persistent notebook. It includes a synthetic regression fixture. MuJoCo is the active development simulator; Isaac is parked. The current local integration adds a water-only carried-donor simulation with fresh camera checks and replay-backed skill admission; start it with `OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel`. The older fixed-dispenser regression remains available. Geometry is provisional and kit chemistry is unimplemented; [the integration ledger](docs/MAIN_INTEGRATION.md) separates local integration from main and pending acceptance. The simplified student view centers on camera, Talk and Stop; `/developer` adds agent evidence and diagnostics, plus simulation frames when that backend is selected. Hardware execution is disabled. Gemini Live provides speech when configured; expert inference is independently selectable. Actual-device acceptance remains open. Observed simulation colors are not physical measurements. The [full delivery contract](docs/FULL_SYSTEM_DELIVERY.md) tracks perception, feedback to both agents, skill admission, reuse and evaluated improvement, including remaining device acceptance. The [session contract](docs/INTERFACES.md) describes their shared transport.
+![The Ollie student app](docs/media/ollie-home.jpg)
 
-Mandarin transfer is historical hardware evidence, not a student experiment. A supervised C→B transfer succeeded once; its [poses, logs and camera evidence](research/joseph/mandarin-transfer-2026-11-14/README.md) remain preserved. Actual kit/bench qualification is separate in the [wet-lab guide](docs/WET_LAB.md).
+## Why
 
-## Where to start
+One in five US undergraduates reports a disability, and only 8% register one with their college ([NCES](https://nces.ed.gov/fastfacts/display.asp?id=60), [PNPI](https://pnpi.org/wp-content/uploads/2026/02/PNPI_StudentswithDisabilities_FactSheet_Jan26.pdf)). In a national survey of students with physical disabilities, about half had been given passive roles in science labs and three in four relied on classmates to finish lab tasks ([Jeannis et al., 2019](https://www.tandfonline.com/doi/full/10.1080/17483107.2018.1559889)). When someone else has the hands, they usually make the calls too. Ollie gives the calls back to the student. [More evidence and its limits](research/victor/accessibility-market-validation.md).
 
-Start in your own Git worktree and task branch. Check the [ownership table](AGENTS.md#ownership) before editing and use the [team work plan](docs/TEAM_WORK_PLAN.md) for current handoffs. Victor handles changes to `main`.
+## How a lab runs
 
-Save findings and evidence using the [research guide](research/README.md). Use [GitHub Issues](https://github.com/VictorJimenez3/OpenArms/issues) for shared blockers or decisions.
+**Question → Predict → Direct Ollie → Observe → Explain.**
 
-- [Agent instructions](AGENTS.md) cover edit scope, working in parallel, and handoffs.
-- [Project](docs/PROJECT.md) has the demo goal and open decisions.
-- [Architecture](docs/ARCHITECTURE.md) covers the command flow; [current TODO](research/joseph/TODO.md) records priorities, owners and evidence.
-- [Interfaces](docs/INTERFACES.md) is where we record examples shared between areas.
-- [Arm setup and teleoperation](firmware/README.md) covers LeRobot, calibration, and the physical arms.
-- [Wet-lab bring-up and training](docs/WET_LAB.md) covers the first water pour, demo scopes, and reuse across recorded takes.
-- [Working project outline](voice-lab-arm-outline.md) has the longer concept and background.
+1. The student asks in their own words: "Ollie, pour beaker A into flask C." Voice, typing, a switch, eye gaze or voice control all work.
+2. A vision-capable expert model checks a fresh camera frame and composes a plan from a fixed set of typed, tested actions.
+3. Ollie states the exact plan. Nothing moves until the student confirms that exact version. Stop always wins.
+4. A deterministic executor runs the bounded action on the SO-101 arm (or its simulation).
+5. An independent observer reads fresh pixels and reports what happened, or says "unknown".
+6. A plan that succeeds is replayed by an evaluator on the normal case, six fault cases, the consent check and the Stop check, then saved as a skill for that exact setup.
+
+![A saved skill: planned in 0.5 s with 0 AI expert calls](docs/media/ollie-saved-skill.jpg)
+
+In Duc's logged bench run, reusing a saved skill cut request-to-plan from **58.8 s to 0.41 s** and model calls for the run from **6 to 0**, with consent and the camera check still in place ([evidence](research/duc/demo-bench-integration.md)).
+
+## What's in the box
+
+| Part | What it does | Where |
+| --- | --- | --- |
+| Agent runtime | One session and task loop: Gemini Live conversation, separate expert planner, exact proposals and consent, deterministic executor, independent observer, skill registry and evaluator | `agentic/` |
+| Student app | Ollie: guided labs, accessible by keyboard, switch, eye gaze and voice control; reports and Ask Ollie | `ui/student/` (served at `/student`; arriving from `victor/user-flow-ui`) |
+| Developer view | The same session with expert/tool traces, observations, skill evaluations and simulator frames | `ui/lab/` (served at `/developer`) |
+| Hardware | SO-101 arm on LeRobot, calibration, recorded pours, overhead camera localization, base plate with ArUco markers | `firmware/`, `firmware/fixtures/cup_dock/` |
+| Simulation | MuJoCo model of the same arm and bench, lined up with a real recorded pour; Smartivity kit experiments | `simulation/` |
+| iPhone voice | SwiftUI client sharing the same session | `research/joseph/iphone-voice-bridge/` |
+
+| | |
+| --- | --- |
+| ![Erupting volcano, simulation](docs/media/sim-volcano.jpg) | ![Magic potions, simulation](docs/media/sim-potions.jpg) |
+| *Erupting Volcano · simulation* | *Magic Potions · simulation* |
+
+## Run it
+
+Python 3.12 and [uv](https://docs.astral.sh/uv/). The simulation backend needs no hardware.
+
+```sh
+uv venv --python 3.12 .venv-lab
+uv pip install --python .venv-lab/bin/python -r agentic/requirements-lab.txt -e 'simulation[dev]'
+OPENARMS_EXECUTION=mujoco PORT=8010 .venv-lab/bin/python -m agentic.openarms_lab
+```
+
+Open `http://127.0.0.1:8010/student/` for Ollie and `/developer` for the traces. Put `GEMINI_API_KEY` in an untracked `.env` for voice, and sign in to the expert CLI you choose ([model profiles](docs/EXPERT_MODELS.md)). The real bench, camera and arm options are in [the runbook](docs/LAB_RUNBOOK.md); every physical motion needs an operator at the arm.
+
+Tests:
+
+```sh
+PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q
+```
+
+## What is real and what is simulated
+
+- The arm, fixture, camera and recorded pour are real. Motion on the arm always runs under an operator.
+- Experiments marked **Simulation** are MuJoCo models; their reactions are illustrative, not measured chemistry.
+- Timings above are from the simulator backend.
+- We have not yet tested with students with disabilities or measured learning. That pilot is the next step.
+
+## Credits
+
+[Hugging Face LeRobot](https://github.com/huggingface/lerobot) and [The Robot Studio SO-101](https://github.com/TheRobotStudio/SO-ARM100), [MuJoCo](https://mujoco.org), Google Gemini Live, OpenAI Codex, Anthropic Claude, Devin, FastAPI, OpenCV. Experiments adapted from Smartivity's *My First Science Kit*. Fonts: Bagel Fat One and Atkinson Hyperlegible Next (SIL Open Font License).
+
+## For the team
+
+Start with [the architecture](docs/ARCHITECTURE.md), the [project brief](docs/PROJECT.md), [interfaces](docs/INTERFACES.md), [current tasks](research/joseph/TODO.md) and the [integration ledger](docs/MAIN_INTEGRATION.md). Work in your own worktree and branch; check the [ownership table](AGENTS.md#ownership) first. Pitch and submission (everything is in [`pitch/`](pitch/)): [film plan](pitch/FILM.md), [team directives](pitch/TEAM.md), [facts and sources](pitch/FACTS.md), [Devpost copy](research/victor/hackprinceton-devpost-draft.md).
