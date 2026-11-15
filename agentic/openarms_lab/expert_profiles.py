@@ -10,9 +10,16 @@ from pathlib import Path
 
 from .codex_expert import CodexExpert, ExpertUnavailable
 from .claude_expert import ClaudeExpert
+from .devin_expert import DevinExpert
 
 PROFILES = {'sol': ('codex', 'gpt-6.1-sol'), 'astra': ('codex', 'gpt-6-astra'),
             'opus': ('claude', 'opus'), 'sonnet': ('claude', 'sonnet')}
+# Devin CLI catalog slugs; thought level comes from the requested effort, speed from the profile name.
+DEVIN_PROFILES = {'devin-sol-fast': 'gpt-6-1-sol-{effort}-priority', 'devin-sol': 'gpt-6-1-sol-{effort}',
+                  'devin-astra-fast': 'gpt-6-astra-{effort}-priority', 'devin-astra': 'gpt-6-astra-{effort}',
+                  'devin-opus-fast': 'claude-opus-5-5-{effort}-fast', 'devin-opus': 'claude-opus-5-5-{effort}',
+                  'devin-sonnet': 'claude-sonnet-5-5-{effort}'}
+ADAPTERS = {'codex': CodexExpert, 'claude': ClaudeExpert, 'devin': DevinExpert}
 
 
 @dataclass(frozen=True)
@@ -33,20 +40,27 @@ def resolve_profile(config=None):
         raise ExpertUnavailable('configuration', 'Invalid host expert configuration.')
     profile = config.get('profile', 'sol')
     bindings = config.get('bindings', {})
-    if not isinstance(profile, str) or profile not in {*PROFILES, 'fable'}:
+    if not isinstance(profile, str) or profile not in {*PROFILES, *DEVIN_PROFILES, 'fable'}:
         raise ExpertUnavailable('unsupported_profile', 'Unknown expert profile; no substitution was made.')
-    if not isinstance(bindings, dict) or set(bindings) - {*PROFILES, 'fable'}:
+    if not isinstance(bindings, dict) or set(bindings) - {*PROFILES, *DEVIN_PROFILES, 'fable'}:
         raise ExpertUnavailable('configuration', 'Invalid expert profile bindings.')
     binding = bindings.get(profile)
     if binding is not None:
         if not isinstance(binding, dict) or set(binding) != {'provider', 'model'}:
             raise ExpertUnavailable('configuration', 'An expert binding requires provider and real model ID.')
         provider, model = binding['provider'], binding['model']
+    elif profile in DEVIN_PROFILES:
+        provider, model = 'devin', DEVIN_PROFILES[profile].format(effort=config.get('reasoning_effort', 'medium'))
     elif profile == 'fable':
         raise ExpertUnavailable('unsupported_profile', 'Fable is unconfigured; supply an explicit provider and real model ID.')
     else:
         provider, model = PROFILES[profile]
-    if provider not in ('codex', 'claude'):
+    if profile in DEVIN_PROFILES and (provider, model) != (
+            'devin', DEVIN_PROFILES[profile].format(effort=config.get('reasoning_effort', 'medium'))):
+        raise ExpertUnavailable('configuration', 'Devin profiles use their exact Devin catalog model IDs.')
+    if (provider == 'devin') != (profile in DEVIN_PROFILES):
+        raise ExpertUnavailable('configuration', 'Only Devin profiles use the Devin CLI.')
+    if provider not in ADAPTERS:
         raise ExpertUnavailable('unsupported_profile', 'Unsupported expert provider; no substitution was made.')
     # Sol/Astra retain their verified Codex identities; Opus/Sonnet accept pinned Claude IDs.
     if profile in ('sol', 'astra') and (provider, model) != PROFILES[profile]:
@@ -59,7 +73,7 @@ def resolve_profile(config=None):
     if profile == 'fable' and model.lower() in {'fable', 'sol', 'astra', 'opus', 'sonnet', 'default'}:
         raise ExpertUnavailable('unsupported_model', 'Fable requires a real model ID, not an inferred alias.')
     effort = config.get('reasoning_effort', 'medium')
-    if effort not in ('low', 'medium', 'high', 'xhigh', 'max', 'ultra') or (provider == 'claude' and effort == 'ultra'):
+    if effort not in ('low', 'medium', 'high', 'xhigh', 'max', 'ultra') or (provider in ('claude', 'devin') and effort == 'ultra'):
         raise ExpertUnavailable('configuration', 'Unsupported expert reasoning effort.')
     return ExpertProfile(profile, provider, model, effort)
 
@@ -117,7 +131,7 @@ class ConfiguredExpert:
             profile = resolve_profile({'profile': selected['profile'], 'reasoning_effort': selected['reasoning_effort'],
                                        'bindings': {selected['profile']: {'provider': selected['provider'],
                                                                        'model': selected['requested_model']}}})
-            cls = CodexExpert if profile.provider == 'codex' else ClaudeExpert
+            cls = ADAPTERS[profile.provider]
             kwargs = dict(self.limits, model=profile.model, reasoning_effort=profile.reasoning_effort,
                           transport=self.transports.get(profile.provider))
             executable = self.executable or self.executables.get(profile.provider)
@@ -148,7 +162,7 @@ class ConfiguredExpert:
     def describe(self):
         try:
             selected = self.snapshot()
-            cls = CodexExpert if selected['provider'] == 'codex' else ClaudeExpert
+            cls = ADAPTERS[selected['provider']]
             import shutil
             executable = self.executable or self.executables.get(selected['provider']) or selected['provider']
             return selected | {'provider': cls.provider, 'configured': True,
@@ -187,10 +201,10 @@ def expert_from_arguments(args, work_dir, *, artifact_roots, **kwargs):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Select the expert for new tasks; active tasks keep their model.')
-    parser.add_argument('profile', choices=[*PROFILES, 'fable'])
+    parser.add_argument('profile', choices=[*PROFILES, *DEVIN_PROFILES, 'fable'])
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--effort', default='medium')
-    parser.add_argument('--provider', choices=['codex', 'claude'])
+    parser.add_argument('--provider', choices=['codex', 'claude', 'devin'])
     parser.add_argument('--model', help='Explicit pinned provider model ID; required for Fable.')
     args = parser.parse_args()
     config = {'profile': args.profile, 'reasoning_effort': args.effort}

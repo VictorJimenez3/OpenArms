@@ -181,7 +181,8 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 profile=os.getenv('OPENARMS_EXPERT_PROFILE', 'sol'),
                 reasoning_effort=os.getenv('OPENARMS_EXPERT_EFFORT', 'medium'),
                 executables={'codex': os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'),
-                             'claude': os.getenv('OPENARMS_CLAUDE_EXECUTABLE', 'claude')})
+                             'claude': os.getenv('OPENARMS_CLAUDE_EXECUTABLE', 'claude'),
+                             'devin': os.getenv('OPENARMS_DEVIN_EXECUTABLE', 'devin')})
             app.state.lab = Lab(data, expert=expert, perception=scene,
                                 registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,

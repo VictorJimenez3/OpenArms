@@ -130,3 +130,39 @@ On Victor's branch `victor/integration-device-expert` (main itself untouched; me
 - **Base demo setting works in the real app**: new `agentic/scripts/seed_demo_skill.py` admits an operator-seeded base pour through the existing setup-scoped evaluator. In the running app (port 8011), "pour A into C" produced the exact proposal in **0.54 s with zero expert calls**, then exact present+confirm, one dispatch, fresh independent observation and the student answer at **9.46 s request-to-result** (`outputs/sim-main-demo-app`, SIMULATED).
 - Still pending: a live-model cold request on the merged simulation (Codex usage limit until about 03:08; Claude login expired). Wording outside the seeded templates still goes to the live expert (about 66 s today with the guard).
 - Main's bench lane (camera, recorded pour plus `shift.py` correction to the real arm) is unchanged and separate (`OPENARMS_BENCH=1`). The agentic sim uses IK poses from the same `setups/demo` the team aligns to the recording; replaying the recording itself in the agentic sim would need `outputs/pour-take-1.json` and its layout, which are not on this machine.
+
+## Checkpoint 5: Live AI On Main's Simulation Through Devin (01:20 EST)
+
+The Codex account is rate limited and there is no Claude login on this machine, so the expert can now run through the logged-in **Devin CLI** (`agentic/openarms_lab/devin_expert.py`, ACP over stdio). Each call is a fresh Devin session in an empty temporary folder, Ask mode, every permission request denied, any autonomous tool use fails closed. Identity is checked from Devin's own session settings (model, thought level, speed); a substitution would be reported, not relabelled.
+
+New expert profiles (pick with `OPENARMS_EXPERT_PROFILE`, effort with `OPENARMS_EXPERT_EFFORT`): `devin-sol-fast`, `devin-sol`, `devin-astra-fast`, `devin-astra`, `devin-opus-fast`, `devin-opus`, `devin-sonnet`. Fast maps to Devin's `-priority` (GPT) or `-fast` (Claude) catalog entries. The app must be started where Devin is logged in (Terminal): `.devin/harness-loop/run_demo_app.sh devin-sol-fast medium 8011`.
+
+Live results in the running app on main's updated simulation (SIMULATED; scripted exact consent):
+
+| Request (not covered by the seeded skill wording) | Result | Proposal | Request to answer | Model calls |
+| --- | --- | ---: | ---: | ---: |
+| "Could you take the beaker at A and pour it into the container at C, then put it back?" | Expert asked a clarification (HOME not stated); no proposal, no motion | n/a | 18.8 s | 4 |
+| "Pour the beaker at A into the container at C once, put the beaker back at A and go home." | Exact proposal, confirmed, one dispatch, fresh independent observation passed | **15.1 s** | **39.0 s** | 7 |
+
+Requested and verified model: `gpt-6-1-sol-medium-priority` (GPT-6.1 Sol Medium Thinking Fast via Devin). For comparison, Codex Sol medium took about 48 to 55 s to a proposal and 80 s to the answer without the guard. This app run had the guard and completion skip **off** (defaults), so the 39 s still includes the pre-action and completion expert calls. The expert reused the admitted `demo_bench.base_pour` skill rather than inventing a new one.
+
+Tests: Devin transport and profile tests plus existing expert/app tests: **111 passed**.
+
+=====================================================================================
+=====================================================================================
+||                                                                                 ||
+||   DONE: BASE SIMULATION SETTING WORKS WITH THE AI (main's sim, live model)     ||
+||   Everything below this barrier is the latency work that comes after it.       ||
+||                                                                                 ||
+=====================================================================================
+=====================================================================================
+
+## After The Barrier: Latency Work (non-model-choice first)
+
+Priority order, chosen from the traces:
+
+1. **Make "do it once, then fast" actually happen.** Today a live request in new wording still goes cold the second time: the student's wording is not added as a route, and live expert-authored templates (for example `Pour {portions} portion from {source} into {into}, ...`) never fullmatch real student wording; one earlier live skill was rejected outright for this. Fix: after a confirmed, independently observed success, the host derives a route template from the student's own normalized words (bound values replaced by slots, only when unambiguous) and admits it through the existing routing gate.
+2. **Guarded checkpoint on by default for the demo bench** (measured 16 s to 1.7 s before first motion, no regressions).
+3. **Skip the clean completion call** (about 10 s) when the independent observation and controller facts are clean; escalate otherwise.
+4. **Fewer planning turns**: host pre-localization and identical-duplicate normalization (7 of 16 live traces wasted a turn on the duplicate-field rejection).
+5. Model choice last: Devin Sol Fast is already measured; Astra Fast / Opus Fast are available as profiles for a later matched comparison.
