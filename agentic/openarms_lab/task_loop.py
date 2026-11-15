@@ -12,7 +12,8 @@ from pathlib import Path
 
 from .contracts import ACTION_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
 from .skills import _normalize, compute_skill_hash
-from .request_intent import RETURN_CLAUSE as WATER_DONOR_RETURN, UNRESOLVED_NEGATION, positive_pour_request
+from .request_intent import (BACK_CLAUSE, CONTENTS_SOURCE, NEGATIVE_ROUTE, RETURN_CLAUSE as WATER_DONOR_RETURN,
+                             UNRESOLVED_NEGATION, positive_pour_request)
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
@@ -54,12 +55,20 @@ DEMO_BEAKER_REF = re.compile(r'\b(?:beaker|cup|donor|vessel|source|it|this|that|
 DEMO_CONTINUATION = re.compile(
     r'\b(?:and(?: then)?|then|after that|followed by)\s+(?:please\s+)?'
     r'(?:pick|lift|grab|raise|pour|tip|empty|add|decant|transfer|return|put|place|set|park|go home)\b', re.I)
-DEMO_STATION = re.compile(
-    r'\b(?:(?:station|dock|cup|beaker|container|vessel|receiver|donor)\s+(?:at\s+)?|'
-    r'(?:from|to|on|at)\s+)([a-z])\b'
-    r'(?=\s*[,.;!?]|\s+(?:up|please|back|to|on|from|into|and|then)\b|\s*$)', re.I)
+DEMO_PLACE = r'(?:station|dock|mark|position)'
+DEMO_VESSEL = r'(?:cup|beaker|container|vessel|receiver|donor|flask|dish)'
+DEMO_PLACE_LABEL = rf'{DEMO_PLACE}\s+[a-z]'
+# Exclude bare 'a' and 'I' after a vessel noun, where they can be ordinary words.
+DEMO_VESSEL_LABEL = rf'{DEMO_VESSEL}\s+(?:(?:at|on)\s+(?:(?:the\s+)?{DEMO_PLACE}\s+)?[a-z]|[b-hj-z]|(?-i:A))'
+DEMO_STATION = re.compile(rf'\b(?:{DEMO_PLACE_LABEL}|{DEMO_VESSEL_LABEL})\b', re.I)
+DEMO_STATION_LABEL = rf'(?:(?:the\s+)?(?:{DEMO_PLACE_LABEL}|{DEMO_VESSEL_LABEL})|[b-z]|(?-i:A))\b'
+DEMO_ROUTE = re.compile(rf'\b(?P<direction>from|into|to|onto|in|on|at)\s+(?P<target>{DEMO_STATION_LABEL})', re.I)
 DEMO_DIRECT_PICK_STATION = re.compile(
-    r'\b(?:pick(?: up)?|lift|grab|raise)\s+([a-z])\b(?=\s*[,.;!?]|\s+(?:up|please)\b|\s*$)', re.I)
+    r'\b(?:pick(?: up)?|lift|grab|raise)\s+([b-z]|(?-i:A))\b', re.I)
+DEMO_KEEP_HOLDING = re.compile(
+    r'\b(?:keep(?: on)? holding|(?:and|then) hold (?:it|the (?:beaker|cup))|'
+    r'(?:keep|leave) (?:it|the (?:beaker|cup)) (?:held|in the gripper))\b', re.I)
+DEMO_RECEIVER_MARK = re.compile(r'\b(?:orange|receiver)\s+mark\b', re.I)
 DEMO_OTHER_DESTINATION = re.compile(
     r'\b(?:into|onto|to|on|in)\s+(?:(?:the|a|my|your)\s+)?'
     r'(?:floor|ground|sink|trash|counter(?:top)?|worktop|table|tray)\b', re.I)
@@ -671,8 +680,6 @@ class TaskLoop:
             experiment = capabilities.get('experiment_id')
             operation = action['operation']
             texts = tuple(dict.fromkeys((intent, task['request'])))
-            if experiment == 'demo_bench_pour':
-                self._check_demo_request(texts, operation)
             if experiment in ('two_vessel_water', 'demo_bench_pour') and operation not in ('pick', 'return_cup'):
                 source, into = capabilities['routes'][0]
                 source = action['arguments'].get('source', source)
@@ -680,6 +687,8 @@ class TaskLoop:
                 for text in texts:
                     self._check_water_request(text, liquids=experiment == 'demo_bench_pour',
                                               source=source, into=into)
+            if experiment == 'demo_bench_pour':
+                self._check_demo_request(texts, operation)
             backend.check_step(action['operation'], action['arguments'])
             # Required checks must independently observe the effect of this operation.
             planned = {(c['feature'], compute_skill_hash(c['expected'])) for c in plan['outcome_checks']}
@@ -720,10 +729,30 @@ class TaskLoop:
             if operation != 'pick' and DEMO_OTHER_DESTINATION.search(text):
                 raise ValueError('The requested destination is outside the supported receiver or original mark.')
             if operation in ('pour', 'add_sample'):
+                if operation == 'add_sample' and DEMO_KEEP_HOLDING.search(text):
+                    raise ValueError('The full pour returns the beaker. It cannot leave the beaker held.')
+                # The shared pour validator checks these separately as exclusions,
+                # source qualifiers and return instructions, not destinations.
+                route = NEGATIVE_ROUTE.sub(' ', text)
+                route = CONTENTS_SOURCE.sub(' ', route)
+                route = BACK_CLAUSE.sub('', WATER_DONOR_RETURN.sub('', route))
+                for station in DEMO_ROUTE.finditer(route):
+                    direction = station['direction']
+                    if direction in ('from', 'into', 'to', 'onto', 'in'):
+                        expected = 'A' if direction == 'from' else 'C'
+                        if station['target'][-1].upper() != expected:
+                            raise ValueError(f'This setup can only pour {"from" if direction == "from" else "into"} {expected}.')
+                destination = re.search(r'\b(?:into|to|onto|in)\b', route, re.I)
+                if destination and any(label[-1].upper() != 'A'
+                                       for label in DEMO_STATION.findall(route[:destination.start()])):
+                    raise ValueError('This setup can only pour from A.')
+                if any(label[-1].upper() not in ('A', 'C') for label in DEMO_STATION.findall(route)):
+                    raise ValueError('This setup can only pour from A into C.')
                 continue
-            labels = DEMO_STATION.findall(text) + DEMO_DIRECT_PICK_STATION.findall(text)
+            labels = ([label[-1] for label in DEMO_STATION.findall(text)] + DEMO_DIRECT_PICK_STATION.findall(text) +
+                      [station['target'][-1] for station in DEMO_ROUTE.finditer(text)])
             if (any(label.upper() != 'A' for label in labels) or DEMO_RECEIVER.search(text)
-                    or re.search(r'\b(?:left|right)\b', text, re.I)):
+                    or DEMO_RECEIVER_MARK.search(text) or re.search(r'\b(?:left|right)\b', text, re.I)):
                 raise ValueError('Only the small beaker and its original mark are supported for this action.')
             if match and not (labels or DEMO_BEAKER_REF.search(text[match.end():])):
                 raise ValueError('Ask for the small beaker by name or say which vessel you mean.')
