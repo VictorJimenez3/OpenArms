@@ -87,6 +87,8 @@ def describe_step(step, action_description=None):
 
 
 class TaskLoop:
+    guarded_demo_bench_checkpoint = False
+
     def _task_event(self, s, task, kind, **data):
         plan = task.get('plan') or {}
         return self._event(s, kind, task_id=task['task_id'], request_id=task.get('request_id'),
@@ -913,7 +915,14 @@ class TaskLoop:
                         failure = 'Checkpoint did not return a fresh image.'
                 elif not set(arguments['labels']).issubset(observed.get('verified_labels') or []):
                     failure = 'Checkpoint did not verify the requested labels.'
-                if failure or (not warm and (operation in ('inspect_scene', 'observe') or observed.get('images'))):
+                guarded = (not failure and not warm and
+                           self._guarded_demo_checkpoint(s, task, request, observed, index))
+                if guarded:
+                    task['feedback'].append({'type': 'deterministic_checkpoint',
+                                             'request_id': request['request_id'],
+                                             'evidence_id': observed['evidence_id']})
+                if failure or (not warm and not guarded and
+                               (operation in ('inspect_scene', 'observe') or observed.get('images'))):
                     if await self._execution_feedback(s, task, request, receipt, failure, is_final=is_final):
                         return
                 if not is_final:
@@ -935,6 +944,83 @@ class TaskLoop:
         except Exception as exc:
             await self._fail_task(s, task, exc)
 
+    @classmethod
+    def _checkpoint_certain(cls, record):
+        return (isinstance(record, dict) and record.get('status') in (None, 'ok', 'observed') and
+                not any(record.get(key) for key in ('reason', 'error', 'unknown_reason', 'uncertainty')) and
+                all(cls._checkpoint_certain(record[key]) for key in ('scene', 'localization') if key in record) and
+                all(cls._checkpoint_certain(detection) for detection in record.get('detections', [])))
+
+    def _unchanged_checkpoint_image(self, task, presented_id, current_id):
+        presented, current = (task['evidence'][fid] for fid in (presented_id, current_id))
+        for record in (presented, current):
+            for image in record['images']:
+                self._check_image(task['session_id'], image)
+        return (len(presented['images']) == len(current['images']) == 1 and
+                presented['images'][0]['sha256'] == current['images'][0]['sha256'] and
+                all(presented['scene'].get(key) == current['scene'].get(key)
+                    for key in ('generation', 'view', 'width', 'height', 'provenance')))
+
+    def _guarded_demo_checkpoint(self, s, task, request, observed, index):
+        if (self.guarded_demo_bench_checkpoint is not True or index != 0 or
+                task['route'] != 'expert' or task['replans'] != 0 or task['execution'] or
+                task['observations'] or task['dispatched_action'] or
+                any(task.get(key) for key in ('improvement', 'clarification', 'correction'))):
+            return False
+        self._guard_task(s, task)
+        try:
+            plan = request['plan']
+            if ([step['operation'] for step in plan['steps']] != ['inspect_scene', 'add_sample', 'observe'] or
+                    compute_skill_hash(plan['steps'][1]['arguments']) !=
+                    compute_skill_hash({'source': 'A', 'into': 'C', 'portions': 1}) or
+                    plan['expected_state'].get('at') != 'HOME' or
+                    compute_skill_hash(plan) != request['plan_hash'] or task['plan'] != plan or
+                    request['student_confirmed'] is not True or request['presented'] is not True or
+                    request['generation'] != s['generation'] or
+                    request['presentation']['generation'] != s['generation'] or
+                    request['presentation']['proposal_version'] != request['proposal_version'] or
+                    plan['execution_scope'] != self.execution_scope or
+                    s['execution_scope'] != self.execution_scope):
+                return False
+            capabilities = self.backends[task['session_id']].capabilities()
+            if (capabilities.get('experiment_id') != 'demo_bench_pour' or
+                    capabilities.get('physical_execution') is not False or
+                    capabilities.get('simulation_execution') is not True or
+                    capabilities.get('supported_operations') != ['add_sample'] or
+                    capabilities.get('routes') != [['A', 'C']]):
+                return False
+            scene = observed['scene']
+            presented = task['evidence'][plan['scene_frame_id']]['scene']
+            identity = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': 'demo',
+                        'control_mode': 'mujoco_kinematic_add_sample'}
+            if (any(record.get(key) != value for record in (scene, presented, capabilities)
+                    for key, value in identity.items()) or
+                    not self._fresh(scene) or not self._fresh(presented) or
+                    scene['captured_at'] <= request['confirmed_at'] or
+                    scene['frame_id'] == plan['scene_frame_id'] or
+                    scene != task['scene'] or observed['images'] != task['images'] or
+                    not self._unchanged_checkpoint_image(task, plan['scene_frame_id'], scene['frame_id']) or
+                    not self._checkpoint_certain(observed) or not self._checkpoint_certain(scene)):
+                return False
+            for feedback in task['feedback']:
+                if (feedback['type'] not in ('execution_progress', 'perception') or
+                        not self._checkpoint_certain(feedback) or
+                        ('receipt' in feedback and not self._checkpoint_certain(feedback['receipt']))):
+                    return False
+            for frame_id in (scene['frame_id'], plan['scene_frame_id']):
+                record = task['evidence'][frame_id]
+                if (not self._checkpoint_certain(record) or
+                        not self._checkpoint_certain(record.get('localization')) or
+                        not set(VESSEL_LABELS).issubset(record['verified_labels'])):
+                    return False
+            action = plan['steps'][1]
+            self._check_context(task, plan)
+            fixture = self._fixture_state(task, scene['frame_id'], action)
+            return (fixture is not None and fixture == plan['fixture'] ==
+                    self._fixture_state(task, plan['scene_frame_id'], action))
+        except (KeyError, TypeError, ValueError, OSError, RuntimeError):
+            return False
+
     async def _verify_dispatch(self, s, task, request, action):
         plan = request['plan']
         presented_id = plan['scene_frame_id']
@@ -955,6 +1041,14 @@ class TaskLoop:
         current = self._fixture_state(task, current_id, action)
         if current != plan['fixture']:
             raise ValueError('Vessel position or camera registration changed since the proposal was presented.')
+        if (any(feedback['type'] == 'deterministic_checkpoint' and
+                feedback.get('request_id') == request['request_id'] for feedback in task['feedback']) and
+                (compute_skill_hash(plan) != request['plan_hash'] or task['plan'] != plan or
+                 plan['execution_scope'] != self.execution_scope or s['execution_scope'] != self.execution_scope or
+                 not self._checkpoint_certain(frame) or not self._checkpoint_certain(frame['scene']) or
+                 not self._checkpoint_certain(task['evidence'][current_id]) or
+                 not self._unchanged_checkpoint_image(task, presented_id, current_id))):
+            raise ValueError('Approved plan, setup, or independent dispatch evidence changed, failed, or is uncertain.')
 
     async def _verify_labels(self, s, task, plan, *, refresh=False, allow_alternate=True):
         labels = {label for rule in plan['preconditions'] for label in rule['labels']}
