@@ -1,0 +1,31 @@
+{
+  "acid_fraction_deposited": 1.0,
+  "acid_fraction_spilled": 0.0,
+  "acid_fraction_remaining": 0.0,
+  "release_events": 37,
+  "collisions": 0,
+  "drops": 0,
+  "beaker_docked": true,
+  "fps": 30,
+  "frames": 853,
+  "source": {
+    "publisher": "Smartivity",
+    "booklet": "My First Science Kit",
+    "experiment": "Lava Lamp",
+    "pages": [
+      38,
+      39
+    ]
+  },
+  "shots": {
+    "Opening": 60,
+    "Prep close-up": 65,
+    "Pick up the citric acid": 193,
+    "Align over the flask": 107,
+    "Add citric acid slowly": 38,
+    "CO\u2082 lifts the red water": 66,
+    "Red droplets rise and fall": 96,
+    "Return the beaker": 177,
+    "After the bubbles fade": 51
+  }
+}

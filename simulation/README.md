@@ -1,5 +1,7 @@
 # Simulation
 
+The [Smartivity replay guide](smartivity/README.md) includes the Volcano, Magic Potions and Lava Lamp videos and render commands.
+
 A MuJoCo model of the SO-101 arm and the bench. Given a plan, it plays the arm's motion, reports what would go wrong, and says whether the plan is safe to run on the real arm.
 
 There are two bench setups:

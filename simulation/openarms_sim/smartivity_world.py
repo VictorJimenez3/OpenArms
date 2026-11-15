@@ -129,11 +129,13 @@ class VisualState:
 class World:
     """Bounded joint goals and a separate carrier-volume model."""
 
+    _scenarios = ("volcano", "potions")
+
     def __init__(self, seed: int = 0, *, aim: str = "spout", scenario: str = "volcano",
                  position_variation_m: float | None = None):
         if aim not in ("spout", "mouth_center"):
             raise ValueError("Unknown pour aim.")
-        if scenario not in ("volcano", "potions"):
+        if scenario not in self._scenarios:
             raise ValueError("Unknown Smartivity experiment.")
         if position_variation_m is not None and (
                 isinstance(position_variation_m, bool) or not 0 <= position_variation_m <= MAX_LAYOUT_VARIATION_M):
@@ -143,7 +145,7 @@ class World:
         self.aim = aim
         self.scenario = scenario
         base = yaml.safe_load((SETUPS / "volcano.yaml").read_text())
-        source = base if scenario == "volcano" else yaml.safe_load((SETUPS / "potions.yaml").read_text())
+        source = base if scenario == "volcano" else yaml.safe_load((SETUPS / f"{scenario}.yaml").read_text())
         self.config = config = base["model"] | source["model"]
         self.manifest = {"source": source["source"], "preparation": source["preparation"]}
         self.preparation_history = []
@@ -445,7 +447,7 @@ class World:
 
     @property
     def preparation_stage(self):
-        if self.scenario == "volcano":
+        if self.scenario != "potions":
             return "preloaded"
         return POTION_STAGES[len(self.preparation_history)]
 
@@ -750,10 +752,13 @@ class World:
                       for name, count in (("plume", PLUME_LOBES), ("runoff", RUNOFF_LOBES), ("tray", TRAY_LOBES))}
             groups["coarse"] = np.array([model.geom(f"foam_{i}").id for i in range(24)])
             cameras = {}
-            for name, centre, distance, azimuth, elevation in (
+            configurations = (
                 ("wide", [.208, .025, .094], .57, 155, -30),
                 ("reaction", self.receiver + [-.013, .005, .081], .29, 175, -23),
-            ):
+            )
+            if self.scenario == "lava_lamp":
+                configurations = (configurations[0], ("reaction", self.receiver + [0., 0., .038], .168, 126, -13))
+            for name, centre, distance, azimuth, elevation in configurations:
                 cam = mujoco.MjvCamera()
                 cam.lookat[:] = centre
                 cam.distance, cam.azimuth, cam.elevation = distance, azimuth, elevation
