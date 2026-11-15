@@ -68,7 +68,9 @@ def positive_pour_request(text, source, into):
     if forbidden and not (sources or destinations):
         raise ValueError('Specify the positive source and destination before proposing a pour.')
     if sources - {source}:
-        raise ValueError(f'This setup can only pour from {source}. No pour was approved.')
+        raise ValueError(f'This setup can only pour from {source}. No pour was approved. '
+                         f'The beaker stands at {source} and the container at {into}, so try: pour {source} into {into}.')
     if destinations - {into}:
-        raise ValueError(f'This setup can only pour into {into}. No pour was approved.')
+        raise ValueError(f'This setup can only pour into {into}. No pour was approved. '
+                         f'The beaker stands at {source} and the container at {into}, so try: pour {source} into {into}.')
     return positive
