@@ -65,6 +65,12 @@ class Present(Confirm):
     reply_id: str | None = None
 
 
+class OllieQuestion(Body):
+    question: str = Field(min_length=1, max_length=300)
+    context: str = Field(default='', max_length=2500)
+    history: list[dict[str, str]] = Field(default_factory=list, max_length=12)
+
+
 class Cancel(Body):
     request_id: str | None = None
 
@@ -401,6 +407,21 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         if len(expected) != 1 or hashlib.sha256(data).hexdigest() not in expected:
             raise HTTPException(409, 'Simulation video no longer matches its published identity.')
         return Response(data, media_type='video/mp4')
+
+    # Ask Ollie in the student app: conversation only, never a robot action. The key stays here.
+    @app.post('/api/sessions/{sid}/ollie')
+    async def ollie(sid: str, body: OllieQuestion, request: Request):
+        authorize(sid, request)
+        from .ollie_chat import OllieChat
+        chat = getattr(app.state, 'ollie_chat', None) or OllieChat()
+        app.state.ollie_chat = chat
+        if not chat.available:
+            return {'answer': None, 'source': 'unavailable'}
+        refusal = chat.admit(sid)
+        if refusal:
+            return {'answer': refusal, 'source': 'limit'}
+        answer = await chat.answer(body.question, body.context, body.history)
+        return {'answer': answer, 'source': 'model' if answer else 'unavailable'}
 
     @app.post('/api/sessions/{sid}/condition')
     async def condition(sid: str, body: Condition, request: Request):

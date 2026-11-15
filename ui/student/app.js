@@ -667,12 +667,13 @@ const askPanel = $('#ask'), askLog = $('#ask-log');
 let askLab = null;
 function refreshAsk() {
   const list = askLab ? askLab.ask : GENERAL;
-  $('#ask-scope').textContent = askLab ? `About ${askLab.title}. Answers come from the lab guide.` : 'Answers come from the lab guide.';
+  $('#ask-scope').textContent = `${askLab ? `About ${askLab.title}. ` : ''}${Live.online ? 'Ask about the science, the experiments or how this site works. Ollie is an AI and can make mistakes, so check with your teacher.' : 'Answers come from the lab guide.'}`;
   $('#ask-chips').innerHTML = list.map((item, i) => `<button class="chip" type="button" data-q="${i}">${esc(item.q)}</button>`).join('');
   $('#ask-chips').querySelectorAll('[data-q]').forEach(b => b.onclick = () => turn(list[b.dataset.q].q, list[b.dataset.q].a));
-  $('#ask-form label').textContent = askLab ? 'A question of your own' : 'A question of your own (open a lab to save it to a report)';
+  $('#ask-form label').textContent = 'A question of your own';
 }
 function turn(q, a) {
+  chatHistory.push({ role: 'student', text: q }, { role: 'ollie', text: a });
   askLog.insertAdjacentHTML('beforeend', `<p class="you"><b>You</b> ${esc(q)}</p><p class="ollie"><b>Ollie</b> ${esc(a)}</p>`);
   askLog.scrollTop = askLog.scrollHeight;
 }
@@ -688,13 +689,36 @@ document.addEventListener('keydown', e => {
   const stop = document.getElementById('stop');
   if (stop) { e.preventDefault(); stop.click(); } else if (!askPanel.hidden) toggleAsk(false);
 });
-$('#ask-form').onsubmit = event => {
+const chatHistory = [];
+function chatContext() {
+  const page = location.hash.split('/')[1] || 'home';
+  if (!askLab) return `The student is on the ${page === 'access' ? 'Access' : page === 'reports' ? 'Reports' : 'home'} page.`;
+  const r = store.runs[askLab.id] || {};
+  return [
+    `The student is in the lab "${askLab.title}" (${kindLabel(askLab)}), ${page === 'report' ? 'reading their finished lab report' : `on step ${STEPS[Math.min(r.step || 0, STEPS.length - 1)]}`}.`,
+    `Lab question: ${askLab.question}`, `Setup: ${askLab.setup}`, `Ollie's one job here: ${askLab.command}`,
+    `Science behind it (do not give this away before the Explain step unless asked directly): ${askLab.explain}`,
+    r.prediction || r.predictionOwn ? `Their prediction: ${predictionText(r)}` : '',
+    r.observations?.length || r.observationOwn ? `What they noticed: ${observationText(r)}` : '',
+    `Things they could test next: ${askLab.next.join('; ')}`,
+  ].filter(Boolean).join('\n');
+}
+$('#ask-form').onsubmit = async event => {
   event.preventDefault();
-  const input = $('#ask-input'), text = input.value.trim();
-  if (!text) return;
-  if (askLab) { run(askLab.id).questions.push(text); save(); }
-  turn(text, askLab ? 'Good question. I can only answer from the lab guide right now, so I saved it to your report for you and your teacher.' : 'Good question. I can only answer from the lab guide right now. Open a lab and I can save questions to your report.');
-  input.value = '';
+  const input = $('#ask-input'), button = $('#ask-form button[type=submit]'), text = input.value.trim();
+  if (!text || button.disabled) return;
+  const lab = askLab;
+  if (lab) { run(lab.id).questions.push(text); save(); }
+  input.value = ''; button.disabled = true;
+  askLog.insertAdjacentHTML('beforeend', `<p class="you"><b>You</b> ${esc(text)}</p><p class="ollie thinking"><b>Ollie</b> Thinking…</p>`);
+  const bubble = askLog.lastElementChild;
+  askLog.scrollTop = askLog.scrollHeight;
+  const answer = await Live.chat(text, chatContext(), chatHistory);
+  const reply = answer || (lab ? 'I can’t reach my thinking cap right now, so I saved your question to your report for you and your teacher.' : 'I can’t reach my thinking cap right now. Try one of the questions above, or ask your teacher.');
+  if (answer) chatHistory.push({ role: 'student', text }, { role: 'ollie', text: answer });
+  bubble.classList.remove('thinking'); bubble.innerHTML = `<b>Ollie</b> ${esc(reply)}`;
+  if (store.prefs.speak) readAloud(reply);
+  askLog.scrollTop = askLog.scrollHeight; button.disabled = false; input.focus();
 };
 
 // ---------- router ----------

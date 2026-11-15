@@ -20,6 +20,7 @@ async function http(path, body, token = creds?.access_token) {
 export const Live = {
   variant: null,
   expert: null,
+  online: false,
   async init() {
     if (!location.protocol.startsWith('http')) return;
     try {
@@ -28,6 +29,7 @@ export const Live = {
       this.expert = health.expert?.model || health.expert_model || null;
       const state = creds ? await this.state().catch(() => null) : null;
       this.variant = (state || await this.open()).experiment?.variant || null;
+      this.online = true;
     } catch { this.variant = null; }
   },
   async open() {
@@ -57,6 +59,12 @@ export const Live = {
   confirm(p) { return this.call('confirm', { request_id: p.request_id, proposal_version: p.proposal_version }); },
   cancel(p) { return this.call('cancel', p ? { request_id: p.request_id } : {}); },
   stop() { return this.call('stop', {}); },
+  // Ask Ollie: conversation only. Returns null when the server has no chat model, so the app can fall back.
+  async chat(question, context, history) {
+    if (!this.online) return null;
+    try { return (await this.call('ollie', { question: question.slice(0, 300), context: context.slice(0, 2500), history: history.slice(-6) })).answer || null; }
+    catch { return null; }
+  },
   async blob(url) {
     const response = await fetch(new URL(url, location.origin).pathname, { headers: { Authorization: `Bearer ${creds.access_token}` }, cache: 'no-store' });
     if (!response.ok) throw new Error('Picture unavailable');

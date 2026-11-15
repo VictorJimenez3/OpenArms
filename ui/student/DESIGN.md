@@ -36,7 +36,7 @@ Every shape comes from the arm: capsule buttons and inputs, circular joints for 
 
 ## Honesty rules
 
-Simulated runs are labelled “Recorded simulation” on the video and in the report. The report states its evidence source. Ask Ollie says its answers come from the lab guide.
+Simulated runs are labelled “Recorded simulation” on the video and in the report. The report states its evidence source. Ask Ollie answers typed questions with an AI model through the lab server (the key never reaches the browser), says it is an AI that can make mistakes, and falls back to lab-guide answers when the model is unavailable.
 
 ## Input and accessibility
 
