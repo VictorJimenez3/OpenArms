@@ -50,4 +50,6 @@ The student may not be able to use a mouse, trackpad or standard keyboard. They 
 - Text contrast is at least 4.5:1 on every experiment colour; the current step is marked by shape and a ring, not colour alone (1.4.1, 1.4.3, 1.4.11).
 - Results are given in words and can be read aloud; status changes are announced (1.1.1, 4.1.3). Motion stops under reduced-motion (2.3.3).
 
+The Access page (`#/access`, in the top bar) states this to students and judges: the tools Ollie works with, the only keys needed, and four saved settings (bigger text and buttons, Ollie reads out loud, extra-bold focus highlight, calm screen).
+
 Checked by keyboard-only runs in a browser. Not yet tested with real switch, eye-gaze or screen-reader users.

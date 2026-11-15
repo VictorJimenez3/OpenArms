@@ -13,10 +13,12 @@ const isLive = item => Boolean(Live.variant) && VARIANT[item.id] === Live.varian
 const kindLabel = item => item.kind === 'bench' ? 'Real bench' : isLive(item) ? 'Live simulation' : 'Simulation';
 let liveRun = 0;
 
-let store = { runs: {}, name: '' };
+let store = { runs: {}, name: '', prefs: {} };
 try { store = { ...store, ...JSON.parse(localStorage.getItem(KEY)) }; } catch { /* Storage can be unavailable. */ }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* Keep working in memory. */ } };
 const run = id => (store.runs[id] ||= { step: 0, observations: [], questions: [], pours: 0 });
+const applyPrefs = () => { for (const key of ['big', 'calm', 'focus']) document.documentElement.toggleAttribute(`data-${key}`, Boolean(store.prefs[key])); };
+applyPrefs();
 const say = text => { live.textContent = ''; requestAnimationFrame(() => { live.textContent = text; }); };
 
 const ICON = {
@@ -53,7 +55,7 @@ const ollieSVG = (pose = 'idle') => `
 function ollie(pose, line) {
   const bot = $('.partner .ollie-bot'), bubble = $('#bubble');
   if (bot) bot.dataset.pose = pose;
-  if (bubble && bubble.textContent !== line) { bubble.textContent = line; bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop'); }
+  if (bubble && bubble.textContent !== line) { if (store.prefs.speak) readAloud(line); bubble.textContent = line; bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop'); }
 }
 const ART = {
   'potion-pour': '<svg viewBox="0 0 160 120" aria-hidden="true"><path class="a-arc" d="M46 46C62 4 104 4 118 50" fill="none"/><path class="a-glass" d="M22 52h44l-6 56H28z"/><path class="a-pink" d="M27 76h34l-3 30H30z"/><path class="a-glass" d="M92 56h52l-7 52h-38z"/><path class="a-cream" d="M96 80h44l-4 26h-36z"/></svg>',
@@ -131,7 +133,7 @@ function shelf() {
     </ol>
     <section class="ways" aria-labelledby="ways-title">
       <h2 id="ways-title">Use Ollie your way</h2>
-      <p>You never need a mouse or a steady hand. Every step works with whichever of these you already use.</p>
+      <p>You never need a mouse or a steady hand. Every step works with whichever of these you already use. <a href="#/access">See every tool and setting</a>.</p>
       <ul>
         <li><strong>Your voice</strong><span>Tap a mic to speak an answer, or use your device’s voice control and say the name of any button.</span></li>
         <li><strong>A keyboard or switch</strong><span><kbd>Tab</kbd> moves, <kbd>Enter</kbd> or <kbd>Space</kbd> chooses. Nothing needs two keys at once.</span></li>
@@ -175,7 +177,7 @@ function labView(item) {
   const ready = (ok, why = '') => { next.setAttribute('aria-disabled', String(!ok)); hint.textContent = ok ? '' : why; };
   [stepQuestion, stepPredict, stepDirect, stepObserve, stepExplain][step](item, r, stage, ready);
   wireMics(view);
-  stage.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[type=text]') && !e.target.closest('form')) { e.preventDefault(); next.click(); } });
+  stage.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[type=text], .choice input') && !e.target.closest('form')) { e.preventDefault(); next.click(); } });
   view.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => goto(item, +b.dataset.goto));
   $('#prev').onclick = () => goto(item, step - 1);
   next.onclick = () => {
@@ -604,6 +606,57 @@ function reports() {
     : `<div class="empty"><p>No reports yet. Finish an experiment and your report shows up here, ready to print for your teacher.</p><a class="btn primary" href="#/">Pick an experiment ${ICON.arrow}</a></div>`}`;
 }
 
+
+// ---------- access ----------
+const PREFS = [
+  ['big', 'Bigger text and buttons', 'Easier targets for eye gaze, a head pointer or a mouth stick.'],
+  ['speak', 'Ollie reads out loud', 'Ollie speaks every message, so you can listen and not read.'],
+  ['focus', 'Extra-bold highlight', 'A thicker outline shows where a switch or keyboard is on the page.'],
+  ['calm', 'Calm screen', 'Turns off bouncing and moving decorations.'],
+];
+const TOOLS = [
+  ['Voice control and speech recognition', 'Voice Control on Mac and iPad, Voice Access on Windows and Android, Dragon', 'Say the words on any button, like “Next” or “Yes, do it”. Dictate answers into any box, or tap a mic.'],
+  ['Switches', 'Head, foot, cheek, or sip-and-puff switches with your device’s scanning', 'Every control is a real button in a sensible order. One press at a time, never two together.'],
+  ['Eye tracking', 'Eye-gaze cameras with dwell to click', 'Large buttons with space between them. Nothing to drag, hold or hover over.'],
+  ['Head pointer or mouth stick', 'Used on a keyboard or touch screen', 'One key or one tap at a time. Tab, Enter and Esc do everything.'],
+  ['On-screen keyboard', 'With a trackball, joystick or touch', 'Every answer can be tapped. Typing is always optional.'],
+  ['Screen reader', 'VoiceOver, NVDA, JAWS, TalkBack', 'Steps, choices and Ollie’s messages are announced. Results come in words, not colour alone.'],
+];
+function access() {
+  view.innerHTML = `
+    <section class="access-head">
+      <h1>Ollie works with the tools you already use.</h1>
+      <p>Students who need a hand in the lab often use a computer in their own way too. Ollie is built to follow the web accessibility standard, WCAG 2.2 AA, so those tools can drive it without any special setup.</p>
+    </section>
+    <section aria-labelledby="prefs-title">
+      <h2 id="prefs-title">Make Ollie fit you</h2>
+      <ul class="prefs">
+        ${PREFS.map(([key, name, why]) => `<li><button type="button" role="switch" aria-checked="${Boolean(store.prefs[key])}" data-pref="${key}"><span class="knob" aria-hidden="true"></span><span class="pref-text"><strong>${name}</strong><span>${why}</span></span></button></li>`).join('')}
+      </ul>
+    </section>
+    <section aria-labelledby="tools-title">
+      <h2 id="tools-title">Ways to drive Ollie</h2>
+      <ul class="tools">${TOOLS.map(([name, kinds, how]) => `<li><strong>${name}</strong><span class="kinds">${kinds}</span><span>${how}</span></li>`).join('')}</ul>
+    </section>
+    <section class="keys" aria-labelledby="keys-title">
+      <h2 id="keys-title">The only keys you need</h2>
+      <dl>
+        <div><dt><kbd>Tab</kbd></dt><dd>Move to the next button or answer</dd></div>
+        <div><dt><kbd>Enter</kbd> or <kbd>Space</kbd></dt><dd>Choose it. Enter on an answer also goes to the next step</dd></div>
+        <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Move between answers in a list</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Stop Ollie right away</dd></div>
+      </dl>
+    </section>
+    <p class="credit">No timers anywhere: take as long as you need. What we have checked so far: every lab step by keyboard alone. Still to do: testing with students who use switches, eye gaze, voice control and screen readers.</p>`;
+  view.querySelectorAll('[data-pref]').forEach(button => button.onclick = () => {
+    const key = button.dataset.pref, on = !store.prefs[key];
+    store.prefs[key] = on; save(); applyPrefs();
+    button.setAttribute('aria-checked', String(on));
+    if (key === 'speak') on ? readAloud('Okay. I will read my messages out loud.') : speechSynthesis?.cancel();
+    say(`${button.querySelector('strong').textContent} ${on ? 'on' : 'off'}`);
+  });
+}
+
 // ---------- Ask Ollie ----------
 const GENERAL = [
   { q: 'Who is Ollie?', a: 'I am the robot arm in the OpenArms lab. You make the science choices. I do the reaching, lifting and pouring.' },
@@ -649,13 +702,14 @@ function route() {
   if (location.hash && !location.hash.startsWith('#/')) { document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }); if (view.childElementCount) return; }
   const [, page, id] = location.hash.split('/');
   const item = lab(id);
-  speechSynthesis?.cancel();
+  window.speechSynthesis?.cancel();
   askLab = (page === 'lab' || page === 'report') && item ? item : null;
   if (!askPanel.hidden) refreshAsk();
-  document.querySelectorAll('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === (page === 'reports' || page === 'report' ? 'reports' : 'shelf')));
+  document.querySelectorAll('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === (page === 'reports' || page === 'report' ? 'reports' : page === 'access' ? 'access' : 'shelf')));
   if (page === 'lab' && item) labView(item);
   else if (page === 'report' && item) report(item);
   else if (page === 'reports') reports();
+  else if (page === 'access') access();
   else shelf();
   const anchored = location.hash && !location.hash.startsWith('#/');
   document.body.dataset.theme = page === 'lab' && item ? item.id : '';
