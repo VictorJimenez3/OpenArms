@@ -16,7 +16,8 @@ from bench_vision.perception import observation
 from simulation.openarms_sim.render import OVERVIEW_HEIGHT, OVERVIEW_WIDTH
 
 from .contracts import AddSampleArguments
-from .demo_bench_worker import CONFIGURATION_ID, CAMERA_ID, SETUP, run_worker
+from .demo_bench_worker import (CONFIGURATION_ID, CAMERA_ID, EXPERIMENTS_FILE, SETUP, experiment_contents,
+                                experiment_name, experiments, run_worker)
 from .scene import camera_metadata
 from .skills import compute_skill_hash
 from .two_vessel_backend import TwoVesselBackend
@@ -26,19 +27,33 @@ from . import two_vessel_scene
 
 OPERATION = 'add_sample'
 PROVENANCE = 'SIMULATED'
-METHOD = 'demo-bench-markers-donor-fill-v1'
+METHOD = 'demo-bench-markers-vessel-appearance-v2'
 SCENE = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': SETUP,
          'control_mode': 'mujoco_kinematic_add_sample'}
 CAMERA = {**camera_metadata(CAMERA_ID, CONFIGURATION_ID), 'calibration_id': CONFIGURATION_ID}
 LIMITATIONS = [
     'Poses are solved by the simulation from bench.yaml, matched to one recorded real pour; joint_map.yaml is unmeasured.',
     'Liquid is drawn, not simulated: colours come from chemistry.yaml, so receiver colour is not a chemistry result.',
-    'Pixel observation of the rendered overview: donor fill and station markers only; no measured volume.',
+    'Pixel observation of the rendered overview: vessel appearance and station markers; no measured volume.',
     'No physical grasp, liquid delivery or spill safety is established. Physical dispatch is disabled.',
 ]
-EXPERIMENT = {'id': 'demo_bench_pour', 'title': 'Demo bench pour — simulation', 'mode': 'SIMULATED',
-              'question': 'Can the arm pour the beaker at A into the container at C, return the beaker and go HOME?',
-              'description': 'openarms_sim demo setup: citric acid beaker at A, volcano mix container at C.'}
+
+
+def experiment_metadata(name):
+    """One Smartivity experiment on the unchanged demo bench; the id stays the bench's own capability."""
+    config = experiments()[name]
+    base = {'id': 'demo_bench_pour', 'variant': name, 'mode': 'SIMULATED',
+            'question': 'Can the arm pour the beaker at A into the container at C, return the beaker and go HOME?'}
+    if name == 'volcano':
+        return {**base, 'title': 'Demo bench pour — simulation',
+                'description': 'openarms_sim demo setup: citric acid beaker at A, volcano mix container at C.'}
+    return {**base, 'title': f"{config['title']} — demo bench simulation",
+            'description': f"openarms_sim demo setup, Smartivity {config['title']}: {config['preparation']}",
+            'source': config['source']}
+
+
+VARIANT = experiment_name()
+EXPERIMENT = experiment_metadata(VARIANT)
 CONDITIONS = [{'id': 'prepared', 'title': 'Prepared demo bench contents'}]
 # Expected skill outcome: the donor is seen empty again at A; receiver colour is pre-set by the mix.
 OUTCOME = {'donor_appearance': 'empty', 'sample_cup_station': 'A', 'sample_cup_held': False}
@@ -57,10 +72,15 @@ def execution_scope():
     sources += sorted((root/'simulation/openarms_sim').glob('*.py'))
     sources += [root/'simulation/config'/name for name in (
         f'setups/{SETUP}/bench.yaml', f'setups/{SETUP}/poses.json', 'joint_map.yaml', 'chemistry.yaml')]
-    identity = {'experiment': EXPERIMENT, 'versions': {'mujoco': mujoco.__version__, 'numpy': numpy.__version__,
+    sources.append(EXPERIMENTS_FILE)
+    identity = {'experiment': experiment_metadata(experiment_name()), 'versions': {'mujoco': mujoco.__version__, 'numpy': numpy.__version__,
                                                        'pillow': PIL.__version__, 'pydantic': pydantic.__version__},
                 'sources': {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}}
     return 'demo-bench-' + compute_skill_hash(identity)[:16]
+
+
+# The empty clear beaker as the overview camera renders it (identical in every experiment).
+EMPTY_GLASS = np.array([127, 186, 237])
 
 
 def _masks(pixels):
@@ -76,13 +96,54 @@ def _centre(mask, minimum=60):
     return None if len(x) < minimum else np.array([x.mean(), y.mean()])
 
 
+def receiver_palette():
+    """Indicator-scale and individual dye appearances used by the demo experiments."""
+    from simulation.openarms_sim.config import load_chemistry_config
+    chemistry = load_chemistry_config()
+    palette = {row['label'] + '_liquid': tuple(row['color']) for row in chemistry['indicator_scale']}
+    for substance in chemistry['substances'].values():
+        if substance.get('kind') == 'dye':
+            palette.setdefault(substance['hue'] + '_liquid', tuple(substance['color']))
+    return palette
+
+
+def _prepared_receiver_colour():
+    from simulation.openarms_sim.chemistry import load_model
+    from simulation.openarms_sim.config import load_bench, load_chemistry_config
+    contents = (experiment_contents() or {}).get('C') or load_bench(SETUP).stations['C'].contents
+    return np.array(load_model(load_chemistry_config()).predict(contents).color) * 255
+
+
+def _coloured(region):
+    region = region.astype(int)
+    return region.max(2) - region.min(2) > 40
+
+
 def anchors(reference):
-    """Station anchors from the nominal frame taken at reset; later frames are read at these pixels."""
+    """Station anchors from the nominal frame taken at reset; later frames are read at these pixels.
+
+    The reset frame also calibrates how this camera renders colours: the prepared receiver's known
+    colour against its rendered pixels gives one white-blend factor, and the full donor gives its
+    filled appearance. Later readings never see the plan, receipt or predicted outcome.
+    """
     masks = _masks(reference)
     a, c = _centre(masks['marker_a']), _centre(masks['marker_c'])
     if a is None or c is None:
         raise ValueError('The reference frame does not show both station markers.')
-    return {'A': a, 'C': c, 'red_c': int(masks['red'][int(c[1])-30:int(c[1])+20, int(c[0])-45:int(c[0])+45].sum())}
+    (ax, ay), (cx, cy) = np.rint(a).astype(int), np.rint(c).astype(int)
+    region = reference[cy-30:cy+20, cx-45:cx+45].astype(int)
+    receiver = _coloured(region) & ~masks['marker_c'][cy-30:cy+20, cx-45:cx+45]
+    if receiver.sum() < 60:
+        raise ValueError('The reference frame does not show a readable receiver.')
+    rendered = region[receiver].mean(0)
+    prepared = _prepared_receiver_colour()
+    gap = 255 - prepared
+    blend = float(np.clip(((255 - rendered) * gap).sum() / max((gap * gap).sum(), 1e-6), 0.05, 1.0))
+    if not np.isfinite(blend):
+        raise ValueError('The reference frame cannot calibrate the receiver appearance.')
+    return {'A': a, 'C': c, 'red_c': int(masks['red'][cy-30:cy+20, cx-45:cx+45].sum()),
+            'receiver_count': int(receiver.sum()), 'receiver_rgb': rendered, 'blend': blend,
+            'donor_rgb': reference[ay-10:ay, ax-6:ax+6].reshape(-1, 3).astype(int).mean(0)}
 
 
 def read_pixels(pixels, anchor, tolerance_px=6):
@@ -99,20 +160,33 @@ def read_pixels(pixels, anchor, tolerance_px=6):
     result['camera_registration'] = 'registered'
     ax, ay = np.rint(anchor['A']).astype(int)
     cx, cy = np.rint(anchor['C']).astype(int)
-    red = masks['red']
-    if red[ay-30:ay+20, ax-45:ax+45].sum() > 50 or red[cy-30:cy+20, cx-45:cx+45].sum() < 0.6 * anchor['red_c']:
+    frame = pixels.astype(int)
+    at_c = frame[cy-30:cy+20, cx-45:cx+45]
+    receiver = _coloured(at_c) & ~masks['marker_c'][cy-30:cy+20, cx-45:cx+45]
+    at_a = frame[ay-30:ay+20, ax-45:ax+45]
+    receiver_at_a = (np.linalg.norm(at_a - anchor['receiver_rgb'], axis=2) < 40) & _coloured(at_a)
+    if receiver_at_a.sum() > 50 or receiver.sum() < 0.6 * anchor['receiver_count']:
         result['reason'] = 'The receiver is not where station C expects it.'
         return result
-    result['receiver'] = 'red_liquid'
-    r, g, b = pixels.transpose(2, 0, 1).astype(int)
+    seen = at_c[receiver].mean(0)
+    rendered = {label: 255 - anchor['blend'] * (255 - np.array(colour) * 255) for label, colour in receiver_palette().items()}
+    fits = sorted((float(np.linalg.norm(colour - seen)), label) for label, colour in rendered.items())
+    (distance, receiver_label), (alternate, _) = fits[:2]
+    # Nominal before/after renders are within 32 RGB units and at least 30 units from the next match.
+    if not np.isfinite(distance) or distance > 45 or alternate - distance < 15:
+        result['reason'] = 'The receiver appearance does not match a known simulated colour.'
+        return result
+    result['receiver'] = receiver_label
     wall = (slice(ay-24, ay-17), slice(ax-6, ax+6))
-    fill = (slice(ay-10, ay), slice(ax-6, ax+6))
-    has_wall = ((r[wall] > 210) & (r[wall] < 245) & (b[wall] > r[wall])).mean() >= .5
-    liquid = ((g[fill] - b[fill] >= 10) & (r[fill] > 170) & (r[fill] < 235)).mean()
-    glass = ((b[fill] - r[fill] > 30) & (r[fill] >= 110)).mean()
-    if has_wall and liquid >= .7:
+    r, b = frame[..., 0], frame[..., 2]
+    # The beaker's upper wall reads near-white over a pale fill, or glass-blue over a coloured one.
+    has_wall = (((r[wall] > 210) & (r[wall] < 245) & (b[wall] > r[wall])).mean() >= .5 or
+                float(np.linalg.norm(frame[wall].reshape(-1, 3).mean(0) - EMPTY_GLASS)) < 40)
+    fill = frame[ay-10:ay, ax-6:ax+6].reshape(-1, 3).mean(0)
+    to_full, to_glass = float(np.linalg.norm(fill - anchor['donor_rgb'])), float(np.linalg.norm(fill - EMPTY_GLASS))
+    if has_wall and to_full < to_glass and to_full < 30:
         result['donor'] = 'liquid_visible'
-    elif has_wall and glass >= .7:
+    elif has_wall and to_glass < to_full and to_glass < 30:
         result['donor'] = 'empty'
     else:
         result['reason'] = 'The beaker at A is missing, hidden or unreadable.'
@@ -124,7 +198,7 @@ def read_pixels(pixels, anchor, tolerance_px=6):
 class DemoBenchSceneService(TwoVesselSceneService):
     feature_schema = {'readable': {'type': 'boolean'},
                       'donor_appearance': {'enum': ['liquid_visible', 'empty']},
-                      'receiver_appearance': {'enum': ['red_liquid']},
+                      'receiver_appearance': {'enum': sorted(receiver_palette())},
                       'sample_cup_station': {'enum': ['A']}, 'sample_cup_held': {'type': 'boolean'}}
     worker = staticmethod(run_worker)
 
@@ -133,8 +207,7 @@ class DemoBenchSceneService(TwoVesselSceneService):
         # Replace the water fixture's identity with this setup's; frame checks above stay shared.
         result['scene'].update({**SCENE, **CAMERA, 'width': OVERVIEW_WIDTH, 'height': OVERVIEW_HEIGHT,
                                 'available_samples': ['prepared'],
-                                'object_descriptions': {'source': 'small beaker with citric acid on the blue mark A',
-                                                        'receiver': 'wide round container with the volcano mix on the orange mark C'},
+                                'object_descriptions': dict(experiments()[experiment_name()]['descriptions']),
                                 'observable_features': copy.deepcopy(self.feature_schema),
                                 'limitations': [*LIMITATIONS, 'Primary and secondary both name the same overview camera.']})
         for key in two_vessel_scene.SCENE:
@@ -151,13 +224,19 @@ class DemoBenchSceneService(TwoVesselSceneService):
         if not 0 <= time.time() - raw['captured_at'] <= 180:
             return {'ready': False, 'camera_registration': 'unknown', 'reason': 'Frame is stale or future-dated.'}
         reference = self._references[sid]
-        return read_pixels(two_vessel_scene.fixture._pixels(raw), anchors(two_vessel_scene.fixture._pixels(reference)))
+        try:
+            anchor = anchors(two_vessel_scene.fixture._pixels(reference))
+        except ValueError as exc:
+            return {'ready': False, 'camera_registration': 'unknown', 'reason': str(exc)}
+        return read_pixels(two_vessel_scene.fixture._pixels(raw), anchor)
 
     async def localize_objects(self, sid, evidence_id, labels):
         result = self._observe_pixels(sid, evidence_id)
         reference, _view = self.frames[sid, evidence_id]
-        anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
-        boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
+        boxes = {}
+        if result['ready']:
+            anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
+            boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
         detections, verified = [], []
         for label in labels:
             name = two_vessel_scene.ALIASES.get(label.lower(), label.lower())
@@ -186,9 +265,10 @@ class DemoBenchSceneService(TwoVesselSceneService):
         if raw['ready']:
             features.update(donor_appearance=raw['donor'], receiver_appearance=raw['receiver'],
                             sample_cup_station='A', sample_cup_held=False)
-        text = ('The beaker at A looks empty and is back on its mark; the container at C shows red liquid.'
+        colour = str(raw.get('receiver', 'unknown')).replace('_liquid', '') + ' liquid'
+        text = (f'The beaker at A looks empty and is back on its mark; the container at C shows {colour}.'
                 if raw['ready'] and raw['donor'] == 'empty' else
-                'The beaker at A still shows liquid; the container at C shows red liquid.' if raw['ready'] else
+                f'The beaker at A still shows liquid; the container at C shows {colour}.' if raw['ready'] else
                 'The overview is unreadable or unregistered; the outcome is unknown.')
         return {**frame, 'status': 'observed' if raw['ready'] else 'unknown', 'observer_version': METHOD,
                 'features': features, 'pixel_observation': raw, 'text': text,
@@ -217,8 +297,8 @@ class DemoBenchBackend(TwoVesselBackend):
                         'Declare at=HOME; it is not a camera-observed feature or physical success.',
                     'required_outcome_checks': [{'feature': 'donor_appearance', 'expected': 'empty'}],
                     'outcome_checks_contract': 'outcome_checks are checked independently against fresh SIMULATED '
-                        'image features in scene.observable_features. The receiver is red before and after the pour '
-                        '(its mix is pre-coloured), so the transfer is evidenced by the beaker at A reading empty.',
+                        'image features in scene.observable_features. The transfer is evidenced by the beaker at A '
+                        'reading empty; the receiver colour is reported from the image and may or may not change.',
                     'qualification': 'Simulated capability on the openarms_sim demo setup only; not chemistry or physical readiness.',
                 },
                 'action_description': 'pour the beaker at A into the container at C once, return the beaker to A and go HOME',

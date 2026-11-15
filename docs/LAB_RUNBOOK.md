@@ -104,6 +104,7 @@ For the retained indicator regression, skill admission combines the frozen synth
 | --- | --- |
 | `OPENARMS_EXECUTION` | `mock` default; `mujoco` selects the actual simulator |
 | `OPENARMS_SCENE` | With MuJoCo: `demo_bench` (default) for the openarms_sim demo bench; `two_vessel` and `metered_dropper` for retained regression scenes |
+| `OPENARMS_DEMO_EXPERIMENT` | With `demo_bench`, select `volcano` (default), `potions`, or `lava_lamp`. Start a fresh session after changing the experiment. Each selection has its own simulated skill admission scope. |
 | `OPENARMS_DATA_DIR` | Persistent notebook, scene artifacts, evaluations and scoped registry |
 | `OPENARMS_ENV_FILE` | Optional explicit local environment file |
 | `GEMINI_LIVE_MODEL` | Speech model; default `gemini-3.8-live` |
