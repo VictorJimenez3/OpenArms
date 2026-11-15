@@ -393,6 +393,7 @@ class GeminiBridge:
                 if (pending.get('request_id') == proposal['request_id'] and
                         pending.get('proposal_version') == proposal['proposal_version']):
                     await self.tool_call('_present_audio', {**proposal, 'reply_id': reply_id})
+            await self._record('assistant', record.get('text', ''), reply_id, True)
             await self.emit({'type': 'status', 'status': 'muted' if self.muted else 'listening'})
         finally:
             self.playback_changed.set()
@@ -680,7 +681,9 @@ class GeminiBridge:
                         else:
                             await self._record('user', self.controls.text, self.controls.turn_id, False)
                     audio_parts = [p.inline_data.data for p in (content.model_turn.parts if content.model_turn else []) if p.inline_data and p.inline_data.data]
-                    output = content.output_transcription
+                    output = None if content.interrupted else content.output_transcription
+                    if content.interrupted:
+                        audio_parts = []
                     if not self.reply_id and (audio_parts or (output and output.text)):
                         self._expire_replies()
                         if any(r.get('proposal') for r in self.replies.values()):
@@ -696,23 +699,26 @@ class GeminiBridge:
                             self.reply_proposal = (brief(pending, ('request_id', 'proposal_version'))
                                                    if pending and not pending.get('presented') else None)
                             await self.emit({'type': 'reply_start', 'reply_id': self.reply_id, 'proposal': self.reply_proposal})
-                            await self.emit({'type': 'status', 'status': 'speaking'})
                         rid = self.reply_id
-                        if rid and output and output.text:
+                        text_changed = bool(rid and output and output.text)
+                        if text_changed:
                             self.reply_text += output.text
-                            await self._record('assistant', self.reply_text, rid, False)
+                        first_audio = bool(rid and audio_parts and not self.reply_seconds)
+                        if first_audio:
+                            await self.emit({'type': 'status', 'status': 'speaking'})
                         for raw in audio_parts:
                             if rid is None or self.reply_id != rid:
                                 break
                             self.reply_seconds += len(raw) / 48000  # 24 kHz PCM16
                             await self.emit({'type': 'audio', 'data': base64.b64encode(raw).decode(), 'reply_id': rid})
+                        if rid and self.reply_id == rid and self.reply_seconds and (text_changed or first_audio):
+                            await self._record('assistant', self.reply_text, rid, False)
                     if content.turn_complete:
                         self.suppress_output = False
                         self.discard_transcript = False
                     if content.turn_complete and self.reply_id:
                         rid = self.reply_id
                         text = self.reply_text
-                        await self._record('assistant', text, rid, True)
                         # A readout acknowledgment is valid only if its transcript contains
                         # the exact canonical preview. Generation completion alone is not presentation.
                         def words(s):
@@ -742,7 +748,7 @@ class GeminiBridge:
                         if self.reply_id == rid and self.reply_seconds:
                             # Reply UUIDs are one-use playback tokens. A delayed ACK
                             # for a dropped/expired reply cannot present a new one.
-                            self.replies[rid] = {'complete': True, 'proposal': proposal,
+                            self.replies[rid] = {'complete': True, 'proposal': proposal, 'text': text,
                                                  'expires': time.monotonic() + self.reply_seconds + PLAYBACK_ACK_TIMEOUT}
                         if self.reply_id == rid:
                             self._clear_reply()
