@@ -263,7 +263,26 @@ async def test_provider_cancels_only_matching_pending_callback():
     await assert_clean(bridge, client)
 
 
-@pytest.mark.parametrize('failure', [ConnectionError, RuntimeError])
+@pytest.mark.parametrize('ready', [False, True])
+async def test_initial_unmuted_state_preserves_start_voice(ready):
+    events = []
+
+    async def emit(event):
+        events.append(event)
+
+    bridge = live.GeminiBridge(context, None, emit)
+    bridge.ready = ready
+    await bridge.mute(False)
+    assert bridge.incoming.empty()
+    assert bridge.voice_epoch == 0 and not bridge.discard_transcript
+    assert events == []
+
+
+class ProviderReconnectError(ConnectionError):
+    code = 1011
+
+
+@pytest.mark.parametrize('failure', [ConnectionError, RuntimeError, ProviderReconnectError])
 async def test_upstream_reconnects_are_bounded_and_resume_without_replaying_student_turn(failure):
     client = Client()
     sent, controls = [], []
@@ -292,6 +311,8 @@ async def test_upstream_reconnects_are_bounded_and_resume_without_replaying_stud
     assert [len(s.turns) for s in client.sessions] == [1, 0, 0, 0]
     assert bridge.last_error == failure.__name__
     assert sent[-1]['status'] == 'unavailable'
+    if failure is ProviderReconnectError:
+        assert [frame['code'] for frame in sent if 'code' in frame] == ['1011'] * 3
     await assert_clean(bridge, client)
 
 

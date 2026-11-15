@@ -1,0 +1,16 @@
+{
+  "status": "complete",
+  "frames": [
+    "frame-001-view-735-fresh.jpg",
+    "frame-002-view-725-fresh.jpg",
+    "frame-003-view-716-fresh.jpg",
+    "frame-004-view-708-fresh.jpg",
+    "frame-005-view-698-fresh.jpg",
+    "frame-006-view-617-fresh.jpg"
+  ],
+  "outward_seconds": 22.187185457907617,
+  "turnaround_review_seconds": 12.10243441676721,
+  "return_seconds": 18.967357540968806,
+  "return_views": [],
+  "home_error_deg": 0.7912087912087913
+}

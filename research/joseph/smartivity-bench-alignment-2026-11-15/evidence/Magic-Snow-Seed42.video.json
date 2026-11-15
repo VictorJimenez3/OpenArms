@@ -1,0 +1,68 @@
+{
+  "success": true,
+  "powder_delivered_kit_spoons": 3.0,
+  "powder_spilled_kit_spoons": 0.0,
+  "water_preloaded_ml": 50.0,
+  "model_wait_seconds": 120,
+  "collisions": 0,
+  "drops": 0,
+  "beaker_docked": true,
+  "provenance": "SIMULATED",
+  "mode": "scripted",
+  "effect_model": "illustrative sodium polyacrylate swelling",
+  "fps": 30,
+  "width": 1280,
+  "height": 720,
+  "frames": 1064,
+  "sections": {
+    "title": 48,
+    "setup": 51,
+    "pick": 247,
+    "pour": 242,
+    "return_cup": 142,
+    "home": 133,
+    "time_lapse": 147,
+    "result": 54
+  },
+  "source": {
+    "publisher": "Smartivity",
+    "booklet": "My First Science Kit",
+    "experiment": "Magic Snow",
+    "pages": [
+      10,
+      11
+    ]
+  },
+  "motion_duration_seconds": 25.468000000001844,
+  "first_powder_release_seconds": 11.455999999999182,
+  "last_powder_release_seconds": 12.815999999999033,
+  "time_lapse_start_seconds_after_powder": 14.012000000002661,
+  "model_final_absorbed_water_ml": 50.0,
+  "bench_layout": {
+    "reference_setup": "demo",
+    "seed": 42,
+    "spread_mm_per_axis": 15.0,
+    "stations_ruler_cm": {
+      "A": [
+        23.12186814566789,
+        7.416635319256157
+      ],
+      "C": [
+        6.875793759734147,
+        8.192104087178091
+      ]
+    },
+    "stations_arm_m": {
+      "A": [
+        0.2878,
+        -0.0512
+      ],
+      "C": [
+        0.2744,
+        0.1109
+      ]
+    },
+    "wrist_roll_deg": 180,
+    "lift_m": 0.1
+  }
+}

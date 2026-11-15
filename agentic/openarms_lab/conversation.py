@@ -44,6 +44,10 @@ STATUS = re.compile(
     r"what(?:s| is) (?:next|taking so long)|what happened|"
     r"stopp?ed|finished|done|ready|running|queued|working|cancelled|canceled)\b"
 )
+PROGRESS_CHECK = re.compile(
+    r'(?:(?:hey|hi|hello) )?(?:is (?:it|the plan) ready(?: yet)?|'
+    r'(?:its|it is|the arm is) not (?:doing anything|moving|working))'
+)
 RESULT = re.compile(r'\b(?:result|outcome|evidence|observed|saw|happened|readout)\b')
 SCIENCE = re.compile(
     r'\b(?:ph|indicator|acid|acidic|basic|base|alkaline|control|neutral|vinegar|'
@@ -86,7 +90,7 @@ def prediction_input(text):
 
 def read_only_turn(text):
     norm = words(text)
-    if norm in SOCIAL_REPLIES or REPEAT.match(norm):
+    if norm in SOCIAL_REPLIES or REPEAT.match(norm) or PROGRESS_CHECK.fullmatch(norm):
         return True
     if re.match(r'^(?:can|could|would|will) you\b', norm) and re.search(
             r'\b(?:after this|after that|later|next time|in the future)\b', norm):
@@ -192,7 +196,7 @@ def conversation_reply(text, state):
             return observations[-1]['text']
         if not STATUS.search(norm):
             return 'There’s no independent observation recorded for this trial yet.'
-    if STATUS.search(norm):
+    if STATUS.search(norm) or PROGRESS_CHECK.fullmatch(norm):
         return status_reply(state)
     if re.search(r'\b(?:what can (?:you|we|i) do|which actions|what are my options|capabilities|supported)\b', norm):
         action = (state.get('capabilities') or {}).get('action_description')
