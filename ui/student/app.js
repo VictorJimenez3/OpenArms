@@ -1,4 +1,5 @@
 import { LABS, SOON } from './labs.js';
+import { Live, thumbnail } from './live.js';
 
 const KEY = 'openarms.student.v1';
 const STEPS = ['Question', 'Predict', 'Direct Ollie', 'Observe', 'Explain'];
@@ -7,6 +8,10 @@ const live = document.getElementById('live');
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lab = id => LABS.find(item => item.id === id);
+const VARIANT = { volcano: 'volcano', potions: 'potions', lava: 'lava_lamp' };
+const isLive = item => Boolean(Live.variant) && VARIANT[item.id] === Live.variant;
+const kindLabel = item => item.kind === 'bench' ? 'Real bench' : isLive(item) ? 'Live simulation' : 'Simulation';
+let liveRun = 0;
 
 let store = { runs: {}, name: '' };
 try { store = { ...store, ...JSON.parse(localStorage.getItem(KEY)) }; } catch { /* Storage can be unavailable. */ }
@@ -95,7 +100,7 @@ function shelf() {
     <li class="tile ${size}" data-theme="${item.id}">
       <a href="#/lab/${item.id}">
         <span class="tile-art">${ART[item.id]}</span>
-        <span class="tag">${item.kind === 'bench' ? 'On the real bench today' : 'Simulation'}</span>
+        <span class="tag">${item.kind === 'bench' ? 'On the real bench today' : kindLabel(item)}</span>
         <strong>${esc(item.title)}</strong>
         <span class="tile-q">${esc(item.question)}</span>
         <span class="tile-foot"><span>${esc(item.idea)} · ${esc(item.time)}</span><span class="state ${state}">${esc(label)}</span></span>
@@ -140,7 +145,7 @@ function labView(item) {
       <div class="work">
         <div class="lab-top">
           <a class="back" href="#/">All experiments</a>
-          <p class="tag">${item.kind === 'bench' ? 'Real bench' : 'Simulation'}</p>
+          <p class="tag">${kindLabel(item)}</p>
         </div>
         <h1>${esc(item.title)}</h1>
         <ol class="arm-steps" aria-label="Lab steps">
@@ -169,6 +174,7 @@ function labView(item) {
 }
 function goto(item, step) {
   const r = run(item.id);
+  if (liveRun) { liveRun = 0; Live.stop().catch(() => {}); }
   $('video', view)?.pause();
   r.step = step; r.reached = Math.max(r.reached ?? 0, step); save();
   labView(item);
@@ -190,7 +196,7 @@ function stepQuestion(item, r, stage, ready) {
       <div><dt>Ollie’s job</dt><dd>${esc(item.command)}</dd></div>
       <div><dt>Your job</dt><dd>Predict, direct, observe and explain</dd></div>
     </dl>
-    ${item.kind === 'bench' ? '<p class="note">This lab uses real liquids. Your teacher sets up the bench and stays with you.</p>' : '<p class="note">This lab plays a recorded computer simulation of the arm. It is a model, not a real pour.</p>'}`;
+    ${item.kind === 'bench' ? '<p class="note">This lab uses real liquids. Your teacher sets up the bench and stays with you.</p>' : isLive(item) ? '<p class="note">This lab runs live in a computer simulation. Ollie’s AI plans the pour from your words and a camera checks the result. It is a model, not a real pour.</p>' : '<p class="note">This lab plays a recorded computer simulation of the arm. It is a model, not a real pour.</p>'}`;
   ollie('idle', item.kind === 'bench' ? 'Real liquids today. I’ll do the lifting, you make the calls.' : 'Here’s today’s question. Ready when you are, scientist.');
   ready(true);
 }
@@ -228,6 +234,7 @@ function stepDirect(item, r, stage, ready) {
     $('#poured').onclick = () => { r.pours = 1; r.command = item.command; save(); done(); $('#poured').textContent = 'Pour marked as done'; $('#poured').setAttribute('aria-pressed', 'true'); say('Pour marked as done.'); };
     return done();
   }
+  if (isLive(item)) return liveDirect(item, r, stage, ready, done);
   const ask = note => {
     stage.innerHTML = `
       <h2 tabindex="-1">Tell Ollie what to do</h2>
@@ -294,20 +301,183 @@ function stepDirect(item, r, stage, ready) {
   ask();
 }
 
+
+// ---------- live simulation: the real agent plans, the simulator runs ----------
+const PHASES = [[/^pick/, 'Picking up'], [/^pour/, 'Pouring'], [/^return/, 'Putting it back'], [/^home/, 'Going home'], [/inspect|observe|check/, 'Looking at the bench']];
+const phaseText = phase => (PHASES.find(([re]) => re.test(phase || '')) || [0, 'Getting ready'])[1];
+const DONE = ['completed', 'failed', 'cancelled', 'stopped', 'expired', 'unknown', 'needs_clarification'];
+const seconds = ms => `${(ms / 1000).toFixed(ms < 10000 ? 1 : 0)} s`;
+function planFacts(metrics = {}) {
+  const saved = metrics.dispatch === 'active_skill';
+  return {
+    saved, seconds: metrics.planning_ms ? seconds(metrics.planning_ms) : '', calls: metrics.model_calls ?? null,
+    label: saved ? 'Saved skill' : 'New plan',
+    text: [saved ? 'Ollie already knew this one' : 'Ollie worked this out just now', metrics.planning_ms ? `planned in ${seconds(metrics.planning_ms)}` : '', metrics.model_calls != null ? `${metrics.model_calls} AI expert call${metrics.model_calls === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · '),
+  };
+}
+function liveDirect(item, r, stage, ready, done) {
+  const token = ++liveRun;
+  const here = () => token === liveRun && stage.isConnected;
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const fail = error => { if (here()) ask(`Something went wrong: ${error.message} Try again.`, 'stop'); };
+  let frameUrl = '', objectUrl = '';
+  const showFrame = async (state, img) => {
+    const url = state.state?.simulation?.frame_url;
+    if (!url || url === frameUrl || !img) return;
+    frameUrl = url;
+    try { const next = URL.createObjectURL(await Live.blob(url)); img.src = next; img.hidden = false; URL.revokeObjectURL(objectUrl); objectUrl = next; } catch { /* Keep the last picture. */ }
+  };
+  const bench = caption => `
+      <figure class="screen live">
+        <img id="live-frame" alt="Live camera view of the simulated bench" hidden>
+        <figcaption><span class="tag sim">Live simulation</span> <span id="live-caption">${esc(caption)}</span></figcaption>
+      </figure>`;
+
+  const ask = (note, pose) => {
+    stage.innerHTML = `
+      <h2 tabindex="-1">Tell Ollie what to do</h2>
+      <p class="lede">${esc(item.setup)}</p>
+      <form id="cmd" class="cmd">
+        <label for="cmd-input">Your instruction</label>
+        <div class="field-row"><input id="cmd-input" type="text" autocomplete="off" value="" placeholder="Type or tap the mic"><button class="btn ghost icon mic" type="button" data-mic="cmd-input" aria-label="Speak your instruction" aria-pressed="false"></button><button class="btn primary" type="submit">Send</button></div>
+        <button id="suggest" class="btn link" type="button">Use “${esc(item.command)}”</button>
+      </form>
+      ${r.pours > 0 ? `<p class="muted">Ollie has poured ${r.pours} time${r.pours > 1 ? 's' : ''}. Say “do it again” to see how fast a saved skill is, or go on.</p>` : '<p class="muted">Say it your own way. Ollie’s AI reads your words, looks at the bench and makes a plan.</p>'}`;
+    wireMics(stage);
+    ollie(pose || 'listen', note || (r.pours > 0 ? 'Want another pour? Tell me, or go on to the next step.' : 'Tell me what to do. I’m listening.'));
+    $('#suggest').onclick = () => { $('#cmd-input').value = item.command; $('#cmd-input').focus(); };
+    $('#cmd').onsubmit = event => {
+      event.preventDefault();
+      const text = $('#cmd-input').value.trim();
+      if (!text) return ollie('listen', 'I did not catch an instruction. Tell me what to pour.');
+      r.command = text; save();
+      plan(text).catch(fail);
+    };
+    done();
+  };
+
+  const plan = async text => {
+    const started = performance.now();
+    stage.innerHTML = `
+      <h2 tabindex="-1">Ollie is making a plan</h2>
+      <p class="you"><b>You</b> ${esc(text)}</p>
+      ${bench('Ollie is looking at the bench.')}
+      <div class="actions"><button id="never" class="btn ghost" type="button">Never mind</button><p id="clock" class="muted" role="status"></p></div>`;
+    ollie('think', 'Let me look at the bench and work out a plan.');
+    $('#stage h2').focus(); ready(false, 'Ollie is still planning.');
+    let cancelled = false;
+    $('#never').onclick = () => { cancelled = true; Live.cancel().catch(() => {}); ask('No problem. Nothing moved.'); };
+    const before = await Live.fresh();
+    if (!here() || cancelled) return;
+    showFrame(before, $('#live-frame'));
+    const known = (before.messages || []).length;
+    let state = await Live.ask(text);
+    while (here() && !cancelled) {
+      const task = (state.tasks || []).at(-1);
+      if (state.pending) return propose(state.pending);
+      if (task && DONE.includes(task.status)) {
+        const reply = (state.messages || []).slice(known).filter(m => m.role === 'assistant').at(-1)?.text;
+        return ask(reply || 'I could not make a plan for that. Try saying it another way.', 'think');
+      }
+      const waited = (performance.now() - started) / 1000;
+      if ($('#clock')) $('#clock').textContent = waited > 3 ? `Thinking for ${Math.round(waited)} s. New instructions take Ollie longer the first time.` : '';
+      await wait(600);
+      state = await Live.state();
+    }
+  };
+
+  const propose = async pending => {
+    const facts = planFacts(pending.metrics);
+    stage.innerHTML = `
+      <h2 tabindex="-1">Check Ollie’s plan</h2>
+      <p class="you"><b>You</b> ${esc(r.command)}</p>
+      <div class="plan">
+        <p class="plan-label">Ollie’s plan · ${facts.label}</p>
+        <p class="plan-text">${esc(pending.summary)}</p>
+        <p class="plan-facts">${esc(facts.text)}</p>
+        <div class="actions">
+          <button id="yes" class="btn primary big" type="button">Yes, do it</button>
+          <button id="change" class="btn ghost" type="button">Change it</button>
+          <button id="hear" class="btn ghost" type="button">${ICON.sound} Read it to me</button>
+        </div>
+      </div>
+      <p class="muted">Nothing moves until you say yes.</p>`;
+    ollie('think', facts.saved ? 'I remember this one! Same plan as before. Say yes and I’ll go.' : 'Here’s my plan. I won’t move until you say yes.');
+    $('#stage h2').focus(); ready(r.pours > 0, 'Say yes to the plan, or change it.');
+    $('#hear').onclick = () => readAloud(pending.summary);
+    $('#change').onclick = () => { Live.cancel(pending).catch(() => {}); ask('Okay, I dropped that plan. What should I do instead?'); $('#cmd-input').focus(); };
+    $('#yes').onclick = () => { $('#yes').disabled = true; execute(pending, facts).catch(fail); };
+    await Live.present(pending).catch(() => {});
+  };
+
+  const execute = async (pending, facts) => {
+    let state = await Live.confirm(pending);
+    if (!here()) return;
+    stage.innerHTML = `
+      <h2 tabindex="-1">Ollie is pouring</h2>
+      <div class="actions"><button id="stop" class="btn stop big" type="button">${ICON.stop} Stop</button><p id="run-state" class="muted" role="status">Ollie is moving.</p></div>
+      ${bench('Getting ready')}`;
+    ollie('pour', 'On it. Say stop any time.');
+    $('#stage h2').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
+    let stopped = false;
+    $('#stop').onclick = async () => { stopped = true; await Live.stop().catch(() => {}); if (here()) ask('Stopped. I will not move again until you give me a new instruction.', 'stop'); };
+    const img = $('#live-frame'), caption = $('#live-caption');
+    while (here() && !stopped) {
+      const task = (state.tasks || []).find(t => t.task_id === pending.task_id) || {};
+      showFrame(state, img);
+      if (caption) caption.textContent = phaseText(state.state?.phase);
+      if (DONE.includes(task.status)) return finish(state, task, pending, facts);
+      await wait(350);
+      state = await Live.state();
+    }
+  };
+
+  const finish = async (state, task, pending, facts) => {
+    const seen = (state.observations || []).filter(o => o.request_id === pending.request_id).at(-1);
+    if (task.status !== 'completed' || !seen) return ask(seen?.reason || 'That run did not finish, so I have nothing to report. Want to try again?', 'stop');
+    const sim = state.state?.simulation || {};
+    let picture = '';
+    try { picture = await thumbnail(await Live.blob(seen.receipt?.images?.[0]?.artifact_url || sim.frame_url)); } catch { /* The words are the evidence that matters. */ }
+    r.pours += 1;
+    r.live = { observation: seen.text, readable: seen.status === 'observed', picture, plan: pending.summary, facts: facts.text, saved: facts.saved, motion: sim.motion_seconds ? `${Math.round(sim.motion_seconds)} s` : '', expert: Live.expert };
+    (r.attempts ||= []).push({ command: r.command, label: facts.label, seconds: facts.seconds, calls: facts.calls });
+    save(); done();
+    if (!here()) return;
+    stage.innerHTML = `
+      <h2 tabindex="-1">Done. Ollie is back home.</h2>
+      <figure class="screen live">
+        ${sim.video_url ? '<video id="replay" playsinline muted controls></video>' : `<img src="${picture}" alt="The bench after the pour">`}
+        <figcaption><span class="tag sim">Live simulation</span> ${sim.video_url ? 'Replay of the run you just directed.' : 'The bench after the pour.'}</figcaption>
+      </figure>
+      <p class="ollie"><b>Ollie · checked with the camera</b> ${esc(seen.text)}</p>
+      ${attemptsTable(r)}
+      <div class="actions"><button id="again" class="btn ghost" type="button">${ICON.play} Do it again</button></div>`;
+    ollie('wave', 'Done! I’m back home. What did you notice?');
+    $('#stage h2').focus();
+    $('#again').onclick = () => { r.command = 'Do it again'; save(); plan('Do it again').catch(fail); };
+    if (sim.video_url) Live.blob(sim.video_url).then(blob => { const video = $('#replay'); if (video) { video.src = URL.createObjectURL(blob); video.play().catch(() => {}); } }).catch(() => {});
+  };
+  ask();
+}
+const attemptsTable = r => (r.attempts || []).length < 2 ? '' : `
+  <table class="attempts"><caption>How Ollie planned each try</caption>
+    <thead><tr><th scope="col">You said</th><th scope="col">Plan</th><th scope="col">Time to plan</th><th scope="col">AI expert calls</th></tr></thead>
+    <tbody>${r.attempts.map(a => `<tr><td>${esc(a.command)}</td><td>${esc(a.label)}</td><td>${esc(a.seconds || '—')}</td><td>${a.calls ?? '—'}</td></tr>`).join('')}</tbody></table>`;
+
 function stepObserve(item, r, stage, ready) {
   stage.innerHTML = `
     <h2 tabindex="-1">What did you notice?</h2>
     ${item.kind === 'sim' ? `
     <div class="result">
-      <img src="media/${item.media}.jpg" alt="" width="320" height="180">
-      <div><p class="plan-label">Ollie’s description · from the simulation</p><p>${esc(item.result)}</p>
+      <img src="${r.live?.picture || `media/${item.media}.jpg`}" alt="" width="320" height="180">
+      <div><p class="plan-label">${r.live ? 'Ollie’s description · checked with the simulation camera' : 'Ollie’s description · from the simulation'}</p><p>${esc(r.live?.observation || item.result)}</p>
       <button id="hear" class="btn ghost" type="button">${ICON.sound} Read it to me</button></div>
     </div>` : '<p class="lede">Look at cup C. If it is hard to see, ask Ollie or your teacher to describe it in words.</p>'}
     <fieldset><legend>Tick everything you noticed</legend>${choices('obs', item.observations, r.observations, 'checkbox')}</fieldset>
     ${ownWords('obs-own', 'Anything else, in your own words', r.observationOwn)}`;
   const check = () => ready(Boolean(r.observations.length || r.observationOwn), 'Tick what you noticed or say it in your own words.');
   ollie('listen', item.kind === 'sim' ? 'Tell me what you noticed. I can read my description out loud too.' : 'Tell me what you noticed. Ask if you want it described in words.');
-  if ($('#hear')) $('#hear').onclick = () => readAloud(item.result);
+  if ($('#hear')) $('#hear').onclick = () => readAloud(r.live?.observation || item.result);
   stage.onchange = e => { if (e.target.name === 'obs') { r.observations = [...stage.querySelectorAll('[name=obs]:checked')].map(i => i.value); save(); check(); } };
   $('#obs-own').oninput = e => { r.observationOwn = e.target.value.trim(); save(); check(); };
   check();
@@ -353,10 +523,11 @@ function reportRows(item, r) {
     ['Question', item.question],
     ['Setup', item.setup],
     ['My prediction', predictionText(r)],
-    ['What I told Ollie', r.command || item.command],
-    ['What Ollie did', `${item.proposal.replace(/^I will/, 'Ollie agreed to')} Poured ${r.pours || 1} time${r.pours > 1 ? 's' : ''}.`],
+    ['What I told Ollie', (r.attempts || []).map(a => `“${a.command}”`).join(', then ') || r.command || item.command],
+    ['What Ollie did', r.live ? `${r.live.plan} Poured ${r.pours} time${r.pours > 1 ? 's' : ''}.` : `${item.proposal.replace(/^I will/, 'Ollie agreed to')} Poured ${r.pours || 1} time${r.pours > 1 ? 's' : ''}.`],
+    ...(r.live ? [['How Ollie planned it', (r.attempts || []).map((a, i) => `Try ${i + 1}: ${a.label.toLowerCase()}${a.seconds ? ', ' + a.seconds : ''}${a.calls != null ? `, ${a.calls} AI expert call${a.calls === 1 ? '' : 's'}` : ''}`).join('. ') + '.']] : []),
     ['What I noticed', observationText(r)],
-    ...(item.kind === 'sim' ? [['Ollie’s description', item.result]] : []),
+    ...(item.kind === 'sim' ? [['Ollie’s description', r.live?.observation || item.result]] : []),
     ['Did my prediction match?', r.match],
     ['Why it happened', item.explain],
     [item.check.ask, `${r.checkAnswer}${answer?.right ? '' : ' (not the expected answer)'}`],
@@ -369,7 +540,7 @@ function report(item) {
   if (!r.done) { location.hash = `#/lab/${item.id}`; return; }
   const rows = reportRows(item, r);
   const date = new Date(r.finishedAt || Date.now()).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-  const evidence = item.kind === 'sim' ? 'Recorded simulation (computer model)' : 'Real bench, observed by the student';
+  const evidence = r.live ? 'Live MuJoCo simulation, planned by Ollie’s AI and checked by camera' : item.kind === 'sim' ? 'Recorded simulation (computer model)' : 'Real bench, observed by the student';
   view.innerHTML = `
     <article class="report">
       <div class="lab-top no-print"><a class="back" href="#/">All experiments</a></div>
@@ -382,6 +553,7 @@ function report(item) {
           <span>${esc(date)}</span><span>Evidence: ${esc(evidence)}</span>
         </div>
       </header>
+      ${r.live?.picture ? `<figure class="report-pic"><img src="${r.live.picture}" alt="The simulated bench after the pour"><figcaption>The bench after the pour · simulation camera</figcaption></figure>` : ''}
       <dl class="report-rows">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
       <p class="credit">Experiment adapted from Smartivity’s <cite>My First Science Kit</cite>, ${esc(item.pages)}. Robot actions by Ollie, the OpenArms lab arm, directed by the student.</p>
       <div class="actions no-print">
@@ -465,4 +637,5 @@ function route() {
 }
 addEventListener('hashchange', () => { route(); if (!location.hash.startsWith('#/')) return; view.focus({ preventScroll: true }); });
 wireMics();
+await Promise.race([Live.init(), new Promise(resolve => setTimeout(resolve, 2500))]);
 route();
