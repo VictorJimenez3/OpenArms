@@ -11,14 +11,14 @@ From the repository root, use Python 3.12 and the dedicated application environm
 ```sh
 uv venv --python 3.12 .venv-lab  # only if it does not exist
 uv pip install --python .venv-lab/bin/python -r agentic/requirements-lab.txt -e 'simulation[dev]'
-OPENARMS_EXECUTION=mujoco OPENARMS_SCENE=two_vessel PORT=8010 .venv-lab/bin/python -m agentic.openarms_lab
+OPENARMS_EXECUTION=mujoco PORT=8010 .venv-lab/bin/python -m agentic.openarms_lab
 ```
 
 Authenticate the chosen expert independently; see [model profiles and switching](EXPERT_MODELS.md). The default needs the `codex` CLI on PATH. Configure GEMINI_API_KEY or GOOGLE_API_KEY in an untracked local environment file for Gemini Live speech. Never copy credentials into evidence or Git.
 
 Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same session with the simulator, actual expert/tool trace, observations and skill evaluations. Both views use the same bearer grant and voice connection. A phone needs a reachable configured HTTPS endpoint; localhost refers to the phone itself. Browser microphone access requires localhost or HTTPS.
 
-`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression; it does not implement the selected physical kit activity. `mujoco` with `OPENARMS_SCENE=two_vessel` runs the carried-donor water scene; `OPENARMS_SCENE=metered_dropper` (the default scene) selects the older indicator-pH apparatus. Failure never falls back to mock. The app reuses `openarms_sim` components; the standalone preview/gallery is not a separate student runtime. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
+`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression; it does not implement the selected physical kit activity. `mujoco` runs the openarms_sim `demo` bench by default (`OPENARMS_SCENE=demo_bench`): one typed `add_sample` pour from the beaker at A into the container at C, beaker return and HOME, with the outcome read from fresh rendered pixels ([integration evidence](../research/duc/demo-bench-integration.md)). `OPENARMS_SCENE=two_vessel` keeps the earlier carried-donor water scene and `OPENARMS_SCENE=metered_dropper` the older indicator-pH apparatus, both for regression. Failure never falls back to mock. The app reuses `openarms_sim` components; the standalone preview/gallery is not a separate student runtime. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
 
 ## Real bench lane (optional): camera, simulated preview, then the real arm
 
@@ -41,7 +41,7 @@ PORT=8010 .venv/bin/python -m agentic.openarms_lab
 - The camera check is a colour-blob detector for an orange object inside taught picture regions. It needs a fixed, raised, angled view in which A and B are clearly apart; it reports a view where they coincide. It was developed on the eight real bench photos in `research/joseph/mandarin-transfer-2026-11-14/images` and has not yet been run on a live webcam.
 - **Pours are simulation only.** A command with pour, tip, empty, add or mix in it ("pour this into that") takes the overhead picture (`OPENARMS_OVERHEAD_CAMERA=N`, or `OPENARMS_OVERHEAD_PHOTO=path` to use a saved photo), finds the two red rulers and the containers (`firmware/openarms_camera/bench.py`), lets Claude decide what is poured into what and say why, rebuilds the simulation's demo bench at the positions the picture shows (a working copy, `simulation/config/setups/demo_live/`, not the committed layout) and plays the pour. The panel shows the flattened picture with its centimetre grid beside the preview. Execute stays disabled: no poses have been taught on the real arm for the beaker and container. When the rulers or a container are not found, the last known position is used and the panel says so.
 - The routes under `/api/bench` answer only to the computer the server runs on. The page's Stop button also stops the arm. A stop or failed run disarms the lane until the server restarts.
-- The Claude profiles call the `claude` CLI with `ANTHROPIC_API_KEY`; that spending is not counted by `agentic/openarms_agent/budget.py`.
+- The Claude profiles call the `claude` CLI: with `ANTHROPIC_API_KEY` in bare mode, otherwise through the local logged-in account. That usage is not counted by `agentic/openarms_agent/budget.py`.
 
 ## Which processes to run
 
@@ -92,7 +92,7 @@ For the retained indicator regression, skill admission combines the frozen synth
 | Variable | Purpose |
 | --- | --- |
 | `OPENARMS_EXECUTION` | `mock` default; `mujoco` selects the actual simulator |
-| `OPENARMS_SCENE` | With MuJoCo: `two_vessel` for the water slice; `metered_dropper` default for retained indicator regression |
+| `OPENARMS_SCENE` | With MuJoCo: `demo_bench` (default) for the openarms_sim demo bench; `two_vessel` and `metered_dropper` for retained regression scenes |
 | `OPENARMS_DATA_DIR` | Persistent notebook, scene artifacts, evaluations and scoped registry |
 | `OPENARMS_ENV_FILE` | Optional explicit local environment file |
 | `GEMINI_LIVE_MODEL` | Speech model; default `gemini-3.8-live` |

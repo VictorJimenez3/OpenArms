@@ -33,7 +33,7 @@ Without a config file, `OPENARMS_EXPERT_PROFILE` and `OPENARMS_EXPERT_EFFORT` se
 
 ## Authentication and evidence
 
-Codex uses its own authenticated CLI account. The isolated Claude adapter uses **bare mode with an independent `ANTHROPIC_API_KEY`**; subscription-only Claude login is not currently supported by this adapter. Do not copy Codex credentials. Claude CLI was not installed during implementation, so actual image understanding, supported flags and structured output still need a small no-actuation live check. An unsupported CLI fails explicitly instead of falling back to a text-only model or enabling autonomous tools.
+Codex uses its own authenticated CLI account. The isolated Claude adapter uses **bare mode when `ANTHROPIC_API_KEY` is set**; without a key it uses the person's own logged-in Claude CLI with the same isolation (no tools, MCP servers, settings sources or hooks). Do not copy Codex credentials. The logged-in path passed a live image-planning run on the demo bench (`claude-opus-5-5`, [evidence](../research/duc/demo-bench-integration.md)). An unsupported CLI fails explicitly instead of falling back to a text-only model or enabling autonomous tools.
 
 Receipts separate `requested_model` from `actual_model`. When CLI telemetry omits a resolved ID, `actual_model` is null and `model_verified` is false. Effort is requested configuration, not measured reasoning. For an alias, the first reported concrete model is pinned for subsequent calls. Reported substitutions are rejected. Provider errors are sanitized; raw credentials/diagnostics never enter the notebook.
 
