@@ -49,7 +49,8 @@ def proposal_valid(proposal, scope):
     action_index = next((i for i, s in enumerate(steps) if s['operation'] == 'add_sample'), 0)
     return bool(steps and steps[-1]['operation'] == 'observe'
                 and any(s['operation'] == 'inspect_scene' for s in steps[:action_index])
-                and actions == [{'operation': 'add_sample', 'arguments': {'source': 'A', 'into': 'C', 'portions': 1}}]
+                and [{**a, 'arguments': {'amount': 'all', **a['arguments']}} for a in actions] ==
+                [{'operation': 'add_sample', 'arguments': {'source': 'A', 'into': 'C', 'portions': 1, 'amount': 'all'}}]
                 and plan.get('expected_state', {}).get('at') == 'HOME'
                 and plan.get('execution_scope') == scope and proposal.get('plan_hash') == digest(plan)
                 and {'feature': 'donor_appearance', 'expected': 'empty'} in plan.get('outcome_checks', []))

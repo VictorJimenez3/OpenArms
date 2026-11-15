@@ -7,6 +7,7 @@
   <meta name="description" content="Talk to OpenArms and review the evidence from your lab session.">
   <title>OpenArms Lab</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/smartivity.css">
   <script type="module" src="/app.js"></script>
   <script type="module" src="/bench.js"></script>
   <script type="module" src="/bench-voice.js"></script>
@@ -115,6 +116,52 @@
           <div role="status"><p id="task-status"></p><p id="task-detail"></p><p id="task-reason"></p></div>
           <button id="answer-clarification" type="button" class="secondary" hidden>Reply to the question</button>
           <details id="task-context" class="lab-details" hidden><summary>Task details</summary><p id="task-request"></p><p id="task-route"></p></details>
+        </section>
+
+        <section id="smartivity" class="smartivity" aria-labelledby="smartivity-title" hidden>
+          <header class="section-head">
+            <h2 id="smartivity-title">Smartivity</h2>
+            <span>Simulated lab</span>
+          </header>
+          <div class="smartivity-cameras" role="group" aria-label="Simulated camera views">
+            <figure data-camera="overview">
+              <div class="smartivity-image"><img alt="Simulated overview of the arm and lab bench" hidden><p>Waiting for camera</p></div>
+              <figcaption>Overview <time hidden></time></figcaption>
+            </figure>
+            <figure data-camera="side">
+              <div class="smartivity-image"><img alt="Simulated side view of the arm and lab bench" hidden><p>Waiting for camera</p></div>
+              <figcaption>Side <time hidden></time></figcaption>
+            </figure>
+          </div>
+          <div class="smartivity-details">
+            <p id="smartivity-status" role="status">Connecting to simulation</p>
+            <dl>
+              <div><dt>Objective</dt><dd id="smartivity-objective"></dd></div>
+              <div id="smartivity-action-row" hidden><dt>Chosen action</dt><dd id="smartivity-action"></dd></div>
+              <div id="smartivity-outcome-row" hidden><dt>Outcome</dt><dd id="smartivity-outcome"></dd></div>
+              <div id="smartivity-recovery-row" hidden><dt>Recovery</dt><dd id="smartivity-recovery"></dd></div>
+            </dl>
+            <section id="smartivity-observations" aria-labelledby="smartivity-observations-title" hidden>
+              <h3 id="smartivity-observations-title">Observed evidence</h3>
+              <ul id="smartivity-evidence"></ul>
+            </section>
+            <form id="smartivity-controls">
+              <div class="smartivity-field">
+                <label for="smartivity-scenario">Experiment</label>
+                <select id="smartivity-scenario">
+                  <option value="volcano">Erupting Volcano</option>
+                  <option value="potions">Magic Potions 1 &amp; 2</option>
+                </select>
+              </div>
+              <div class="smartivity-field"><label for="smartivity-seed">Scene seed</label><input id="smartivity-seed" type="number" value="0" min="0" max="2147483647" step="1" required></div>
+              <div class="actions">
+                <button id="smartivity-start" class="primary" type="submit" disabled>Run volcano</button>
+                <button id="smartivity-reset" class="secondary" type="button" disabled>Reset scene</button>
+                <button id="smartivity-stop" class="stop" type="button" disabled>Stop simulation</button>
+              </div>
+            </form>
+            <p class="field-hint">Adapted from Smartivity’s <cite>My First Science Kit</cite>, <span id="smartivity-pages">pp. 26–27</span>.</p>
+          </div>
         </section>
 
         <div class="disclosures">

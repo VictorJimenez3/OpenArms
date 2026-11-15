@@ -1,0 +1,143 @@
+/* Ollie skin for the bench site (ui/lab).
+   Front end only: this file restyles ui/lab's existing markup and changes no HTML or JS, so every
+   control keeps working. It leans on the bench site's own colour variables and on plain elements
+   (button, input, section, details, figure), so controls added or removed later pick the look up
+   without edits here. Preview at /bench. To adopt it for good, add one line to ui/lab/index.html:
+   <link rel="stylesheet" href="/student/bench-skin.css"> after its own stylesheets. */
+@font-face { font-family: "Atkinson Next"; src: url("/student/fonts/atkinson.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Bagel"; src: url("/student/fonts/bagel.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
+:root {
+  /* The bench site's variables, remapped to Ollie's palette. */
+  --paper: #fff6e3;
+  --subtle: #fffbf2;
+  --line: #e4d9bf;
+  --ink: #1a1538;
+  --muted: #4a4568;
+  --jade: #1a1538;
+  --jade-dark: #1a1538;
+  --jade-light: #f1e6cc;
+  --stop: #c81e1e;
+  --stage: #e9dfc6;
+  /* Ollie's own. */
+  --o-cream: #fff6e3;
+  --o-tint: #f1e6cc;
+  --o-tea: #3b34c4;
+  --o-pink: #ff4f9a;
+  --o-pill: 999px;
+  --o-spring: cubic-bezier(.34, 1.4, .5, 1);
+  --o-display: "Bagel", "Atkinson Next", sans-serif;
+  font: 112.5%/1.5 "Atkinson Next", system-ui, sans-serif;
+  scrollbar-color: var(--ink) transparent;
+  caret-color: var(--o-pink);
+}
+::selection { background: var(--o-pink); color: var(--ink); }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 12px; }
+h2, h3 { font-family: var(--o-display); font-weight: 400; line-height: 1.05; letter-spacing: 0; }
+h2 { font-size: clamp(1.35rem, 1.1rem + 1vw, 1.8rem); }
+h3 { font-size: 1.2rem; }
+a { color: var(--ink); text-underline-offset: .2em; text-decoration-thickness: .1em; font-weight: 700; }
+
+/* ---- masthead: the Ollie mark, connection, Stop ---- */
+.masthead { background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(12px); border-bottom: 0; }
+.header-inner { min-height: 72px; max-width: 1120px; }
+.header-inner h1 { display: inline-flex; align-items: center; gap: 8px; font-size: 0; letter-spacing: 0; }
+.header-inner h1::before { content: ""; width: 38px; height: 38px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg fill='%231a1538'%3E%3Crect x='9' y='2' width='7' height='16' rx='3.5'/%3E%3Crect x='24' y='2' width='7' height='16' rx='3.5'/%3E%3Crect x='3' y='11' width='34' height='27' rx='12'/%3E%3C/g%3E%3Ccircle cx='14' cy='24' r='3.6' fill='%23fff6e3'/%3E%3Ccircle cx='26' cy='24' r='3.6' fill='%23fff6e3'/%3E%3C/svg%3E") center / contain no-repeat; }
+.header-inner h1::after { content: "ollie"; font: 400 1.9rem/1 var(--o-display); color: var(--ink); }
+.header-inner nav a { min-height: 44px; padding: 0 14px; border-radius: var(--o-pill); text-decoration: none; font-size: .9rem; }
+.header-inner nav a:hover { background: var(--o-tint); }
+.session-indicator { font-weight: 700; color: var(--ink); font-size: .9rem; }
+.session-indicator i { width: 12px; height: 12px; background: #8d88a6; }
+.session-indicator i.online { background: var(--o-pink); }
+.proposal-nav { border-top: 0; padding-bottom: 8px; }
+.proposal-nav a { padding: 0 18px; border-radius: var(--o-pill); background: var(--o-pink); color: var(--ink); text-decoration: none; }
+
+/* ---- buttons and fields: capsules, like Ollie's arm ---- */
+button { min-height: 50px; border-radius: var(--o-pill); font-weight: 800; transition: transform .25s var(--o-spring), background-color .2s; }
+button:hover:not(:disabled) { transform: translateY(-2px); }
+button:active:not(:disabled) { transform: scale(.96); }
+.primary, .secondary, .quiet { padding: 10px 22px; border: 0; }
+.primary { background: var(--ink); color: var(--o-cream); }
+.primary:hover:not(:disabled) { background: #2b2456; }
+.secondary { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2.5px var(--ink); }
+.secondary:hover:not(:disabled), .quiet:hover { background: var(--o-tint); }
+.quiet { color: var(--ink); text-decoration: underline; text-underline-offset: .2em; }
+.stop { padding-inline: 24px; background: var(--stop); color: #fff; border: 0; }
+.stop:hover:not(:disabled) { background: #a51616; }
+textarea, input { min-height: 54px; padding: 12px 20px; border: 0; border-radius: 27px; background: var(--o-tint); box-shadow: inset 0 0 0 2.5px color-mix(in srgb, var(--ink) 30%, transparent); }
+textarea:focus-visible, input:focus-visible { outline: 0; box-shadow: inset 0 0 0 3.5px var(--ink); }
+form label, legend { font-weight: 800; }
+
+/* ---- surfaces: flat rounded sheets, no hairlines ---- */
+main { max-width: 1120px; padding-top: 12px; }
+.workspace, .developer { gap: 18px; }
+.camera, .simulator, .bench, .notice, .pairing { border: 0; border-radius: 32px; background: var(--subtle); overflow: hidden; }
+.bench { padding: 8px 10px 22px; }
+.section-head { padding: 18px 20px 10px; align-items: center; }
+.section-head span, .field-hint, figcaption, .signal-list { font-size: .9rem; color: var(--muted); font-weight: 600; }
+.camera-stage, .simulation-stage, .bench-stage { background: var(--stage); border-radius: 22px; }
+.camera-stage, .simulation-stage { margin: 0 12px 12px; overflow: hidden; }
+figcaption, #scene-detail, #scene-frames > details { background: transparent; padding-inline: 20px; }
+.bench-badge, #bench-arm { padding: 4px 12px; border-radius: var(--o-pill); background: var(--ink); color: var(--o-cream); font-size: .8rem; font-weight: 800; letter-spacing: 0; }
+#bench-arm:empty { display: none; }
+.bench-summary { font: 400 1.5rem/1.15 var(--o-display); margin-top: 16px; }
+.bench-result { padding: 16px 20px; border-radius: 22px; background: var(--ink); color: var(--o-cream); font-weight: 700; }
+.bench-result[data-provenance="UNKNOWN"] { background: #ffc53a; color: var(--ink); }
+.bench-form input { border: 0; border-radius: var(--o-pill); min-height: 54px; padding: 0 20px; }
+
+/* ---- voice first: Talk is the biggest thing on the page ---- */
+.voice { gap: 12px; padding: 26px 20px; border-radius: 32px; background: var(--o-tea); color: var(--o-cream); }
+#voice-title { font: 400 1.6rem/1.1 var(--o-display); }
+.voice .field-hint, #voice-detail { color: var(--o-cream); opacity: .92; }
+.voice-button { min-width: 230px; min-height: 76px; padding: 12px 34px; font-size: 1.3rem; background: var(--o-cream); color: var(--ink); }
+.voice-button:hover:not(:disabled) { background: #fff; }
+.voice-button[data-active="true"] { background: var(--o-pink); color: var(--ink); border: 0; animation: o-listening 1.2s ease-in-out infinite; }
+.voice-button[data-active="true"]:hover { background: var(--o-pink); }
+.voice-button svg { width: 26px; height: 26px; stroke-width: 2.2; }
+@keyframes o-listening { 50% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--o-pink) 35%, transparent); } }
+.voice :focus-visible { outline-color: var(--o-cream); }
+
+/* ---- Ollie's plan, progress and what was observed ---- */
+.proposal { padding: 24px; border: 0; border-radius: 32px; background: var(--ink); color: var(--o-cream); }
+.proposal h2 { margin-bottom: 10px; }
+#proposal-summary { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
+.proposal .field-hint, #proposal-status { color: var(--o-cream); opacity: .9; }
+.proposal .primary { min-height: 62px; padding-inline: 30px; font-size: 1.15rem; background: var(--o-pink); color: var(--ink); }
+.proposal .primary:hover:not(:disabled) { background: #ff6aa9; }
+.proposal .secondary { color: var(--o-cream); box-shadow: inset 0 0 0 2.5px var(--o-cream); }
+.proposal .quiet { color: var(--o-cream); }
+.proposal .secondary:hover:not(:disabled), .proposal .quiet:hover { background: #2b2456; }
+.proposal :focus-visible { outline-color: var(--o-cream); }
+.task, .latest-reply, .observation { padding: 16px 20px; border: 0; border-radius: 24px 24px 24px 6px; background: var(--o-tint); }
+.latest-reply { font-weight: 700; font-size: 1.05rem; }
+.observation { border-radius: 24px; background: var(--subtle); }
+.evidence-swatch { width: 44px; height: 52px; border: 3px solid var(--ink); border-radius: 12px; }
+.message { padding: 12px 18px; border-radius: 22px 22px 22px 6px; background: var(--o-tint); }
+.message.user { border-radius: 22px 22px 6px 22px; background: var(--subtle); box-shadow: inset 0 0 0 2.5px var(--o-tint); }
+.message .speaker, .history-label { color: var(--muted); }
+
+/* ---- drawers ---- */
+.disclosures { gap: 8px; justify-content: flex-start; }
+.lab-details > summary { display: inline-flex; align-items: center; min-height: 48px; padding: 6px 20px; border-radius: var(--o-pill); background: var(--o-tint); color: var(--ink); font-size: .95rem; font-weight: 800; list-style: none; }
+.lab-details > summary::-webkit-details-marker { display: none; }
+.lab-details > summary::after { content: "+"; margin-left: 10px; font-weight: 800; }
+.lab-details[open] > summary { background: var(--ink); color: var(--o-cream); }
+.lab-details[open] > summary::after { content: "–"; }
+.lab-details[open] { padding-bottom: 8px; }
+#trial-context, #reflection-panel, #active-skills, .diagnostics, .history-item, #scene-frames figure + figure { border-top: 0; }
+.condition[aria-pressed="true"] { background: var(--ink); color: var(--o-cream); box-shadow: none; }
+.diagnostics summary { color: var(--ink); font-weight: 800; }
+.notice { padding: 16px 20px; background: #ffc53a; }
+.pairing { padding: 24px; }
+
+@media (prefers-reduced-motion: reduce) {
+  button, .voice-button[data-active="true"] { transition: none; animation: none; }
+}
+
+@media (max-width: 520px) {
+  .header-inner { gap: 8px; }
+  .header-inner h1::after { display: none; }
+  .header-inner nav a { padding: 0 8px; }
+  .stop { padding-inline: 16px; }
+  .voice-button { min-width: 0; width: 100%; }
+}

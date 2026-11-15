@@ -31,7 +31,7 @@ export class PcmPlayer {
     try {
       const binary = atob(data);
       if (!binary.length || binary.length % 2 || binary.length > 24000 * 2 * 12) throw new Error('Invalid audio frame');
-      if (this.nextTime - this.context.currentTime > 12) throw new Error('Speech queue exceeded its limit');
+      if (this.nextTime - this.context.currentTime > 45) throw new Error('Speech queue exceeded its limit');
       const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
       const view = new DataView(bytes.buffer);
       const pcm = new Float32Array(bytes.length / 2);

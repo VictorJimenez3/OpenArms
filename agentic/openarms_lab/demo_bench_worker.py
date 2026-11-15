@@ -16,6 +16,8 @@ from .two_vessel_worker import _emit, run_worker as _run_worker
 SETUP = 'demo'
 CAMERA_ID = 'demo_bench_overview'
 CONFIGURATION_ID = 'demo_bench_overview.v3'
+# Share of what is still in the beaker that one complete pour moves.
+FRACTIONS = {'all': 1.0, 'half': 0.5}
 VARIANTS = ('nominal', 'camera_shift', 'missing', 'swapped', 'occluded')
 
 run_worker = functools.partial(_run_worker, module='agentic.openarms_lab.demo_bench_worker')
@@ -143,6 +145,9 @@ def _run(folder, command):
 
     if command['kind'] != 'execute':
         raise ValueError('Unknown demo bench worker command.')
+    amount = command.get('amount', 'all')
+    if amount not in FRACTIONS or (amount != 'all' and command.get('operation', 'add_sample') != 'add_sample'):
+        raise ValueError('Only the complete pour takes amount=all|half on the demo bench.')
     if not re.fullmatch(r'\.[0-9a-f]{32}\.mp4', command['video_name']):
         raise ValueError('Invalid staging video name.')
 
@@ -153,8 +158,11 @@ def _run(folder, command):
     steps, end_pose = _action_steps(operation, command, held_source)
     scene = build_scene(bench)
     player = player_for(scene)
+    # What the beaker held at reset, so the state can report the share still left after half pours.
+    full_amount = sum(player.contents['A'].values()) or 1.0
     start = {}
     receiver_portions = 0
+    pours_done = 0
     if prior_player is not None:
         player.contents = prior_player['contents']
         player.location = prior_player['location']
@@ -171,8 +179,11 @@ def _run(folder, command):
         start = {'start_q': np.array(previous['data']['qpos'])[scene.arm_qadr],
                  'start_grip': prior_player['grip'], 'held_source': held_source}
         receiver_portions = prior_player['receiver_portions']
+        pours_done = prior_player.get('pours_done', 0)
     segments = build_segments(expand_plan({'steps': steps}), pose_file['poses'], jm, bench.stations, **start)
     player._apply(segments[0].q0, segments[0].grip0)
+    # The beaker's contents carry over from the saved state; half pours half of what is left.
+    player.pour_fraction = FRACTIONS[amount]
     recorder = VideoRecorder(scene, folder / command['video_name'], fps=30, speed=1)
     last_phase = None
     trace = []
@@ -183,7 +194,8 @@ def _run(folder, command):
         phase = player.step + ': ' + player.label
         if phase != last_phase:
             trace.append({'phase': phase, 'motion_seconds': player.t})
-            _emit(kind='progress', phase=phase, frame_count=recorder.frames, motion_seconds=player.t, **frame(scene))
+            _emit(kind='progress', phase=phase, frame_count=recorder.frames, motion_seconds=player.t,
+                  **frame(scene))
             last_phase = phase
 
     try:
@@ -192,12 +204,15 @@ def _run(folder, command):
         recorder.close()
     dose_count = len(player.poured)
     receiver_portions += dose_count
+    pours_done += dose_count
+    cup_share = round(sum(player.contents['A'].values()) / full_amount, 6)
     state = {'model': {f: getattr(scene.model, f).tolist() for f in ('geom_size', 'geom_pos', 'geom_rgba')},
              'data': {f: getattr(scene.data, f).tolist() for f in ('qpos', 'mocap_pos', 'mocap_quat')},
              'motion_seconds': player.t,
              'player': {'contents': player.contents, 'location': player.location, 'holding': player.holding,
                         'grasp': [array.tolist() for array in player._rel] if player._rel is not None else None,
-                        'grip': segments[-1].grip1, 'receiver_portions': receiver_portions}}
+                        'grip': segments[-1].grip1, 'receiver_portions': receiver_portions,
+                        'pours_done': pours_done}}
     # The demo bench has no docks, so "returned" is the cup back on its mark with the gripper empty.
     returned = player.location.get('A') == 'A' and player.holding is None
     at_end_pose = np.allclose(scene.data.qpos[scene.arm_qadr], jm.pose_to_model(pose_file['poses'][end_pose]))
@@ -208,11 +223,12 @@ def _run(folder, command):
     successful = not any(issue.severity == 'block' for issue in player.issues)
     _emit(kind='result', ok=bool(successful and at_end_pose and holding_matches and dose_matches),
           frame_count=recorder.frames, motion_seconds=player.t, dose_count=dose_count,
+          donor_remaining=round(sum(player.contents['A'].values()), 6),
           warnings=[issue.message for issue in player.issues], state=state, trace=trace,
           returned_to_dock=returned, home_reached=home, video_name=command['video_name'],
           controller_state={'at': end_pose if at_end_pose else 'UNKNOWN', 'holding': 'sample_cup' if held else None,
-                            'cup_station': 'A' if returned else None, 'cup_portions': int(any(player.contents['A'].values())),
-                            'receiver_portions': receiver_portions}, **frame(scene))
+                            'cup_station': 'A' if returned else None, 'cup_portions': cup_share,
+                            'receiver_portions': receiver_portions, 'pours_done': pours_done}, **frame(scene))
 
 
 if __name__ == '__main__':

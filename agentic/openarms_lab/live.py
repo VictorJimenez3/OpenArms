@@ -165,6 +165,8 @@ def system_prompt(context):
             'A separate “pour it into the container” can pour while holding it, and '
             '“put the beaker back” returns it to its original mark and parks the arm. '
             'The student can also request a full pour starting at the mark. Never expand a pickup into a pour. '
+            'That full pour can move all of what is left in the beaker or half of it; the bench keeps its state '
+            'between commands, so a second pour acts on what the first left, and an empty beaker cannot be poured. '
             'Pass each completed instruction verbatim to request_action and let the background task resolve '
             'vessels and positions from the current camera view. Do not assert locations or a grasp before '
             'the camera verifies them. For clarification, use everyday vessel names or positions. '

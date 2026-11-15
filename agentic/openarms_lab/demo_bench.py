@@ -247,6 +247,8 @@ def read_pixels(pixels, anchor, tolerance_px=6):
         result['donor'] = 'liquid_visible'
     elif has_wall and to_glass < to_full and to_glass < 30:
         result['donor'] = 'empty'
+    elif has_wall and to_glass >= 30:
+        result['donor'] = 'liquid_visible'
     else:
         result['reason'] = 'The beaker at A is missing, hidden or unreadable.'
         return result
@@ -355,6 +357,8 @@ class DemoBenchBackend(TwoVesselBackend):
         for key in two_vessel_scene.SCENE:
             simulation.pop(key, None)
         simulation.update(**SCENE, warnings=list(LIMITATIONS))
+        # cup_portions is the share of the beaker left (half pours leave a fraction); the student app shows both.
+        self._state.update(pours_done=0, cup_portions=1.0)
 
     @staticmethod
     def capabilities():
@@ -369,12 +373,18 @@ class DemoBenchBackend(TwoVesselBackend):
                     'expected_state_contract': 'SkillDefinition.expected_state describes the final controller state. '
                         'Full-pour admission requires final HOME. Held actions end above the bench.',
                     'required_outcome_checks': copy.deepcopy(ACTION_CHECKS[OPERATION]),
+                    # Half a complete pour leaves liquid in the beaker; its outcome is the beaker still showing liquid.
+                    'required_outcome_checks_by_amount': {
+                        'half': [{'feature': 'donor_appearance', 'expected': 'liquid_visible'}]},
                     'outcome_checks_contract': 'outcome_checks are checked independently against fresh SIMULATED '
                         'image features in scene.observable_features. The transfer is evidenced by the beaker at A '
                         'reading empty; the receiver colour is reported from the image and may or may not change.',
                     'qualification': 'Simulated capability on the openarms_sim demo setup only; not chemistry or physical readiness.',
                 },
                 'action_description': 'pour the beaker at A into the container at C once, return the beaker to A and go HOME',
+                'operation_notes': 'add_sample amount=all pours everything still in the beaker; amount=half pours half of '
+                    'what is left. The bench keeps its state between commands until the trial is prepared again, so a '
+                    'second pour acts on what the first left. An empty beaker cannot be poured.',
                 'limitations': [*LIMITATIONS, 'Only the small beaker at A moves. The receiver at C stays fixed.']}
 
     def check_step(self, operation, arguments):
@@ -389,7 +399,7 @@ class DemoBenchBackend(TwoVesselBackend):
             raise ValueError('The arm is already holding the beaker.')
         if not holding and operation in ('pour', 'return_cup'):
             raise ValueError('The arm needs to pick up the beaker first.')
-        if operation in ('pour', OPERATION) and not self._state['cup_portions']:
+        if operation in ('pour', OPERATION) and (self._state['cup_portions'] or 0) <= 0.001:
             raise ValueError('The beaker is empty. Prepare a new trial for another pour.')
         return request
 
@@ -413,9 +423,11 @@ class DemoBenchSkillEvaluator(TwoVesselSkillEvaluator):
 
     @staticmethod
     def _check_definition(definition, plan):
+        amounts = {s['arguments'].get('amount', 'all') for s in plan['steps'] if s['operation'] == OPERATION}
+        donor = 'liquid_visible' if amounts == {'half'} else 'empty'
         if definition.expected_state.get('at') != 'HOME' or not any(
-                c.feature == 'donor_appearance' and c.expected == 'empty' for c in definition.outcome_checks):
-            raise ValueError('Demo bench admission requires an empty-donor outcome check and final HOME.')
+                c.feature == 'donor_appearance' and c.expected == donor for c in definition.outcome_checks):
+            raise ValueError(f'Demo bench admission requires a donor_appearance={donor} outcome check and final HOME.')
         actions = [s for s in plan['steps'] if s['operation'] in (OPERATION,) or s['operation'].startswith('mock_')]
         if len(actions) != 1 or actions[0]['operation'] != OPERATION:
             raise ValueError('Only one add_sample A-to-C operation can be admitted on the demo bench.')

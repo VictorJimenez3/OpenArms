@@ -1,10 +1,12 @@
 import { LabApiClient } from './api.js';
 import { SessionClient } from './live-client.js';
 import { DeveloperView } from './developer.js';
+import { SmartivityView } from './smartivity.js';
 
 const $ = selector => document.querySelector(selector);
 const api = new LabApiClient();
 const developer = new DeveloperView(api);
+const smartivity = new SmartivityView(api);
 let client;
 let snapshot;
 let busy = false;
@@ -45,6 +47,7 @@ function showRoute() {
 function notify(message) { text('#notice-text', message); $('#notice').hidden = false; }
 function fail(error) { notify(error.message || 'Something interrupted the request. Check your notebook before trying again.'); }
 function credentialsNeeded() {
+  smartivity.setSession(null);
   client?.close();
   client = undefined;
   snapshot = undefined;
@@ -105,6 +108,7 @@ async function boot(pairingCode) {
       onInterrupted: discardVoiceDrafts, onStatus: audioStatus, onError: notify, onResync: resync });
     client.acceptState(state);
     client.connect();
+    smartivity.setSession(state.session_id);
   } catch (error) {
     if ([401,403,404].includes(error.status)) { api.forget(); credentialsNeeded(); }
     else { text('#connection-label', 'Notebook unavailable'); fail(error); }
@@ -678,7 +682,7 @@ window.visualViewport?.addEventListener('resize', () => schedulePresentation(), 
 window.visualViewport?.addEventListener('scroll', () => schedulePresentation(), { passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) schedulePresentation(); });
 setInterval(() => { controls(); if (snapshot?.pending && expired(snapshot.pending)) text('#proposal-status','This proposal has expired. Send a new request.'); }, 1000);
-window.addEventListener('pagehide', () => { releaseScene(); developer.release(); client?.close(); });
+window.addEventListener('pagehide', () => { releaseScene(); developer.release(); smartivity.setSession(null); client?.close(); });
 window.addEventListener('pageshow', event => { if (event.persisted) boot(); });
 showRoute();
 boot();

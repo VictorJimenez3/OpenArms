@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ollie by OpenArms</title>
+  <meta name="description" content="Direct a robot lab partner with your voice. Predict, pour, watch and write up real science experiments.">
+  <link rel="preload" href="fonts/atkinson.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/bagel.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#view">Skip to the lab</a>
+  <header class="top">
+    <a class="brand" href="#/" aria-label="Ollie by OpenArms, home">
+      <svg viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"><rect x="9" y="2" width="7" height="16" rx="3.5"/><rect x="24" y="2" width="7" height="16" rx="3.5"/><rect x="3" y="11" width="34" height="27" rx="12"/><circle class="eye" cx="14" cy="24" r="3.6"/><circle class="eye" cx="26" cy="24" r="3.6"/></svg>
+      <span class="word">ollie</span><span class="by">by OpenArms</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#/" data-nav="shelf">Experiments</a>
+      <a href="#/reports" data-nav="reports">Reports</a>
+      <a href="#/access" data-nav="access">Access</a>
+    </nav>
+    <button id="ask-open" class="btn ghost" type="button" aria-haspopup="dialog" aria-controls="ask">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      Ask Ollie
+    </button>
+  </header>
+
+  <main id="view" tabindex="-1"></main>
+
+  <aside id="ask" class="ask" aria-labelledby="ask-title" hidden>
+    <div class="ask-head">
+      <h2 id="ask-title">Ask Ollie</h2>
+      <button id="ask-close" class="btn ghost icon" type="button" aria-label="Close Ask Ollie">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <p id="ask-scope" class="muted"></p>
+    <div id="ask-log" class="ask-log" role="log" aria-live="polite" aria-label="Conversation with Ollie" tabindex="0"></div>
+    <div id="ask-chips" class="chips"></div>
+    <form id="ask-form" class="ask-form">
+      <label for="ask-input">A question of your own</label>
+      <div class="field-row">
+        <input id="ask-input" type="text" autocomplete="off" maxlength="300" placeholder="Type or tap the mic">
+        <button class="btn ghost icon mic" type="button" data-mic="ask-input" aria-label="Speak your question"></button>
+      </div>
+      <button class="btn primary" type="submit">Ask Ollie</button>
+    </form>
+  </aside>
+
+  <div id="live" class="sr" role="status" aria-live="polite"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

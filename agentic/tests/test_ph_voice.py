@@ -109,15 +109,16 @@ async def test_only_completed_matching_playback_ack_presents_audio(state):
     async def callback(name, args): calls.append((name, args))
     async def emit(msg): sent.append(msg)
     bridge = GeminiBridge(lambda: state, callback, emit)
-    bridge.replies['a'] = {'complete': False, 'proposal': {'request_id': 'r1', 'proposal_version': 'v1'}}
+    later = time.monotonic() + 60
+    bridge.replies['a'] = {'complete': False, 'expires': later, 'proposal': {'request_id': 'r1', 'proposal_version': 'v1'}}
     await bridge.played('a')
     assert not calls
-    bridge.replies['b'] = {'complete': True, 'proposal': {'request_id': 'r1', 'proposal_version': 'v1'}}
+    bridge.replies['b'] = {'complete': True, 'expires': later, 'proposal': {'request_id': 'r1', 'proposal_version': 'v1'}}
     await bridge.played('b')
     await bridge.played('b')
     assert len(calls) == 1
     assert calls[0][0] == '_present_audio'
-    bridge.replies['c'] = {'complete': True, 'proposal': {'request_id': 'r1', 'proposal_version': 'v1'}}
+    bridge.replies['c'] = {'complete': True, 'expires': later, 'proposal': {'request_id': 'r1', 'proposal_version': 'v1'}}
     await bridge.interrupt('c')
     await bridge.played('c')
     assert len(calls) == 1
