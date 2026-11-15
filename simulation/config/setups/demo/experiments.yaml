@@ -1,0 +1,44 @@
+# Smartivity "My First Science Kit" experiments on the SAME demo bench: same SO-101 model,
+# ruler frame, recorded-pour poses, motion, camera and observer as setups/demo. Only what is
+# in the beaker at A and the container at C changes, so an experiment that works here runs
+# the exact motion Duc and Stefanie align to the real arm.
+#
+# Contents are chemistry.yaml portions (the drawn-liquid rule table, not a measurement). The
+# donor holds 1 portion and the receiver 3, matching the demo bench fill levels. Booklet
+# sources and preparation come from Joseph's smartvity-sim branch
+# (simulation/config/setups/smartivity/*.yaml there).
+#
+# Select with OPENARMS_DEMO_EXPERIMENT (default volcano = the bench.yaml contents).
+
+volcano:
+  title: Erupting Volcano
+  source: {publisher: Smartivity, booklet: My First Science Kit, experiment: Erupting Volcano, pages: [26, 27]}
+  preparation: Beaker - water, citric acid and soap. Flask - water, baking soda and red colour. Pour the beaker into the flask.
+  contents: null  # use setups/demo/bench.yaml as is
+  descriptions:
+    source: small beaker with citric acid on the blue mark A
+    receiver: wide round container with the volcano mix on the orange mark C
+
+potions:
+  title: Magic Potion-1 and Magic Potion-2
+  source: {publisher: Smartivity, booklet: My First Science Kit, experiment: Magic Potion-1 and Magic Potion-2, pages: [30, 31, 32, 33]}
+  preparation: Divide steeped magic tea; baking soda in the cup at A, citric acid in the flask at C. Pour the cup into the flask.
+  simulation_only: true  # magic tea is not on chemistry.yaml real_bench; physical use needs its own approval
+  contents:
+    A: {magic_tea: 0.5, baking_soda: 0.5}
+    C: {magic_tea: 2, citric_acid: 1}
+  descriptions:
+    source: small cup of basic magic tea on the blue mark A
+    receiver: wide round container of acidic magic tea on the orange mark C
+
+lava_lamp:
+  title: Lava Lamp
+  source: {publisher: Smartivity, booklet: My First Science Kit, experiment: Lava Lamp, pages: [38, 39]}
+  preparation: Flask - oil over water, baking soda and red colour. Add the citric acid from the beaker at A.
+  simulation_only: true  # vegetable oil is not on chemistry.yaml real_bench
+  contents:
+    A: {citric_acid: 1}
+    C: {vegetable_oil: 2, baking_soda: 0.5, red_colour: 0.5}
+  descriptions:
+    source: small beaker with citric acid on the blue mark A
+    receiver: wide round container of red-tinted oil and baking soda on the orange mark C

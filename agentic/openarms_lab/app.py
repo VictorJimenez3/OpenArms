@@ -152,8 +152,9 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             app.state.execution_mode = execution
             scene_name = os.getenv('OPENARMS_SCENE', 'demo_bench').strip().lower()
             if execution == 'mujoco' and scene_name == 'demo_bench':
-                from .demo_bench import (CONDITIONS, EXPERIMENT, DemoBenchBackend, DemoBenchSceneService,
-                                         DemoBenchSkillEvaluator, execution_scope)
+                from .demo_bench import (CONDITIONS, DemoBenchBackend, DemoBenchSceneService, DemoBenchSkillEvaluator,
+                                         execution_scope, experiment_metadata, experiment_name)
+                EXPERIMENT = experiment_metadata(experiment_name())
                 registry_scope = execution_scope()
                 experiment, conditions = EXPERIMENT, CONDITIONS
                 scene = DemoBenchSceneService(data / 'scene-evidence')

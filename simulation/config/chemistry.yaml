@@ -21,6 +21,9 @@ substances:
   red_colour:        {kind: dye, hue: red,    color: [0.88, 0.10, 0.12], name: red food colour}
   yellow_colour:     {kind: dye, hue: yellow, color: [0.97, 0.85, 0.10], name: yellow food colour}
   blue_colour:       {kind: dye, hue: blue,   color: [0.10, 0.30, 0.88], name: blue food colour}
+  # Smartivity Magic Potions and Lava Lamp (simulation only; not on the real_bench list).
+  magic_tea:         {kind: indicator, name: magic tea}
+  vegetable_oil:     {kind: oil,     name: vegetable oil}
 
 # Colour of the indicator by (acid portions - base portions), weighted by strength.
 indicator_scale:
@@ -49,6 +52,7 @@ dye_mixes:
 observations:
   - {when_all: [acid, base], text: fizzing}
   - {when_all: [acid, base, soap], text: foam rising like a volcano}
+  - {when_all: [acid, base, oil], text: bubbles carrying coloured blobs up through the oil like a lava lamp}
   - {when_all: [snow_powder, water], text: swelling into fluffy instant snow}
   - {when_all: [cornstarch, water], text: thickening into oobleck}
 

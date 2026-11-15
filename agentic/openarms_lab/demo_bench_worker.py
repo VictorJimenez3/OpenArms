@@ -4,6 +4,7 @@ from __future__ import annotations
 import functools
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -18,6 +19,26 @@ CONFIGURATION_ID = 'demo_bench_overview.v1'
 VARIANTS = ('nominal', 'camera_shift', 'missing', 'swapped', 'occluded')
 
 run_worker = functools.partial(_run_worker, module='agentic.openarms_lab.demo_bench_worker')
+EXPERIMENTS_FILE = Path(__file__).resolve().parents[2] / 'simulation/config/setups/demo/experiments.yaml'
+
+
+def experiment_name():
+    name = os.environ.get('OPENARMS_DEMO_EXPERIMENT', 'volcano').strip().lower() or 'volcano'
+    if name not in experiments():
+        raise ValueError(f'Unknown demo bench experiment {name!r}; known: {sorted(experiments())}.')
+    return name
+
+
+@functools.cache
+def experiments():
+    import yaml
+    return yaml.safe_load(EXPERIMENTS_FILE.read_text())
+
+
+def experiment_contents(name=None):
+    """Station contents for the selected experiment, or None to keep setups/demo/bench.yaml as is."""
+    contents = experiments()[name or experiment_name()].get('contents')
+    return None if contents is None else {station: dict(values) for station, values in contents.items()}
 
 
 def frame_record(path, generation, captured_at=None):
@@ -49,7 +70,8 @@ def _run(folder, command):
     def player_for(scene):
         trusted = [np.array(jm.pose_to_model(pose_file['poses'][n])) for n in pose_file.get('taught', [])]
         return Player(scene, jm, config, load_model(config), strict_limits=pose_file.get('source') != 'taught',
-                      trusted_poses=trusted)
+                      trusted_poses=trusted, contents=experiment_contents(),
+                      allow_simulation_only=experiments()[experiment_name()].get('simulation_only', False))
 
     def frame(scene, *, shifted=False):
         path = folder / (uuid.uuid4().hex + '.png')
