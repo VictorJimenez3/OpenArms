@@ -1,5 +1,5 @@
 // Voice for the Real bench panel: microphone -> /api/bench/voice (Gemini Live) -> speaker.
-// What the student asks goes to the same bench request as typing; the arm still needs Execute and the operator's Yes.
+// What the student asks goes to the same bench request as typing; the arm still needs Execute and the operator's Yes (a button, or the student saying yes aloud).
 const $ = (id) => document.getElementById(id);
 
 function encode(buffer) {
@@ -62,8 +62,9 @@ async function start() {
     } else if (f.type === 'interrupted') clearSpeech();
     else if (f.type === 'transcript') line(f.role, f.text);
     else if (f.type === 'status') {
-      status(f.message || ({ connecting: 'Connecting to Gemini…', listening: `Listening${f.model ? ` (${f.model})` : ''}. Say "stop" any time to stop the arm.` }[f.status] || f.status));
+      status(f.message || ({ connecting: 'Connecting to Gemini…', listening: `Listening${f.model ? ` (${f.model})` : ''}. Say "stop" any time to stop the arm, or "stop the voice" to turn voice off.` }[f.status] || f.status));
       if (f.status === 'unavailable') stop(false);
+      if (f.status === 'ended') { stop(false); status(f.message || 'Voice off. Typing still works.'); }
     } else if (f.type === 'error') status(f.message);
   };
   ws.onclose = () => { if (voice && voice.ws === ws) stop(false); };

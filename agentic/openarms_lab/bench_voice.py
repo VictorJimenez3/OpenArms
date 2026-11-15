@@ -8,7 +8,10 @@ Safety rules kept in code, not in the prompt:
 - "stop" heard in the student's speech stops the arm at once, before Gemini answers.
 - Voice can run a simulated plan ("execute") only when an operator question follows on the real arm
   (OPENARMS_BENCH_CONFIRM panel or terminal), and only when the student's own words said it.
-- Voice never answers the operator's Yes / No question; that stays a button.
+- The operator's Yes / No question can be answered aloud, in code and not by the model: only when the student's whole
+  finished utterance is a plain yes (or no), the question has been open for a moment and Gemini is not speaking, so
+  its own voice or a stray word cannot answer it. The Yes button still works.
+- "stop the voice" ends the voice session without stopping the arm (unless the arm is working, then it stops too).
 """
 from __future__ import annotations
 
@@ -18,11 +21,17 @@ import contextlib
 import logging
 import os
 import re
+import time
 
 from .bench_lane import EXECUTE_WORDS, BenchError
 
 NEGATION = re.compile(r"\b(?:don ?t|do not|dont|not|never|no|wait|cancel)\b", re.I)
 STOP_WORDS = re.compile(r"\b(?:stop|halt|freeze)\b", re.I)
+STOP_VOICE = re.compile(r"\b(?:stop|end|turn off|switch off|quit)\s+(?:the\s+|this\s+)?(?:voice|listening|microphone|mic)\b|\bvoice off\b", re.I)
+YES_PHRASES = {'yes', 'yes please', 'yeah', 'yep', 'confirm', 'go ahead', 'yes go ahead', 'yes confirm', 'yes do it', 'do it', 'yes it is', 'yes it is held', 'yes the arm is at home', 'yes the path is clear', 'yes its clear', 'yes it is clear'}
+NO_PHRASES = {'no', 'nope', 'no thanks', 'no dont', 'dont', 'do not', 'no do not', 'cancel', 'not yet'}
+QUESTION_SETTLE_S = 1.5
+TURN_SILENCE_S = 0.8  # a transcript that stops growing this long is a finished sentence, whether or not Gemini marks it so
 MAX_AUDIO_BYTES = 6400  # 200 ms of 16 kHz mono PCM16
 
 
@@ -57,8 +66,9 @@ SYSTEM = """You are the voice of a robot-arm lab bench. Speak to the student in 
 You do not plan or move anything yourself. When the student asks the arm to do something, call bench_request with \
 their words exactly. A planner then decides, a simulation plays it first, and the student sees it on screen. \
 Read out what the bench says in plain words; do not invent results, positions or colours.
-The real arm moves only after Execute and after the bench operator presses Yes in the panel. You cannot press Yes: \
-when the bench is waiting for the operator, say so and ask them to press Yes or No on the screen.
+The real arm moves only after Execute and after the bench operator presses Yes in the panel. When the bench is waiting \
+for the operator, read the question and ask them to say yes or no, or press Yes or No on the screen. The bench \
+hears their yes or no itself: never call a tool for it and never say yes for them.
 If the student says stop, call bench_stop immediately. If they ask where things are, call bench_look or bench_state.
 Say "in the simulation" for simulated results. If a request fails, say why in one sentence and suggest one thing to try.
 At the start, greet the student in one sentence and say they can ask the arm to pour the beaker into the dish."""
@@ -88,6 +98,9 @@ class BenchVoice:
         self.last_turn = ''  # the student's last finished turn
         self.tasks: set = set()
         self.closed = False
+        self.speaking = False  # Gemini is talking: its voice must not be mistaken for the student's answer
+        self.question_seen: dict = {}
+        self.heard_at = 0.0
 
     # ---- from the browser --------------------------------------------------------------
     async def audio(self, encoded):
@@ -105,8 +118,51 @@ class BenchVoice:
             t.cancel()
 
     # ---- the student's words -----------------------------------------------------------
+    @staticmethod
+    def _plain(text):
+        return ' '.join(''.join(c for c in text.lower().replace("'", '') if c.isalpha() or c == ' ').split())
+
+    async def _watch_question(self):
+        while not self.closed:
+            if self.heard.strip() and time.monotonic() - self.heard_at > TURN_SILENCE_S:
+                await self._finish_turn()
+            q = (self.bench.state().get('question') or {}).get('id')
+            self.question_seen = {q: self.question_seen.get(q, time.monotonic())} if q else {}
+            await asyncio.sleep(0.2)
+
+    async def _spoken_answer(self, utterance):
+        """Answers the operator's open question when the student's whole utterance is a plain yes or no."""
+        word = self._plain(utterance)
+        yes = word in YES_PHRASES
+        if not yes and word not in NO_PHRASES:
+            return False
+        q = (self.bench.state().get('question') or {}).get('id')
+        if not q:
+            return False
+        if self.speaking or time.monotonic() - self.question_seen.get(q, time.monotonic()) < QUESTION_SETTLE_S:
+            await self.emit({'type': 'status', 'status': 'listening', 'message': 'Wait until Ollie has finished asking, then say yes or no.'})
+            return True
+        try:
+            self.bench.answer(q, yes)
+        except BenchError:
+            return True
+        await self.emit({'type': 'status', 'status': 'answered', 'message': 'Heard "yes".' if yes else 'Heard "no": nothing will move.'})
+        return True
+
+    async def _finish_turn(self):
+        self.last_turn, self.heard = self.heard.strip(), ''
+        await self._spoken_answer(self.last_turn)
+
     async def _heard(self, text, finished):
         self.heard += text or ''
+        self.heard_at = time.monotonic()
+        if STOP_VOICE.search(self.heard):
+            if self.bench.state().get('busy') or (self.bench.state().get('question') or {}).get('id'):
+                await self.bench.stop()
+            self.heard = ''
+            await self.emit({'type': 'status', 'status': 'ended', 'message': 'Heard "stop the voice": voice is off.'})
+            await self.close()
+            return
         if STOP_WORDS.search(self.heard):
             self.heard = ''
             await self.bench.stop()  # before Gemini answers: the words alone are enough
@@ -114,7 +170,7 @@ class BenchVoice:
         if self.heard.strip():
             await self.emit({'type': 'transcript', 'role': 'user', 'text': self.heard.strip(), 'final': finished})
         if finished:
-            self.last_turn, self.heard = self.heard.strip(), ''
+            await self._finish_turn()
 
     def _said_execute(self, text):
         word = ''.join(c for c in text.lower() if c.isalpha() or c == ' ').strip()
@@ -153,6 +209,8 @@ class BenchVoice:
             if call.name == 'bench_look':
                 return await reply({'result': bench_brief(await self.bench.look_all(), since)})
             text = str(args.get('text') or '').strip()
+            if (self.bench.state().get('question') or {}).get('id') and self._plain(text) in YES_PHRASES | NO_PHRASES:
+                return await reply({'result': bench_brief(self.bench.state(), since)})  # the bench answers the question itself
             refused = self._said_execute(text)
             if refused:
                 return await reply({'error': refused, 'result': bench_brief(self.bench.state())})
@@ -191,11 +249,13 @@ class BenchVoice:
                 await session.send_client_content(turns=types.Content(role='user', parts=[types.Part(text='Start voice.')]),
                                                   turn_complete=True)
                 up = asyncio.create_task(self._upstream(session))
-                self.tasks.add(up)
+                watch = asyncio.create_task(self._watch_question())
+                self.tasks.update((up, watch))
                 try:
                     await self._downstream(session)
                 finally:
                     up.cancel()
+                    watch.cancel()
         except asyncio.CancelledError:
             raise
         except Exception as exc:  # noqa: BLE001
@@ -220,17 +280,21 @@ class BenchVoice:
                 content = response.server_content
                 if content:
                     if content.interrupted:
+                        self.speaking = False
                         await self.emit({'type': 'interrupted'})
                     heard = content.input_transcription
                     if heard:
                         await self._heard(heard.text, bool(getattr(heard, 'finished', False)))
                     for part in (content.model_turn.parts if content.model_turn else []):
                         if part.inline_data and part.inline_data.data:
+                            self.speaking = True
                             await self.emit({'type': 'audio', 'data': base64.b64encode(part.inline_data.data).decode()})
                     out = content.output_transcription
                     if out and out.text:
                         said += out.text
                         await self.emit({'type': 'transcript', 'role': 'assistant', 'text': said, 'final': False})
+                    if content.turn_complete:
+                        self.speaking = False
                     if content.turn_complete and said:
                         await self.emit({'type': 'transcript', 'role': 'assistant', 'text': said, 'final': True})
                         said = ''

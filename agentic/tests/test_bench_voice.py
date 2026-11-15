@@ -11,7 +11,7 @@ from agentic.openarms_lab.bench_voice import BenchVoice, bench_brief
 class FakeBench:
     def __init__(self, real_arm=False, terminal_confirm=False):
         self.real_arm, self.terminal_confirm = real_arm, terminal_confirm
-        self.log, self.requests, self.stops, self.question = [], [], 0, None
+        self.log, self.requests, self.stops, self.question, self.answers = [], [], 0, None, []
 
     def state(self):
         return {'arm': 'real' if self.real_arm else 'stand-in', 'armed': True, 'busy': None, 'log': list(self.log),
@@ -25,6 +25,9 @@ class FakeBench:
         await asyncio.sleep(0.6)
         self.log.append({'role': 'assistant', 'text': 'Simulation finished.'})
         return self.state()
+
+    def answer(self, question_id, yes):
+        self.answers.append((question_id, yes))
 
     async def stop(self):
         self.stops += 1
@@ -188,3 +191,78 @@ def test_the_voice_socket_is_local_and_says_when_there_is_no_key(monkeypatch, tm
     app = create_app(bench=FakeBench())
     with TestClient(app) as client, client.websocket_connect('/api/bench/voice') as ws:
         assert ws.receive_json()['status'] == 'unavailable'
+
+
+@pytest.mark.asyncio
+async def test_a_plain_spoken_yes_or_no_answers_the_open_operator_question(monkeypatch):
+    import agentic.openarms_lab.bench_voice as bv
+    monkeypatch.setattr(bv, 'QUESTION_SETTLE_S', 0.1)
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q1', 'text': 'Arm at HOME, path clear?'}
+    await run_voice(bench, [heard('', False)] * 4 + [heard('yes please')], 1.5)
+    assert bench.answers == [('q1', True)]
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q2', 'text': 'Is the cup held?'}
+    await run_voice(bench, [heard('', False)] * 4 + [heard("no, don't")], 1.5)
+    assert bench.answers == [('q2', False)]
+
+
+@pytest.mark.asyncio
+async def test_a_yes_is_not_taken_in_other_cases(monkeypatch):
+    import agentic.openarms_lab.bench_voice as bv
+    monkeypatch.setattr(bv, 'QUESTION_SETTLE_S', 0.1)
+    # No question open: nothing to answer.
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    await run_voice(bench, [heard('yes')], 0.6)
+    assert bench.answers == []
+    # A sentence that only contains yes, or a negated one, is not an answer.
+    for said in ('yes but wait', 'I said yes to my mom', 'yes no'):
+        bench = FakeBench(real_arm=True, terminal_confirm=True)
+        bench.question = {'id': 'q1', 'text': '?'}
+        await run_voice(bench, [heard('', False)] * 4 + [heard(said)], 0.9)
+        assert bench.answers == [], said
+    # Too soon after the question appeared: not accepted.
+    monkeypatch.setattr(bv, 'QUESTION_SETTLE_S', 5)
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q1', 'text': '?'}
+    await run_voice(bench, [heard('yes')], 0.6)
+    assert bench.answers == []
+    # Gemini is talking (its own voice may be heard): not accepted.
+    monkeypatch.setattr(bv, 'QUESTION_SETTLE_S', 0.1)
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q1', 'text': '?'}
+    talking = NS(server_content=NS(interrupted=False, input_transcription=None,
+                                   model_turn=NS(parts=[NS(inline_data=NS(data=b'\x01\x00'))]),
+                                   output_transcription=None, turn_complete=False), tool_call=None)
+    await run_voice(bench, [talking] + [heard('', False)] * 4 + [heard('yes')], 1.2)
+    assert bench.answers == []
+
+
+@pytest.mark.asyncio
+async def test_the_model_cannot_answer_the_question_by_calling_a_tool():
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q1', 'text': '?'}
+    await run_voice(bench, [heard('yes'), tool('bench_request', text='yes')], 0.8)
+    assert bench.requests == [] and bench.answers == []
+
+
+@pytest.mark.asyncio
+async def test_stop_the_voice_ends_voice_without_stopping_an_idle_arm():
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    frames, _, v = await run_voice(bench, [heard('stop the voice')], 0.5)
+    assert bench.stops == 0 and v.closed and any(f.get('status') == 'ended' for f in frames)
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q1', 'text': '?'}
+    await run_voice(bench, [heard('stop the voice')], 0.5)
+    assert bench.stops == 1
+
+
+@pytest.mark.asyncio
+async def test_a_spoken_yes_counts_even_when_gemini_never_marks_the_sentence_finished(monkeypatch):
+    import agentic.openarms_lab.bench_voice as bv
+    monkeypatch.setattr(bv, 'QUESTION_SETTLE_S', 0.1)
+    monkeypatch.setattr(bv, 'TURN_SILENCE_S', 0.3)
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    bench.question = {'id': 'q1', 'text': 'Arm at HOME, path clear?'}
+    await run_voice(bench, [heard('', False)] * 4 + [heard('Yes', False), heard('.', False)], 2.0)
+    assert bench.answers == [('q1', True)]
