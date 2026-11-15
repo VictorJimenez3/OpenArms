@@ -2,7 +2,7 @@
 
 > **Easiest way to record: follow [RECORD.md](RECORD.md).** Each speaker has a read-along video with these lines as subtitles and a pink dot that sets the pace. The opening skit is dropped; the film opens on the real arm and a "Meet Ollie" card.
 
-Four speakers, one take each, plus one opening skit. Read these straight to camera. The edit already exists (`pitch/renders/submit-safe-v4.mp4`); your video drops into it.
+Four speakers, one take each, plus one opening skit. Read these straight to camera. The edit already exists (`pitch/renders/submit-safe-v5.mp4`); your video drops into it.
 
 ## How the film uses you
 
@@ -34,9 +34,7 @@ Hold on the student's face for one second after the line. Shoot landscape from t
 > Imagine you're a student who knows exactly what to test, but can't hold the beaker.
 
 **Circle:**
-> One in five undergrads reports a disability. In one survey, half of students with physical disabilities were given passive roles in the lab. Someone else had the hands, so someone else made the calls.
->
-> So we built Ollie. You're the scientist. Ollie's the hands.
+> One in five undergrads reports a disability. In one survey, half of students with physical disabilities were given passive roles in the lab. Someone else had the hands, so someone else got to be the scientist. We wanted to give that back. So we built Ollie.
 >
 > You just talk. Ollie looks at the bench and plans from moves we've tested on the arm. It tells you the plan, and nothing moves until you say yes. Then a camera checks what actually happened, and you decide what to test next.
 
@@ -76,7 +74,7 @@ What plays behind you: the slow shot up the arm, the gripper close-up, then the 
 
 All four in lab coats behind the bench while the arm waves (Stef or Duc runs it, operator at the arm). Victor says:
 
-> OpenArms. It personalizes to the student, and scales to the school.
+> OpenArms. Every student should be welcomed into the lab with open arms.
 
 ## Optional: fresher app footage (Victor)
 
