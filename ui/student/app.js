@@ -23,6 +23,41 @@ const ICON = {
   check: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
+
+// ---------- Ollie ----------
+const ollieSVG = (pose = 'idle') => `
+  <svg class="ollie-bot" data-pose="${pose}" viewBox="-50 -20 300 250" aria-hidden="true">
+    <ellipse class="o-floor" cx="100" cy="220" rx="76" ry="8"/>
+    <rect class="o-body" x="44" y="188" width="112" height="32" rx="16"/>
+    <g class="o-shoulder">
+      <rect class="o-body" x="82" y="112" width="36" height="92" rx="18"/>
+      <g class="o-elbow">
+        <rect class="o-body" x="84" y="50" width="32" height="86" rx="16"/>
+        <g class="o-head">
+          <rect class="o-body o-ear o-ear-l" x="74" y="-10" width="14" height="38" rx="7"/>
+          <rect class="o-body o-ear o-ear-r" x="112" y="-10" width="14" height="38" rx="7"/>
+          <rect class="o-body" x="58" y="12" width="84" height="62" rx="27"/>
+          <g class="o-eyes"><circle cx="83" cy="42" r="8"/><circle cx="117" cy="42" r="8"/></g>
+        </g>
+        <circle class="o-joint" cx="100" cy="66" r="9"/>
+      </g>
+      <circle class="o-joint" cx="100" cy="124" r="11"/>
+    </g>
+    <circle class="o-joint" cx="100" cy="194" r="12"/>
+  </svg>`;
+function ollie(pose, line) {
+  const bot = $('.partner .ollie-bot'), bubble = $('#bubble');
+  if (bot) bot.dataset.pose = pose;
+  if (bubble && bubble.textContent !== line) { bubble.textContent = line; bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop'); }
+}
+const ART = {
+  'potion-pour': '<svg viewBox="0 0 160 120" aria-hidden="true"><path class="a-arc" d="M46 46C62 4 104 4 118 50" fill="none"/><path class="a-glass" d="M22 52h44l-6 56H28z"/><path class="a-pink" d="M27 76h34l-3 30H30z"/><path class="a-glass" d="M92 56h52l-7 52h-38z"/><path class="a-cream" d="M96 80h44l-4 26h-36z"/></svg>',
+  volcano: '<svg viewBox="0 0 160 120" aria-hidden="true"><g class="a-foam"><circle cx="80" cy="34" r="13"/><circle cx="62" cy="40" r="10"/><circle cx="98" cy="40" r="10"/><circle cx="72" cy="20" r="9"/><circle cx="90" cy="18" r="8"/></g><path class="a-ink" d="M68 40h24v22l26 46H42l26-46z"/></svg>',
+  potions: '<svg viewBox="0 0 160 120" aria-hidden="true"><circle class="a-pink a-mix-l" cx="56" cy="60" r="36"/><circle class="a-green a-mix-r" cx="104" cy="60" r="36"/><circle class="a-purple" cx="80" cy="60" r="20"/></svg>',
+  lava: '<svg viewBox="0 0 160 120" aria-hidden="true"><rect class="a-ink" x="50" y="6" width="60" height="108" rx="30"/><circle class="a-red a-blob b1" cx="72" cy="92" r="11"/><circle class="a-red a-blob b2" cx="90" cy="96" r="8"/><circle class="a-red a-blob b3" cx="82" cy="88" r="14"/></svg>',
+  snow: '<svg viewBox="0 0 160 120" aria-hidden="true"><g class="a-snow"><circle cx="52" cy="92" r="20"/><circle cx="84" cy="84" r="27"/><circle cx="114" cy="94" r="18"/><circle cx="70" cy="62" r="16"/><circle cx="98" cy="58" r="14"/></g></svg>',
+};
+
 // ---------- speech ----------
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let listening = null;
@@ -56,49 +91,40 @@ const status = id => {
   return r.done ? ['Report ready', 'done'] : [`Step ${r.step + 1} of ${STEPS.length}`, 'going'];
 };
 function shelf() {
-  const bench = LABS.find(item => item.kind === 'bench');
-  const sims = LABS.filter(item => item.kind === 'sim');
-  const [benchStatus, benchState] = status(bench.id);
+  const tile = (item, size) => { const [label, state] = status(item.id); return `
+    <li class="tile ${size}" data-theme="${item.id}">
+      <a href="#/lab/${item.id}">
+        <span class="tile-art">${ART[item.id]}</span>
+        <span class="tag">${item.kind === 'bench' ? 'On the real bench today' : 'Simulation'}</span>
+        <strong>${esc(item.title)}</strong>
+        <span class="tile-q">${esc(item.question)}</span>
+        <span class="tile-foot"><span>${esc(item.idea)} · ${esc(item.time)}</span><span class="state ${state}">${esc(label)}</span></span>
+      </a>
+    </li>`; };
+  const sizes = { 'potion-pour': 'wide', volcano: 'half', potions: 'half', lava: 'third', snow: 'third' };
   view.innerHTML = `
-    <section class="intro">
-      <h1>You run the experiment. Ollie does the pouring.</h1>
-      <p class="lede">Ollie is a robot arm that listens to you. Make a prediction, tell Ollie what to do, watch what happens, and write it up.</p>
-    </section>
-    <section class="bench" aria-labelledby="bench-title">
-      <div class="bench-copy">
-        <p class="tag real">Real bench today</p>
-        <h2 id="bench-title">${esc(bench.title)}</h2>
-        <p>${esc(bench.question)}</p>
-        <p class="meta">${esc(bench.idea)} · ${esc(bench.time)} · with your teacher</p>
-        <a class="btn primary big" href="#/lab/${bench.id}">${benchState === 'idle' ? 'Start this lab' : benchState === 'done' ? 'Open this lab' : 'Keep going'} ${ICON.arrow}</a>
-        <p class="state ${benchState}">${esc(benchStatus)}</p>
+    <section class="hero" data-theme="potion-pour">
+      <div class="hero-copy">
+        <h1>You’re the scientist. Ollie’s the hands.</h1>
+        <p>Ollie is a robot lab partner for students who need a hand with the reaching and pouring. You make every call: what to test, when to pour, when to stop.</p>
+        <a class="btn primary big" href="#labs">Pick an experiment ${ICON.arrow}</a>
       </div>
-      <svg class="pour" viewBox="0 0 320 200" role="img" aria-label="Cup A pours into cup C">
-        <path class="arc" d="M92 78 C 130 10, 200 10, 232 84" fill="none"/>
-        <path d="M60 90h64l-8 78H68z" class="cup"/><path d="M66 122h52l-4 44H70z" class="acid"/>
-        <path d="M196 96h80l-10 72h-60z" class="cup"/><path d="M201 128h70l-6 38h-58z" class="tea"/>
-        <text x="92" y="190">A</text><text x="236" y="190">C</text>
-      </svg>
-    </section>
-    <section aria-labelledby="sims-title">
-      <div class="section-head">
-        <h2 id="sims-title">Simulated labs</h2>
-        <p class="muted">The same arm and the same steps, in a computer model. Try these any time.</p>
+      <div class="hero-ollie partner">
+        <p class="bubble pop">Hi, I’m Ollie. Tell me what to pour.</p>
+        ${ollieSVG('hello')}
       </div>
-      <ul class="labs">
-        ${sims.map(item => { const [label, state] = status(item.id); return `
-        <li>
-          <a class="lab-row" href="#/lab/${item.id}">
-            <img src="media/${item.media}.jpg" alt="" width="192" height="108" loading="lazy">
-            <span class="lab-main"><strong>${esc(item.title)}</strong><span>${esc(item.question)}</span></span>
-            <span class="lab-meta"><span>${esc(item.idea)}</span><span>${esc(item.time)} · ${esc(item.pages)}</span></span>
-            <span class="state ${state}">${esc(label)}</span>
-          </a>
-        </li>`; }).join('')}
+    </section>
+    <section id="labs" aria-labelledby="labs-title">
+      <h2 id="labs-title">Today’s experiments</h2>
+      <ul class="tiles">
+        ${LABS.map(item => tile(item, sizes[item.id])).join('')}
+        <li class="tile third soon"><div><span class="tag">Coming next</span>${SOON.map(name => `<strong>${esc(name)}</strong>`).join('')}<span class="tile-q">More pages from the kit booklet are on the way.</span></div></li>
       </ul>
-      <p class="soon">Coming next: ${SOON.map(esc).join(', ')}.</p>
     </section>
-    <p class="credit">Experiments adapted from Smartivity’s <cite>My First Science Kit</cite>.</p>`;
+    <ol class="how" aria-label="How a lab works">
+      ${[['Predict', 'Guess what will happen.'], ['Direct', 'Tell Ollie what to pour. Nothing moves until you say yes.'], ['Observe', 'Watch, listen, and say what you noticed.'], ['Explain', 'Find out why, then take home a lab report.']].map(([t, d]) => `<li><strong>${t}</strong><span>${d}</span></li>`).join('')}
+    </ol>
+    <p class="credit">Experiments adapted from Smartivity’s <cite>My First Science Kit</cite>. Ollie is built by the OpenArms team.</p>`;
 }
 
 // ---------- guided lab ----------
@@ -107,20 +133,26 @@ function labView(item) {
   const step = Math.min(r.step, STEPS.length - 1);
   view.innerHTML = `
     <div class="lab">
-      <div class="lab-top">
-        <a class="back" href="#/">All experiments</a>
-        <p class="tag ${item.kind === 'bench' ? 'real' : 'sim'}">${item.kind === 'bench' ? 'Real bench' : 'Simulation'}</p>
-      </div>
-      <h1>${esc(item.title)}</h1>
-      <ol class="steps" aria-label="Lab steps">
-        ${STEPS.map((name, i) => `<li class="${i < step ? 'past' : i === step ? 'now' : ''}" ${i === step ? 'aria-current="step"' : ''}>
-          <button type="button" data-goto="${i}" ${i > (r.reached ?? 0) ? 'disabled' : ''}><span class="n">${i < step ? ICON.check : i + 1}</span>${name}</button></li>`).join('')}
-      </ol>
-      <section id="stage" class="stage" aria-live="off"></section>
-      <div class="lab-nav">
-        <button id="prev" class="btn ghost" type="button" ${step === 0 ? 'hidden' : ''}>Back</button>
-        <p id="hint" class="hint" role="status"></p>
-        <button id="next" class="btn primary big" type="button">${step === STEPS.length - 1 ? 'Make my report' : 'Next'} ${ICON.arrow}</button>
+      <aside class="partner" aria-label="Ollie">
+        <p id="bubble" class="bubble" role="status"></p>
+        ${ollieSVG()}
+      </aside>
+      <div class="work">
+        <div class="lab-top">
+          <a class="back" href="#/">All experiments</a>
+          <p class="tag">${item.kind === 'bench' ? 'Real bench' : 'Simulation'}</p>
+        </div>
+        <h1>${esc(item.title)}</h1>
+        <ol class="arm-steps" aria-label="Lab steps">
+          ${STEPS.map((name, i) => `<li class="${i < step ? 'past' : i === step ? 'now' : ''}" ${i === step ? 'aria-current="step"' : ''}>
+            <button type="button" data-goto="${i}" ${i > (r.reached ?? 0) ? 'disabled' : ''}><span class="n">${i < step ? ICON.check : i + 1}</span><span class="l">${name}</span></button></li>`).join('')}
+        </ol>
+        <section id="stage" class="sheet"></section>
+        <div class="lab-nav">
+          <button id="prev" class="btn ghost" type="button" ${step === 0 ? 'hidden' : ''}>Back</button>
+          <p id="hint" class="hint" role="status"></p>
+          <button id="next" class="btn primary big" type="button">${step === STEPS.length - 1 ? 'Make my report' : 'Next'} ${ICON.arrow}</button>
+        </div>
       </div>
     </div>`;
   const stage = $('#stage'), next = $('#next'), hint = $('#hint');
@@ -159,18 +191,19 @@ function stepQuestion(item, r, stage, ready) {
       <div><dt>Your job</dt><dd>Predict, direct, observe and explain</dd></div>
     </dl>
     ${item.kind === 'bench' ? '<p class="note">This lab uses real liquids. Your teacher sets up the bench and stays with you.</p>' : '<p class="note">This lab plays a recorded computer simulation of the arm. It is a model, not a real pour.</p>'}`;
+  ollie('idle', item.kind === 'bench' ? 'Real liquids today. I’ll do the lifting, you make the calls.' : 'Here’s today’s question. Ready when you are, scientist.');
   ready(true);
 }
 
 function stepPredict(item, r, stage, ready) {
   stage.innerHTML = `
     <h2 tabindex="-1">What do you think will happen?</h2>
-    <p class="lede">There is no wrong prediction. Scientists guess first, then test.</p>
     <fieldset><legend class="sr">Your prediction</legend>${choices('prediction', item.predictions, r.prediction)}</fieldset>
     ${ownWords('pred-own', 'Or say it in your own words', r.predictionOwn)}`;
   const check = () => ready(Boolean(r.prediction || r.predictionOwn), 'Pick a prediction or say your own.');
   stage.onchange = e => { if (e.target.name === 'prediction') { r.prediction = e.target.value; save(); check(); } };
   $('#pred-own').oninput = e => { r.predictionOwn = e.target.value.trim(); save(); check(); };
+  ollie('think', 'What do you think will happen? There’s no wrong guess. Scientists guess first, then test.');
   check();
 }
 
@@ -191,6 +224,7 @@ function stepDirect(item, r, stage, ready) {
         <a class="btn primary" href="/" target="_blank" rel="noopener">Open the bench screen ${ICON.arrow}</a>
         <button id="poured" class="btn ghost" type="button" aria-pressed="${r.pours > 0}">${r.pours > 0 ? 'Pour marked as done' : 'The pour is done'}</button>
       </div>`;
+    ollie('listen', 'I’m at the bench. Say it out loud and I’ll repeat my plan back.');
     $('#poured').onclick = () => { r.pours = 1; r.command = item.command; save(); done(); $('#poured').textContent = 'Pour marked as done'; $('#poured').setAttribute('aria-pressed', 'true'); say('Pour marked as done.'); };
     return done();
   }
@@ -198,7 +232,6 @@ function stepDirect(item, r, stage, ready) {
     stage.innerHTML = `
       <h2 tabindex="-1">Tell Ollie what to do</h2>
       <p class="lede">${esc(item.setup)}</p>
-      ${note ? `<p class="ollie" role="status"><b>Ollie</b> ${esc(note)}</p>` : ''}
       <form id="cmd" class="cmd">
         <label for="cmd-input">Your instruction</label>
         <div class="field-row"><input id="cmd-input" type="text" autocomplete="off" value="${esc(r.command)}" placeholder="Type or tap the mic"><button class="btn ghost icon mic" type="button" data-mic="cmd-input" aria-label="Speak your instruction" aria-pressed="false"></button><button class="btn primary" type="submit">Send</button></div>
@@ -206,6 +239,7 @@ function stepDirect(item, r, stage, ready) {
       </form>
       ${r.pours > 0 ? `<p class="muted">Ollie has poured ${r.pours} time${r.pours > 1 ? 's' : ''}. You can pour again or go on.</p>` : ''}`;
     wireMics(stage);
+    ollie(note?.startsWith('Stopped') ? 'stop' : 'listen', note || (r.pours > 0 ? 'Want another pour? Tell me, or go on to the next step.' : 'Tell me what to do. I’m listening.'));
     $('#suggest').onclick = () => { $('#cmd-input').value = item.command; $('#cmd-input').focus(); };
     $('#cmd').onsubmit = event => {
       event.preventDefault();
@@ -222,7 +256,6 @@ function stepDirect(item, r, stage, ready) {
     stage.innerHTML = `
       <h2 tabindex="-1">Check Ollie’s plan</h2>
       <p class="you"><b>You</b> ${esc(r.command)}</p>
-      ${clarify ? `<p class="ollie"><b>Ollie</b> ${esc(clarify)}</p>` : ''}
       <div class="plan">
         <p class="plan-label">${r.pours > 0 || again ? 'Ollie’s plan · saved skill' : 'Ollie’s plan'}</p>
         <p class="plan-text">${esc(item.proposal)}</p>
@@ -236,7 +269,7 @@ function stepDirect(item, r, stage, ready) {
     $('#yes').onclick = play; $('#change').onclick = () => { ask(); $('#cmd-input').focus(); };
     $('#hear').onclick = () => readAloud(item.proposal);
     $('#stage h2').focus(); ready(r.pours > 0, 'Say yes to the plan, or change it.');
-    say(`Ollie’s plan: ${item.proposal}`);
+    ollie('think', clarify || (r.pours > 0 || again ? 'I remember this one. Same plan as before. Say yes and I’ll go.' : 'Here’s my plan. I won’t move until you say yes.'));
   };
   const play = () => {
     stage.innerHTML = `
@@ -247,12 +280,13 @@ function stepDirect(item, r, stage, ready) {
         <figcaption><span class="tag sim">Recorded simulation</span> A computer model of the arm and the reaction.</figcaption>
       </figure>`;
     const video = $('video', stage);
+    ollie('pour', 'Pouring. Say stop any time.');
     $('#stop').onclick = () => { video.pause(); ask('Stopped. I will not move again until you give me a new instruction.'); $('#stage h2').focus(); };
     video.onended = () => {
       r.pours += 1; save(); done();
       $('.actions', stage).innerHTML = `<button id="again" class="btn ghost" type="button">${ICON.play} Do it again</button><p class="muted" role="status">Done. Ollie is back home.</p>`;
       $('#again').onclick = () => { r.command = 'Do it again'; save(); propose('', true); };
-      say('Done. Ollie is back home. Go to the next step to say what you noticed.');
+      ollie('wave', 'Done! I’m back home. What did you notice?');
     };
     video.play().catch(() => { video.controls = true; });
     $('#stage h2').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
@@ -272,6 +306,7 @@ function stepObserve(item, r, stage, ready) {
     <fieldset><legend>Tick everything you noticed</legend>${choices('obs', item.observations, r.observations, 'checkbox')}</fieldset>
     ${ownWords('obs-own', 'Anything else, in your own words', r.observationOwn)}`;
   const check = () => ready(Boolean(r.observations.length || r.observationOwn), 'Tick what you noticed or say it in your own words.');
+  ollie('listen', item.kind === 'sim' ? 'Tell me what you noticed. I can read my description out loud too.' : 'Tell me what you noticed. Ask if you want it described in words.');
   if ($('#hear')) $('#hear').onclick = () => readAloud(item.result);
   stage.onchange = e => { if (e.target.name === 'obs') { r.observations = [...stage.querySelectorAll('[name=obs]:checked')].map(i => i.value); save(); check(); } };
   $('#obs-own').oninput = e => { r.observationOwn = e.target.value.trim(); save(); check(); };
@@ -295,6 +330,7 @@ function stepExplain(item, r, stage, ready) {
     <fieldset><legend>You are the scientist. What would you test next?</legend>${choices('next', item.next, r.next)}</fieldset>
     ${ownWords('next-own', 'Or your own idea', r.nextOwn)}`;
   const check = () => ready(Boolean(r.match && r.checkAnswer), 'Answer the two questions above to finish.');
+  ollie(picked?.right ? 'wave' : 'idle', 'Here’s why that happened. Then you pick what we test next.');
   stage.onchange = e => {
     if (e.target.name === 'match') r.match = e.target.value;
     if (e.target.name === 'next') r.next = e.target.value;
@@ -302,6 +338,7 @@ function stepExplain(item, r, stage, ready) {
       r.checkAnswer = e.target.value; r.checkTries = (r.checkTries || 0) + 1;
       const o = item.check.options.find(x => x.text === r.checkAnswer), f = $('#feedback');
       f.className = `feedback ${o.right ? 'right' : 'retry'}`; f.textContent = o.why + (o.right ? '' : ' Try another answer.');
+      ollie(o.right ? 'wave' : 'think', o.right ? 'Nailed it, scientist.' : 'Not quite. Have another go.');
     }
     save(); check();
   };
@@ -337,6 +374,7 @@ function report(item) {
     <article class="report">
       <div class="lab-top no-print"><a class="back" href="#/">All experiments</a></div>
       <header>
+        <div class="stamp" aria-hidden="true">${ollieSVG('wave')}<span>Hands by Ollie</span></div>
         <h1>Lab report: ${esc(item.title)}</h1>
         <div class="report-meta">
           <label for="name" class="no-print">Scientist</label>
@@ -409,6 +447,7 @@ $('#ask-form').onsubmit = event => {
 
 // ---------- router ----------
 function route() {
+  if (location.hash && !location.hash.startsWith('#/')) { document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }); if (view.childElementCount) return; }
   const [, page, id] = location.hash.split('/');
   const item = lab(id);
   speechSynthesis?.cancel();
@@ -419,9 +458,11 @@ function route() {
   else if (page === 'report' && item) report(item);
   else if (page === 'reports') reports();
   else shelf();
-  document.title = `${askLab ? askLab.title + ' · ' : ''}OpenArms Lab`;
-  window.scrollTo({ top: 0 });
+  const anchored = location.hash && !location.hash.startsWith('#/');
+  document.body.dataset.theme = page === 'lab' && item ? item.id : '';
+  document.title = `${askLab ? askLab.title + ' · ' : ''}Ollie by OpenArms`;
+  if (!anchored) window.scrollTo({ top: 0 });
 }
-addEventListener('hashchange', () => { route(); view.focus({ preventScroll: true }); });
+addEventListener('hashchange', () => { route(); if (!location.hash.startsWith('#/')) return; view.focus({ preventScroll: true }); });
 wireMics();
 route();
