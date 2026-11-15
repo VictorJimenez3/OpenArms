@@ -1,0 +1,283 @@
+"""Edit a Smartivity episode from its captured simulator states."""
+from __future__ import annotations
+
+from collections.abc import Mapping
+import hashlib
+from itertools import groupby, pairwise
+import math
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+
+import imageio.v2 as imageio
+import numpy as np
+from PIL import Image, ImageDraw
+
+from .render import _font
+
+FPS = 30
+SIZE = (1280, 720)
+STAGES = {
+    'pick': ('Pick up the beaker', 'Prepared source at dock A'),
+    'pour': ('Pour into the flask', 'Liquid transfer drives the modeled reaction'),
+    'return_cup': ('Return the beaker', 'Place the source back in dock A'),
+    'home': ('Retract the arm', 'Keep the vessels in view'),
+}
+POTION_STAGES = {
+    **STAGES,
+    'pick': ('Pick up the green cup', 'Prepared tea at dock A'),
+    'pour': ('Mix green and pink', 'Pour from the cup into the flask'),
+    'return_cup': ('Return the cup', 'Place the cup back in dock A'),
+}
+PREPARATION = {
+    'blue_tea_divided': ('Blue tea divided', 'One tea bag steeped for 10 minutes'),
+    'flask_pink': ('Acid turns tea pink', '1 kit spoon of citric acid in the flask'),
+    'cup_green': ('Base turns tea green', '1 kit spoon of baking soda in the cup'),
+}
+PREPARATION_STILL_FRAMES = 27
+
+
+def _select_frames(frames, *, opening_frames=33):
+    """Keep each motion sample and short edges of each policy wait."""
+    retained = []
+    for action, entries in groupby(range(len(frames)), key=lambda index: frames[index][1]):
+        span = list(entries)
+        if action:
+            retained.extend(span)
+        elif span[0] == 0:
+            retained.extend(span[-opening_frames:])
+        elif span[-1] == len(frames) - 1:
+            retained.extend(span[:51])
+        elif len(span) <= 27:
+            retained.extend(span)
+        else:
+            retained.extend(span[:17])
+            retained.extend(span[-10:])
+    return retained
+
+
+def _cuts(frames, retained):
+    """Map each omitted source interval to the output frame where playback resumes."""
+    cuts = []
+    for output, (before, after) in enumerate(pairwise([-1, *retained, len(frames)])):
+        if after <= before + 1:
+            continue
+        first = before + 1
+        stop_time = frames[after][0] if after < len(frames) else frames[-1][0] + 1 / FPS
+        cuts.append({
+            'first_source_frame': first,
+            'last_source_frame': after - 1,
+            'sim_start_s': round(frames[first][0], 6),
+            'sim_end_s': round(stop_time, 6),
+            'duration_s': round(stop_time - frames[first][0], 6),
+            'resume_at_output_frame': output if output < len(retained) else None,
+        })
+    return cuts
+
+
+def _foam(state):
+    return state.get('foam', 0) if isinstance(state, Mapping) else getattr(state, 'foam', 0)
+
+
+def _reaction_window(frames):
+    # Keep the beginning of the pour wide. Cut in once the captured state shows strong foam.
+    pouring = [index for index, (_, action, _) in enumerate(frames) if action == 'pour']
+    onset = next((index for index in pouring if _foam(frames[index][2]) >= .20), None)
+    if onset is None:
+        return (math.inf, math.inf)
+    start = frames[onset][0] + .40
+    following = next((t for t, action, _ in frames[pouring[-1] + 1:] if action), math.inf)
+    return start, min(following, start + 1.65)
+
+
+def _caption(rgb, fonts, title, mode, sim_time, action, camera, note, *,
+             opening=False, closing=False, potions=False, setup_stage=None):
+    image = Image.fromarray(rgb)
+    draw = ImageDraw.Draw(image, 'RGBA')
+    title_font, detail_font, small_font = fonts
+    dark = (12, 25, 32, 231)
+    light = (250, 254, 252, 255)
+    subtle = (209, 227, 225, 255)
+    teal = (118, 225, 208, 255)
+
+    # The corners and the lower edge leave the arm, flask neck, and approach visible.
+    label = 'PRELOADED SETUP' if setup_stage else mode.replace('_', ' ').upper()
+    provenance = f'SIMULATED  /  {label}'
+    width = round(draw.textlength(provenance, font=small_font)) + 30
+    draw.rounded_rectangle((26, 24, 26 + width, 64), radius=9, fill=dark)
+    draw.text((41, 44), provenance, font=small_font, fill=teal, anchor='lm')
+    angle = 'Reaction close-up' if camera == 'reaction' else 'Bench view'
+    detail = 'Scene preparation' if setup_stage else f'{angle}  |  Sim {sim_time:05.1f} s'
+    width = round(draw.textlength(detail, font=small_font)) + 28
+    draw.rounded_rectangle((SIZE[0] - width - 26, 24, SIZE[0] - 26, 64), radius=9, fill=dark)
+    draw.text((SIZE[0] - 40, 44), detail, font=small_font, fill=light, anchor='rm')
+
+    if setup_stage:
+        heading, description = PREPARATION[setup_stage]
+    elif camera == 'reaction' and potions:
+        heading, description = 'Fizz and colour change', 'Modeled reaction in the flask'
+    elif camera == 'reaction':
+        heading, description = 'Modeled foam rises', 'Close-up of the recorded reaction'
+    elif opening:
+        heading, description = title, 'Smartivity’s My First Science Kit'
+    elif closing:
+        heading, description = 'Observe the outcome', 'Final camera view of this trial'
+    else:
+        stages = POTION_STAGES if potions else STAGES
+        heading, description = stages.get(action, ('Inspect the scene', 'Check the latest camera views'))
+    card_width = max(draw.textlength(heading, font=title_font), draw.textlength(description, font=detail_font)) + 44
+    draw.rounded_rectangle((26, 612, 26 + round(card_width), 694), radius=9, fill=dark)
+    draw.rectangle((39, 627, 42, 680), fill=teal)
+    draw.text((51, 618), heading, font=title_font, fill=light)
+    draw.text((51, 665), description, font=detail_font, fill=subtle)
+    if note:
+        width = round(draw.textlength(note, font=small_font)) + 28
+        draw.rounded_rectangle((SIZE[0] - width - 26, 654, SIZE[0] - 26, 694), radius=9, fill=dark)
+        draw.text((SIZE[0] - 40, 674), note, font=small_font, fill=teal, anchor='rm')
+    return np.asarray(image)
+
+
+def _replay_rgb(world, state, camera):
+    rgb = world.replay_rgb(state, camera)
+    if rgb.shape != (SIZE[1], SIZE[0], 3) or rgb.dtype != np.uint8:
+        raise ValueError('Replay camera must return native 1280×720 uint8 RGB.')
+    return rgb
+
+
+def render_movie(world, frames, path, *, title: str, mode: str, episode_id: str, preparation=()) -> dict:
+    """Render one native RGB view of each retained 30 Hz state and return its source mapping.
+
+    Call on the thread that owns the world's OpenGL context. Input samples have
+    action=None during inference waits, and state holds the actual captured world.
+    Preparation is a sequence of (stage, state) pairs captured before robot motion.
+    """
+    frames = list(frames)
+    if not frames:
+        raise ValueError('A recording needs captured simulator states.')
+    times = [item[0] for item in frames]
+    if any(not math.isfinite(time) for time in times) or any(a >= b for a, b in pairwise(times)):
+        raise ValueError('Recording samples must have strictly increasing finite simulation times.')
+    if any(action is not None and action not in STAGES for _, action, _ in frames):
+        raise ValueError('The recording contains an unknown motion action.')
+
+    preparation = list(preparation)
+    if any(stage not in PREPARATION for stage, _ in preparation):
+        raise ValueError('The recording contains an unknown preparation stage.')
+    potions = bool(preparation) or getattr(world, 'scenario', None) == 'potions'
+    preparation_frames = len(preparation) * PREPARATION_STILL_FRAMES
+    retained = _select_frames(frames, opening_frames=8 if preparation else 33)
+    cuts = _cuts(frames, retained)
+    resumes = {cut['resume_at_output_frame']: cut['duration_s'] for cut in cuts}
+    for cut in cuts:
+        if cut['resume_at_output_frame'] is not None:
+            cut['resume_at_output_frame'] += preparation_frames
+    close_start, close_end = _reaction_window(frames)
+    first_action = next((index for index, item in enumerate(frames) if item[1]), len(frames))
+    last_action = next((index for index in reversed(range(len(frames))) if frames[index][1]), len(frames))
+    fonts = (_font(32), _font(17), _font(17))
+    timeline = []
+    setup_timeline = []
+    note = ''
+    show_note_until = -1
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with NamedTemporaryFile(prefix='.smartivity-', suffix='.mp4', dir=path.parent, delete=False) as handle:
+        destination = Path(handle.name)
+    try:
+        with imageio.get_writer(
+            destination, fps=FPS, codec='libx264', quality=None, macro_block_size=2, pixelformat='yuv420p',
+            output_params=[
+                '-crf', '17', '-preset', 'fast', '-movflags', '+faststart',
+                '-metadata', f'title={title}', '-metadata', 'artist=OpenArms',
+                '-metadata', f'comment=SIMULATED | {mode} | source episode {episode_id}',
+            ],
+            ffmpeg_log_level='error',
+        ) as writer:
+            for index, (stage, state) in enumerate(preparation):
+                rgb = _replay_rgb(world, state, 'wide')
+                still = _caption(rgb, fonts, title, mode, 0, None, 'wide', '', setup_stage=stage)
+                for _ in range(PREPARATION_STILL_FRAMES):
+                    writer.append_data(still)
+                setup_timeline.append({
+                    'stage': stage, 'kind': 'preloaded_setup_still', 'camera': 'wide',
+                    'first_output_frame': index * PREPARATION_STILL_FRAMES,
+                    'frame_count': PREPARATION_STILL_FRAMES,
+                    'sim_time_s': getattr(state, 'sim_time', None),
+                    'native_rgb_sha256': hashlib.sha256(np.ascontiguousarray(rgb)).hexdigest(),
+                })
+            for sample, index in enumerate(retained):
+                sim_time, action, state = frames[index]
+                camera = 'reaction' if close_start <= sim_time < close_end else 'wide'
+                rgb = _replay_rgb(world, state, camera)
+                if resumes.get(sample, 0) >= .10:
+                    note = f'Policy wait shortened by {resumes[sample]:.1f} s'
+                    show_note_until = sample + 2 * FPS
+                writer.append_data(_caption(
+                    rgb, fonts, title, mode, sim_time, action, camera,
+                    note if sample < show_note_until else '',
+                    opening=index < first_action, closing=index > last_action,
+                    potions=potions,
+                ))
+                timeline.append({
+                    'output_frame': sample + preparation_frames, 'source_frame': index,
+                    'sim_time_s': round(sim_time, 6),
+                    'action': action, 'camera': camera,
+                    'native_rgb_sha256': hashlib.sha256(np.ascontiguousarray(rgb)).hexdigest(),
+                })
+        with imageio.get_reader(destination) as reader:
+            encoded = reader.get_meta_data()
+            if encoded['source_size'] != SIZE or encoded['fps'] != FPS:
+                raise RuntimeError('Encoded Smartivity video does not match the recording format.')
+        destination.replace(path)
+    finally:
+        destination.unlink(missing_ok=True)
+
+    output_frames = len(timeline) + preparation_frames
+    return {
+        'source_episode_id': episode_id, 'provenance': 'SIMULATED', 'mode': mode,
+        'width_px': SIZE[0], 'height_px': SIZE[1], 'fps': FPS,
+        'retained_frames': len(timeline), 'output_frames': output_frames,
+        'duration_s': round(output_frames / FPS, 6),
+        'source_frames': len(frames), 'source_motion_frames': sum(action is not None for _, action, _ in frames),
+        'preparation_frames': preparation_frames, 'preparation_timeline': setup_timeline,
+        'omitted_source_frames': len(frames) - len(timeline),
+        'omitted_simulation_duration_s': round(sum(cut['duration_s'] for cut in cuts), 6),
+        'max_source_sample_interval_s': round(max((b - a for a, b in pairwise(times)), default=0), 6),
+        'unique_native_frame_hashes': len({item['native_rgb_sha256'] for item in timeline}),
+        'omitted_policy_waits': cuts, 'timeline': timeline,
+    }
+
+
+def main():
+    import argparse
+    from contextlib import closing
+    import gzip
+    import json
+
+    from .smartivity_world import VisualState, World
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('episode', type=Path, help='Episode directory from Smartivity --capture-only')
+    parser.add_argument('--out', type=Path, required=True, help='Destination MP4')
+    args = parser.parse_args()
+    episode = args.episode
+    receipt = json.loads((episode / 'receipt.json').read_text(encoding='utf-8'))
+    with gzip.open(episode / 'motion.json.gz', 'rt', encoding='utf-8') as source:
+        frames = [(timestamp, action, VisualState(**state)) for timestamp, action, state in json.load(source)]
+    preparation = []
+    if (episode / 'preparation.json.gz').is_file():
+        with gzip.open(episode / 'preparation.json.gz', 'rt', encoding='utf-8') as source:
+            preparation = [(stage, VisualState(**state)) for stage, state in json.load(source)]
+    scenario = receipt['scenario']
+    titles = {'volcano': 'Erupting Volcano', 'potions': 'Magic Potions 1 & 2'}
+    with closing(World(seed=receipt['seed'], scenario=scenario,
+                       position_variation_m=receipt.get('position_variation_m'))) as world:
+        video = render_movie(world, frames, args.out, title=titles[scenario], mode=receipt['mode'],
+                             episode_id=receipt['episode_id'], preparation=preparation)
+    report_path = args.out.with_suffix('.video.json')
+    report_path.write_text(json.dumps(video, indent=2) + '\n', encoding='utf-8')
+    print(report_path)
+
+
+if __name__ == '__main__':
+    main()

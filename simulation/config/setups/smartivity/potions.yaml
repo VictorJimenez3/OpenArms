@@ -1,0 +1,34 @@
+source:
+  publisher: Smartivity
+  booklet: My First Science Kit
+  experiment: Magic Potion-1 and Magic Potion-2
+  pages: [30, 31, 32, 33]
+  reference: https://app.notion.com/p/41871c9c107e811a8392c59985243573
+preparation:
+  magic_tea:
+    water_ml: 50
+    magic_tea_bags: 1
+    steep_minutes: 10
+    sequence: Steep and remove the Magic Tea Bag before loading the divided blue tea.
+  beaker:
+    # Station A is a cup in this experiment, with an illustrative reachable geometry.
+    water_ml: 25
+    prepared_tea_fraction: 0.5
+  flask:
+    water_ml: 25
+    prepared_tea_fraction: 0.5
+  additions:
+    acidify_flask: {vessel: flask, component: citric_acid_kit_spoons, quantity: 1}
+    basify_cup: {vessel: beaker, component: baking_soda_kit_spoons, quantity: 1}
+  sequence: Add and stir citric acid in the flask and baking soda in the cup as explicit scene preparation. The robot pours the green cup into the pink flask.
+model:
+  # These cup/flask shapes are simulation fixtures and not measurements of the kit.
+  source_internal_profile_mm: [[2, 16], [39, 21]]
+  source_wall_mm: 1.6
+  beaker_xy_m: [0.265, 0.133]
+  beaker_grasp_height_m: 0.026
+  flask_xy_m: [0.270, -0.086]
+  variation:
+    position_m: 0.0015
+    water_fill_fraction: 0
+    camera_deg: 2
