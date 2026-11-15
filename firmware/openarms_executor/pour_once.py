@@ -22,6 +22,9 @@ PLAN = {"plan_id": "bench-pour", "steps": [
     {"action": "add_sample", "args": {"source": "A", "into": "C", "portions": 1}},
 ]}
 POSE_NAMES = ("HOME", "ABOVE_A", "GRASP_A", "ABOVE_C", "TIP_C")
+# A pour accepts the arm stopping this close to a pose instead of failing: the real arm at long reach stops up to
+# about 6 degrees short of (or past) its goal, and a grasp that meets the table stops early. Past it the move fails.
+GIVE_DEG = 7.0
 
 
 def preflight(data: dict, limits: dict) -> None:
@@ -47,7 +50,8 @@ def bench_limits() -> dict:
 class ObservedPour(PoseArm):
     def __init__(self, robot, poses, *, note, fake: bool):
         super().__init__(robot, poses, STATIONS, seconds=0.01 if fake else 3, pour_hold=0 if fake else 2,
-                         stop_within_move=True)
+                         stop_within_move=True, give=GIVE_DEG,
+                         on_give=lambda pose, report: note("arrival_accepted", pose=pose, **report))
         self.note = note
 
     def run_step(self, action, args):

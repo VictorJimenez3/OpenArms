@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/smartivity.css">
   <script type="module" src="/app.js"></script>
   <script type="module" src="/bench.js"></script>
+  <script type="module" src="/bench-voice.js"></script>
 </head>
 <body>
   <a class="skip" href="#workspace">Skip to the lab</a>
@@ -60,10 +61,20 @@
       </div>
       <form id="bench-form" class="bench-form">
         <label for="bench-text">What should the arm do?</label>
-        <div class="input-row"><input id="bench-text" type="text" maxlength="400" autocomplete="off" placeholder="move the mandarin from A to B, or: pour the beaker into the container"><button class="primary" type="submit">Plan and simulate</button></div>
+        <div class="input-row"><input id="bench-text" type="text" maxlength="400" autocomplete="off" placeholder="move the mandarin from A to B, or: pour the beaker into the container"><button class="primary" type="submit">Plan and simulate</button><button id="bench-voice" class="secondary" type="button" aria-pressed="false">Talk</button></div>
+        <p id="bench-voice-status" class="field-hint" role="status"></p>
+        <p id="bench-voice-heard" class="field-hint"></p>
+        <p id="bench-voice-said" class="field-hint"></p>
       </form>
       <p id="bench-summary" class="bench-summary" hidden></p>
       <ul id="bench-notes" class="bench-notes"></ul>
+      <div id="bench-question" class="bench-question" role="alertdialog" aria-labelledby="bench-question-text" hidden>
+        <p id="bench-question-text"></p>
+        <div class="actions">
+          <button id="bench-yes" class="primary" type="button">Yes</button>
+          <button id="bench-no" class="secondary" type="button">No</button>
+        </div>
+      </div>
       <div class="actions">
         <button id="bench-execute" class="primary" type="button" disabled>Execute</button>
         <button id="bench-cancel" class="secondary" type="button" disabled>Cancel</button>

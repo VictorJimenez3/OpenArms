@@ -10,10 +10,24 @@ from .motion import move_to
 from .poses import GRIPPER
 
 
+class _Pose(dict):
+    """A saved arm pose with its name, so a move can be reported and a grasp told apart."""
+
+    def __init__(self, name: str, joints: dict) -> None:
+        super().__init__(joints)
+        self.name = name
+
+
 class PoseArm:
     def __init__(self, robot, poses: dict, stations: dict, seconds: float = 1.5, hz: float = 30,
-                 pour_hold: float = 2.0, *, stop_within_move: bool = False) -> None:
+                 pour_hold: float = 2.0, *, stop_within_move: bool = False, give: float = 0.0,
+                 on_give=None) -> None:
+        """`give` > 0 accepts an arm that stops within that many degrees of a pose (see motion.move_to)
+        instead of failing; on a grasp it also stops pressing on what it met. A grasp that stopped high
+        raises the poses carried with the cup by the same joint change, and the cup is set back down
+        there. `on_give(pose, report)` hears every accepted miss."""
         self.robot, self.poses, self.stations = robot, poses, stations
+        self.give, self.on_give, self._raise = float(give), on_give, {}
         self.seconds, self.hz, self.pour_hold = seconds, hz, pour_hold
         self.stop_within_move = stop_within_move
         self._stopped, self._slot = False, None
@@ -37,15 +51,37 @@ class PoseArm:
             raise ArmError(action, f"bad step: {e}") from None
         # Build the whole script first so a missing pose fails before any motion.
         script, slot = self._script(action, args)
+        # Poses carried with the cup: after the grasp in a pick, all of a pour, a return until the jaws open.
+        if action == "pick":
+            self._raise = {}
+        carrying = action in ("pour", "return_cup") and bool(self._raise)
         try:
             for target in script:
                 # STOP lets the current move finish (never freezes mid-arc), then holds; waits are cut short
                 if isinstance(target, (int, float)):
                     self._hold(target)
-                elif self.stop_within_move:
-                    move_to(self.robot, target, self.seconds, self.hz, should_stop=lambda: self._stopped, nudges=0)
+                    continue
+                if target.get(GRIPPER) == self.poses["gripper"].get("open") and action == "return_cup":
+                    carrying = False
+                if carrying and isinstance(target, _Pose):
+                    target = _Pose(target.name, {k: v + self._raise.get(k, 0.0) for k, v in target.items()})
+                grasp = isinstance(target, _Pose) and target.name.startswith("GRASP") and action in ("pick", "return_cup")
+                report: dict = {}
+                if self.stop_within_move:
+                    move_to(self.robot, target, self.seconds, self.hz, should_stop=lambda: self._stopped, nudges=0,
+                            give=self.give, ease=grasp, report=report)
                 else:
-                    move_to(self.robot, target, self.seconds, self.hz)
+                    move_to(self.robot, target, self.seconds, self.hz, give=self.give, ease=grasp, report=report)
+                if report:
+                    raised = {}
+                    if grasp and action == "pick" and report["eased"]:
+                        # stopped high (met the table): the cup hangs lower in the jaws by as much
+                        raised = {k: round(report["at"][k] - target[k], 2) for k in report["eased"]}
+                        self._raise = raised
+                    if self.on_give:
+                        self.on_give(getattr(target, "name", "?"), {**report, "raised": raised})
+                if grasp and action == "pick":
+                    carrying = bool(self._raise)
                 if self._stopped:
                     raise ArmError(action, "stopped after the current move; the arm is holding there")
         except BaseException as e:  # includes Ctrl-C, so an interrupted step still latches
@@ -56,6 +92,8 @@ class PoseArm:
             if isinstance(e, ArmError) or not isinstance(e, Exception):
                 raise
             raise ArmError(action, f"{type(e).__name__}: {e}") from e
+        if action == "return_cup":
+            self._raise = {}
         self._state, self._slot = nxt, slot
 
     def stop(self) -> None:
@@ -77,7 +115,7 @@ class PoseArm:
         def pose(name: str) -> dict:
             if name not in self.poses["poses"]:
                 raise ArmError(action, f"no saved pose {name}")
-            return self.poses["poses"][name]
+            return _Pose(name, self.poses["poses"][name])
 
         def grip(name: str) -> dict:
             if name not in self.poses["gripper"]:
