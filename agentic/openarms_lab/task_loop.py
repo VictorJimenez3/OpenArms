@@ -454,7 +454,12 @@ class TaskLoop:
                                                           for name, schema in primitives.items()},
                                   'observer_features': getattr(self.perception, 'feature_schema', None),
                                   'replans_remaining': 2 - task['replans']},
-            'instructions': ('Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
+            'instructions': (('Return the plan directly as kind=plan: the host validates the returned plan itself in the '
+                              'same step and replies with any error, so a separate validate_plan call only adds a turn. '
+                              'To reuse a listed skill, the payload is only skill_id, skill_version and bindings; never '
+                              'repeat its steps, preconditions, expected_state or outcome_checks. '
+                              if self.fast_planning_context else '') +
+                             'Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
                              'or clarification/reject. Use only listed primitives. Never claim expected state as observed. '
                              + ('A prepared sample requires an explicit condition in its arguments. Use the requested sample '
                              'or the selected condition. Ask which sample when neither is specified. '

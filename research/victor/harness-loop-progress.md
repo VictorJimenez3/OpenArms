@@ -167,7 +167,7 @@ Priority order, chosen from the traces:
 4. **Fewer planning turns**: host pre-localization and identical-duplicate normalization (7 of 16 live traces wasted a turn on the duplicate-field rejection).
 5. Model choice last: Devin Sol Fast is already measured; Astra Fast / Opus Fast are available as profiles for a later matched comparison.
 
-## Latency Checkpoint 6: Cold Under 30 s, Repeats About 9 s (02:00 EST)
+## Latency Checkpoint 6: Cold Under 30 s, Repeats About 9 s (01:25 EST)
 
 Changes (all on Victor's branch; model unchanged, Devin `gpt-6-1-sol-medium-priority`):
 
@@ -193,3 +193,27 @@ Small sample (4 cold, 3 warm), one simulated motion, scripted consent; not a voi
 Tests: full suite **808 passed, 1 skipped**.
 
 Remaining cold time is about 13 to 15 s of planning (3 model calls: plan, validate, final). Next options: fold validation into one call, a faster model profile (`devin-sol-fast` with low effort, `devin-astra-fast`, `devin-opus-fast`), or more seeded/learned wording. The motion itself (about 8 s wall) dominates repeats.
+
+## Latency Checkpoint 7: One Planning Call, Cold About 13 s (01:53 EST)
+
+Trace diagnosis (Devin Sol Fast, checkpoint 6 runs): every cold plan used 3 calls. Call 1 sent a registered-skill reference **plus** repeated steps/checks and was rejected; call 2 validated; call 3 returned the plan, which the host validates again anyway.
+
+Changes:
+- Planner told (fast path only) to return the plan directly, since the host already validates the returned plan in the same step, and that reusing a skill means only `skill_id`, `skill_version`, `bindings`. The override error now says exactly that.
+- Request parser no longer reads natural return phrasing ("bring it back to A", "then back to A and home") as a second pour destination. That bug made 2 of 4 live requests fail closed ("This setup can only pour into C") with no motion; contradicting routes ("pour from C into A", "pour A into B") still refuse.
+
+Live, five new wordings, one session (exact consent, one dispatch, fresh observation each):
+
+| Request | Proposal | Request to answer | Model calls |
+| --- | ---: | ---: | ---: |
+| "Could you pour the beaker at A into the container at C and then bring it back to A and go home?" | 4.2 s | **12.4 s** | 1 |
+| "I want the beaker at A poured into the container at C, then back to A and home." | 4.8 s | **13.3 s** | 1 |
+| "Empty the beaker from A into the container at C, then return the beaker to A and go home." | 3.6 s | **11.9 s** | 1 |
+| "Please tip beaker A into container C once, then bring the beaker back to A and finish at home." | 4.3 s | **12.9 s** | 1 |
+| "Pour the beaker at A into C, then put it back at A and head home." | 5.8 s | **14.4 s** | 1 |
+
+**5/5 succeeded; cold median 12.9 s** (checkpoint 6: 22.2 s; Codex baseline: 80.8 s). Repeats remain about 9 s with zero model calls. About 8 s of every run is now the simulated motion itself.
+
+Retained failure evidence: `outputs/live-devin-direct-plan-1.json` (2 parser refusals before the fix, 2 successes at 13.3 to 13.6 s).
+
+Tests: full suite **822 passed, 1 skipped**.

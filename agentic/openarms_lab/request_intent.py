@@ -8,6 +8,10 @@ VESSEL = r'(?:(?:the\s+)?(?:station|dock|cup|beaker|container|donor|receiver|ves
 RETURN_CLAUSE = re.compile(
     r'\b(?:return|leave|put|place|set|keep)\s+(?:the\s+)?(?:it|beaker|donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
     r'\s+(?:back\s+)?(?:to|at|on)\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
+# "bring it back to A", "then back to A": a return of the donor, not a pour destination.
+BACK_CLAUSE = re.compile(
+    r'\b(?:(?:bring|move|take|carry|get)\s+(?:the\s+)?(?:it|beaker|donor|cup|vessel)\s+)?(?<!pour )back\s+'
+    r'(?:to|at|on|onto)\s+(?:(?:the\s+)?(?:station|dock|mark)\s+)?(?P<label>[a-z])\b', re.I)
 NEGATIVE_ROUTE = re.compile(
     r'\bnot\s+(?:from\s+)?' + VESSEL + r'(?P<source>[a-z])\s+'
     r'(?:into|to|onto|in|->)\s+' + VESSEL + r'(?P<into>[a-z])\b', re.I)
@@ -49,7 +53,7 @@ def positive_pour_request(text, source, into):
         raise ValueError('Clarify the positive action; no partial action was approved.')
     if (source, into) in forbidden:
         raise ValueError('The proposed route is explicitly negated; no pour was approved.')
-    route_text = RETURN_CLAUSE.sub('', positive)
+    route_text = BACK_CLAUSE.sub('', RETURN_CLAUSE.sub('', positive))
     sources, destinations = set(), set()
     for match in DIRECTION.finditer(route_text):
         (sources if match['direction'].lower() == 'from' else destinations).add(match['label'].upper())

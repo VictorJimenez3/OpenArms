@@ -251,7 +251,9 @@ class SkillRegistry:
                     draft = draft.model_copy(update={'preconditions': type(draft.preconditions)(),
                                                      'outcome_checks': [], 'expected_state': {}})
             if draft.steps or draft.preconditions != type(draft.preconditions)() or draft.outcome_checks or draft.expected_state:
-                raise ValueError('A skill proposal cannot override its definition.')
+                raise ValueError('A skill proposal cannot override its definition. ' + (
+                    'To reuse a registered skill send only skill_id, skill_version and bindings.' if draft.skill_id else
+                    'Put steps, preconditions, expected_state and outcome_checks only inside skill_definition.'))
             if draft.skill_id:
                 skill = self.get(draft.skill_id, draft.skill_version)
                 self.authorize(task_id, draft.skill_id, skill['version'])

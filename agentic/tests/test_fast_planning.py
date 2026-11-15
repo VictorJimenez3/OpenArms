@@ -91,3 +91,27 @@ async def test_failed_host_localization_is_not_injected(tmp_path):
         assert 'host_localization' not in expert.contexts[0]
     finally:
         await lab.shutdown()
+
+
+def test_registered_skill_with_repeated_fields_gets_an_actionable_error(tmp_path):
+    registry = SkillRegistry(tmp_path / 'skills.json')
+    with pytest.raises(ValueError, match='only skill_id, skill_version and bindings'):
+        registry.compile(PlanDraft.model_validate({'skill_id': 'x', 'skill_version': 'y', 'bindings': {},
+                                                   'expected_state': {'at': 'HOME'}}))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('enabled', [False, True])
+async def test_fast_planning_tells_the_planner_to_return_the_plan_directly(tmp_path, enabled):
+    expert = CountingExpert()
+    scene, lab = make_lab(tmp_path, expert)
+    lab.fast_planning_context = enabled
+    try:
+        sid = (await lab.create())['session_id']
+        handle = await lab.start_task(sid, 'Pour the beaker from A into C, then return it to A and go HOME.')
+        await settled(lab, handle)
+        text = expert.contexts[0]['instructions']
+        assert ('validates the returned plan itself' in text) is enabled
+        assert ('only skill_id, skill_version and bindings' in text) is enabled
+    finally:
+        await lab.shutdown()
