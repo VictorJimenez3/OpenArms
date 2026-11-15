@@ -69,6 +69,7 @@ class SkillRegistry:
         self.path = Path(path)
         self.data = json.loads(self.path.read_text()) if self.path.exists() else {
             'versions': {}, 'active': {}, 'validations': {}, 'evaluations': [], 'decisions': []}
+        self.data.setdefault('routes', [])
         for version, record in self.data['versions'].items():
             if version != compute_skill_hash(SkillDefinition.model_validate(record['definition'])):
                 raise ValueError('Persisted skill hash mismatch.')
@@ -107,7 +108,9 @@ class SkillRegistry:
         for skill_id, version in active.items():
             skill = self.get(skill_id, version)
             schema = skill['parameter_schema']
-            for template in skill['retrieval_examples']:
+            learned = [r['template'] for r in self.data.get('routes', [])
+                       if r['skill_id'] == skill_id and r['version'] == version]
+            for template in [*skill['retrieval_examples'], *learned]:
                 parts = SLOT.split(_normalize(template))
                 if set(parts[1::2]) != set(schema):
                     continue
@@ -115,7 +118,10 @@ class SkillRegistry:
                 pattern = re.escape(parts[0])
                 for slot, literal in zip(parts[1::2], parts[2::2]):
                     spec = schema[slot]
-                    if slot in aliases or not spec['enum']:
+                    if slot in aliases:
+                        pattern += f'(?P={slot})' + re.escape(literal)
+                        continue
+                    if not spec['enum']:
                         break
                     aliases[slot] = {_normalize(str(v).replace('_', ' ')): v for v in spec['enum']}
                     if len(aliases[slot]) != len(spec['enum']):
@@ -128,6 +134,50 @@ class SkillRegistry:
                         matches[(skill['version'], compute_skill_hash(bindings))] = PlanDraft(
                             skill_id=skill['skill_id'], skill_version=skill['version'], bindings=bindings)
         return next(iter(matches.values())) if len(matches) == 1 else None
+
+    def learn_route(self, text, skill_id, version, bindings):
+        """Route the student's own words to an active version after a confirmed, observed success.
+
+        Bound values become slots only when every value is a whole word of the request and each slot
+        has its own literal; the result must route back to exactly this version and bindings, refuse
+        negation, and keep every other enumerated binding on this skill. Otherwise nothing is learned.
+        """
+        if self.data['active'].get(skill_id) != version:
+            return None
+        skill = self.get(skill_id, version)
+        schema, norm = skill['parameter_schema'], _normalize(text)
+        if set(bindings) != set(schema) or len(norm) > 300 or self.match(text) is not None:
+            return None
+        literals = {slot: _normalize(str(value).replace('_', ' ')) for slot, value in bindings.items()}
+        if len(set(literals.values())) != len(literals):
+            return None
+        template = norm
+        for slot, literal in sorted(literals.items(), key=lambda item: -len(item[1])):
+            pattern = r'(?<![\w{])' + re.escape(literal) + r'(?![\w}])'
+            if not re.search(pattern, template):
+                return None
+            template = re.sub(pattern, '{' + slot + '}', template)
+        route = {'template': template, 'skill_id': skill_id, 'version': version}
+        if route in [{k: r[k] for k in route} for r in self.data['routes']]:
+            return None
+        self.data['routes'].append(route)
+        domains = [spec.get('enum') or [] for spec in schema.values()]
+        safe = bool(all(domains)) and math.prod(map(len, domains)) <= 256
+        for values in itertools.product(*domains) if safe else ():
+            combo = dict(zip(schema, values))
+            rendered = template
+            for name, value in combo.items():
+                rendered = rendered.replace('{'+name+'}', str(value).replace('_', ' '))
+            match = self.match(rendered)
+            if not (match and (match.skill_id, match.skill_version, match.bindings) == (skill_id, version, combo)
+                    and self.match('Do not '+rendered) is None):
+                safe = False
+                break
+        if not safe:
+            self.data['routes'].pop()
+            return None
+        self._save()
+        return dict(route)
 
     @staticmethod
     def _validate_schema(definition):
@@ -193,8 +243,17 @@ class SkillRegistry:
         if draft.skill_version and not draft.skill_id:
             raise ValueError('Skill version requires a skill ID.')
         if definition or draft.skill_id:
+            if definition and not draft.steps:
+                # Repeating the definition's own preconditions/state/checks is not an override; drop exact copies.
+                same = {key: getattr(draft, key) in (getattr(definition, key), type(getattr(draft, key))())
+                        for key in ('preconditions', 'outcome_checks', 'expected_state')}
+                if all(same.values()):
+                    draft = draft.model_copy(update={'preconditions': type(draft.preconditions)(),
+                                                     'outcome_checks': [], 'expected_state': {}})
             if draft.steps or draft.preconditions != type(draft.preconditions)() or draft.outcome_checks or draft.expected_state:
-                raise ValueError('A skill proposal cannot override its definition.')
+                raise ValueError('A skill proposal cannot override its definition. ' + (
+                    'To reuse a registered skill send only skill_id, skill_version and bindings.' if draft.skill_id else
+                    'Put steps, preconditions, expected_state and outcome_checks only inside skill_definition.'))
             if draft.skill_id:
                 skill = self.get(draft.skill_id, draft.skill_version)
                 self.authorize(task_id, draft.skill_id, skill['version'])

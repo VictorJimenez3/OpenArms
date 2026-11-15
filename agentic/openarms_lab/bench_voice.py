@@ -21,6 +21,7 @@ import re
 
 from .bench_lane import EXECUTE_WORDS, BenchError
 
+NEGATION = re.compile(r"\b(?:don ?t|do not|dont|not|never|no|wait|cancel)\b", re.I)
 STOP_WORDS = re.compile(r"\b(?:stop|halt|freeze)\b", re.I)
 MAX_AUDIO_BYTES = 6400  # 200 ms of 16 kHz mono PCM16
 
@@ -125,6 +126,8 @@ class BenchVoice:
         student = ' '.join(''.join(c for c in (self.last_turn + ' ' + self.heard).lower() if c.isalpha() or c == ' ').split())
         if not any(re.search(rf'\b{re.escape(w)}\b', student) for w in EXECUTE_WORDS):
             return 'Only the student saying execute (or go ahead) runs the plan. Ask them.'
+        if NEGATION.search(student):
+            return 'The student said not to, or it was unclear. Ask them plainly whether to execute.'
         return ''
 
     # ---- tools ---------------------------------------------------------------------------

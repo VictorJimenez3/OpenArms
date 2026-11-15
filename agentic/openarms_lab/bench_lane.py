@@ -181,6 +181,7 @@ what the camera found now, the camera wins. When they changed your choice, say s
 <harness_loop_results>
 {notes}
 </harness_loop_results>"""
+DEFAULT_HARNESS_NOTES = ROOT / 'research' / 'victor' / 'harness-loop-progress.md'
 HARNESS_NOTES_MAX_CHARS = 12000  # head and tail of a longer file are kept
 LESSON_NEAR_CM = 6.0  # an earlier pour teaches Claude about this one when its beaker stood this close
 
@@ -250,9 +251,17 @@ def from_env(data_dir: Path):
         overhead_photo=os.getenv('OPENARMS_OVERHEAD_PHOTO') or None,
         side_index=int(os.environ['OPENARMS_SIDE_CAMERA']) if os.getenv('OPENARMS_SIDE_CAMERA', '').strip() else None,
         pour_poses=os.getenv('OPENARMS_POUR_POSES') or None,
-        harness_notes=os.getenv('OPENARMS_HARNESS_NOTES') or None,
+        harness_notes=_harness_notes_path(),
         terminal_confirm=_confirm_mode() != 'page', ask=input if _confirm_mode() == 'terminal' else PanelAsk(),
         ruler_mode=bool(rulers and not keep_stations), places=_places(os.getenv('OPENARMS_PLACES', '')))
+
+
+def _harness_notes_path():
+    """OPENARMS_HARNESS_NOTES names the file; unset uses Victor's in-repo harness results; 0/off disables them."""
+    raw = os.getenv('OPENARMS_HARNESS_NOTES', '').strip()
+    if raw.lower() in ('0', 'off', 'none', 'false', 'no'):
+        return None
+    return raw or str(DEFAULT_HARNESS_NOTES)
 
 
 class _Arm:
@@ -801,7 +810,10 @@ class BenchLane:
                                                                tip_hi=TIP_RANGE_DEG[1], hang=CARRY_HANG_CM, rim=DISH_RIM_CM,
                                                                carry=CARRY_MIN_CM) if recording else NO_MOTION)
         if recording:
-            system += self._pour_lessons(seen)
+            try:
+                system += self._pour_lessons(seen)
+            except Exception:  # lessons are advice; a bad file must not stop the request
+                pass
         system += self._harness_section()
         try:
             resp = client.messages.create(model=MODEL, max_tokens=1500, system=system, tools=POUR_TOOLS,
@@ -1342,7 +1354,9 @@ class BenchLane:
              made_by=r.get('made_by'), motion=r.get('motion'), harness_notes=r.get('harness_notes'), camera_confirmed=confirmed,
              correction=r.get('correction'), corrected_poses=r['pour_poses']['poses'] if r.get('pour_poses') else None)
         note('start_pose', joints=start)
-        arm = ObservedPour(robot, pour_poses, note=note, fake=not self.real_arm)
+        from firmware.openarms_executor.pour_once import bench_limits
+        arm = ObservedPour(robot, pour_poses, note=note, fake=not self.real_arm,
+                           limits=bench_limits() if self.real_arm else None)  # raised carry poses stay in range
         verdict = validate(PLAN, arm.state(), STATIONS)
         if not verdict['ok']:
             return not_started(verdict['reason'])
@@ -1420,12 +1434,12 @@ class BenchLane:
         for line in reversed(lines):
             try:
                 e = json.loads(line)
-            except ValueError:
+                near = [p for p in ('beaker', 'dish') if e.get(p) and seen['positions'].get(p) and math.dist(e[p], seen['positions'][p]) <= LESSON_NEAR_CM]
+                if 'beaker' not in near:
+                    continue
+                reach = math.dist(e['beaker'], arm)
+            except (ValueError, TypeError, AttributeError):  # a malformed lesson is skipped, never fatal
                 continue
-            near = [p for p in ('beaker', 'dish') if e.get(p) and seen['positions'].get(p) and math.dist(e[p], seen['positions'][p]) <= LESSON_NEAR_CM]
-            if 'beaker' not in near:
-                continue
-            reach = math.dist(e['beaker'], arm)
             bits = []
             for g in e.get('gives') or []:
                 lift = (g.get('raised') or {}).get('shoulder_lift.pos')

@@ -10,6 +10,9 @@ from .motion import move_to
 from .poses import GRIPPER
 
 
+LIFT_JOINTS = ("shoulder_lift.pos", "elbow_flex.pos", "wrist_flex.pos")
+
+
 class _Pose(dict):
     """A saved arm pose with its name, so a move can be reported and a grasp told apart."""
 
@@ -21,13 +24,14 @@ class _Pose(dict):
 class PoseArm:
     def __init__(self, robot, poses: dict, stations: dict, seconds: float = 1.5, hz: float = 30,
                  pour_hold: float = 2.0, *, stop_within_move: bool = False, give: float = 0.0,
-                 on_give=None) -> None:
+                 on_give=None, limits: dict | None = None) -> None:
         """`give` > 0 accepts an arm that stops within that many degrees of a pose (see motion.move_to)
         instead of failing; on a grasp it also stops pressing on what it met. A grasp that stopped high
         raises the poses carried with the cup by the same joint change, and the cup is set back down
-        there. `on_give(pose, report)` hears every accepted miss."""
+        there. `on_give(pose, report)` hears every accepted miss. `limits` ({joint: (low, high)}, the calibrated
+        range) keeps a raised pose inside it: the raise is cut short at the end of the range, never past it."""
         self.robot, self.poses, self.stations = robot, poses, stations
-        self.give, self.on_give, self._raise = float(give), on_give, {}
+        self.give, self.on_give, self._raise, self.limits = float(give), on_give, {}, limits or {}
         self.seconds, self.hz, self.pour_hold = seconds, hz, pour_hold
         self.stop_within_move = stop_within_move
         self._stopped, self._slot = False, None
@@ -64,7 +68,8 @@ class PoseArm:
                 if target.get(GRIPPER) == self.poses["gripper"].get("open") and action == "return_cup":
                     carrying = False
                 if carrying and isinstance(target, _Pose):
-                    target = _Pose(target.name, {k: v + self._raise.get(k, 0.0) for k, v in target.items()})
+                    target = _Pose(target.name, {k: self._within(k, v + self._raise[k]) if k in self._raise else v
+                                                 for k, v in target.items()})
                 grasp = isinstance(target, _Pose) and target.name.startswith("GRASP") and action in ("pick", "return_cup")
                 report: dict = {}
                 if self.stop_within_move:
@@ -76,7 +81,8 @@ class PoseArm:
                     raised = {}
                     if grasp and action == "pick" and report["eased"]:
                         # stopped high (met the table): the cup hangs lower in the jaws by as much
-                        raised = {k: round(report["at"][k] - target[k], 2) for k in report["eased"]}
+                        # only joints that lift the cup; a lagging pan/roll must not shift where it pours or returns
+                        raised = {k: round(report["at"][k] - target[k], 2) for k in report["eased"] if k in LIFT_JOINTS}
                         self._raise = raised
                     if self.on_give:
                         self.on_give(getattr(target, "name", "?"), {**report, "raised": raised})
@@ -95,6 +101,13 @@ class PoseArm:
         if action == "return_cup":
             self._raise = {}
         self._state, self._slot = nxt, slot
+
+    def _within(self, joint: str, value: float) -> float:
+        """A raised joint stays inside the calibrated range; at the end it carries as high as the arm allows."""
+        if joint not in self.limits:
+            return value
+        low, high = self.limits[joint]
+        return min(max(value, low), high)
 
     def stop(self) -> None:
         self._stopped = True

@@ -11,7 +11,8 @@ import uuid
 from pathlib import Path
 
 from .contracts import ACTION_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
-from .skills import compute_skill_hash
+from .skills import _normalize, compute_skill_hash
+from .request_intent import RETURN_CLAUSE as WATER_DONOR_RETURN, positive_pour_request
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
@@ -27,28 +28,24 @@ UNSUPPORTED_FIXTURE_REQUEST = re.compile(
     r'(?:measure|read|check) (?:the )?temperature|temperature measurement)\b', re.I)
 CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_frame', 'units', 'clock')
 VESSEL_LABELS = ('source', 'receiver')
-WATER_ROUTE = re.compile(
-    r'\b(?P<direction>from|onto|into|to)\s+'
-    r'(?:(?:the\s+)?(?:station|dock|cup|beaker|container|donor|receiver|vessel)\s+(?:at\s+)?(?P<label>[a-z])\b|'
-    r'(?P<short>[a-z])(?=\s+(?:into|to|then|and)\b|\s*[,.;!?]|\s*$))', re.I)
-WATER_DONOR_RETURN = re.compile(
-    r'\b(?:return|leave|put|place|set|keep)\s+(?:the\s+)?(?:it|beaker|donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
-    r'\s+(?:back\s+)?(?:to|at|on)\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
-# A source named straight after the verb ("pour B into C") has no "from" for WATER_ROUTE to see.
-POUR_SOURCE = re.compile(r'\bpour\s+(?:the\s+)?(?:(?:station|dock|cup|beaker|container|donor|vessel)\s+(?:at\s+)?)?'
-                         r'(?P<label>[a-z])\b(?=\s+(?:onto|into|to|in)\b)', re.I)
 WATER_PORTION = re.compile(
     r'\b(\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|multiple)'
-    r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?portions?\b', re.I)
-WATER_VOLUME = re.compile(r'\b\d+(?:\.\d+)?\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b', re.I)
+    r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?(?:portions?|pours?|transfers?)\b', re.I)
+WATER_VOLUME = re.compile(
+    r'\b(?:\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|a|an)'
+    r'\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?|g|grams?|oz|ounces?|drops?)\b', re.I)
 OTHER_LIQUID = re.compile(r'\b(?:vinegar|baking[- ]soda|citric[- ]acid|magic[- ]tea|indicator)\b', re.I)
 # The demo bench beaker holds citric acid; any other named liquid is a different request.
 DEMO_OTHER_LIQUID = re.compile(r'\b(?:water|vinegar|baking[- ]soda|indicator|soap|bleach|ammonia)\b', re.I)
 # Amounts and routes the fixed one-portion A-to-C action cannot honour.
-UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|again|all\s+of|everything|half|double|triple)\b|'
+UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|all\s+of|everything|half|double|triple)\b|'
+                                     r'\b(?:again\s+and\s+again|over\s+and\s+over|keep\s+pouring)\b|'
                                      r'\b(?:two|three|four|five|several|many|multiple|\d+)\s+times\b|'
                                      r'\b\d+(?:\.\d+)?\s*(?:g|grams?|oz|ounces?|cups?|drops?)\b|'
                                      r'\b(?:left|right)\s+(?:one|side|cup|beaker|container|vessel)\b', re.I)
+REPEAT_REQUEST = re.compile(r'(?:(?:can|could|would|will) you |please )?(?:do (?:it|that|this) (?:again|one more time)|'
+                            r'again|one more time|same again|repeat (?:it|that|the last (?:one|pour|action))|redo (?:it|that))'
+                            r'(?: please)?')
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -93,6 +90,25 @@ def describe_step(step, action_description=None):
 
 
 class TaskLoop:
+    guarded_demo_bench_checkpoint = False
+    guarded_demo_bench_completion = False
+    fast_planning_context = False
+
+    def _repeat_route(self, s, task):
+        """'Do it again': the last consented, observed success in this session, if its skill is still active."""
+        if not REPEAT_REQUEST.fullmatch(_normalize(task["request"])):
+            return None
+        for previous in reversed(s['tasks']):
+            plan = previous.get('plan') or {}
+            if previous is task or previous['status'] != 'completed' or not plan.get('skill_id'):
+                continue
+            observed = previous['observations'][-1] if previous['observations'] else {}
+            if (observed.get('status') != 'observed' or not observed.get('checks') or not all(observed['checks'].values())
+                    or self.registry.data['active'].get(plan['skill_id']) != plan['skill_version']):
+                return None
+            return PlanDraft(skill_id=plan['skill_id'], skill_version=plan['skill_version'], bindings=plan['bindings'])
+        return None
+
     def _task_event(self, s, task, kind, **data):
         plan = task.get('plan') or {}
         return self._event(s, kind, task_id=task['task_id'], request_id=task.get('request_id'),
@@ -174,6 +190,12 @@ class TaskLoop:
             if key in self.workers:
                 self.cancel_signals[key].set()
                 self.workers[key].cancel()
+
+    @staticmethod
+    def _decision_summary(decision):
+        question = decision['payload'].get('question') if decision['kind'] == 'clarification' else None
+        return (question.strip() if isinstance(question, str) and question.strip() and len(question) <= 4000
+                else decision['summary'])
 
     async def _set_status(self, s, task, status, summary=None, **data):
         self._guard_task(s, task)
@@ -420,6 +442,7 @@ class TaskLoop:
             'phase': phase, 'scene': task['scene'], 'images': task['images'],
             'clarification': task.get('clarification'),
             'correction': task.get('correction'),
+            **({'host_localization': task['host_localization']} if task.get('host_localization') else {}),
             'tools': [{'name': name, 'description': summary,
                        'input_schema': {'type': 'object', 'properties': properties,
                                         'required': required, 'additionalProperties': False}}
@@ -431,10 +454,20 @@ class TaskLoop:
                                                           for name, schema in primitives.items()},
                                   'observer_features': getattr(self.perception, 'feature_schema', None),
                                   'replans_remaining': 2 - task['replans']},
-            'instructions': ('Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
+            'instructions': (('Return the plan directly as kind=plan: the host validates the returned plan itself in the '
+                              'same step and replies with any error, so a separate validate_plan call only adds a turn. '
+                              'To reuse a listed skill, the payload is only skill_id, skill_version and bindings; never '
+                              'repeat its steps, preconditions, expected_state or outcome_checks. '
+                              if self.fast_planning_context else '') +
+                             'Use raw scene evidence and tools. Return PlanDraft fields as payload for plan/revision, '
                              'or clarification/reject. Use only listed primitives. Never claim expected state as observed. '
-                             'A prepared sample requires an explicit condition in its arguments. Use the requested sample '
+                             + ('A prepared sample requires an explicit condition in its arguments. Use the requested sample '
                              'or the selected condition. Ask which sample when neither is specified. '
+                             if 'mock_prepared_sample' in supported_operations else
+                             'Use the prepared contents already bound to the current scene for add_sample. '
+                             'Do not require a separate sample selection for this operation. '
+                             'If the student requests different contents, clarify rather than relabeling the scene. ')
+                             +
                              'If correction is present, use its sample selection while retaining the rest of the request. '
                              'If the request requires multiple actions or an unsupported result, clarify before proposing any action. '
                              'Prediction is optional notebook context. '
@@ -445,7 +478,9 @@ class TaskLoop:
                              'Each declared parameter must be used as $parameter in step arguments and as {parameter} '
                              'in every retrieval example. Use only scene.observable_features for outcome checks. '
                              'Every action plan needs an inspect_scene step before its action and an observe step last. '
-                             'Use localize_objects on the current image when object identity matters. '
+                             'Use localize_objects on the current image when object identity matters'
+                             + ('; host_localization already holds it for the current image, so do not repeat it. '
+                                if task.get('host_localization') else '. ') +
                              'An observe step may specify fallback_view to try one alternate view only when the first '
                              'is unreadable. Do not add recovery without evidence of a relevant limitation. '
                              'For improvement, author a new version of the same pinned skill, preserving its intent, '
@@ -600,8 +635,12 @@ class TaskLoop:
             if action['operation'] not in capabilities.get('supported_operations', ACTION_OPERATIONS):
                 raise ValueError('The current setup does not support this operation.')
             if capabilities.get('experiment_id') in ('two_vessel_water', 'demo_bench_pour'):
+                source, into = capabilities['routes'][0]
+                source = action['arguments'].get('source', source)
+                into = action['arguments'].get('into', into)
                 for text in dict.fromkeys((intent, task['request'])):
-                    self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour')
+                    self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour',
+                                              source=source, into=into)
             backend.check_step(action['operation'], action['arguments'])
             # Success must rest on the observer's reading of the pour, not on features that never change.
             planned = {(c['feature'], compute_skill_hash(c['expected'])) for c in plan['outcome_checks']}
@@ -624,28 +663,20 @@ class TaskLoop:
             raise ValueError(self._perception_error(exc)) from exc
 
     @staticmethod
-    def _check_water_request(text, liquids=False):
+    def _check_water_request(text, liquids=False, *, source='A', into='C'):
+        text = positive_pour_request(text, source, into)
         # The demo bench holds the kit liquids, so only the water scene rejects them by name.
         if not liquids and OTHER_LIQUID.search(text):
             raise ValueError('This two-vessel setup supports water only. No pour was approved.')
         if liquids and DEMO_OTHER_LIQUID.search(text):
             raise ValueError('This setup pours only the prepared beaker at A. No pour was approved.')
         if UNBOUND_AMOUNT_OR_ROUTE.search(text):
-            raise ValueError('This setup supports one premeasured portion from A into C only. No pour was approved.')
+            raise ValueError(f'This setup supports one premeasured portion from {source} into {into} only. No pour was approved.')
         if WATER_VOLUME.search(text) or any(match[1].lower() not in ('one', '1', '1.0')
                                             for match in WATER_PORTION.finditer(text)):
             raise ValueError('This setup supports one premeasured portion with no specified volume.')
-        if any(match['label'].upper() != 'A' for match in WATER_DONOR_RETURN.finditer(text)):
-            raise ValueError('This setup can only return the donor to A. No pour was approved.')
-        if any(match['label'].upper() != 'A' for match in POUR_SOURCE.finditer(text)):
-            raise ValueError('This setup can only pour from A. No pour was approved.')
-        for match in WATER_ROUTE.finditer(WATER_DONOR_RETURN.sub('', text)):
-            label = (match['label'] or match['short']).upper()
-            source = match['direction'].lower() == 'from'
-            if source and label != 'A':
-                raise ValueError('This setup can only pour from A. No pour was approved.')
-            if not source and label != 'C':
-                raise ValueError('This setup can only pour into C. No pour was approved.')
+        if any(match['label'].upper() != source for match in WATER_DONOR_RETURN.finditer(text)):
+            raise ValueError(f'This setup can only return the donor to {source}. No pour was approved.')
 
     def _check_improvement(self, task, draft, plan):
         pinned = task['improvement']['baseline_plan'] or {}
@@ -744,7 +775,8 @@ class TaskLoop:
                     task['feedback'].append({'type': 'scene_unavailable', 'reason': self._perception_error(exc)})
                     await self._emit_task(s, task, 'scene_unavailable', code=type(exc).__name__)
             phase = 'improvement' if task['improvement'] else 'planning'
-            route = None if task['improvement'] or task.get('correction') else self.registry.match(task['request'])
+            route = None if task['improvement'] or task.get('correction') else (
+                self.registry.match(task['request']) or self._repeat_route(s, task))
             if route:
                 try:
                     await self._prepare_proposal(s, task, route, phase)
@@ -755,6 +787,14 @@ class TaskLoop:
                     await self._propose_task(s, task, route, phase, began)
                     return
             task['route'] = 'expert'
+            if self.fast_planning_context and phase == 'planning' and task['images'] and not task.get('host_localization'):
+                try:
+                    found = await self._capture(s, task, 'localize_objects', {
+                        'evidence_id': task['images'][0]['evidence_id'], 'labels': list(VESSEL_LABELS)})
+                except (ValueError, OSError, RuntimeError, TimeoutError):
+                    found = None
+                if found and found.get('verified_labels'):
+                    task['host_localization'] = copy.deepcopy(found)
             response, validated = await self._run_expert(s, task, phase)
             if response['kind'] in ('plan', 'revision'):
                 draft = PlanDraft.model_validate(response['payload'])
@@ -763,7 +803,7 @@ class TaskLoop:
                 await self._propose_task(s, task, draft, phase, began)
             elif response['kind'] in ('clarification', 'reject', 'complete'):
                 status = {'clarification': 'needs_clarification', 'reject': 'failed', 'complete': 'completed'}[response['kind']]
-                await self._set_status(s, task, status, response['summary'])
+                await self._set_status(s, task, status, self._decision_summary(response))
             else:
                 raise ValueError('Expert returned an invalid planning decision.')
         except asyncio.CancelledError:
@@ -912,7 +952,20 @@ class TaskLoop:
                         failure = 'Checkpoint did not return a fresh image.'
                 elif not set(arguments['labels']).issubset(observed.get('verified_labels') or []):
                     failure = 'Checkpoint did not verify the requested labels.'
-                if failure or (not warm and (operation in ('inspect_scene', 'observe') or observed.get('images'))):
+                guarded = (not failure and not warm and
+                           self._guarded_demo_checkpoint(s, task, request, observed, index))
+                if guarded:
+                    task['feedback'].append({'type': 'deterministic_checkpoint',
+                                             'request_id': request['request_id'],
+                                             'evidence_id': observed['evidence_id']})
+                elif not failure and not warm and is_final and operation == 'observe' and \
+                        self._guarded_demo_completion(s, task, request, task['observations'][-1]):
+                    guarded = True
+                    task['feedback'].append({'type': 'deterministic_completion',
+                                             'request_id': request['request_id'],
+                                             'evidence_id': task['observations'][-1]['evidence'][-1]})
+                if failure or (not warm and not guarded and
+                               (operation in ('inspect_scene', 'observe') or observed.get('images'))):
                     if await self._execution_feedback(s, task, request, receipt, failure, is_final=is_final):
                         return
                 if not is_final:
@@ -934,6 +987,116 @@ class TaskLoop:
         except Exception as exc:
             await self._fail_task(s, task, exc)
 
+    @classmethod
+    def _checkpoint_certain(cls, record):
+        return (isinstance(record, dict) and record.get('status') in (None, 'ok', 'observed') and
+                not any(record.get(key) for key in ('reason', 'error', 'unknown_reason', 'uncertainty')) and
+                all(cls._checkpoint_certain(record[key]) for key in ('scene', 'localization') if key in record) and
+                all(cls._checkpoint_certain(detection) for detection in record.get('detections', [])))
+
+    def _unchanged_checkpoint_image(self, task, presented_id, current_id):
+        presented, current = (task['evidence'][fid] for fid in (presented_id, current_id))
+        for record in (presented, current):
+            for image in record['images']:
+                self._check_image(task['session_id'], image)
+        return (len(presented['images']) == len(current['images']) == 1 and
+                presented['images'][0]['sha256'] == current['images'][0]['sha256'] and
+                all(presented['scene'].get(key) == current['scene'].get(key)
+                    for key in ('generation', 'view', 'width', 'height', 'provenance')))
+
+    def _guarded_demo_checkpoint(self, s, task, request, observed, index):
+        if (self.guarded_demo_bench_checkpoint is not True or index != 0 or
+                task['route'] != 'expert' or task['replans'] != 0 or task['execution'] or
+                task['observations'] or task['dispatched_action'] or
+                any(task.get(key) for key in ('improvement', 'clarification', 'correction'))):
+            return False
+        self._guard_task(s, task)
+        try:
+            plan = request['plan']
+            if ([step['operation'] for step in plan['steps']] != ['inspect_scene', 'add_sample', 'observe'] or
+                    compute_skill_hash(plan['steps'][1]['arguments']) !=
+                    compute_skill_hash({'source': 'A', 'into': 'C', 'portions': 1}) or
+                    plan['expected_state'].get('at') != 'HOME' or
+                    compute_skill_hash(plan) != request['plan_hash'] or task['plan'] != plan or
+                    request['student_confirmed'] is not True or request['presented'] is not True or
+                    request['generation'] != s['generation'] or
+                    request['presentation']['generation'] != s['generation'] or
+                    request['presentation']['proposal_version'] != request['proposal_version'] or
+                    plan['execution_scope'] != self.execution_scope or
+                    s['execution_scope'] != self.execution_scope):
+                return False
+            capabilities = self.backends[task['session_id']].capabilities()
+            if (capabilities.get('experiment_id') != 'demo_bench_pour' or
+                    capabilities.get('physical_execution') is not False or
+                    capabilities.get('simulation_execution') is not True or
+                    capabilities.get('supported_operations') != ['add_sample'] or
+                    capabilities.get('routes') != [['A', 'C']]):
+                return False
+            scene = observed['scene']
+            presented = task['evidence'][plan['scene_frame_id']]['scene']
+            identity = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': 'demo',
+                        'control_mode': 'mujoco_kinematic_add_sample'}
+            if (any(record.get(key) != value for record in (scene, presented, capabilities)
+                    for key, value in identity.items()) or
+                    not self._fresh(scene) or not self._fresh(presented) or
+                    scene['captured_at'] <= request['confirmed_at'] or
+                    scene['frame_id'] == plan['scene_frame_id'] or
+                    scene != task['scene'] or observed['images'] != task['images'] or
+                    not self._unchanged_checkpoint_image(task, plan['scene_frame_id'], scene['frame_id']) or
+                    not self._checkpoint_certain(observed) or not self._checkpoint_certain(scene)):
+                return False
+            for feedback in task['feedback']:
+                if (feedback['type'] not in ('execution_progress', 'perception') or
+                        not self._checkpoint_certain(feedback) or
+                        ('receipt' in feedback and not self._checkpoint_certain(feedback['receipt']))):
+                    return False
+            for frame_id in (scene['frame_id'], plan['scene_frame_id']):
+                record = task['evidence'][frame_id]
+                if (not self._checkpoint_certain(record) or
+                        not self._checkpoint_certain(record.get('localization')) or
+                        not set(VESSEL_LABELS).issubset(record['verified_labels'])):
+                    return False
+            action = plan['steps'][1]
+            self._check_context(task, plan)
+            fixture = self._fixture_state(task, scene['frame_id'], action)
+            return (fixture is not None and fixture == plan['fixture'] ==
+                    self._fixture_state(task, plan['scene_frame_id'], action))
+        except (KeyError, TypeError, ValueError, OSError, RuntimeError):
+            return False
+
+    def _guarded_demo_completion(self, s, task, request, latest):
+        """True only for a clean, independently observed single demo pour; anything else keeps the expert call."""
+        if (self.guarded_demo_bench_completion is not True or task['route'] != 'expert' or task['replans'] != 0 or
+                any(task.get(key) for key in ('improvement', 'clarification', 'correction')) or
+                request['generation'] != s['generation'] or request.get('student_confirmed') is not True):
+            return False
+        try:
+            capabilities = self.backends[task['session_id']].capabilities()
+            if (capabilities.get('experiment_id') != 'demo_bench_pour' or
+                    capabilities.get('physical_execution') is not False or
+                    capabilities.get('simulation_execution') is not True):
+                return False
+            controllers = [r for r in task['execution'] if r.get('controller_completed')]
+            if len(task['execution']) != 1 or len(controllers) != 1:
+                return False
+            controller, simulation = controllers[0], controllers[0].get('simulation') or {}
+            if (simulation.get('status') != 'completed' or simulation.get('dose_count') != 1 or
+                    simulation.get('returned_to_dock') is not True or simulation.get('home_reached') is not True):
+                return False
+            if (latest['status'] != 'observed' or latest['provenance'] != 'SIMULATED' or not latest['checks'] or
+                    not all(latest['checks'].values()) or not latest.get('evidence') or
+                    any(latest[key] != controller[key] for key in ('request_id', 'plan_hash', 'task_id', 'trial_id')) or
+                    latest['request_id'] != request['request_id']):
+                return False
+            for evidence_id in latest['evidence']:
+                scene = task['evidence'][evidence_id]['scene']
+                if not self._fresh(scene) or scene['captured_at'] <= controller['execution_finished_at']:
+                    return False
+            return not any(f['type'] in ('checkpoint_failed', 'precondition_failed', 'scene_unavailable')
+                           or f.get('reason') and f['type'] != 'execution' for f in task['feedback'])
+        except (KeyError, TypeError, ValueError, AttributeError):
+            return False
+
     async def _verify_dispatch(self, s, task, request, action):
         plan = request['plan']
         presented_id = plan['scene_frame_id']
@@ -954,6 +1117,14 @@ class TaskLoop:
         current = self._fixture_state(task, current_id, action)
         if current != plan['fixture']:
             raise ValueError('Vessel position or camera registration changed since the proposal was presented.')
+        if (any(feedback['type'] == 'deterministic_checkpoint' and
+                feedback.get('request_id') == request['request_id'] for feedback in task['feedback']) and
+                (compute_skill_hash(plan) != request['plan_hash'] or task['plan'] != plan or
+                 plan['execution_scope'] != self.execution_scope or s['execution_scope'] != self.execution_scope or
+                 not self._checkpoint_certain(frame) or not self._checkpoint_certain(frame['scene']) or
+                 not self._checkpoint_certain(task['evidence'][current_id]) or
+                 not self._unchanged_checkpoint_image(task, presented_id, current_id))):
+            raise ValueError('Approved plan, setup, or independent dispatch evidence changed, failed, or is uncertain.')
 
     async def _verify_labels(self, s, task, plan, *, refresh=False, allow_alternate=True):
         labels = {label for rule in plan['preconditions'] for label in rule['labels']}
@@ -995,7 +1166,7 @@ class TaskLoop:
             status = 'needs_clarification' if kind == 'clarification' else 'failed'
             request.update(status='cancelled' if kind == 'clarification' else 'failed', result=receipt)
             s['trial']['state'] = 'stopped'
-            await self._set_status(s, task, status, decision['summary'])
+            await self._set_status(s, task, status, self._decision_summary(decision))
             return True
         if failure:
             if not is_final:
