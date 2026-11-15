@@ -243,6 +243,13 @@ class SkillRegistry:
         if draft.skill_version and not draft.skill_id:
             raise ValueError('Skill version requires a skill ID.')
         if definition or draft.skill_id:
+            if definition and not draft.steps:
+                # Repeating the definition's own preconditions/state/checks is not an override; drop exact copies.
+                same = {key: getattr(draft, key) in (getattr(definition, key), type(getattr(draft, key))())
+                        for key in ('preconditions', 'outcome_checks', 'expected_state')}
+                if all(same.values()):
+                    draft = draft.model_copy(update={'preconditions': type(draft.preconditions)(),
+                                                     'outcome_checks': [], 'expected_state': {}})
             if draft.steps or draft.preconditions != type(draft.preconditions)() or draft.outcome_checks or draft.expected_state:
                 raise ValueError('A skill proposal cannot override its definition.')
             if draft.skill_id:

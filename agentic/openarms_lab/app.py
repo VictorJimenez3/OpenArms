@@ -190,6 +190,14 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                                 experiment=experiment, conditions=conditions,
                                 execution_scope=registry_scope,
                                 backend_factory=backend_factory, expert_timeout=240)
+            if execution == 'mujoco' and scene_name == 'demo_bench':
+                # Deterministic pre-action and completion checks replace the two nominal expert calls; any
+                # changed, unknown or failed evidence still escalates. The host also localizes before cold planning.
+                # OPENARMS_DEMO_FAST_PATH=0 restores all three expert steps.
+                fast = os.getenv('OPENARMS_DEMO_FAST_PATH', '1').strip() != '0'
+                demo_lab = app.state.lab
+                demo_lab.guarded_demo_bench_checkpoint = demo_lab.guarded_demo_bench_completion = fast
+                demo_lab.fast_planning_context = fast
         else:
             app.state.lab = lab
             app.state.execution_mode = next((b.mode for b in lab.backends.values()), 'mock')

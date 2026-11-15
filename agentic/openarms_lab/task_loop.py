@@ -91,6 +91,8 @@ def describe_step(step, action_description=None):
 
 class TaskLoop:
     guarded_demo_bench_checkpoint = False
+    guarded_demo_bench_completion = False
+    fast_planning_context = False
 
     def _repeat_route(self, s, task):
         """'Do it again': the last consented, observed success in this session, if its skill is still active."""
@@ -440,6 +442,7 @@ class TaskLoop:
             'phase': phase, 'scene': task['scene'], 'images': task['images'],
             'clarification': task.get('clarification'),
             'correction': task.get('correction'),
+            **({'host_localization': task['host_localization']} if task.get('host_localization') else {}),
             'tools': [{'name': name, 'description': summary,
                        'input_schema': {'type': 'object', 'properties': properties,
                                         'required': required, 'additionalProperties': False}}
@@ -470,7 +473,9 @@ class TaskLoop:
                              'Each declared parameter must be used as $parameter in step arguments and as {parameter} '
                              'in every retrieval example. Use only scene.observable_features for outcome checks. '
                              'Every action plan needs an inspect_scene step before its action and an observe step last. '
-                             'Use localize_objects on the current image when object identity matters. '
+                             'Use localize_objects on the current image when object identity matters'
+                             + ('; host_localization already holds it for the current image, so do not repeat it. '
+                                if task.get('host_localization') else '. ') +
                              'An observe step may specify fallback_view to try one alternate view only when the first '
                              'is unreadable. Do not add recovery without evidence of a relevant limitation. '
                              'For improvement, author a new version of the same pinned skill, preserving its intent, '
@@ -777,6 +782,14 @@ class TaskLoop:
                     await self._propose_task(s, task, route, phase, began)
                     return
             task['route'] = 'expert'
+            if self.fast_planning_context and phase == 'planning' and task['images'] and not task.get('host_localization'):
+                try:
+                    found = await self._capture(s, task, 'localize_objects', {
+                        'evidence_id': task['images'][0]['evidence_id'], 'labels': list(VESSEL_LABELS)})
+                except (ValueError, OSError, RuntimeError, TimeoutError):
+                    found = None
+                if found and found.get('verified_labels'):
+                    task['host_localization'] = copy.deepcopy(found)
             response, validated = await self._run_expert(s, task, phase)
             if response['kind'] in ('plan', 'revision'):
                 draft = PlanDraft.model_validate(response['payload'])
@@ -940,6 +953,12 @@ class TaskLoop:
                     task['feedback'].append({'type': 'deterministic_checkpoint',
                                              'request_id': request['request_id'],
                                              'evidence_id': observed['evidence_id']})
+                elif not failure and not warm and is_final and operation == 'observe' and \
+                        self._guarded_demo_completion(s, task, request, task['observations'][-1]):
+                    guarded = True
+                    task['feedback'].append({'type': 'deterministic_completion',
+                                             'request_id': request['request_id'],
+                                             'evidence_id': task['observations'][-1]['evidence'][-1]})
                 if failure or (not warm and not guarded and
                                (operation in ('inspect_scene', 'observe') or observed.get('images'))):
                     if await self._execution_feedback(s, task, request, receipt, failure, is_final=is_final):
@@ -1038,6 +1057,39 @@ class TaskLoop:
             return (fixture is not None and fixture == plan['fixture'] ==
                     self._fixture_state(task, plan['scene_frame_id'], action))
         except (KeyError, TypeError, ValueError, OSError, RuntimeError):
+            return False
+
+    def _guarded_demo_completion(self, s, task, request, latest):
+        """True only for a clean, independently observed single demo pour; anything else keeps the expert call."""
+        if (self.guarded_demo_bench_completion is not True or task['route'] != 'expert' or task['replans'] != 0 or
+                any(task.get(key) for key in ('improvement', 'clarification', 'correction')) or
+                request['generation'] != s['generation'] or request.get('student_confirmed') is not True):
+            return False
+        try:
+            capabilities = self.backends[task['session_id']].capabilities()
+            if (capabilities.get('experiment_id') != 'demo_bench_pour' or
+                    capabilities.get('physical_execution') is not False or
+                    capabilities.get('simulation_execution') is not True):
+                return False
+            controllers = [r for r in task['execution'] if r.get('controller_completed')]
+            if len(task['execution']) != 1 or len(controllers) != 1:
+                return False
+            controller, simulation = controllers[0], controllers[0].get('simulation') or {}
+            if (simulation.get('status') != 'completed' or simulation.get('dose_count') != 1 or
+                    simulation.get('returned_to_dock') is not True or simulation.get('home_reached') is not True):
+                return False
+            if (latest['status'] != 'observed' or latest['provenance'] != 'SIMULATED' or not latest['checks'] or
+                    not all(latest['checks'].values()) or not latest.get('evidence') or
+                    any(latest[key] != controller[key] for key in ('request_id', 'plan_hash', 'task_id', 'trial_id')) or
+                    latest['request_id'] != request['request_id']):
+                return False
+            for evidence_id in latest['evidence']:
+                scene = task['evidence'][evidence_id]['scene']
+                if not self._fresh(scene) or scene['captured_at'] <= controller['execution_finished_at']:
+                    return False
+            return not any(f['type'] in ('checkpoint_failed', 'precondition_failed', 'scene_unavailable')
+                           or f.get('reason') and f['type'] != 'execution' for f in task['feedback'])
+        except (KeyError, TypeError, ValueError, AttributeError):
             return False
 
     async def _verify_dispatch(self, s, task, request, action):
