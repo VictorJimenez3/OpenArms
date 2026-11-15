@@ -90,3 +90,23 @@ Parallel candidates now in flight (each opt-in, separate worktree, coordinator m
 3. **Guarded completion** (`TaskLoop.guarded_demo_bench_completion`): skip only the final post-observation expert call when the independent observation and controller facts are clean; anything else escalates. Local Devin worker, 6.1 Sol Medium Fast.
 
 **Projection, not a measurement:** removing the failed validation turn and the localization turn would leave roughly one planning call (about 15 to 20 s); skipping the clean completion call saves about 10 s; a working fast tier could roughly halve the remaining model time. Combined, that could plausibly land near 25 to 35 s request-to-answer. Only measured matched runs will be reported as results.
+
+## Checkpoint 3: Fast-Tier Attempt Interrupted By Account Limit (00:34 EST)
+
+Interleaved live runs, Sol medium + guard, D01 familiar request, cold end-to-end:
+
+| Arm | Passed | Request to proposal | Request to answer | Model calls |
+| --- | ---: | ---: | ---: | ---: |
+| Standard tier, repeat 0 | yes | 38.8 s | 58.2 s | 4 |
+| Standard tier, repeat 1 | yes | 61.8 s | 80.9 s | 5 |
+| Fast tier (`priority`), repeat 0 | yes | 30.5 s | 46.3 s | 4 |
+| Fast tier, repeat 1 | no: `quota` | n/a | n/a | 0 |
+
+The local Codex account then returned: *"You've hit your usage limit ... try again at 3:08 AM."* The runner stopped each batch at the first dependency failure, used no fallback model, and dispatched nothing. The H01 standard/fast pair produced no model output. **The fast tier is inconclusive (one good sample) and is not reported as an improvement.** The fast tier advertises increased usage, which may have contributed to reaching the limit.
+
+Live blockers right now:
+
+- Codex/Sol: account usage limit until about 03:08 EST, unless more credits are added.
+- Claude profiles (Opus/Sonnet): local Claude CLI says `OAuth session expired and could not be refreshed`. It needs Victor to log in again; credentials are never copied between tools.
+
+Work that continues without live access: the two opt-in implementation workers (they run unit tests, not live models) and deterministic simulator correctness runs. When live access returns, the plan is matched, interleaved runs: guard alone vs guard + planning-turn change vs guard + guarded completion vs all three, then fast tier on the winner.
