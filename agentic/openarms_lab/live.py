@@ -511,7 +511,9 @@ class GeminiBridge:
             while not self.closed and cid not in self.cancelled_tools:
                 if not first:
                     await self.state_updates.get()
-                await self._wait_for_playback()
+                    # Only unsolicited updates wait for playback. Gemini can
+                    # call this tool after starting audio in the same turn.
+                    await self._wait_for_playback()
                 # Consume at most one wakeup just before the fresh snapshot.
                 if not self.state_updates.empty():
                     self.state_updates.get_nowait()
