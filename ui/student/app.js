@@ -129,6 +129,17 @@ function shelf() {
     <ol class="how" aria-label="How a lab works">
       ${[['Predict', 'Guess what will happen.'], ['Direct', 'Tell Ollie what to pour. Nothing moves until you say yes.'], ['Observe', 'Watch, listen, and say what you noticed.'], ['Explain', 'Find out why, then take home a lab report.']].map(([t, d]) => `<li><strong>${t}</strong><span>${d}</span></li>`).join('')}
     </ol>
+    <section class="ways" aria-labelledby="ways-title">
+      <h2 id="ways-title">Use Ollie your way</h2>
+      <p>You never need a mouse or a steady hand. Every step works with whichever of these you already use.</p>
+      <ul>
+        <li><strong>Your voice</strong><span>Tap a mic to speak an answer, or use your device’s voice control and say the name of any button.</span></li>
+        <li><strong>A keyboard or switch</strong><span><kbd>Tab</kbd> moves, <kbd>Enter</kbd> or <kbd>Space</kbd> chooses. Nothing needs two keys at once.</span></li>
+        <li><strong>Eye gaze or a head pointer</strong><span>Big, well-spaced buttons. Nothing to drag, hold down or hover over.</span></li>
+        <li><strong>Your own pace</strong><span>No timers. If a plan goes stale while you decide, Ollie brings it back.</span></li>
+        <li><strong>Stop, always</strong><span>Press <kbd>Esc</kbd> or the Stop button while Ollie is moving.</span></li>
+      </ul>
+    </section>
     <p class="credit">Experiments adapted from Smartivity’s <cite>My First Science Kit</cite>. Ollie is built by the OpenArms team.</p>`;
 }
 
@@ -150,7 +161,7 @@ function labView(item) {
         <h1>${esc(item.title)}</h1>
         <ol class="arm-steps" aria-label="Lab steps">
           ${STEPS.map((name, i) => `<li class="${i < step ? 'past' : i === step ? 'now' : ''}" ${i === step ? 'aria-current="step"' : ''}>
-            <button type="button" data-goto="${i}" ${i > (r.reached ?? 0) ? 'disabled' : ''}><span class="n">${i < step ? ICON.check : i + 1}</span><span class="l">${name}</span></button></li>`).join('')}
+            <button type="button" data-goto="${i}" ${i > (r.reached ?? 0) ? 'disabled' : ''} aria-label="Step ${i + 1}, ${name}${i < step ? ', done' : i === step ? ', current step' : ''}"><span class="n" aria-hidden="true">${i < step ? ICON.check : i + 1}</span><span class="l" aria-hidden="true">${name}</span></button></li>`).join('')}
         </ol>
         <section id="stage" class="sheet"></section>
         <div class="lab-nav">
@@ -164,6 +175,7 @@ function labView(item) {
   const ready = (ok, why = '') => { next.setAttribute('aria-disabled', String(!ok)); hint.textContent = ok ? '' : why; };
   [stepQuestion, stepPredict, stepDirect, stepObserve, stepExplain][step](item, r, stage, ready);
   wireMics(view);
+  stage.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[type=text]') && !e.target.closest('form')) { e.preventDefault(); next.click(); } });
   view.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => goto(item, +b.dataset.goto));
   $('#prev').onclick = () => goto(item, step - 1);
   next.onclick = () => {
@@ -288,6 +300,7 @@ function stepDirect(item, r, stage, ready) {
       </figure>`;
     const video = $('video', stage);
     ollie('pour', 'Pouring. Say stop any time.');
+    say('Ollie is pouring. Press Stop or Escape to stop.');
     $('#stop').onclick = () => { video.pause(); ask('Stopped. I will not move again until you give me a new instruction.'); $('#stage h2').focus(); };
     video.onended = () => {
       r.pours += 1; save(); done();
@@ -296,7 +309,7 @@ function stepDirect(item, r, stage, ready) {
       ollie('wave', 'Done! I’m back home. What did you notice?');
     };
     video.play().catch(() => { video.controls = true; });
-    $('#stage h2').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
+    $('#stop').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
   };
   ask();
 }
@@ -320,7 +333,7 @@ function liveDirect(item, r, stage, ready, done) {
   const here = () => token === liveRun && stage.isConnected;
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   const fail = error => { if (here()) ask(`Something went wrong: ${error.message} Try again.`, 'stop'); };
-  let frameUrl = '', objectUrl = '';
+  let frameUrl = '', objectUrl = '', stale = false;
   const showFrame = async (state, img) => {
     const url = state.state?.simulation?.frame_url;
     if (!url || url === frameUrl || !img) return;
@@ -356,7 +369,7 @@ function liveDirect(item, r, stage, ready, done) {
     done();
   };
 
-  const plan = async text => {
+  const plan = async (text, note) => {
     const started = performance.now();
     stage.innerHTML = `
       <h2 tabindex="-1">Ollie is making a plan</h2>
@@ -374,7 +387,7 @@ function liveDirect(item, r, stage, ready, done) {
     let state = await Live.ask(text);
     while (here() && !cancelled) {
       const task = (state.tasks || []).at(-1);
-      if (state.pending) return propose(state.pending);
+      if (state.pending) return propose(state.pending, note);
       if (task && DONE.includes(task.status)) {
         const reply = (state.messages || []).slice(known).filter(m => m.role === 'assistant').at(-1)?.text;
         return ask(reply || 'I could not make a plan for that. Try saying it another way.', 'think');
@@ -386,7 +399,7 @@ function liveDirect(item, r, stage, ready, done) {
     }
   };
 
-  const propose = async pending => {
+  const propose = async (pending, note) => {
     const facts = planFacts(pending.metrics);
     stage.innerHTML = `
       <h2 tabindex="-1">Check Ollie’s plan</h2>
@@ -402,11 +415,20 @@ function liveDirect(item, r, stage, ready, done) {
         </div>
       </div>
       <p class="muted">Nothing moves until you say yes.</p>`;
-    ollie('think', facts.saved ? 'I remember this one! Same plan as before. Say yes and I’ll go.' : 'Here’s my plan. I won’t move until you say yes.');
+    ollie('think', note || (facts.saved ? 'I remember this one! Same plan as before. Say yes and I’ll go.' : 'Here’s my plan. I won’t move until you say yes.'));
+    if (!note) stale = false;
     $('#stage h2').focus(); ready(r.pours > 0, 'Say yes to the plan, or change it.');
     $('#hear').onclick = () => readAloud(pending.summary);
     $('#change').onclick = () => { Live.cancel(pending).catch(() => {}); ask('Okay, I dropped that plan. What should I do instead?'); $('#cmd-input').focus(); };
-    $('#yes').onclick = () => { $('#yes').disabled = true; execute(pending, facts).catch(fail); };
+    $('#yes').onclick = () => {
+      $('#yes').disabled = true;
+      execute(pending, facts).catch(error => {
+        if (!here()) return;
+        if (![400, 409, 410].includes(error.status) || stale) return fail(error);
+        stale = true; // The plan went stale while the student decided: ask for the same thing again.
+        plan(r.command, 'That plan went stale while you were deciding, so I made it again. Take your time.').catch(fail);
+      });
+    };
     await Live.present(pending).catch(() => {});
   };
 
@@ -418,7 +440,8 @@ function liveDirect(item, r, stage, ready, done) {
       <div class="actions"><button id="stop" class="btn stop big" type="button">${ICON.stop} Stop</button><p id="run-state" class="muted" role="status">Ollie is moving.</p></div>
       ${bench('Getting ready')}`;
     ollie('pour', 'On it. Say stop any time.');
-    $('#stage h2').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
+    say('Ollie is pouring. Press Stop or Escape to stop.');
+    $('#stop').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
     let stopped = false;
     $('#stop').onclick = async () => { stopped = true; await Live.stop().catch(() => {}); if (here()) ask('Stopped. I will not move again until you give me a new instruction.', 'stop'); };
     const img = $('#live-frame'), caption = $('#live-caption');
@@ -607,7 +630,11 @@ function toggleAsk(open) {
 }
 $('#ask-open').onclick = () => toggleAsk(askPanel.hidden);
 $('#ask-close').onclick = () => toggleAsk(false);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !askPanel.hidden) toggleAsk(false); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const stop = document.getElementById('stop');
+  if (stop) { e.preventDefault(); stop.click(); } else if (!askPanel.hidden) toggleAsk(false);
+});
 $('#ask-form').onsubmit = event => {
   event.preventDefault();
   const input = $('#ask-input'), text = input.value.trim();

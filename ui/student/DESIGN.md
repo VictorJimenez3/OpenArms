@@ -37,3 +37,17 @@ Every shape comes from the arm: capsule buttons and inputs, circular joints for 
 ## Honesty rules
 
 Simulated runs are labelled “Recorded simulation” on the video and in the report. The report states its evidence source. Ask Ollie says its answers come from the lab guide.
+
+## Input and accessibility
+
+The student may not be able to use a mouse, trackpad or standard keyboard. They may use speech recognition, a switch, eye gaze, a head pointer or a mouth stick, all of which drive the page through the keyboard and pointer interfaces. So the app targets WCAG 2.2 AA and leans on the assistive technology the student already has rather than a bespoke voice-only mode. Ollie's own spoken conversation is the Gemini Live path in the bench client.
+
+- Everything is operable by keyboard alone, one key at a time (2.1.1, 2.1.2). There are no single-letter shortcuts that speech input could trigger by accident (2.1.4); Escape is the only global key and it means Stop.
+- Visible button text is the accessible name, so voice control users can say what they see (2.5.3).
+- Targets are at least 48 px with spacing; nothing needs dragging, holding, hovering or a precise path (2.5.1, 2.5.7, 2.5.8).
+- No time limits. A proposal that expires on the server while the student decides is requested again and explained (2.2.1).
+- Focus is always visible, moves to the new step's heading, and moves to Stop when the arm starts (2.4.3, 2.4.7).
+- Text contrast is at least 4.5:1 on every experiment colour; the current step is marked by shape and a ring, not colour alone (1.4.1, 1.4.3, 1.4.11).
+- Results are given in words and can be read aloud; status changes are announced (1.1.1, 4.1.3). Motion stops under reduced-motion (2.3.3).
+
+Checked by keyboard-only runs in a browser. Not yet tested with real switch, eye-gaze or screen-reader users.
