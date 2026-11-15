@@ -53,7 +53,7 @@ button, input { font: inherit; color: inherit; }
 .brand svg { fill: currentColor; }
 .brand .eye { fill: var(--field); }
 .brand .word { font: 400 1.9rem/1 var(--display); }
-.brand .by { align-self: flex-end; padding-bottom: 5px; font-size: .78rem; font-weight: 700; opacity: .75; }
+.brand .by { align-self: flex-end; padding-bottom: 5px; font-size: .78rem; font-weight: 700; }
 .top nav { display: flex; gap: 4px; margin-left: auto; }
 .top nav a { padding: 10px 16px; border-radius: var(--pill); text-decoration: none; font-weight: 700; }
 .top nav a:hover { background: color-mix(in srgb, var(--on) 12%, transparent); }
@@ -268,6 +268,7 @@ input[type="text"]:focus-visible { outline: 0; box-shadow: inset 0 0 0 3.5px var
 .plan { --on: var(--cream); display: grid; gap: 14px; padding: clamp(20px, 3vw, 32px); border-radius: 28px; background: var(--ink); color: var(--cream); }
 .plan-label { font-size: .82rem; font-weight: 800; opacity: .75; }
 .plan-text { font-size: clamp(1.3rem, 1rem + 1.3vw, 1.8rem); font-weight: 700; line-height: 1.25; }
+.sheet .btn.primary, .report .btn.primary, .ask .btn.primary { background: var(--ink); color: var(--cream); }
 .plan .btn.primary { background: var(--pink); color: var(--ink); }
 .screen { border-radius: 24px; overflow: hidden; background: #0b1020; }
 .screen video { width: 100%; aspect-ratio: 16 / 9; max-height: 52dvh; object-fit: contain; }
@@ -367,4 +368,10 @@ input[type="text"]:focus-visible { outline: 0; box-shadow: inset 0 0 0 3.5px var
   .stamp { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .report-meta input { box-shadow: none; padding: 0; background: none; font-weight: 800; }
   .report-rows > div { break-inside: avoid; }
+}
+
+/* 320 px wide: the width of a page zoomed to 400% (WCAG 1.4.10 reflow). */
+@media (max-width: 380px) {
+  .brand .word { display: none; }
+  .top nav a { padding: 10px 7px; }
 }

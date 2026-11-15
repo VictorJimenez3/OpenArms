@@ -52,4 +52,4 @@ The student may not be able to use a mouse, trackpad or standard keyboard. They 
 
 The Access page (`#/access`, in the top bar) states this to students and judges: the tools Ollie works with, the only keys needed, and four saved settings (bigger text and buttons, Ollie reads out loud, extra-bold focus highlight, calm screen).
 
-Checked by keyboard-only runs in a browser. Not yet tested with real switch, eye-gaze or screen-reader users.
+Checked by keyboard-only runs in a browser and by an axe-core 4.10 audit (WCAG 2.0–2.2 A/AA rules plus best practices) of 27 screen states: home, Access, reports, every step of the bench lab, a recorded lab and the live lab, the Ask Ollie panel, 320 px reflow and the bigger-text setting. Result: 0 violations, every control named, no target under 24 px, no horizontal scroll at 320 px. Automated rules cover only part of WCAG. Not yet tested with real switch, eye-gaze or screen-reader users.
