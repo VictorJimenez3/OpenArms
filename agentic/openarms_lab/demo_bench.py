@@ -27,14 +27,14 @@ from . import two_vessel_scene
 
 OPERATION = 'add_sample'
 PROVENANCE = 'SIMULATED'
-METHOD = 'demo-bench-markers-donor-fill-v1'
+METHOD = 'demo-bench-markers-vessel-appearance-v2'
 SCENE = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': SETUP,
          'control_mode': 'mujoco_kinematic_add_sample'}
 CAMERA = {**camera_metadata(CAMERA_ID, CONFIGURATION_ID), 'calibration_id': CONFIGURATION_ID}
 LIMITATIONS = [
     'Poses are solved by the simulation from bench.yaml, matched to one recorded real pour; joint_map.yaml is unmeasured.',
     'Liquid is drawn, not simulated: colours come from chemistry.yaml, so receiver colour is not a chemistry result.',
-    'Pixel observation of the rendered overview: donor fill and station markers only; no measured volume.',
+    'Pixel observation of the rendered overview: vessel appearance and station markers; no measured volume.',
     'No physical grasp, liquid delivery or spill safety is established. Physical dispatch is disabled.',
 ]
 
@@ -81,6 +81,8 @@ def execution_scope():
 
 # The empty clear beaker as the overview camera renders it (identical in every experiment).
 EMPTY_GLASS = np.array([127, 186, 237])
+RECEIVER_COLOUR_TOLERANCE = 45
+RECEIVER_COLOUR_MARGIN = 15
 
 
 def _masks(pixels):
@@ -97,7 +99,7 @@ def _centre(mask, minimum=60):
 
 
 def receiver_palette():
-    """Receiver colour vocabulary: every indicator-scale and food-colour label the chemistry table can draw."""
+    """Indicator-scale and individual dye appearances used by the demo experiments."""
     from simulation.openarms_sim.config import load_chemistry_config
     chemistry = load_chemistry_config()
     palette = {row['label'] + '_liquid': tuple(row['color']) for row in chemistry['indicator_scale']}
@@ -133,10 +135,15 @@ def anchors(reference):
     (ax, ay), (cx, cy) = np.rint(a).astype(int), np.rint(c).astype(int)
     region = reference[cy-30:cy+20, cx-45:cx+45].astype(int)
     receiver = _coloured(region) & ~masks['marker_c'][cy-30:cy+20, cx-45:cx+45]
+    if receiver.sum() < 60:
+        raise ValueError('The reference frame does not show a readable receiver.')
     rendered = region[receiver].mean(0)
     prepared = _prepared_receiver_colour()
     gap = 255 - prepared
     blend = float(np.clip(((255 - rendered) * gap).sum() / max((gap * gap).sum(), 1e-6), 0.05, 1.0))
+    if (not np.isfinite(blend) or
+            np.linalg.norm(rendered - (255 - blend * gap)) > RECEIVER_COLOUR_TOLERANCE):
+        raise ValueError('The reference frame cannot calibrate the receiver appearance.')
     return {'A': a, 'C': c, 'red_c': int(masks['red'][cy-30:cy+20, cx-45:cx+45].sum()),
             'receiver_count': int(receiver.sum()), 'receiver_rgb': rendered, 'blend': blend,
             'donor_rgb': reference[ay-10:ay, ax-6:ax+6].reshape(-1, 3).astype(int).mean(0)}
@@ -166,7 +173,14 @@ def read_pixels(pixels, anchor, tolerance_px=6):
         return result
     seen = at_c[receiver].mean(0)
     rendered = {label: 255 - anchor['blend'] * (255 - np.array(colour) * 255) for label, colour in receiver_palette().items()}
-    result['receiver'] = min(rendered, key=lambda label: float(np.linalg.norm(rendered[label] - seen)))
+    fits = sorted((float(np.linalg.norm(colour - seen)), label) for label, colour in rendered.items())
+    (distance, receiver_label), (alternate, _) = fits[:2]
+    # Nominal before/after renders are within 32 RGB units and at least 30 units from the next match.
+    if (not np.isfinite(distance) or distance > RECEIVER_COLOUR_TOLERANCE or
+            alternate - distance < RECEIVER_COLOUR_MARGIN):
+        result['reason'] = 'The receiver appearance does not match a known simulated colour.'
+        return result
+    result['receiver'] = receiver_label
     wall = (slice(ay-24, ay-17), slice(ax-6, ax+6))
     r, b = frame[..., 0], frame[..., 2]
     # The beaker's upper wall reads near-white over a pale fill, or glass-blue over a coloured one.
@@ -214,13 +228,19 @@ class DemoBenchSceneService(TwoVesselSceneService):
         if not 0 <= time.time() - raw['captured_at'] <= 180:
             return {'ready': False, 'camera_registration': 'unknown', 'reason': 'Frame is stale or future-dated.'}
         reference = self._references[sid]
-        return read_pixels(two_vessel_scene.fixture._pixels(raw), anchors(two_vessel_scene.fixture._pixels(reference)))
+        try:
+            anchor = anchors(two_vessel_scene.fixture._pixels(reference))
+        except ValueError as exc:
+            return {'ready': False, 'camera_registration': 'unknown', 'reason': str(exc)}
+        return read_pixels(two_vessel_scene.fixture._pixels(raw), anchor)
 
     async def localize_objects(self, sid, evidence_id, labels):
         result = self._observe_pixels(sid, evidence_id)
         reference, _view = self.frames[sid, evidence_id]
-        anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
-        boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
+        boxes = {}
+        if result['ready']:
+            anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
+            boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
         detections, verified = [], []
         for label in labels:
             name = two_vessel_scene.ALIASES.get(label.lower(), label.lower())

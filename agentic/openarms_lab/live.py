@@ -156,8 +156,18 @@ def compact_snapshot(snap):
 
 def system_prompt(context):
     state = compact(context)
-    water_only = (state.get('experiment') or {}).get('id') == 'two_vessel_water'
-    if water_only:
+    experiment = state.get('experiment') or {}
+    if experiment.get('id') == 'demo_bench_pour':
+        activity = (
+            'The current lab is the two-vessel MuJoCo demo bench. Name the selected experiment from experiment.title. '
+            'A is the donor beaker and C is the receiver. Use the actions listed in capabilities.supported_operations. '
+            'Present the exact proposal and wait for student confirmation. '
+        )
+        science = (
+            'Report the appearance of the vessels only from the current independent simulated observation. '
+            'The simulation displays modeled liquid colors. Do not report a physical reaction, measured pH or quantity. '
+        )
+    elif experiment.get('id') == 'two_vessel_water':
         activity = (
             'The current lab is the water-only, two-vessel MuJoCo simulation. Donor A holds one premeasured water portion. '
             'Receiver C stays fixed; the donor returns to A before the arm returns HOME. '
