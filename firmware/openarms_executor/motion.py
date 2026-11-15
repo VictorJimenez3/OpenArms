@@ -30,7 +30,7 @@ STILL_SECONDS = 0.3  # ...over this long
 
 def move_to(robot, target: dict, seconds: float = 1.5, hz: float = 30, should_stop=lambda: False,
             tol: float = 3.0, settle: float = 2.0, snag: float = 12.0, nudges: int = 2,
-            max_nudge: float = 8.0) -> bool:
+            max_nudge: float = 8.0, give: float = 0.0, ease: bool = False, report: dict | None = None) -> bool:
     """Steps linearly from the present joints to target, then makes sure the arm really got there.
 
     Returns True once every arm joint is within `tol` of target, False if stopped part-way.
@@ -40,6 +40,13 @@ def move_to(robot, target: dict, seconds: float = 1.5, hz: float = 30, should_st
     past the target by the shortfall (at most `max_nudge`, at most `nudges` times) and checked
     again. A joint that has stopped more than `snag` away is treated as blocked: it is not
     pushed harder, and the move raises. It also raises if the nudges do not close the gap.
+
+    With `give` > 0, an arm that has stopped with every joint within `give` degrees of the target
+    is accepted as arrived instead (no nudging, nothing pushed harder): at long reach the real arm
+    stops a few degrees short of, or sags a few degrees past, its goal. With `ease` as well, a joint
+    that stopped short in the direction it was travelling (as when the gripper meets the table on
+    the way down) is re-commanded to where it is, so it stops pressing. `report`, if given, receives
+    {"off": {joint: measured - target}, "eased": [joints], "at": {joint: measured}} for an accepted miss.
     """
     obs = robot.get_observation()
     start = {k: float(obs[k]) for k in target}
@@ -78,6 +85,14 @@ def move_to(robot, target: dict, seconds: float = 1.5, hz: float = 30, should_st
         off = {k: round(-e, 1) for k, e in short.items() if abs(e) > tol}
         if max(abs(e) for e in short.values()) > snag:
             raise RuntimeError(f"did not reach target, off by {off}: too far to be sag, something is blocking the arm")
+        if give > 0 and attempt == 0 and all(abs(e) <= give for e in short.values()):
+            # short in the direction of travel: target - measured has the sign of target - start
+            eased = [k for k in arm if ease and abs(short[k]) > tol and short[k] * (target[k] - start[k]) > 0]
+            if eased:
+                robot.send_action({**command, **{k: float(obs[k]) for k in eased}})
+            if report is not None:
+                report.update(off=off, eased=eased, at={k: float(obs[k]) for k in arm})
+            return True
         if attempt == nudges:
             raise RuntimeError(f"did not reach target, off by {off} after {nudges} nudges")
 

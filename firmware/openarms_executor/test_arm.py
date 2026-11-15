@@ -386,8 +386,96 @@ def test_stop_while_waiting_for_a_sagging_arm_returns_false():
     assert max(a[LIFT] for a in robot.sent) <= 40.0, "stopped before any nudge"
 
 
+# --- give: a pour accepts a small, explained miss instead of failing, and never pushes harder ---
+
+def test_a_small_miss_past_the_target_is_accepted_with_give_and_reported():
+    from firmware.openarms_executor.motion import move_to
+    robot = sagging_robot({LIFT: -3.1})  # the real failure: 3.1 past the target, nudges off
+    try:
+        move_to(robot, {LIFT: 48.7}, nudges=0, **FAST_MOVE)
+    except RuntimeError as e:
+        assert "after 0 nudges" in str(e)
+    else:
+        raise AssertionError("without give it must still fail")
+    robot, report = sagging_robot({LIFT: -3.1}), {}
+    assert move_to(robot, {LIFT: 48.7}, nudges=0, give=7.0, report=report, **FAST_MOVE) is True
+    assert report["off"] == {LIFT: 3.1} and report["eased"] == []
+    assert max(a[LIFT] for a in robot.sent) <= 48.7, "nothing pushed harder"
+
+
+def test_give_has_a_limit_and_a_blocked_joint_still_fails():
+    from firmware.openarms_executor.motion import move_to
+    for droop, match in ((9.0, "after 0 nudges"), (20.0, "blocking")):
+        try:
+            move_to(sagging_robot({LIFT: droop}), {LIFT: 40.0}, nudges=0, give=7.0, **FAST_MOVE)
+        except RuntimeError as e:
+            assert match in str(e), e
+        else:
+            raise AssertionError(f"a {droop} degree miss must fail")
+
+
+def test_a_grasp_that_meets_the_table_stops_pressing():
+    from firmware.openarms_executor.motion import move_to
+
+    class Table(FakeRobot_):
+        """shoulder_lift cannot go past 45 (the table), however hard it is commanded."""
+        def get_observation(self):
+            o = dict(self.pos)
+            o[LIFT] = min(o[LIFT], 45.0)
+            return o
+
+    robot, report = Table({LIFT: 20.0}), {}
+    assert move_to(robot, {LIFT: 48.7}, nudges=0, give=7.0, ease=True, report=report, **FAST_MOVE) is True
+    assert report["eased"] == [LIFT] and report["off"] == {LIFT: -3.7}
+    assert robot.sent[-1][LIFT] == 45.0, "re-commanded to where it stopped, so it no longer presses on the table"
+
+
+def _pour_arm(robot, notes):
+    from firmware.openarms_executor.pour_once import ObservedPour
+    poses = {"poses": {"HOME": {LIFT: -100.0}, "ABOVE_A": {LIFT: 20.0}, "GRASP_A": {LIFT: 48.7},
+                       "ABOVE_C": {LIFT: 30.0}, "TIP_C": {LIFT: 25.0}}, "gripper": {"open": 90.0, "cup": 15.0}}
+    arm = ObservedPour(robot, poses, note=lambda e, **d: notes.append((e, d)), fake=True)
+    arm.seconds, arm.hz = 0.05, 60
+    return arm
+
+
+def test_after_a_grasp_stops_high_the_carried_poses_are_raised_and_the_cup_set_down_there():
+    from agentic.openarms_agent.runner import run
+    from firmware.openarms_executor.pour_once import PLAN
+
+    class Table(FakeRobot_):
+        def get_observation(self):
+            o = dict(self.pos)
+            o[LIFT] = min(o[LIFT], 45.0)
+            return o
+
+    notes = []
+    robot = Table({LIFT: -100.0, "gripper.pos": 90.0})
+    done = run(PLAN, _pour_arm(robot, notes))
+    assert done["status"] == "executed", done
+    given = [d for e, d in notes if e == "arrival_accepted"]
+    assert given[0]["pose"] == "GRASP_A" and given[0]["raised"] == {LIFT: -3.7}
+    lifts = [a[LIFT] for a in robot.sent if LIFT in a]
+    # ABOVE_A after the grasp, ABOVE_C and TIP_C are raised by the same 3.7 degrees; HOME is not
+    for want in (20.0 - 3.7, 30.0 - 3.7, 25.0 - 3.7):
+        assert any(abs(v - want) < 1e-6 for v in lifts), (want, lifts)
+    assert abs(lifts[-1] - -100.0) < 1e-6
+
+
+def test_a_pour_whose_arm_reaches_every_pose_reports_nothing():
+    from agentic.openarms_agent.runner import run
+    from firmware.openarms_executor.motion import FakeRobot
+    from firmware.openarms_executor.pour_once import PLAN
+    notes = []
+    assert run(PLAN, _pour_arm(FakeRobot({LIFT: -100.0}), notes))["status"] == "executed"
+    assert not [e for e, _ in notes if e == "arrival_accepted"]
+
+
+from firmware.openarms_executor.motion import FakeRobot as FakeRobot_  # noqa: E402
+
+
 if __name__ == "__main__":
-    tests = [(n, f) for n, f in list(globals().items()) if n.startswith("test_") and callable(f)]
+    tests =[(n, f) for n, f in list(globals().items()) if n.startswith("test_") and callable(f)]
     failed = 0
     for name, fn in tests:
         try:

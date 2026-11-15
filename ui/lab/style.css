@@ -220,5 +220,7 @@ figcaption summary { min-height: 36px; }
 .bench-summary { font-weight: 640; margin-top: 10px; }
 .bench-notes { font-size: .84rem; color: var(--muted); padding-left: 18px; margin: 6px 13px; }
 .bench-notes .blocked { color: var(--stop); font-weight: 640; }
+.bench-question { margin-top: 10px; padding: 12px; border-radius: 8px; border: 2px solid #c98a00; background: #fdf3d7; }
+.bench-question p { margin: 0 0 8px; font-weight: 640; white-space: pre-line; }
 .bench-result { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--jade-light); }
 .bench-result[data-provenance="UNKNOWN"] { background: #fdf3d7; }
