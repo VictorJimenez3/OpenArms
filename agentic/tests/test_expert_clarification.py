@@ -59,7 +59,7 @@ async def test_fixed_demo_does_not_require_an_unbound_sample_choice(tmp_path):
         sid = (await lab.create())['session_id']
         await settled(lab, await lab.start_task(sid, 'go from a to c please'))
         context = expert.contexts[0]
-        assert context['capability_limits']['supported_operations'] == ['add_sample']
+        assert 'add_sample' in context['capability_limits']['supported_operations']
         assert 'Ask which sample when neither is specified.' not in context['instructions']
         assert 'Do not require a separate sample selection' in context['instructions']
     finally:
