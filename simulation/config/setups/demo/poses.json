@@ -11,11 +11,11 @@
       "wrist_roll": 90.0
     },
     "GRASP_A": {
-      "shoulder_pan": 4.91,
-      "shoulder_lift": 46.02,
-      "elbow_flex": 53.17,
+      "shoulder_pan": 4.86,
+      "shoulder_lift": 45.8,
+      "elbow_flex": 54.29,
       "wrist_flex": -93.85,
-      "wrist_roll": -87.57
+      "wrist_roll": -87.37
     },
     "ABOVE_A": {
       "shoulder_pan": 4.83,

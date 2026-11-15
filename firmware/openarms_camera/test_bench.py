@@ -62,8 +62,8 @@ def test_missing_or_misplaced_rulers_are_explained():
     with pytest.raises(ValueError, match="red rulers"):
         bench.ruler_mapping(np.full((600, 800, 3), 55, np.uint8))
     table, _ = drawn_table()
-    with pytest.raises(ValueError, match="across the top"):
-        bench.ruler_mapping(cv2.rotate(table, cv2.ROTATE_180))
+    # Upside down is only the camera turned on its mount, and is read (see the turned-camera test below).
+    assert bench.ruler_mapping(cv2.rotate(table, cv2.ROTATE_180))[1] < 1.0
 
 
 def test_bench_file_positions_are_read_and_rewritten_in_place(tmp_path):
@@ -88,3 +88,47 @@ def test_real_bench_photo_if_present(name, dish):
     assert error < 0.6
     found = bench.find_pieces(bench.flatten(image, H), (17.0, 35.5))
     assert np.hypot(found["dish"]["cm"][0] - dish[0], found["dish"]["cm"][1] - dish[1]) < 1.0
+    raw = bench.find_pieces_raw(image, H, (17.0, 35.5))  # measured on the camera's own picture
+    assert np.hypot(raw["dish"]["cm"][0] - dish[0], raw["dish"]["cm"][1] - dish[1]) < 1.0
+
+
+@pytest.mark.parametrize("name,beaker", [("look_now.jpg", (23.2, 7.2)), ("latest.jpg", (21.6, 8.4))])
+def test_raw_measurement_of_the_beaker_is_steady_under_recompression(name, beaker):
+    """The flattened search swapped the two containers on recompressed copies of these photos; the raw one must not."""
+    photo = bench.ROOT / "outputs/camera" / name
+    if not photo.exists():
+        pytest.skip("bench photo not on this machine")
+    image = cv2.imread(str(photo))
+    for quality in (None, 95, 85):
+        im = image if quality is None else cv2.imdecode(cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, quality])[1], 1)
+        found = bench.find_pieces_raw(im, bench.ruler_mapping(im)[0], (17.0, 36.0))
+        assert np.hypot(found["beaker"]["cm"][0] - beaker[0], found["beaker"]["cm"][1] - beaker[1]) < 0.6
+
+
+def test_the_mandarin_is_found_in_ruler_centimetres_and_the_rulers_are_never_taken_for_it():
+    table, px = drawn_table()
+    assert bench.find_mandarin(bench.flatten(table, bench.ruler_mapping(table)[0])) is None   # only the red rulers
+    cv2.circle(table, px(18, 11), 58, (30, 140, 245), -1)           # an orange fruit about 5.8 cm across
+    cv2.circle(table, px(6, 20), 12, (30, 140, 245), -1)            # an orange speck, too small to be it
+    for lean in (0.0, 0.25):
+        view, _ = tilted(table, lean)
+        flat = bench.flatten(view, bench.ruler_mapping(view)[0])
+        found = bench.find_mandarin(flat, arm_cm=(17, 36))
+        assert found and np.hypot(found["cm"][0] - 18, found["cm"][1] - 11) < 0.5, (lean, found)
+        assert bench.find_mandarin(flat, arm_cm=(17, 20)) is None   # within reach of the arm's own base: ignored
+        drawn = bench.draw(flat, {}, (17, 36), found, {"A": (22, 8)})
+        assert drawn.shape == flat.shape and (drawn != flat).any()
+
+
+@pytest.mark.parametrize("angle", [30, 90, 180, 270])
+def test_the_rulers_are_read_whichever_way_the_camera_is_turned(angle):
+    """A camera turned on its mount sees the L at any angle; the mapping must still give the same ruler centimetres."""
+    table, px = drawn_table()
+    h, w = table.shape[:2]
+    R = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 0.7)
+    turned = cv2.warpAffine(table, R, (w, h))
+    H, error = bench.ruler_mapping(turned)
+    assert error < 1.0
+    point = np.array([*px(18, 11), 1.0])
+    got = bench.to_cm(H, [(R @ point)[:2]])[0]
+    assert np.hypot(got[0] - 18, got[1] - 11) < 0.5

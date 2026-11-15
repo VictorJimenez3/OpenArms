@@ -24,7 +24,8 @@ function render(next) {
   if (!next || !next.enabled) { section.hidden = true; return; }
   section.hidden = false;
   const target = next.arm === 'real' ? 'the real arm' : 'the stand-in arm';
-  $('bench-arm').textContent = `${next.arm === 'real' ? 'Real arm' : 'Stand-in arm (nothing moves)'} · object at ${next.object_at || 'no station'}`
+  if (next.mode === 'rulers') $('bench-text').placeholder = 'move the mandarin from A to B';
+  $('bench-arm').textContent = `${next.arm === 'real' ? 'Real arm' : 'Stand-in arm (nothing moves)'} · ${next.mode === 'rulers' ? (next.object_cm ? `mandarin at (${next.object_cm[0]}, ${next.object_cm[1]}) cm, nearest ${next.object_at || 'no place'}` : 'placed by the rulers; no mandarin seen yet') : 'object at ' + (next.object_at || 'no station')}`
     + (next.armed ? '' : ' · DISARMED, restart the server') + (next.busy ? ` · ${next.busy}…` : '');
 
   const cam = next.camera || {};
