@@ -13,8 +13,8 @@ from agentic.openarms_lab.simulated_backend import SceneBackend
 from agentic.tests.test_task_loop import TestExpert as ExpertFixture
 
 
-async def wait_for_status(lab, sid, expected):
-    async with asyncio.timeout(10):
+async def wait_for_status(lab, sid, expected, timeout=10):
+    async with asyncio.timeout(timeout):
         while True:
             snapshot = lab.snapshot(sid)
             status = snapshot['tasks'][-1]['status']
@@ -125,7 +125,9 @@ def test_real_simulation_png_and_mp4_use_shared_authenticated_session_routes(tmp
         assert client.post(base + '/confirm', json=binding, headers=headers).status_code == 409
         assert client.post(base + '/present', json={**binding, 'channel': 'text'}, headers=headers).status_code == 200
         assert client.post(base + '/confirm', json=binding, headers=headers).status_code == 200
-        client.portal.call(wait_for_status, lab, sid, 'completed')
+        # Dispatch now takes a new camera image before the actual software
+        # render and MP4 encode. This test checks evidence and access controls.
+        client.portal.call(wait_for_status, lab, sid, 'completed', 25)
         done = client.get(base, headers=headers).json()
         assert done['observations'][-1]['features'] == {'readable': True, 'color': 'pink'}
         assert done['observations'][-1]['provenance'] == 'SIMULATED'

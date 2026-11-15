@@ -11,6 +11,7 @@ import uuid
 import anyio
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
@@ -30,6 +31,11 @@ LOCAL_HOSTS = {'localhost', '127.0.0.1', '::1', 'testserver'}
 
 class Body(BaseModel):
     model_config = ConfigDict(extra='forbid')
+
+
+class SmartivitySeed(Body):
+    seed: int = Field(default=0, ge=0, le=2_147_483_647, strict=True)
+    scenario: Literal['volcano', 'potions'] = 'volcano'
 
 
 class Text(Body):
@@ -130,6 +136,11 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @asynccontextmanager
     async def lifespan(app):
         data = Path(os.getenv('OPENARMS_DATA_DIR', ROOT / 'outputs/lab'))
+        app.state.smartivity_enabled = lab is None and os.getenv('OPENARMS_SMARTIVITY') == '1'
+        app.state.smartivity_root = data / 'smartivity'
+        app.state.smartivity = None
+        app.state.smartivity_owner = None
+        app.state.smartivity_lock = asyncio.Lock()
         if lab is None:
             from .scene import SceneService
             from .simulated_backend import SceneBackend
@@ -141,8 +152,9 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             app.state.execution_mode = execution
             scene_name = os.getenv('OPENARMS_SCENE', 'demo_bench').strip().lower()
             if execution == 'mujoco' and scene_name == 'demo_bench':
-                from .demo_bench import (CONDITIONS, EXPERIMENT, DemoBenchBackend, DemoBenchSceneService,
-                                         DemoBenchSkillEvaluator, execution_scope)
+                from .demo_bench import (CONDITIONS, DemoBenchBackend, DemoBenchSceneService, DemoBenchSkillEvaluator,
+                                         execution_scope, experiment_metadata, experiment_name)
+                EXPERIMENT = experiment_metadata(experiment_name())
                 registry_scope = execution_scope()
                 experiment, conditions = EXPERIMENT, CONDITIONS
                 scene = DemoBenchSceneService(data / 'scene-evidence')
@@ -176,12 +188,14 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             else:
                 raise ValueError('OPENARMS_EXECUTION must be mock or mujoco; hardware is disabled.')
             expert = ConfiguredExpert(
-                data / 'expert-work', artifact_roots=[scene.artifact_dir],
+                data / 'expert-work', artifact_roots=[scene.artifact_dir, *(
+                    [app.state.smartivity_root] if app.state.smartivity_enabled else [])],
                 config_path=os.getenv('OPENARMS_EXPERT_CONFIG'),
                 profile=os.getenv('OPENARMS_EXPERT_PROFILE', 'sol'),
                 reasoning_effort=os.getenv('OPENARMS_EXPERT_EFFORT', 'medium'),
                 executables={'codex': os.getenv('OPENARMS_CODEX_EXECUTABLE', 'codex'),
-                             'claude': os.getenv('OPENARMS_CLAUDE_EXECUTABLE', 'claude')})
+                             'claude': os.getenv('OPENARMS_CLAUDE_EXECUTABLE', 'claude'),
+                             'devin': os.getenv('OPENARMS_DEVIN_EXECUTABLE', 'devin')})
             app.state.lab = Lab(data, expert=expert, perception=scene,
                                 registry=SkillRegistry(data / f'task-skills-{registry_scope}.json'),
                                 evaluator=evaluator,
@@ -189,6 +203,14 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                                 experiment=experiment, conditions=conditions,
                                 execution_scope=registry_scope,
                                 backend_factory=backend_factory, expert_timeout=240)
+            if execution == 'mujoco' and scene_name == 'demo_bench':
+                # Deterministic pre-action and completion checks replace the two nominal expert calls; any
+                # changed, unknown or failed evidence still escalates. The host also localizes before cold planning.
+                # OPENARMS_DEMO_FAST_PATH=0 restores all three expert steps.
+                fast = os.getenv('OPENARMS_DEMO_FAST_PATH', '1').strip() != '0'
+                demo_lab = app.state.lab
+                demo_lab.guarded_demo_bench_checkpoint = demo_lab.guarded_demo_bench_completion = fast
+                demo_lab.fast_planning_context = fast
         else:
             app.state.lab = lab
             app.state.execution_mode = next((b.mode for b in lab.backends.values()), 'mock')
@@ -206,6 +228,8 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             for socket in list(app.state.connections.values()):
                 with contextlib.suppress(Exception):
                     await socket.close(code=1001)
+            if app.state.smartivity is not None:
+                await app.state.smartivity.close()
             await app.state.lab.shutdown()
             app.state.access.close()
 
@@ -255,7 +279,8 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 'experiment_id': service().experiment['id'],
                 'expert_provider': identity.get('provider'), 'expert_model': identity.get('model'),
                 'expert_reasoning_effort': identity.get('reasoning_effort'), 'expert': identity,
-                'pairing_required': bool(os.getenv('OPENARMS_DEMO_TOKEN'))}
+                'pairing_required': bool(os.getenv('OPENARMS_DEMO_TOKEN')),
+                'smartivity_available': app.state.smartivity_enabled}
 
     @app.post('/api/sessions')
     async def create(request: Request):
@@ -272,6 +297,66 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     async def snapshot(sid: str, request: Request):
         authorize(sid, request)
         return public_state(service().snapshot(sid), sid)
+
+    def smartivity_for(sid):
+        if not app.state.smartivity_enabled:
+            raise HTTPException(404, 'Smartivity simulation is disabled.')
+        return app.state.smartivity if app.state.smartivity_owner == sid else None
+
+    async def stop_smartivity(sid):
+        if app.state.smartivity_owner == sid and app.state.smartivity is not None:
+            await app.state.smartivity.stop()
+
+    @app.get('/api/sessions/{sid}/smartivity')
+    async def smartivity_snapshot(sid: str, request: Request):
+        authorize(sid, request)
+        run = smartivity_for(sid)
+        if run is None:
+            from .smartivity import OBJECTIVE
+            return {'status': 'idle', 'objective': OBJECTIVE, 'phase': 'ready',
+                    'seed': 0, 'scenario': 'volcano', 'generation': 0, 'frames': {}, 'evidence': []}
+        return run.snapshot()
+
+    @app.post('/api/sessions/{sid}/smartivity/stop')
+    async def smartivity_stop(sid: str, request: Request):
+        authorize(sid, request)
+        run = smartivity_for(sid)
+        return await run.stop() if run else {'status': 'idle'}
+
+    @app.post('/api/sessions/{sid}/smartivity/{command}')
+    async def smartivity_command(sid: str, command: str, body: SmartivitySeed, request: Request):
+        authorize(sid, request)
+        if command not in ('start', 'reset'):
+            raise HTTPException(404, 'Unknown simulation command.')
+        async with app.state.smartivity_lock:
+            run = smartivity_for(sid)
+            if run is None or run.scenario != body.scenario:
+                from .smartivity import SmartivityRun
+                prior = app.state.smartivity
+                same_owner = app.state.smartivity_owner == sid
+                if prior is not None:
+                    if prior.running and (not same_owner or command != 'reset'):
+                        raise HTTPException(409, 'Stop the current simulation before switching experiments.')
+                    await prior.close()
+                run = SmartivityRun(app.state.smartivity_root / sid, service().expert, scenario=body.scenario)
+                if prior is not None and same_owner:
+                    run.generation = prior.generation
+                app.state.smartivity = run
+                app.state.smartivity_owner = sid
+            return await (run.start(body.seed) if command == 'start' else run.reset(body.seed))
+
+    @app.get('/api/sessions/{sid}/smartivity/frame/{camera}')
+    async def smartivity_frame(sid: str, camera: str, request: Request):
+        authorize(sid, request)
+        run = smartivity_for(sid)
+        frame = run.frames.get(camera) if run else None
+        if frame is None:
+            raise HTTPException(404, 'Camera frame is unavailable.')
+        return Response(frame.jpeg, media_type='image/jpeg', headers={
+            'X-Frame-Id': frame.metadata['frame_id'],
+            'X-Captured-At': str(frame.metadata['captured_at']),
+            'X-Generation': str(frame.metadata['generation']),
+        })
 
     @app.get('/api/sessions/{sid}/evidence/{evidence_id}')
     async def evidence(sid: str, evidence_id: str, request: Request):
@@ -362,9 +447,11 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.post('/api/sessions/{sid}/stop')
     async def stop(sid: str, request: Request):
         authorize(sid, request)
+        stops = [service().stop(sid), stop_smartivity(sid)]
         if getattr(app.state, 'bench', None) is not None:
-            await app.state.bench.stop()  # the page's one Stop button also stops the real arm
-        return public_state(await service().stop(sid), sid)
+            stops.append(app.state.bench.stop())  # the page's one Stop button also stops the real arm
+        result = (await asyncio.gather(*stops))[0]
+        return public_state(result, sid)
 
     # ---- real-bench lane -------------------------------------------------------------------
     # Same machine only: these routes can move a real arm and have no remote pairing.
@@ -418,7 +505,8 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.post('/api/sessions/{sid}/disconnect')
     async def disconnect(sid: str, request: Request):
         authorize(sid, request)
-        return public_state(await service().stop(sid, disconnect=True), sid)
+        result, _ = await asyncio.gather(service().stop(sid, disconnect=True), stop_smartivity(sid))
+        return public_state(result, sid)
 
     @app.websocket('/api/sessions/{sid}/live')
     async def session_socket(ws: WebSocket, sid: str):
@@ -440,7 +528,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
         previous = app.state.connections.get(sid)
         app.state.connections[sid] = ws  # Old cleanup can no longer revoke this owner.
         if previous is not None:
-            await service().stop(sid, disconnect=True)
+            await asyncio.gather(service().stop(sid, disconnect=True), stop_smartivity(sid))
             with contextlib.suppress(Exception):
                 await previous.close(code=4001, reason='Session opened on another connection')
         current = service().get(sid)
@@ -531,7 +619,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                         if voice:
                             await voice.interrupt(msg.get('reply_id'))
                     elif kind == 'stop':
-                        await service().stop(sid)
+                        await asyncio.gather(service().stop(sid), stop_smartivity(sid))
                         if voice:
                             await voice.interrupt(None)
                     elif kind == 'close':
@@ -574,7 +662,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 service().subscribers[sid].discard(queue)
                 if app.state.connections.get(sid) is ws:
                     app.state.connections.pop(sid, None)
-                    await service().stop(sid, disconnect=True)
+                    await asyncio.gather(service().stop(sid, disconnect=True), stop_smartivity(sid))
                 await stop_voice()
                 with contextlib.suppress(Exception):
                     await ws.close()

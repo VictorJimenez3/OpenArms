@@ -29,9 +29,14 @@ SOCIAL_REPLIES = {
 
 REPEAT = re.compile(r'^(?:(?:can|could|would|will) you |please )?'
                     r'(?:repeat|say (?:that|it) again|tell me more|go over (?:that|it) again)\b')
+ACTION_REPEAT = re.compile(
+    r'\brepeat\s+(?:(?:the|that|same|last|previous)\s+)?'
+    r'(?:(?:[a-z]to[a-z]|[a-z] to [a-z])\s+)?'
+    r'(?:pour|transfer|action|pickup|pick up|put down|move)\b'
+    r'(?!\s+(?:plan|proposal|instructions|explanation|description)\b)')
 REQUEST = re.compile(r'^(?:(?:can|could|would|will) you |please )'
                      r'(?:please )?(?:test|run|pour|pick up|put down|set down|inspect|use|try|'
-                     r'prepare|start|move|heat|mix|measure|perform|do (?:the|a))\b')
+                     r'prepare|start|move|heat|mix|measure|perform|transfer|tip|empty|decant|repeat|redo|do (?:the|a))\b')
 QUESTION = re.compile(
     r"^(?:(?:what|which|why|where|when|who|how)\b|"
     r"(?:explain|tell me (?:about|why|what|which|where|when|how))\b|"
@@ -90,7 +95,7 @@ def prediction_input(text):
 
 def read_only_turn(text):
     norm = words(text)
-    if norm in SOCIAL_REPLIES or REPEAT.match(norm) or PROGRESS_CHECK.fullmatch(norm):
+    if norm in SOCIAL_REPLIES or repeat_speech(norm) or PROGRESS_CHECK.fullmatch(norm):
         return True
     if re.match(r'^(?:can|could|would|will) you\b', norm) and re.search(
             r'\b(?:after this|after that|later|next time|in the future)\b', norm):
@@ -111,7 +116,12 @@ def explicit_action(text):
     if reset_input(norm) or read_only_turn(norm):
         return False
     return bool(REQUEST.match(norm) or re.match(
-        r'^(?:test|run|pour|pick up|put down|set down|inspect|move|mix|measure)\b', norm))
+        r'^(?:test|run|pour|pick up|put down|set down|inspect|move|mix|measure|transfer|tip|empty|decant|repeat|redo)\b', norm))
+
+
+def repeat_speech(text):
+    norm = words(text)
+    return bool(REPEAT.match(norm) and not ACTION_REPEAT.search(norm))
 
 
 def controller_state(state, task):
@@ -166,7 +176,7 @@ def conversation_reply(text, state):
     water_only = (state.get('experiment') or {}).get('id') == 'two_vessel_water'
     if norm in SOCIAL_REPLIES:
         return SOCIAL_REPLIES[norm]
-    if REPEAT.match(norm):
+    if repeat_speech(norm):
         if state.get('pending'):
             return state['pending']['summary']
         previous = next((m['text'] for m in reversed(state['messages'])
