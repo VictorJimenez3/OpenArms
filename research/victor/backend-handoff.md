@@ -29,6 +29,15 @@ Invariants any UI must keep: show the exact proposal, then send `present` and a 
 
 `ui/lab/{api.js, app.js, index.html, live-client.js, bench.js, bench-voice.js, style.css, tests/browser.spec.mjs}` plus Joseph's `ui/lab/smartivity.js` and `smartivity.css`. Main has since removed the Smartivity panel (`smartivity.js/.css` and its `index.html` block); a UI overhaul can drop it too without affecting the backend. Experiment selection is currently a startup setting, not an API; a UI picker needs a small backend endpoint.
 
+## Interactive demo bench (multi-command sessions)
+
+- The bench keeps its state between commands; `/prepare` is only needed when the student asks to reset. Each new pour replays the trial's earlier pours unrecorded (same deterministic motion) and records only the new one.
+- `add_sample` has `amount: all | half` (half pours half of what is left). Pouring an empty beaker is refused with "The beaker at A is already empty. Reset the bench to refill it."; the live expert instead asks whether to reset.
+- `pending.student_summary`: plain-language plan ending "Nothing moves until you say confirm." `pending.summary` (what consent binds to) is unchanged in form; half pours say so.
+- `state.pours_done` and `state.cup_portions` (share left in the beaker) are controller-reported; the observation remains the evidence.
+- Per-experiment servers: `agentic/scripts/run_demo_suite.sh` starts volcano :8011, potions :8012, lava_lamp :8013.
+- Live (Devin Sol Fast, volcano): half, half again, the rest, then "pour it again" -> 3 completed pours at 15-16 s each, then a clarification offering reset; no reset between commands.
+
 ## Verified before the UI merge
 
 - Full suite: 900 passed, 1 skipped (`agentic/tests simulation/tests`). Firmware: `test_arm.py` 29 passed; camera `test_bench.py` 9 passed, 3 skipped (need a camera) and `test_stations.py` 14 passed. `test_action.py` is a hardware dry-run script, not a test; `test_transfer_runner.py` has no tests.

@@ -16,6 +16,7 @@ from .two_vessel_worker import _emit, run_worker as _run_worker
 SETUP = 'demo'
 CAMERA_ID = 'demo_bench_overview'
 CONFIGURATION_ID = 'demo_bench_overview.v1'
+FRACTIONS = {'all': 1.0, 'half': 0.5}
 VARIANTS = ('nominal', 'camera_shift', 'missing', 'swapped', 'occluded')
 
 run_worker = functools.partial(_run_worker, module='agentic.openarms_lab.demo_bench_worker')
@@ -119,14 +120,23 @@ def _run(folder, command):
         _emit(kind='capture', reference=reference, motion_seconds=state['motion_seconds'] if state else 0, **result)
         return
 
-    if command['kind'] != 'execute' or (command.get('source'), command.get('into'), command.get('portions')) != ('A', 'C', 1):
-        raise ValueError('Only add_sample(source=A, into=C, portions=1) is supported on the demo bench.')
+    amounts = [*command.get('history', []), command.get('amount', 'all')]
+    if (command['kind'] != 'execute' or (command.get('source'), command.get('into'), command.get('portions')) != ('A', 'C', 1)
+            or any(amount not in FRACTIONS for amount in amounts) or len(amounts) > 8):
+        raise ValueError('Only add_sample(source=A, into=C, portions=1, amount=all|half) is supported on the demo bench.')
     if not re.fullmatch(r'\.[0-9a-f]{32}\.mp4', command['video_name']):
         raise ValueError('Invalid staging video name.')
     plan = {'plan_id': 'demo-bench', 'steps': [{'action': 'add_sample', 'args': {'source': 'A', 'into': 'C', 'portions': 1}}]}
     segments = build_segments(expand_plan(plan), pose_file['poses'], jm, bench.stations)
     scene = build_scene(bench)
     player = player_for(scene)
+    # The bench carries over between commands: replay the earlier pours of this trial, unrecorded
+    # and with the same deterministic motion, so this pour starts from the state they left.
+    for amount in amounts[:-1]:
+        player.pour_fraction = FRACTIONS[amount]
+        player.run(segments, fps=30)
+    player.pour_fraction = FRACTIONS[amounts[-1]]
+    replayed_seconds, replayed_pours = player.t, len(player.poured)
     recorder = VideoRecorder(scene, folder / command['video_name'], fps=30, speed=1)
     last_phase = None
     trace = []
@@ -136,8 +146,9 @@ def _run(folder, command):
         recorder(player)
         phase = player.step + ': ' + player.label
         if phase != last_phase:
-            trace.append({'phase': phase, 'motion_seconds': player.t})
-            _emit(kind='progress', phase=phase, frame_count=recorder.frames, motion_seconds=player.t, **frame(scene))
+            trace.append({'phase': phase, 'motion_seconds': player.t - replayed_seconds})
+            _emit(kind='progress', phase=phase, frame_count=recorder.frames, motion_seconds=player.t - replayed_seconds,
+                  **frame(scene))
             last_phase = phase
 
     try:
@@ -146,13 +157,15 @@ def _run(folder, command):
         recorder.close()
     state = {'model': {f: getattr(scene.model, f).tolist() for f in ('geom_size', 'geom_pos', 'geom_rgba')},
              'data': {f: getattr(scene.data, f).tolist() for f in ('qpos', 'mocap_pos', 'mocap_quat')},
-             'motion_seconds': player.t}
+             'motion_seconds': player.t - replayed_seconds}
     # The demo bench has no docks, so "returned" is the cup back on its mark with the gripper empty.
     returned = player.location.get('A') == 'A' and player.holding is None
     home = bool(segments and segments[-1].step == 'home()')
     successful = not any(issue.severity == 'block' for issue in player.issues)
-    _emit(kind='result', ok=successful and returned and home and len(player.poured) == 1,
-          frame_count=recorder.frames, motion_seconds=player.t, dose_count=len(player.poured),
+    poured = len(player.poured) - replayed_pours
+    _emit(kind='result', ok=successful and returned and home and poured == 1,
+          frame_count=recorder.frames, motion_seconds=player.t - replayed_seconds, dose_count=poured,
+          donor_remaining=round(sum(player.contents['A'].values()), 6),
           warnings=[issue.message for issue in player.issues], state=state, trace=trace,
           returned_to_dock=returned, home_reached=home, video_name=command['video_name'], **frame(scene))
 

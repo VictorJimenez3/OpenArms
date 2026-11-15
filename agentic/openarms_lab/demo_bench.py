@@ -16,7 +16,7 @@ from bench_vision.perception import observation
 from simulation.openarms_sim.render import OVERVIEW_HEIGHT, OVERVIEW_WIDTH
 
 from .contracts import AddSampleArguments
-from .demo_bench_worker import (CONFIGURATION_ID, CAMERA_ID, EXPERIMENTS_FILE, SETUP, experiment_contents,
+from .demo_bench_worker import (CONFIGURATION_ID, CAMERA_ID, EXPERIMENTS_FILE, FRACTIONS, SETUP, experiment_contents,
                                 experiment_name, experiments, run_worker)
 from .scene import camera_metadata
 from .skills import compute_skill_hash
@@ -188,10 +188,11 @@ def read_pixels(pixels, anchor, tolerance_px=6):
                 float(np.linalg.norm(frame[wall].reshape(-1, 3).mean(0) - EMPTY_GLASS)) < 40)
     fill = frame[ay-10:ay, ax-6:ax+6].reshape(-1, 3).mean(0)
     to_full, to_glass = float(np.linalg.norm(fill - anchor['donor_rgb'])), float(np.linalg.norm(fill - EMPTY_GLASS))
-    if has_wall and to_full < to_glass and to_full < 30:
-        result['donor'] = 'liquid_visible'
-    elif has_wall and to_glass < to_full and to_glass < 30:
+    # Any fill that is not the clear empty glass is liquid: a partly poured beaker reads paler than at reset.
+    if has_wall and to_glass < 30 and to_glass < to_full:
         result['donor'] = 'empty'
+    elif has_wall and to_glass >= 30:
+        result['donor'] = 'liquid_visible'
     else:
         result['reason'] = 'The beaker at A is missing, hidden or unreadable.'
         return result
@@ -288,6 +289,20 @@ class DemoBenchBackend(TwoVesselBackend):
         for key in two_vessel_scene.SCENE:
             simulation.pop(key, None)
         simulation.update(**SCENE, warnings=list(LIMITATIONS))
+        # Completed pours of this trial, replayed by the worker so the next command starts where they left off.
+        self._history = []
+        self._state.update(pours_done=0, cup_portions=1.0)
+
+    async def execute_step(self, request_id, arguments, progress, *, operation=OPERATION):
+        request = self.check_step(operation, arguments)
+        receipt = await super().execute_step(request_id, arguments, progress, operation=operation)
+        if receipt['status'] == 'completed':
+            self._history.append(request.amount)
+            remaining = 1.0
+            for amount in self._history:
+                remaining *= 1 - FRACTIONS[amount]
+            self._state.update(cup_portions=round(remaining, 6), receiver_portions=None, pours_done=len(self._history))
+        return receipt
 
     @staticmethod
     def capabilities():
@@ -300,25 +315,36 @@ class DemoBenchBackend(TwoVesselBackend):
                     'expected_state_contract': 'SkillDefinition.expected_state describes the final controller state. '
                         'Declare at=HOME; it is not a camera-observed feature or physical success.',
                     'required_outcome_checks': [{'feature': 'donor_appearance', 'expected': 'empty'}],
+                    # Half a pour leaves liquid in the beaker; its outcome is the beaker still showing liquid.
+                    'required_outcome_checks_by_amount': {
+                        'half': [{'feature': 'donor_appearance', 'expected': 'liquid_visible'}]},
                     'outcome_checks_contract': 'outcome_checks are checked independently against fresh SIMULATED '
                         'image features in scene.observable_features. The transfer is evidenced by the beaker at A '
                         'reading empty; the receiver colour is reported from the image and may or may not change.',
                     'qualification': 'Simulated capability on the openarms_sim demo setup only; not chemistry or physical readiness.',
                 },
                 'action_description': 'pour the beaker at A into the container at C once, return the beaker to A and go HOME',
+                'operation_notes': 'add_sample amount=all pours everything still in the beaker; amount=half pours half of '
+                    'what is left. The bench keeps its state between commands until the student asks to reset, so a '
+                    'second pour acts on what the first left. An empty beaker cannot be poured.',
                 'limitations': [*LIMITATIONS, 'One pour from the beaker at A into the container at C; no other route or amount.']}
 
     def check_step(self, operation, arguments):
         if operation != OPERATION:
             raise ValueError('The demo bench supports only add_sample from A into C.')
         request = AddSampleArguments.model_validate(arguments)
-        if self.session_id is None or self._state['simulation']['status'] != 'ready' or not self._idle.is_set():
+        if (self.session_id is None or self._state['simulation']['status'] not in ('ready', 'completed')
+                or not self._idle.is_set()):
             raise ValueError('Prepare a fresh MuJoCo trial before executing.')
+        if self._state.get('cup_portions', 1) <= 0.01:
+            raise ValueError('The beaker at A is already empty. Reset the bench to refill it.')
+        if len(self._history) >= 7:
+            raise ValueError('This trial has had many pours; reset the bench to start again.')
         return request
 
-    @staticmethod
-    def _command(request):
-        return {'source': request.source, 'into': request.into, 'portions': request.portions}
+    def _command(self, request):
+        return {'source': request.source, 'into': request.into, 'portions': request.portions,
+                'amount': request.amount, 'history': list(self._history)}
 
 
 class DemoBenchSkillEvaluator(TwoVesselSkillEvaluator):
@@ -333,9 +359,11 @@ class DemoBenchSkillEvaluator(TwoVesselSkillEvaluator):
 
     @staticmethod
     def _check_definition(definition, plan):
+        amounts = {s['arguments'].get('amount', 'all') for s in plan['steps'] if s['operation'] == OPERATION}
+        donor = 'liquid_visible' if amounts == {'half'} else 'empty'
         if definition.expected_state.get('at') != 'HOME' or not any(
-                c.feature == 'donor_appearance' and c.expected == 'empty' for c in definition.outcome_checks):
-            raise ValueError('Demo bench admission requires an empty-donor outcome check and final HOME.')
+                c.feature == 'donor_appearance' and c.expected == donor for c in definition.outcome_checks):
+            raise ValueError(f'Demo bench admission requires a donor_appearance={donor} outcome check and final HOME.')
         actions = [s for s in plan['steps'] if s['operation'] in (OPERATION,) or s['operation'].startswith('mock_')]
         if len(actions) != 1 or actions[0]['operation'] != OPERATION:
             raise ValueError('Only one add_sample A-to-C operation can be admitted on the demo bench.')

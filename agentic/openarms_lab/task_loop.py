@@ -78,6 +78,9 @@ def describe_step(step, action_description=None):
     if operation == 'mock_pour':
         return 'pour one prepared portion into the receiver at station C'
     if operation == 'add_sample':
+        if args.get('amount') == 'half':
+            return (f"pour half of what is in the beaker at {args['source']} into the container at {args['into']} once, "
+                    f"return the beaker to {args['source']} and go HOME")
         if action_description:
             return action_description
         return f"pour one portion from the cup at station {args['source']} into station {args['into']}, return the cup and go HOME"
@@ -87,6 +90,27 @@ def describe_step(step, action_description=None):
             text += ', trying the '+args['fallback_view']+' camera if the first view is unreadable'
         return text
     raise ValueError('Unsupported proposal operation.')
+
+
+def student_step(step):
+    """One plain-language phrase per step, for the student; consent still binds to the exact summary."""
+    args, operation = step['arguments'], step['operation']
+    if operation == 'inspect_scene':
+        return 'look at the bench'
+    if operation == 'localize_objects':
+        return 'find the ' + ' and '.join(args['labels'])
+    if operation == 'add_sample':
+        share = 'half of the liquid' if args.get('amount') == 'half' else 'all the liquid'
+        return f"pour {share} from the beaker at {args['source']} into the container at {args['into']}, then put the beaker back"
+    if operation == 'observe':
+        return 'take a picture to check what happened'
+    return describe_step(step)
+
+
+def student_summary(plan):
+    phrases = [student_step(step) for step in plan['steps']]
+    text = phrases[0] if len(phrases) == 1 else ', '.join(phrases[:-1]) + ' and ' + phrases[-1]
+    return 'The robot will ' + text + '. Nothing moves until you say confirm.'
 
 
 class TaskLoop:
@@ -640,11 +664,13 @@ class TaskLoop:
                 into = action['arguments'].get('into', into)
                 for text in dict.fromkeys((intent, task['request'])):
                     self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour',
-                                              source=source, into=into)
+                                              source=source, into=into, amount=action['arguments'].get('amount'))
             backend.check_step(action['operation'], action['arguments'])
             # Success must rest on the observer's reading of the pour, not on features that never change.
             planned = {(c['feature'], compute_skill_hash(c['expected'])) for c in plan['outcome_checks']}
-            for rule in (capabilities.get('skill_admission') or {}).get('required_outcome_checks', []):
+            admission = capabilities.get('skill_admission') or {}
+            rules = (admission.get('required_outcome_checks_by_amount') or {}).get(action['arguments'].get('amount'))
+            for rule in rules or admission.get('required_outcome_checks', []):
                 if (rule['feature'], compute_skill_hash(rule['expected'])) not in planned:
                     raise ValueError('The plan must check '+rule['feature']+' = '+str(rule['expected'])+'.')
             self._fixture_state(task, scene['frame_id'], action)
@@ -663,8 +689,12 @@ class TaskLoop:
             raise ValueError(self._perception_error(exc)) from exc
 
     @staticmethod
-    def _check_water_request(text, liquids=False, *, source='A', into='C'):
+    def _check_water_request(text, liquids=False, *, source='A', into='C', amount=None):
         text = positive_pour_request(text, source, into)
+        # The demo bench can pour half of what is left or all of it; only the matching words are allowed.
+        allowed = {'half': r'\bhalf\b', 'all': r'\b(?:all\s+of|everything|the\s+rest)\b'}.get(amount) if liquids else None
+        if allowed:
+            text = re.sub(allowed, ' ', text, flags=re.I)
         # The demo bench holds the kit liquids, so only the water scene rejects them by name.
         if not liquids and OTHER_LIQUID.search(text):
             raise ValueError('This two-vessel setup supports water only. No pour was approved.')
@@ -848,6 +878,7 @@ class TaskLoop:
                    'proposal_version': s['proposal_sequence'], 'plan_hash': compute_skill_hash(bound_plan),
                    'plan': bound_plan, 'skill_id': plan['skill_id'], 'skill_version': plan['skill_version'],
                    'condition_id': task['condition_id'], 'prediction': task['prediction'], 'summary': summary,
+                   'student_summary': student_summary(plan),
                    'status': 'requested', 'presented': False, 'presentation': None,
                    'student_confirmed': False, 'expires_at': time.time() + self.confirmation_ttl,
                    'metrics': {'dispatch': task['route'], 'planning_ms': (time.perf_counter() - began) * 1000,
@@ -1014,8 +1045,9 @@ class TaskLoop:
         try:
             plan = request['plan']
             if ([step['operation'] for step in plan['steps']] != ['inspect_scene', 'add_sample', 'observe'] or
-                    compute_skill_hash(plan['steps'][1]['arguments']) !=
-                    compute_skill_hash({'source': 'A', 'into': 'C', 'portions': 1}) or
+                    compute_skill_hash({'amount': 'all', **plan['steps'][1]['arguments']}) not in (
+                        compute_skill_hash({'source': 'A', 'into': 'C', 'portions': 1, 'amount': amount})
+                        for amount in ('all', 'half')) or
                     plan['expected_state'].get('at') != 'HOME' or
                     compute_skill_hash(plan) != request['plan_hash'] or task['plan'] != plan or
                     request['student_confirmed'] is not True or request['presented'] is not True or

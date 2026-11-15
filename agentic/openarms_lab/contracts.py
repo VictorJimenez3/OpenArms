@@ -164,6 +164,8 @@ class AddSampleArguments(FrozenModel):
     source: Literal['A'] = 'A'
     into: Literal['C'] = 'C'
     portions: int = Field(default=1, ge=1, le=1)
+    # How much of what is in the beaker one pour moves: all of it, or half of what is left.
+    amount: Literal['all', 'half'] = 'all'
 
 
 PRIMITIVE_SCHEMAS = {
