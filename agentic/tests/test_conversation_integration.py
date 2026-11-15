@@ -198,8 +198,9 @@ async def test_progress_and_science_questions_answer_while_confirmation_executes
         await asyncio.wait_for(entered.wait(), 5)
         expert_calls = len(expert.contexts)
 
-        status = await lab.converse(sid, 'How is it going?')
-        assert 'action hasn’t started' in status['messages'][-1]['text']
+        for question in ('How is it going?', 'hey is it ready yet', 'its not doing anything'):
+            status = await lab.converse(sid, question)
+            assert 'action hasn’t started' in status['messages'][-1]['text']
         science = await lab.converse(sid, 'What is the water control for?')
         assert 'comparison' in science['messages'][-1]['text']
         assert [t['task_id'] for t in science['tasks']] == [task_id]
