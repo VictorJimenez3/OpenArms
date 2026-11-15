@@ -1,0 +1,15 @@
+COMMON RULES (OpenArms harness loop, requirement D1/D3/D4 R2/R4/R6, issue #19 read-only)
+- You are an optimizer/implementation worker. Do NOT recursively delegate. Do NOT read /Users/victor/OpenArms/harness-loop-v2/.devin/harness-loop/heldout.jsonl, the grader agentic/benchmarks/harness_grader.py, cases.jsonl expectations, or coordinator outputs/. Do NOT run agentic/scripts/harness_benchmark.py, live Codex/Claude expert calls, or the app server. The coordinator owns benchmarks, simulator benchmark runs, registries and adoption.
+- Read AGENTS.md, docs/ARCHITECTURE.md, docs/INTERFACES.md, research/duc/demo-bench-integration.md, research/duc/integration.md first.
+- Baseline commit 0287c6e35f36c2f690ccbb6104bf146e1570aa61 (branch-tip 47a00c1 + opt-in TaskLoop.guarded_demo_bench_checkpoint). Work ONLY in your own worktree/branch. No GitHub posting, no push, no merge.
+- Preserve exact student approval (present then fresh confirm of exact proposal version), STOP/cancel/generation invalidation, single dispatch, fresh independent observation, fail-closed unknown/stale evidence, requested vs actual model identity. Your change must be a TaskLoop class attribute defaulting to False (same pattern as guarded_demo_bench_checkpoint); default behaviour must be byte-for-byte unchanged when the flag is False.
+- TDD: write failing tests first in a NEW test file, run them red, implement minimally, run green. Do not add or remove existing code comments.
+- Python env: /Users/victor/OpenArms/device-expert-smoke/.venv-lab/bin/python. Test command pattern:
+  PYTHONPATH=agentic:. /Users/victor/OpenArms/device-expert-smoke/.venv-lab/bin/python -m pytest <files> --import-mode=importlib -o asyncio_mode=auto -q
+  Finally run the full suite: ... -m pytest agentic/tests simulation/tests --import-mode=importlib -o asyncio_mode=auto -q (candidate baseline: 747 passed). Unit tests may spawn MuJoCo workers in pytest tmp dirs; that is allowed.
+- Commit your work on your branch with a concise why-focused message ending with:
+  Generated with [Devin](https://devin.ai)
+
+  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+  Use: git -c user.name="Devin" -c user.email="158243242+devin-ai-integration[bot]@users.noreply.github.com" commit ... if no identity is configured. Never change git config.
+- Final reply (<=300 words): commit hash, files changed, exact flag API, guard conditions, test commands with real pass counts, any limitation. Do not claim latency improvements: the coordinator measures them.
