@@ -92,6 +92,7 @@ def execution_scope():
 
 # The empty clear beaker as the overview camera renders it (identical in every experiment).
 EMPTY_GLASS = np.array([127, 186, 237])
+HELD_EMPTY_GLASS = np.array([228, 234, 240])
 RECEIVER_COLOUR_TOLERANCE = 45
 RECEIVER_COLOUR_MARGIN = 15
 
@@ -164,18 +165,20 @@ def _donor_marker(pixels):
     return _centre((r > 150) & (b > 150) & (g < 120) & (r - g > 80) & (b - g > 80), minimum=12)
 
 
-def _held_donor_reading(pixels, marker):
+def _held_donor_reading(pixels, marker, full_reference):
     # The mark travels with the beaker. The nearby interior patch stays clear of it.
     x, y = np.rint(marker).astype(int) + (9, 9)
     fill = pixels[y-3:y+4, x-3:x+4]
     if fill.shape != (7, 7, 3):
         return 'unknown'
-    r, g, b = fill.transpose(2, 0, 1).astype(int)
-    if ((r >= 155) & (r < 235) & (g - b >= 7)).mean() >= .7:
-        return 'liquid_visible'
-    if ((r >= 140) & (r < 240) & (b - r >= 12) & (b >= g)).mean() >= .7:
-        return 'empty'
-    return 'unknown'
+    appearance = fill.reshape(-1, 3).mean(0)
+    # In the two registered held positions, the patch no longer sits against
+    # the station. Rendered full samples brighten by roughly 13 RGB units.
+    full = np.linalg.norm(appearance - np.clip(full_reference + 13, 0, 255)) <= 24
+    empty = np.linalg.norm(appearance - HELD_EMPTY_GLASS) <= 15
+    if full == empty:
+        return 'unknown'
+    return 'liquid_visible' if full else 'empty'
 
 
 def read_pixels(pixels, anchor, tolerance_px=6):
@@ -222,7 +225,7 @@ def read_pixels(pixels, anchor, tolerance_px=6):
     lifted = centres['A'] + (-13, -90)
     over_receiver = centres['C'] + (-36, -55)
     if min(np.linalg.norm(marker - lifted), np.linalg.norm(marker - over_receiver)) <= 10:
-        donor = _held_donor_reading(pixels, marker)
+        donor = _held_donor_reading(pixels, marker, anchor['donor_rgb'])
         if donor == 'unknown':
             result['reason'] = 'The beaker mark is visible but the beaker itself is unreadable.'
             return result
@@ -293,10 +296,12 @@ class DemoBenchSceneService(TwoVesselSceneService):
     async def localize_objects(self, sid, evidence_id, labels):
         result = self._observe_pixels(sid, evidence_id)
         reference, _view = self.frames[sid, evidence_id]
-        centres = result.get('marker_centres_px', {})
-        cx, cy = centres.get('C', (0, 0))
-        boxes = {'source': result.get('donor_box'),
-                 'receiver': [int(cx - 45), int(cy - 30), int(cx + 46), int(cy + 21)] if result['ready'] else None}
+        centre = result.get('marker_centres_px', {}).get('C')
+        receiver_box = None
+        if result['ready'] and centre is not None:
+            cx, cy = centre
+            receiver_box = [int(cx - 45), int(cy - 30), int(cx + 46), int(cy + 21)]
+        boxes = {'source': result.get('donor_box') if result['ready'] else None, 'receiver': receiver_box}
         aliases = {**two_vessel_scene.ALIASES, 'beaker': 'source', 'container': 'receiver'}
         detections, verified = [], []
         for label in labels:
@@ -321,24 +326,24 @@ class DemoBenchSceneService(TwoVesselSceneService):
         # Controller status and the plan's expectations are deliberately ignored.
         frame = await self.inspect_scene(sid, execution_receipt.get('view', 'primary'))
         raw = self._observe_pixels(sid, frame['evidence_id'])
-        features = {'readable': raw['ready']}
-        if raw['ready']:
-            features.update(receiver_appearance=raw['receiver'], sample_cup_held=raw['held'])
-            if raw['donor'] != 'unknown':
-                features['donor_appearance'] = raw['donor']
+        ready = (raw['ready'] and type(raw.get('held')) is bool
+                 and raw.get('donor') in ('empty', 'liquid_visible')
+                 and raw.get('receiver') in self.feature_schema['receiver_appearance']['enum'])
+        features = {'readable': ready}
+        if ready:
+            features.update(donor_appearance=raw['donor'], receiver_appearance=raw['receiver'], sample_cup_held=raw['held'])
             if not raw['held']:
                 features['sample_cup_station'] = 'A'
-        if not raw['ready']:
+        if not ready:
             text = 'The overview is unreadable or unregistered; the outcome is unknown.'
         else:
             colour = raw['receiver'].replace('_liquid', '') + ' liquid'
-            location = 'The arm is holding the beaker' if raw['held'] else 'The beaker is back on its mark'
-            fill = {'empty': 'looks empty', 'liquid_visible': 'still shows liquid',
-                    'unknown': 'has unreadable fill'}[raw['donor']]
+            location = 'The arm is holding the beaker' if raw['held'] else 'The beaker is on its mark'
+            fill = 'looks empty' if raw['donor'] == 'empty' else 'shows liquid'
             text = f'{location}. The beaker {fill}; the container at C shows {colour}.'
-        return {**frame, 'status': 'observed' if raw['ready'] else 'unknown', 'observer_version': METHOD,
+        return {**frame, 'status': 'observed' if ready else 'unknown', 'observer_version': METHOD,
                 'features': features, 'pixel_observation': raw, 'text': text,
-                'reason': None if raw['ready'] else raw.get('reason') or 'Outcome is unknown.'}
+                'reason': None if ready else raw.get('reason') or 'Outcome is unknown.'}
 
 
 class DemoBenchBackend(TwoVesselBackend):

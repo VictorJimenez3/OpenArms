@@ -183,6 +183,7 @@ async def test_distinct_beaker_actions_preserve_the_simulated_pose_until_the_nex
             assert outcome['provenance'] == 'SIMULATED'
             assert all(outcome['checks'].values())
             assert outcome['features']['sample_cup_held'] is (holding is not None)
+            assert outcome['features']['donor_appearance'] == ('liquid_visible' if operation == 'pick' else 'empty')
             assert outcome['evidence'][-1] not in observations
             observations.add(outcome['evidence'][-1])
         assert state['state']['cup_portions'] == 0 and state['state']['receiver_portions'] == 1
