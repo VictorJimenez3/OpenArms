@@ -430,11 +430,11 @@ def test_a_grasp_that_meets_the_table_stops_pressing():
     assert robot.sent[-1][LIFT] == 45.0, "re-commanded to where it stopped, so it no longer presses on the table"
 
 
-def _pour_arm(robot, notes):
+def _pour_arm(robot, notes, poses=None, limits=None):
     from firmware.openarms_executor.pour_once import ObservedPour
-    poses = {"poses": {"HOME": {LIFT: -100.0}, "ABOVE_A": {LIFT: 20.0}, "GRASP_A": {LIFT: 48.7},
-                       "ABOVE_C": {LIFT: 30.0}, "TIP_C": {LIFT: 25.0}}, "gripper": {"open": 90.0, "cup": 15.0}}
-    arm = ObservedPour(robot, poses, note=lambda e, **d: notes.append((e, d)), fake=True)
+    poses = poses or {"poses": {"HOME": {LIFT: -100.0}, "ABOVE_A": {LIFT: 20.0}, "GRASP_A": {LIFT: 48.7},
+                                "ABOVE_C": {LIFT: 30.0}, "TIP_C": {LIFT: 25.0}}, "gripper": {"open": 90.0, "cup": 15.0}}
+    arm = ObservedPour(robot, poses, note=lambda e, **d: notes.append((e, d)), fake=True, limits=limits)
     arm.seconds, arm.hz = 0.05, 60
     return arm
 
@@ -460,6 +460,50 @@ def test_after_a_grasp_stops_high_the_carried_poses_are_raised_and_the_cup_set_d
     for want in (20.0 - 3.7, 30.0 - 3.7, 25.0 - 3.7):
         assert any(abs(v - want) < 1e-6 for v in lifts), (want, lifts)
     assert abs(lifts[-1] - -100.0) < 1e-6
+
+
+def test_a_lagging_pan_at_the_grasp_does_not_shift_where_the_cup_is_carried():
+    from agentic.openarms_agent.runner import run
+    from firmware.openarms_executor.pour_once import PLAN
+    PAN = "shoulder_pan.pos"
+
+    class Table(FakeRobot_):
+        def get_observation(self):
+            o = dict(self.pos)
+            o[LIFT] = min(o[LIFT], 45.0)
+            o[PAN] = min(o[PAN], 5.0)  # pan stops 5 degrees short of the grasp
+            return o
+
+    poses = {"poses": {"HOME": {LIFT: -100.0, PAN: 0.0}, "ABOVE_A": {LIFT: 20.0, PAN: 0.0},
+                       "GRASP_A": {LIFT: 48.7, PAN: 10.0}, "ABOVE_C": {LIFT: 30.0, PAN: -20.0},
+                       "TIP_C": {LIFT: 25.0, PAN: -20.0}}, "gripper": {"open": 90.0, "cup": 15.0}}
+    notes = []
+    robot = Table({LIFT: -100.0, PAN: 0.0, "gripper.pos": 90.0})
+    run(PLAN, _pour_arm(robot, notes, poses))
+    given = [d for e, d in notes if e == "arrival_accepted" and d["pose"] == "GRASP_A"]
+    assert given and given[0]["raised"] == {LIFT: -3.7}, given
+    pans = [a[PAN] for a in robot.sent if PAN in a]
+    assert "shoulder_pan.pos" in given[0]["eased"], given
+    assert -20.0 in pans and not any(abs(v - -25.0) < 1e-6 for v in pans), pans
+
+
+def test_a_raised_carry_pose_never_goes_past_the_calibrated_range():
+    from agentic.openarms_agent.runner import run
+    from firmware.openarms_executor.pour_once import PLAN
+
+    class Table(FakeRobot_):
+        def get_observation(self):
+            o = dict(self.pos)
+            o[LIFT] = min(o[LIFT], 45.0)
+            return o
+
+    notes = []
+    robot = Table({LIFT: -100.0, "gripper.pos": 90.0})
+    # ABOVE_A sits at 20.0; the low end of the range is 18.0, so its 3.7 degree raise is cut to 18.0
+    done = run(PLAN, _pour_arm(robot, notes, limits={LIFT: (18.0, 110.0)}))
+    assert done["status"] == "executed", done
+    lifts = [a[LIFT] for a in robot.sent if LIFT in a]
+    assert any(abs(v - 18.0) < 1e-6 for v in lifts) and not any(abs(v - 16.3) < 1e-6 for v in lifts), lifts
 
 
 def test_a_pour_whose_arm_reaches_every_pose_reports_nothing():

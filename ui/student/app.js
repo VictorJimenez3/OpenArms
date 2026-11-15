@@ -429,13 +429,14 @@ function liveDirect(item, r, stage, ready, done) {
   const record = async state => {
     for (const obs of state.observations || []) {
       if (seen.has(obs.request_id) || !obs.request_id) continue;
-      seen.add(obs.request_id);
       const request = (state.requests || []).find(q => q.request_id === obs.request_id) || {};
       const task = (state.tasks || []).find(t => t.task_id === obs.task_id) || {};
+      if (!DONE.includes(task.status)) continue; // the observation can land a moment before the task closes
+      seen.add(obs.request_id);
       if (task.status !== 'completed') continue;
       const facts = planFacts(request.metrics), sim = state.state?.simulation || {};
       r.pours = state.state?.pours_done ?? r.pours + 1;
-      r.live = { observation: obs.text, readable: obs.status === 'observed', picture: r.live?.picture || '', plan: request.student_summary || request.summary || '', facts: facts.text, saved: facts.saved, left: state.state?.cup_portions, expert: Live.expert };
+      r.live = { observation: obs.text, readable: obs.status === 'observed', picture: r.live?.picture || '', plan: (request.student_summary || request.summary || '').replace(/\s*Nothing moves until you say confirm\.?$/i, ''), facts: facts.text, saved: facts.saved, left: state.state?.cup_portions, expert: Live.expert };
       (r.attempts ||= []).push({ command: task.request || r.command, label: facts.label, seconds: facts.seconds, calls: facts.calls });
       r.doneIds = [...seen]; save(); done();
       $('#tries').innerHTML = attemptsTable(r);

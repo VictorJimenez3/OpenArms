@@ -137,6 +137,10 @@ async def test_voice_execute_needs_the_students_own_words_and_an_operator_questi
     bench = FakeBench(real_arm=True, terminal_confirm=True)
     await run_voice(bench, [heard('go ahead'), tool('bench_request', text='go ahead')], 0.6)
     assert bench.requests == ['go ahead']
+    # A negated execute is not an execute.
+    bench = FakeBench(real_arm=True, terminal_confirm=True)
+    _, session, _ = await run_voice(bench, [heard("don't execute it yet"), tool('bench_request', text='execute')], 0.6)
+    assert bench.requests == [] and 'said not to' in session.sent_tools[-1].response['error']
     # Page-only confirmation (no operator question after Execute): voice cannot start the real arm.
     bench = FakeBench(real_arm=True, terminal_confirm=False)
     _, session, _ = await run_voice(bench, [heard('execute'), tool('bench_request', text='execute')], 0.6)

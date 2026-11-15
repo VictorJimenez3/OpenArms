@@ -797,3 +797,14 @@ async def test_the_real_arm_asks_the_operator_in_the_panel_and_only_yes_starts_i
 def test_panel_ask_times_out_as_no():
     from agentic.openarms_lab.bench_lane import PanelAsk
     assert PanelAsk(timeout=.05)('Go? y/n> ') == 'n'
+
+
+def test_harness_notes_default_to_victors_in_repo_results(monkeypatch):
+    from agentic.openarms_lab import bench_lane
+    monkeypatch.delenv('OPENARMS_HARNESS_NOTES', raising=False)
+    assert bench_lane._harness_notes_path() == str(bench_lane.DEFAULT_HARNESS_NOTES)
+    assert bench_lane.DEFAULT_HARNESS_NOTES.is_file()
+    monkeypatch.setenv('OPENARMS_HARNESS_NOTES', 'off')
+    assert bench_lane._harness_notes_path() is None
+    monkeypatch.setenv('OPENARMS_HARNESS_NOTES', '/tmp/x.md')
+    assert bench_lane._harness_notes_path() == '/tmp/x.md'

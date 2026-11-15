@@ -48,10 +48,10 @@ def bench_limits() -> dict:
 
 
 class ObservedPour(PoseArm):
-    def __init__(self, robot, poses, *, note, fake: bool):
+    def __init__(self, robot, poses, *, note, fake: bool, limits: dict | None = None):
         super().__init__(robot, poses, STATIONS, seconds=0.01 if fake else 3, pour_hold=0 if fake else 2,
                          stop_within_move=True, give=GIVE_DEG,
-                         on_give=lambda pose, report: note("arrival_accepted", pose=pose, **report))
+                         on_give=lambda pose, report: note("arrival_accepted", pose=pose, **report), limits=limits)
         self.note = note
 
     def run_step(self, action, args):
@@ -109,7 +109,7 @@ def main() -> int:
                 print("Follower outside HOME tolerance.")
                 return 1
 
-            arm = ObservedPour(robot, poses, note=note, fake=args.fake)
+            arm = ObservedPour(robot, poses, note=note, fake=args.fake, limits=limits)
             verdict = validate(PLAN, arm.state(), STATIONS)
             if not verdict["ok"]:
                 raise ValueError(verdict["reason"])

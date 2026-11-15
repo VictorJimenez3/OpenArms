@@ -327,7 +327,7 @@ class DemoBenchBackend(TwoVesselBackend):
                 'operation_notes': 'add_sample amount=all pours everything still in the beaker; amount=half pours half of '
                     'what is left. The bench keeps its state between commands until the student asks to reset, so a '
                     'second pour acts on what the first left. An empty beaker cannot be poured.',
-                'limitations': [*LIMITATIONS, 'One pour from the beaker at A into the container at C; no other route or amount.']}
+                'limitations': [*LIMITATIONS, 'Each command is one pour from the beaker at A into the container at C, all or half of what is left; no other route.']}
 
     def check_step(self, operation, arguments):
         if operation != OPERATION:
