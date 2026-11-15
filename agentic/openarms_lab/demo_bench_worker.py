@@ -137,6 +137,8 @@ def _run(folder, command):
         player.run(segments, fps=30)
     player.pour_fraction = FRACTIONS[amounts[-1]]
     replayed_seconds, replayed_pours = player.t, len(player.poured)
+    # Pouring an already empty beaker is a harmless mistake: the arm goes through the pour and nothing moves.
+    expected = 1 if sum(player.contents['A'].values()) > 1e-6 else 0
     recorder = VideoRecorder(scene, folder / command['video_name'], fps=30, speed=1)
     last_phase = None
     trace = []
@@ -163,7 +165,7 @@ def _run(folder, command):
     home = bool(segments and segments[-1].step == 'home()')
     successful = not any(issue.severity == 'block' for issue in player.issues)
     poured = len(player.poured) - replayed_pours
-    _emit(kind='result', ok=successful and returned and home and poured == 1,
+    _emit(kind='result', ok=successful and returned and home and poured == expected, expected_doses=expected,
           frame_count=recorder.frames, motion_seconds=player.t - replayed_seconds, dose_count=poured,
           donor_remaining=round(sum(player.contents['A'].values()), 6),
           warnings=[issue.message for issue in player.issues], state=state, trace=trace,

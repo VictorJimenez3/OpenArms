@@ -32,7 +32,7 @@ SCENE = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': SETUP,
          'control_mode': 'mujoco_kinematic_add_sample'}
 CAMERA = {**camera_metadata(CAMERA_ID, CONFIGURATION_ID), 'calibration_id': CONFIGURATION_ID}
 LIMITATIONS = [
-    'Poses are solved by the simulation from bench.yaml, matched to one recorded real pour; joint_map.yaml is unmeasured.',
+    'Poses are solved by the simulation from bench.yaml; joint_map.yaml is unmeasured.',
     'Liquid is drawn, not simulated: colours come from chemistry.yaml, so receiver colour is not a chemistry result.',
     'Pixel observation of the rendered overview: vessel appearance and station markers; no measured volume.',
     'No physical grasp, liquid delivery or spill safety is established. Physical dispatch is disabled.',
@@ -326,7 +326,8 @@ class DemoBenchBackend(TwoVesselBackend):
                 'action_description': 'pour the beaker at A into the container at C once, return the beaker to A and go HOME',
                 'operation_notes': 'add_sample amount=all pours everything still in the beaker; amount=half pours half of '
                     'what is left. The bench keeps its state between commands until the student asks to reset, so a '
-                    'second pour acts on what the first left. An empty beaker cannot be poured.',
+                    'second pour acts on what the first left. Pouring an already empty beaker is allowed: it is a harmless student '
+                    'mistake and the observation shows that nothing changed.',
                 'limitations': [*LIMITATIONS, 'One pour from the beaker at A into the container at C; no other route or amount.']}
 
     def check_step(self, operation, arguments):
@@ -336,8 +337,6 @@ class DemoBenchBackend(TwoVesselBackend):
         if (self.session_id is None or self._state['simulation']['status'] not in ('ready', 'completed')
                 or not self._idle.is_set()):
             raise ValueError('Prepare a fresh MuJoCo trial before executing.')
-        if self._state.get('cup_portions', 1) <= 0.01:
-            raise ValueError('The beaker at A is already empty. Reset the bench to refill it.')
         if len(self._history) >= 7:
             raise ValueError('This trial has had many pours; reset the bench to start again.')
         return request

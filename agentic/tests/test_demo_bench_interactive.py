@@ -39,7 +39,7 @@ async def command(lab, sid, text):
 
 
 @pytest.mark.asyncio
-async def test_two_half_pours_then_a_full_pour_without_reset_and_an_empty_beaker_is_refused(tmp_path):
+async def test_two_half_pours_then_a_full_pour_and_an_empty_repour_without_reset(tmp_path):
     scene, lab = make_lab(tmp_path, AmountExpert())
     try:
         sid = (await lab.create())['session_id']
@@ -55,9 +55,12 @@ async def test_two_half_pours_then_a_full_pour_without_reset_and_an_empty_beaker
         assert third['observations'][-1]['features']['donor_appearance'] == 'empty'
         backend = lab.backends[sid]
         assert backend.executions == 3 and backend.state()['pours_done'] == 3
+        # Pouring the empty beaker again is a harmless mistake: it runs and the observation shows nothing changed.
         empty, _ = await command(lab, sid, 'Pour the beaker from A into C, then return it to A and go HOME.')
-        assert empty['status'] == 'failed' and 'empty' in (empty['summary'] or '').lower()
-        assert backend.executions == 3
+        assert empty['status'] == 'completed', empty['summary']
+        assert empty['observations'][-1]['features']['donor_appearance'] == 'empty'
+        assert backend.state()['simulation']['dose_count'] == 0 and backend.executions == 4
+        assert any('already empty' in w for w in backend.state()['simulation']['warnings'])
         await lab.prepare(sid)
         refilled, _ = await command(lab, sid, 'Pour the beaker from A into C, then return it to A and go HOME.')
         assert refilled['status'] == 'completed', refilled['summary']

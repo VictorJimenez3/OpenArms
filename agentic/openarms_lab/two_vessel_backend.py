@@ -105,7 +105,8 @@ class TwoVesselBackend(MujocoBackend):
                 raise RuntimeError('MuJoCo worker returned unexpected scene or video metadata.')
             simulation.update(trace=result['trace'], dose_count=result['dose_count'],
                               returned_to_dock=result['returned_to_dock'], home_reached=result['home_reached'])
-            if result['ok'] and result['dose_count'] == 1:
+            # A worker may report that no dose was expected (pouring an already empty cup on purpose).
+            if result['ok'] and result['dose_count'] == result.get('expected_doses', 1):
                 if not staging.is_file() or not staging.stat().st_size or result['frame_count'] <= 0:
                     raise RuntimeError('MuJoCo video is missing or empty.')
                 staging.replace(folder / video_name)
