@@ -131,6 +131,14 @@ final class VoiceClient: ObservableObject {
             let raw = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt ?? 0
             Task { @MainActor [weak self] in self?.routeChanged(raw) }
         })
+        observers.tokens.append(center.addObserver(forName: .AVAudioEngineConfigurationChange, object: nil, queue: nil) { [weak self] note in
+            guard let engine = note.object as? AVAudioEngine else { return }
+            let source = ObjectIdentifier(engine)
+            Task { @MainActor [weak self] in
+                guard let self, self.audio.ownsEngine(source) else { return }
+                self.updateCapture()
+            }
+        })
         observers.tokens.append(center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor [weak self] in self?.recoverAudio() }
         })
@@ -313,17 +321,17 @@ final class VoiceClient: ObservableObject {
                 transcripts.update(role: role, text: text, turnID: turn, final: event.final ?? false); messages = transcripts.turns
             }
         case "reply_start":
-            guard voiceWanted, foreground, !audioSuspended, !muted, let id = event.replyID else {
+            guard !muted, let id = event.replyID, prepareAudioEngine() else {
                 if let id = event.replyID { fifo?.enqueue(.reply("interrupt", id: id)) }; return
             }
             if let previous = audio.activeReply { fifo?.enqueue(.reply("interrupt", id: previous)) }
             do { try audio.beginReply(id) }
             catch { voiceFailed(error) }
         case "audio":
-            guard voiceWanted, !muted, foreground, !audioSuspended, let id = event.replyID, audio.activeReply == id else { return }
+            guard !muted, let id = event.replyID, audio.activeReply == id, prepareAudioEngine() else { return }
             guard let encoded = event.data, let bytes = Data(base64Encoded: encoded) else { voiceFailed(VoiceError.message("Voice sent unreadable audio.")); return }
             do { try audio.append(bytes, replyID: id) } catch { voiceFailed(error) }
-        case "reply_end": if let id = event.replyID { audio.endReply(id) }
+        case "reply_end": if let id = event.replyID, audio.activeReply == id, prepareAudioEngine() { audio.endReply(id) }
         case "interrupted":
             transcripts.discardPartialOutput(replyID: event.replyID)
             messages = transcripts.turns
@@ -487,11 +495,12 @@ final class VoiceClient: ObservableObject {
     }
 
     private func beginVoice() {
-        guard voiceWanted, connected, foreground, !audioSuspended else { return }
+        guard voiceWanted, connected, foreground, !audioSuspended, audioRecoveryTask == nil else { return }
         do {
             try audio.activate()
             voiceStatus = "connecting"; providerReady = false
-            fifo?.enqueue(ClientFrame(type: "start_voice")); fifo?.enqueue(.mute(muted))
+            fifo?.enqueue(ClientFrame(type: "start_voice"))
+            if muted { fifo?.enqueue(.mute(true)) }
         } catch { voiceFailed(error) }
     }
     func stopVoice() {
@@ -513,7 +522,7 @@ final class VoiceClient: ObservableObject {
         updateCapture()
     }
     private func updateCapture() {
-        guard voiceWanted, providerReady, foreground, !audioSuspended, !muted, connected, let fifo, let generation = snapshotStore.audioGeneration else {
+        guard prepareAudioEngine(), providerReady, !muted, let fifo, let generation = snapshotStore.audioGeneration else {
             fifo?.stopCaptureAndDiscardAudio(); audio.stopCapture(); microphoneActive = false; return
         }
         do {
@@ -547,6 +556,7 @@ final class VoiceClient: ObservableObject {
     private func interruption(raw: UInt?, options: UInt) {
         guard let raw, let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
         if type == .began {
+            audioRecoveryTask?.cancel(); audioRecoveryTask = nil
             audioSuspended = true; providerReady = false; flushAudio(notify: true); audio.stopAll()
             fifo?.enqueue(ClientFrame(type: "stop_voice")); voiceStatus = "paused"
         } else {
@@ -556,18 +566,42 @@ final class VoiceClient: ObservableObject {
         }
     }
     private func routeChanged(_ raw: UInt) {
+        // Session activation can emit generic route changes while the graph is healthy.
         guard let reason = AVAudioSession.RouteChangeReason(rawValue: raw),
-              [.newDeviceAvailable, .oldDeviceUnavailable, .routeConfigurationChange].contains(reason) else { return }
-        recoverAudio()
+              [.newDeviceAvailable, .oldDeviceUnavailable].contains(reason) else { return }
+        if reason == .oldDeviceUnavailable && providerReady && audioRecoveryTask == nil {
+            // A removed output can cut off speech even if the replacement uses the same format.
+            recoverAudio()
+        } else if audio.needsRestart {
+            updateCapture()
+        }
+    }
+    private func prepareAudioEngine() -> Bool {
+        guard voiceWanted, connected, foreground, !audioSuspended, audioRecoveryTask == nil else { return false }
+        guard audio.needsRestart else { return true }
+        if audio.isCapturing || audio.activeReply != nil {
+            // Restart the provider stream to discard any partial input from the old route.
+            recoverAudio()
+            return false
+        }
+        do {
+            try audio.activate()
+            return true
+        } catch {
+            voiceFailed(error)
+            return false
+        }
     }
     private func recoverAudio() {
-        guard voiceWanted, foreground else { return }
+        guard voiceWanted, connected, foreground, !audioSuspended else { return }
         flushAudio(notify: true); audio.stopAll(); providerReady = false
         fifo?.enqueue(ClientFrame(type: "stop_voice")); voiceStatus = "connecting"
         audioRecoveryTask?.cancel()
         audioRecoveryTask = Task { [weak self] in
             do { try await Task.sleep(for: .milliseconds(350)) } catch { return }
-            self?.beginVoice()
+            guard !Task.isCancelled, let self else { return }
+            self.audioRecoveryTask = nil
+            self.beginVoice()
         }
     }
 
