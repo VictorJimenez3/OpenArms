@@ -57,6 +57,8 @@ async def test_each_experiment_reads_on_the_shared_observer_and_faults_fail_clos
     altered[area][mask] = [132, 240, 240]
     result = read_pixels(altered, anchor)
     assert result['ready'] is False and 'known simulated colour' in result['reason']
+    with pytest.raises(ValueError, match='calibrate the receiver'):
+        anchors(altered)
     altered[area][mask] = [210, 210, 210]
     with pytest.raises(ValueError, match='readable receiver'):
         anchors(altered)

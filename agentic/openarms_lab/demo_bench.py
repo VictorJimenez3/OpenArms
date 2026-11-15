@@ -81,6 +81,8 @@ def execution_scope():
 
 # The empty clear beaker as the overview camera renders it (identical in every experiment).
 EMPTY_GLASS = np.array([127, 186, 237])
+RECEIVER_COLOUR_TOLERANCE = 45
+RECEIVER_COLOUR_MARGIN = 15
 
 
 def _masks(pixels):
@@ -139,7 +141,8 @@ def anchors(reference):
     prepared = _prepared_receiver_colour()
     gap = 255 - prepared
     blend = float(np.clip(((255 - rendered) * gap).sum() / max((gap * gap).sum(), 1e-6), 0.05, 1.0))
-    if not np.isfinite(blend):
+    if (not np.isfinite(blend) or
+            np.linalg.norm(rendered - (255 - blend * gap)) > RECEIVER_COLOUR_TOLERANCE):
         raise ValueError('The reference frame cannot calibrate the receiver appearance.')
     return {'A': a, 'C': c, 'red_c': int(masks['red'][cy-30:cy+20, cx-45:cx+45].sum()),
             'receiver_count': int(receiver.sum()), 'receiver_rgb': rendered, 'blend': blend,
@@ -173,7 +176,8 @@ def read_pixels(pixels, anchor, tolerance_px=6):
     fits = sorted((float(np.linalg.norm(colour - seen)), label) for label, colour in rendered.items())
     (distance, receiver_label), (alternate, _) = fits[:2]
     # Nominal before/after renders are within 32 RGB units and at least 30 units from the next match.
-    if not np.isfinite(distance) or distance > 45 or alternate - distance < 15:
+    if (not np.isfinite(distance) or distance > RECEIVER_COLOUR_TOLERANCE or
+            alternate - distance < RECEIVER_COLOUR_MARGIN):
         result['reason'] = 'The receiver appearance does not match a known simulated colour.'
         return result
     result['receiver'] = receiver_label
