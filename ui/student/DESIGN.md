@@ -64,3 +64,7 @@ The physical demo runs on the bench site: the student's Mac, with an iPhone as i
 - Preview it at `/bench`, which serves the current bench page plus the stylesheet. To adopt it, add `<link rel="stylesheet" href="/student/bench-skin.css">` to `ui/lab/index.html` after its own stylesheets.
 
 When the bench site settles, re-check the skin against any new panels; a new component with its own hard-coded colours is the one thing it cannot pick up automatically.
+
+## Live lab: voice first, student in charge
+
+In a live lab the Direct step is drawn from the session state, so a spoken, typed or tapped command ends up in the same place. Talk to Ollie is the first and largest control and uses the lab's existing Gemini Live channel through the bench site's `live-client.js`; typing and suggestion chips sit below it as the fallback. The bench keeps its state between commands (pour half, pour the rest, do it again), shows how full the beaker is, and is reset only when the student asks. The plan card leads with the backend's plain-language `student_summary` and prints the exact plan that consent binds to underneath.

@@ -21,12 +21,14 @@ export const Live = {
   variant: null,
   expert: null,
   online: false,
+  voice: false,
   async init() {
     if (!location.protocol.startsWith('http')) return;
     try {
       const health = await http('/api/health', undefined, null);
       if (health.backend !== 'mujoco' || health.hardware_enabled || health.pairing_required) return;
       this.expert = health.expert?.model || health.expert_model || null;
+      this.voice = Boolean(health.live_configured);
       const state = creds ? await this.state().catch(() => null) : null;
       this.variant = (state || await this.open()).experiment?.variant || null;
       this.online = true;
@@ -48,12 +50,13 @@ export const Live = {
     }
   },
   state() { return http(this.path()); },
-  // Each attempt starts from a freshly prepared bench: full beaker at A, arm at HOME.
+  // The bench keeps its state between commands. Start a lab on a full beaker; reset only when asked.
   async fresh() {
     const state = await this.call();
-    const used = state.trial?.state !== 'choosing_condition' || state.state?.at !== 'HOME' || (state.tasks || []).some(t => ['queued', 'running'].includes(t.status));
-    return used ? this.call('prepare', {}) : state;
+    const used = state.pending || (state.state?.pours_done || 0) > 0 || state.state?.at !== 'HOME' || (state.tasks || []).some(t => ['queued', 'running', 'executing'].includes(t.status));
+    return used ? this.reset() : state;
   },
+  reset() { return this.call('prepare', {}); },
   ask(text) { return this.call('request', { text, client_request_id: `student-${Date.now()}` }); },
   present(p) { return this.call('present', { request_id: p.request_id, proposal_version: p.proposal_version, channel: 'text' }); },
   confirm(p) { return this.call('confirm', { request_id: p.request_id, proposal_version: p.proposal_version }); },
@@ -64,6 +67,13 @@ export const Live = {
     if (!this.online) return null;
     try { return (await this.call('ollie', { question: question.slice(0, 300), context: context.slice(0, 2500), history: history.slice(-6) })).answer || null; }
     catch { return null; }
+  },
+  // Spoken conversation over the lab's existing Gemini Live channel, reusing the bench site's client.
+  async voiceClient(handlers) {
+    const { SessionClient } = await import('/live-client.js');
+    const client = new SessionClient({ get sessionId() { return creds.session_id; }, get accessToken() { return creds.access_token; } }, handlers);
+    client.connect();
+    return client;
   },
   async blob(url) {
     const response = await fetch(new URL(url, location.origin).pathname, { headers: { Authorization: `Bearer ${creds.access_token}` }, cache: 'no-store' });

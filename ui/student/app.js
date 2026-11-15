@@ -331,158 +331,173 @@ function planFacts(metrics = {}) {
   };
 }
 function liveDirect(item, r, stage, ready, done) {
+  // Driven by the session state, so typed, tapped and spoken commands all land in the same place.
   const token = ++liveRun;
   const here = () => token === liveRun && stage.isConnected;
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-  const fail = error => { if (here()) ask(`Something went wrong: ${error.message} Try again.`, 'stop'); };
-  let frameUrl = '', objectUrl = '', stale = false;
-  const showFrame = async (state, img) => {
-    const url = state.state?.simulation?.frame_url;
+  const seen = new Set(r.doneIds || []);
+  let mode = '', frameUrl = '', objectUrl = '', known = Infinity, lastTask = '', planningSince = 0, voice = null, heard = '';
+  stage.innerHTML = `
+    <h2 tabindex="-1">Tell Ollie what to do</h2>
+    ${Live.voice ? `<div class="talk">
+      <button id="talk" class="btn talk-btn" type="button" aria-pressed="false">${ICON.mic}<span>Talk to Ollie</span></button>
+      <p id="talk-status" role="status">Say it out loud. Ollie answers, reads you the plan, and waits for your yes.</p>
+    </div>` : ''}
+    <figure class="screen live">
+      <img id="live-frame" alt="Live camera view of the simulated bench" hidden>
+      <figcaption><span class="tag sim">Live simulation</span> <span id="live-caption">Getting the bench ready</span><span id="meter" class="meter"></span></figcaption>
+    </figure>
+    <div id="zone" class="zone"></div>
+    <div id="tries"></div>`;
+  const zone = $('#zone'), caption = $('#live-caption');
+  const focus = sel => { if (!voice?.status.voiceOn) $(sel, zone)?.focus(); };
+  const send = async text => {
+    r.command = text; save();
+    try { render(await Live.ask(text)); } catch (error) { ollie('stop', `Something went wrong: ${error.message}`); }
+  };
+  const showFrame = async state => {
+    const url = state.state?.simulation?.frame_url, img = $('#live-frame');
     if (!url || url === frameUrl || !img) return;
     frameUrl = url;
     try { const next = URL.createObjectURL(await Live.blob(url)); img.src = next; img.hidden = false; URL.revokeObjectURL(objectUrl); objectUrl = next; } catch { /* Keep the last picture. */ }
   };
-  const bench = caption => `
-      <figure class="screen live">
-        <img id="live-frame" alt="Live camera view of the simulated bench" hidden>
-        <figcaption><span class="tag sim">Live simulation</span> <span id="live-caption">${esc(caption)}</span></figcaption>
-      </figure>`;
 
-  const ask = (note, pose) => {
-    stage.innerHTML = `
-      <h2 tabindex="-1">Tell Ollie what to do</h2>
-      <p class="lede">${esc(item.setup)}</p>
-      <form id="cmd" class="cmd">
-        <label for="cmd-input">Your instruction</label>
-        <div class="field-row"><input id="cmd-input" type="text" autocomplete="off" value="" placeholder="Type or tap the mic"><button class="btn ghost icon mic" type="button" data-mic="cmd-input" aria-label="Speak your instruction" aria-pressed="false"></button><button class="btn primary" type="submit">Send</button></div>
-        <button id="suggest" class="btn link" type="button">Use “${esc(item.command)}”</button>
-      </form>
-      ${r.pours > 0 ? `<p class="muted">Ollie has poured ${r.pours} time${r.pours > 1 ? 's' : ''}. Say “do it again” to see how fast a saved skill is, or go on.</p>` : '<p class="muted">Say it your own way. Ollie’s AI reads your words, looks at the bench and makes a plan.</p>'}`;
-    wireMics(stage);
-    ollie(pose || 'listen', note || (r.pours > 0 ? 'Want another pour? Tell me, or go on to the next step.' : 'Tell me what to do. I’m listening.'));
-    $('#suggest').onclick = () => { $('#cmd-input').value = item.command; $('#cmd-input').focus(); };
-    $('#cmd').onsubmit = event => {
-      event.preventDefault();
-      const text = $('#cmd-input').value.trim();
-      if (!text) return ollie('listen', 'I did not catch an instruction. Tell me what to pour.');
-      r.command = text; save();
-      plan(text).catch(fail);
-    };
-    done();
-  };
-
-  const plan = async (text, note) => {
-    const started = performance.now();
-    stage.innerHTML = `
-      <h2 tabindex="-1">Ollie is making a plan</h2>
-      <p class="you"><b>You</b> ${esc(text)}</p>
-      ${bench('Ollie is looking at the bench.')}
-      <div class="actions"><button id="never" class="btn ghost" type="button">Never mind</button><p id="clock" class="muted" role="status"></p></div>`;
-    ollie('think', 'Let me look at the bench and work out a plan.');
-    $('#stage h2').focus(); ready(false, 'Ollie is still planning.');
-    let cancelled = false;
-    $('#never').onclick = () => { cancelled = true; Live.cancel().catch(() => {}); ask('No problem. Nothing moved.'); };
-    const before = await Live.fresh();
-    if (!here() || cancelled) return;
-    showFrame(before, $('#live-frame'));
-    const known = (before.messages || []).length;
-    let state = await Live.ask(text);
-    while (here() && !cancelled) {
-      const task = (state.tasks || []).at(-1);
-      if (state.pending) return propose(state.pending, note);
-      if (task && DONE.includes(task.status)) {
-        const reply = (state.messages || []).slice(known).filter(m => m.role === 'assistant').at(-1)?.text;
-        return ask(reply || 'I could not make a plan for that. Try saying it another way.', 'think');
-      }
-      const waited = (performance.now() - started) / 1000;
-      if ($('#clock')) $('#clock').textContent = waited > 3 ? `Thinking for ${Math.round(waited)} s. New instructions take Ollie longer the first time.` : '';
-      await wait(600);
-      state = await Live.state();
-    }
-  };
-
-  const propose = async (pending, note) => {
-    const facts = planFacts(pending.metrics);
-    stage.innerHTML = `
-      <h2 tabindex="-1">Check Ollie’s plan</h2>
-      <p class="you"><b>You</b> ${esc(r.command)}</p>
-      <div class="plan">
-        <p class="plan-label">Ollie’s plan · ${facts.label}</p>
-        <p class="plan-text">${esc(pending.summary)}</p>
-        <p class="plan-facts">${esc(facts.text)}</p>
-        <div class="actions">
-          <button id="yes" class="btn primary big" type="button">Yes, do it</button>
-          <button id="change" class="btn ghost" type="button">Change it</button>
-          <button id="hear" class="btn ghost" type="button">${ICON.sound} Read it to me</button>
+  const zones = {
+    idle(state) {
+      const pours = state.state?.pours_done || 0, left = state.state?.cup_portions ?? 1;
+      const ideas = left <= 0.001 ? [] : pours ? ['Pour half of what is left', 'Pour the rest', 'Do it again'] : [item.command, 'Pour half of it'];
+      zone.innerHTML = `
+        ${r.live ? `<p class="ollie"><b>Ollie · checked with the camera</b> ${esc(r.live.observation)}</p>` : ''}
+        <form id="cmd" class="cmd">
+          <label for="cmd-input">${Live.voice ? 'Or type your instruction' : 'Your instruction'}</label>
+          <div class="field-row"><input id="cmd-input" type="text" autocomplete="off" placeholder="Type or tap the mic"><button class="btn ghost icon mic" type="button" data-mic="cmd-input" aria-label="Dictate your instruction" aria-pressed="false"></button><button class="btn primary" type="submit">Send</button></div>
+          <div class="chips">${ideas.map(text => `<button class="chip" type="button" data-say="${esc(text)}">${esc(text)}</button>`).join('')}${pours ? '<button id="reset" class="chip" type="button">Reset the bench</button>' : ''}</div>
+        </form>
+        <p class="muted">${pours ? 'You are in charge. Keep going, reset the bench, or move on when you are done.' : 'Say it your own way. Ollie’s AI reads your words, looks at the bench and makes a plan.'}</p>`;
+      wireMics(zone);
+      $('#cmd').onsubmit = event => { event.preventDefault(); const text = $('#cmd-input').value.trim(); if (text) send(text); else ollie('listen', 'I did not catch an instruction. Tell me what to pour.'); };
+      zone.querySelectorAll('[data-say]').forEach(b => b.onclick = () => send(b.dataset.say));
+      if ($('#reset')) $('#reset').onclick = async () => { ollie('think', 'Refilling the beaker and going back to the start.'); render(await Live.reset()); ollie('listen', 'Fresh bench, full beaker. What should I do?'); };
+      ready(r.pours > 0, 'Ollie has not poured yet.');
+    },
+    planning() {
+      planningSince = performance.now();
+      zone.innerHTML = `<p class="you"><b>You</b> ${esc(r.command || heard)}</p>
+        <div class="actions"><button id="never" class="btn ghost" type="button">Never mind</button><p id="clock" class="muted" role="status">Ollie is looking at the bench and making a plan.</p></div>`;
+      $('#never').onclick = () => Live.cancel().catch(() => {});
+      ollie('think', 'Let me look at the bench and work out a plan.');
+      ready(r.pours > 0, 'Ollie is still planning.');
+    },
+    plan(state) {
+      const pending = state.pending, facts = planFacts(pending.metrics);
+      const plain = (pending.student_summary || pending.summary).replace(/\s*Nothing moves until you say confirm\.?$/i, '');
+      zone.innerHTML = `
+        <div class="plan">
+          <p class="plan-label">Ollie’s plan · ${facts.label}</p>
+          <p class="plan-text">${esc(plain)}</p>
+          ${pending.student_summary ? `<p class="plan-exact"><b>Exactly:</b> ${esc(pending.summary)}</p>` : ''}
+          <p class="plan-facts">${esc(facts.text)}</p>
+          <div class="actions">
+            <button id="yes" class="btn primary big" type="button">Yes, do it</button>
+            <button id="change" class="btn ghost" type="button">Change it</button>
+            <button id="hear" class="btn ghost" type="button">${ICON.sound} Read it to me</button>
+          </div>
         </div>
-      </div>
-      <p class="muted">Nothing moves until you say yes.</p>`;
-    ollie('think', note || (facts.saved ? 'I remember this one! Same plan as before. Say yes and I’ll go.' : 'Here’s my plan. I won’t move until you say yes.'));
-    if (!note) stale = false;
-    $('#stage h2').focus(); ready(r.pours > 0, 'Say yes to the plan, or change it.');
-    $('#hear').onclick = () => readAloud(pending.summary);
-    $('#change').onclick = () => { Live.cancel(pending).catch(() => {}); ask('Okay, I dropped that plan. What should I do instead?'); $('#cmd-input').focus(); };
-    $('#yes').onclick = () => {
-      $('#yes').disabled = true;
-      execute(pending, facts).catch(error => {
-        if (!here()) return;
-        if (![400, 409, 410].includes(error.status) || stale) return fail(error);
-        stale = true; // The plan went stale while the student decided: ask for the same thing again.
-        plan(r.command, 'That plan went stale while you were deciding, so I made it again. Take your time.').catch(fail);
-      });
-    };
-    await Live.present(pending).catch(() => {});
+        <p class="muted">Nothing moves until you say yes${Live.voice ? ', out loud or with the button' : ''}.</p>`;
+      ollie('think', facts.saved ? 'I remember this one! Say yes and I’ll go.' : 'Here’s my plan. I won’t move until you say yes.');
+      $('#hear').onclick = () => readAloud(plain);
+      $('#change').onclick = () => Live.cancel(pending).then(render).catch(() => {});
+      $('#yes').onclick = async () => {
+        $('#yes').disabled = true;
+        await Live.present(pending).catch(() => {});
+        try { render(await Live.confirm(pending)); }
+        catch { ollie('think', 'That plan went stale while you were deciding. Tell me again and I’ll remake it. Take your time.'); Live.cancel().catch(() => {}); }
+      };
+      focus('#yes');
+      ready(r.pours > 0, 'Say yes to the plan, or change it.');
+    },
+    running() {
+      zone.innerHTML = `<div class="actions"><button id="stop" class="btn stop big" type="button">${ICON.stop} Stop</button><p class="muted" role="status">Ollie is moving. Press Stop, press Esc, or say stop.</p></div>`;
+      $('#stop').onclick = async () => { await Live.stop().catch(() => {}); ollie('stop', 'Stopped. I will not move again until you give me a new instruction.'); };
+      ollie('pour', 'On it. Say stop any time.');
+      say('Ollie is moving. Press Stop or Escape to stop.');
+      focus('#stop');
+      ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
+    },
   };
 
-  const execute = async (pending, facts) => {
-    let state = await Live.confirm(pending);
-    if (!here()) return;
-    stage.innerHTML = `
-      <h2 tabindex="-1">Ollie is pouring</h2>
-      <div class="actions"><button id="stop" class="btn stop big" type="button">${ICON.stop} Stop</button><p id="run-state" class="muted" role="status">Ollie is moving.</p></div>
-      ${bench('Getting ready')}`;
-    ollie('pour', 'On it. Say stop any time.');
-    say('Ollie is pouring. Press Stop or Escape to stop.');
-    $('#stop').focus(); ready(r.pours > 0, 'Wait for Ollie to finish, or press Stop.');
-    let stopped = false;
-    $('#stop').onclick = async () => { stopped = true; await Live.stop().catch(() => {}); if (here()) ask('Stopped. I will not move again until you give me a new instruction.', 'stop'); };
-    const img = $('#live-frame'), caption = $('#live-caption');
-    while (here() && !stopped) {
-      const task = (state.tasks || []).find(t => t.task_id === pending.task_id) || {};
-      showFrame(state, img);
-      if (caption) caption.textContent = phaseText(state.state?.phase);
-      if (DONE.includes(task.status)) return finish(state, task, pending, facts);
-      await wait(350);
-      state = await Live.state();
+  const record = async state => {
+    for (const obs of state.observations || []) {
+      if (seen.has(obs.request_id) || !obs.request_id) continue;
+      seen.add(obs.request_id);
+      const request = (state.requests || []).find(q => q.request_id === obs.request_id) || {};
+      const task = (state.tasks || []).find(t => t.task_id === obs.task_id) || {};
+      if (task.status !== 'completed') continue;
+      const facts = planFacts(request.metrics), sim = state.state?.simulation || {};
+      r.pours = state.state?.pours_done ?? r.pours + 1;
+      r.live = { observation: obs.text, readable: obs.status === 'observed', picture: r.live?.picture || '', plan: request.student_summary || request.summary || '', facts: facts.text, saved: facts.saved, left: state.state?.cup_portions, expert: Live.expert };
+      (r.attempts ||= []).push({ command: task.request || r.command, label: facts.label, seconds: facts.seconds, calls: facts.calls });
+      r.doneIds = [...seen]; save(); done();
+      $('#tries').innerHTML = attemptsTable(r);
+      ollie('wave', 'Done! What did you notice? You can tell me to do more, or go on.');
+      try { r.live.picture = await thumbnail(await Live.blob(obs.receipt?.images?.[0]?.artifact_url || sim.frame_url)); save(); } catch { /* The words are the evidence that matters. */ }
     }
   };
 
-  const finish = async (state, task, pending, facts) => {
-    const seen = (state.observations || []).filter(o => o.request_id === pending.request_id).at(-1);
-    if (task.status !== 'completed' || !seen) return ask(seen?.reason || 'That run did not finish, so I have nothing to report. Want to try again?', 'stop');
-    const sim = state.state?.simulation || {};
-    let picture = '';
-    try { picture = await thumbnail(await Live.blob(seen.receipt?.images?.[0]?.artifact_url || sim.frame_url)); } catch { /* The words are the evidence that matters. */ }
-    r.pours += 1;
-    r.live = { observation: seen.text, readable: seen.status === 'observed', picture, plan: pending.summary, facts: facts.text, saved: facts.saved, motion: sim.motion_seconds ? `${Math.round(sim.motion_seconds)} s` : '', expert: Live.expert };
-    (r.attempts ||= []).push({ command: r.command, label: facts.label, seconds: facts.seconds, calls: facts.calls });
-    save(); done();
-    if (!here()) return;
-    stage.innerHTML = `
-      <h2 tabindex="-1">Done. Ollie is back home.</h2>
-      <figure class="screen live">
-        ${sim.video_url ? '<video id="replay" playsinline muted controls></video>' : `<img src="${picture}" alt="The bench after the pour">`}
-        <figcaption><span class="tag sim">Live simulation</span> ${sim.video_url ? 'Replay of the run you just directed.' : 'The bench after the pour.'}</figcaption>
-      </figure>
-      <p class="ollie"><b>Ollie · checked with the camera</b> ${esc(seen.text)}</p>
-      ${attemptsTable(r)}
-      <div class="actions"><button id="again" class="btn ghost" type="button">${ICON.play} Do it again</button></div>`;
-    ollie('wave', 'Done! I’m back home. What did you notice?');
-    $('#stage h2').focus();
-    $('#again').onclick = () => { r.command = 'Do it again'; save(); plan('Do it again').catch(fail); };
-    if (sim.video_url) Live.blob(sim.video_url).then(blob => { const video = $('#replay'); if (video) { video.src = URL.createObjectURL(blob); video.play().catch(() => {}); } }).catch(() => {});
+  function render(state) {
+    if (!here() || !state?.state) return;
+    showFrame(state);
+    const task = (state.tasks || []).at(-1) || {}, bench = state.state;
+    const next = state.pending ? `plan:${state.pending.request_id}:${state.pending.proposal_version}`
+      : ['queued', 'running'].includes(task.status) ? 'planning'
+      : task.status === 'executing' || state.trial?.state === 'executing' ? 'running' : `idle:${bench.pours_done || 0}`;
+    caption.textContent = next === 'running' ? phaseText(bench.phase) : next === 'planning' ? 'Ollie is looking at the bench' : 'The bench right now';
+    const left = bench.cup_portions ?? 1;
+    $('#meter').textContent = ` · Beaker ${left >= 0.999 ? 'full' : left <= 0.001 ? 'empty' : `${Math.round(left * 100)}% left`} · ${bench.pours_done || 0} pour${bench.pours_done === 1 ? '' : 's'}`;
+    record(state);
+    const replies = (state.messages || []).slice(known).filter(m => m.role === 'assistant');
+    if (next !== mode) {
+      const wasRunning = mode === 'running';
+      mode = next;
+      zones[next.split(':')[0]](state);
+      const idle = next.startsWith('idle');
+      if (idle && replies.length && `${task.task_id}:${task.status}` !== lastTask && task.status !== 'completed') ollie(task.status === 'needs_clarification' ? 'think' : 'listen', replies.at(-1).text);
+      lastTask = `${task.task_id}:${task.status}`;
+    }
+    if (mode === 'planning' && $('#clock')) { const waited = (performance.now() - planningSince) / 1000; if (waited > 4) $('#clock').textContent = `Thinking for ${Math.round(waited)} s. New instructions take Ollie longer the first time.`; }
+  }
+
+  if ($('#talk')) $('#talk').onclick = async () => {
+    const button = $('#talk'), status = $('#talk-status');
+    try {
+      voice ||= await Live.voiceClient({
+        onState: render,
+        onTranscript: frame => { if (frame.role === 'user') { heard = frame.text; r.command = frame.text; } },
+        onError: message => { status.textContent = message; },
+        onStatus: st => {
+          if (!here()) return;
+          button.setAttribute('aria-pressed', String(st.voiceOn)); button.classList.toggle('on', st.voiceOn);
+          button.querySelector('span').textContent = st.voiceOn ? 'Listening. Tap to end' : 'Talk to Ollie';
+          status.textContent = st.detail || (st.voiceOn ? (st.playback === 'speaking' || st.provider === 'speaking' ? 'Ollie is talking.' : 'Ollie is listening. Tell me what to do.') : 'Say it out loud. Ollie answers, reads you the plan, and waits for your yes.');
+        },
+      });
+      for (let i = 0; i < 40 && !voice.ready; i++) await wait(100);
+      voice.status.voiceOn ? voice.stopVoice() : await voice.startVoice();
+    } catch { status.textContent = 'Voice could not start here. You can type or use the buttons.'; }
   };
-  ask();
+
+  (async () => {
+    try {
+      const state = r.pours > 0 ? await Live.state() : await Live.fresh();
+      (state.observations || []).forEach(o => seen.add(o.request_id));
+      known = (state.messages || []).length;
+      ollie('listen', r.pours > 0 ? 'Want another pour? Tell me, or go on to the next step.' : Live.voice ? 'Tap Talk and tell me what to do. I’m listening.' : 'Tell me what to do. I’m listening.');
+      $('#tries').innerHTML = attemptsTable(r);
+      render(state);
+      while (here()) { await wait(mode === 'running' ? 350 : 700); if (here()) render(await Live.state().catch(() => null)); }
+    } catch (error) { if (here()) ollie('stop', `I can’t reach the lab right now: ${error.message}`); }
+    finally { voice?.close(); }
+  })();
 }
 const attemptsTable = r => (r.attempts || []).length < 2 ? '' : `
   <table class="attempts"><caption>How Ollie planned each try</caption>
