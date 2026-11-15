@@ -10,7 +10,7 @@ import re
 import tempfile
 from pathlib import Path
 
-from .contracts import (EvaluationReceipt, MOCK_OPERATIONS, PRIMITIVE_SCHEMAS,
+from .contracts import (EvaluationReceipt, ACTION_OPERATIONS, PRIMITIVE_SCHEMAS,
                         PlanDraft, SkillDefinition, Step)
 TYPES = {'string': (str,), 'integer': (int,), 'number': (int, float), 'boolean': (bool,)}
 TOKEN = re.compile(r'\$([a-z][a-z0-9_]{0,63})\Z')
@@ -208,7 +208,7 @@ class SkillRegistry:
                 raise ValueError('Bindings require a skill definition.')
             steps = [self._primitive(step) for step in draft.steps]
             preconditions, checks, expected_state = [draft.preconditions], draft.outcome_checks, draft.expected_state
-        actions = [i for i, step in enumerate(steps) if step.operation in MOCK_OPERATIONS]
+        actions = [i for i, step in enumerate(steps) if step.operation in ACTION_OPERATIONS]
         if not 1 <= len(steps) <= 8 or len(actions) > 1:
             raise ValueError('A plan requires 1–8 steps and at most one mock action.')
         if actions:

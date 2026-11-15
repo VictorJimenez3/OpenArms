@@ -10,7 +10,7 @@ import time
 import uuid
 from pathlib import Path
 
-from .contracts import MOCK_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
+from .contracts import ACTION_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
 from .skills import compute_skill_hash
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
@@ -28,17 +28,27 @@ UNSUPPORTED_FIXTURE_REQUEST = re.compile(
 CAMERA_FIELDS = ('camera_id', 'camera_config_id', 'calibration_id', 'coordinate_frame', 'units', 'clock')
 VESSEL_LABELS = ('source', 'receiver')
 WATER_ROUTE = re.compile(
-    r'\b(?P<direction>from|into|to)\s+'
-    r'(?:(?:the\s+)?(?:station|dock|cup|donor|receiver|vessel)\s+(?:at\s+)?(?P<label>[a-z])\b|'
+    r'\b(?P<direction>from|onto|into|to)\s+'
+    r'(?:(?:the\s+)?(?:station|dock|cup|beaker|container|donor|receiver|vessel)\s+(?:at\s+)?(?P<label>[a-z])\b|'
     r'(?P<short>[a-z])(?=\s+(?:into|to|then|and)\b|\s*[,.;!?]|\s*$))', re.I)
 WATER_DONOR_RETURN = re.compile(
-    r'\breturn\s+(?:the\s+)?(?:donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
-    r'\s+(?:back\s+)?to\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
+    r'\b(?:return|leave|put|place|set|keep)\s+(?:the\s+)?(?:it|beaker|donor(?:\s+(?:cup|vessel))?|(?:(?:source|sample)\s+)?(?:cup|vessel))'
+    r'\s+(?:back\s+)?(?:to|at|on)\s+(?:(?:the\s+)?(?:station|dock)\s+)?(?P<label>[a-z])\b', re.I)
+# A source named straight after the verb ("pour B into C") has no "from" for WATER_ROUTE to see.
+POUR_SOURCE = re.compile(r'\bpour\s+(?:the\s+)?(?:(?:station|dock|cup|beaker|container|donor|vessel)\s+(?:at\s+)?)?'
+                         r'(?P<label>[a-z])\b(?=\s+(?:onto|into|to|in)\b)', re.I)
 WATER_PORTION = re.compile(
     r'\b(\d+(?:\.\d+)?|zero|one|two|three|four|five|six|seven|eight|nine|ten|half|quarter|multiple)'
     r'\s+(?:pre[- ]?measured\s+)?(?:water\s+)?portions?\b', re.I)
 WATER_VOLUME = re.compile(r'\b\d+(?:\.\d+)?\s*(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b', re.I)
 OTHER_LIQUID = re.compile(r'\b(?:vinegar|baking[- ]soda|citric[- ]acid|magic[- ]tea|indicator)\b', re.I)
+# The demo bench beaker holds citric acid; any other named liquid is a different request.
+DEMO_OTHER_LIQUID = re.compile(r'\b(?:water|vinegar|baking[- ]soda|indicator|soap|bleach|ammonia)\b', re.I)
+# Amounts and routes the fixed one-portion A-to-C action cannot honour.
+UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|again|all\s+of|everything|half|double|triple)\b|'
+                                     r'\b(?:two|three|four|five|several|many|multiple|\d+)\s+times\b|'
+                                     r'\b\d+(?:\.\d+)?\s*(?:g|grams?|oz|ounces?|cups?|drops?)\b|'
+                                     r'\b(?:left|right)\s+(?:one|side|cup|beaker|container|vessel)\b', re.I)
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -70,6 +80,10 @@ def describe_step(step, action_description=None):
         return 'put the sample cup down at station '+args['station']
     if operation == 'mock_pour':
         return 'pour one prepared portion into the receiver at station C'
+    if operation == 'add_sample':
+        if action_description:
+            return action_description
+        return f"pour one portion from the cup at station {args['source']} into station {args['into']}, return the cup and go HOME"
     if operation == 'observe':
         text = 'check the result using the '+args['view']+' camera'
         if args.get('fallback_view'):
@@ -397,9 +411,9 @@ class TaskLoop:
                         'expert_tool_started', 'expert_tool_completed', 'expert_finished'}:
                 await self._emit_task(s, task, kind, adapter=event, provenance='EXPERT_ADAPTER')
 
-        supported_operations = s['capabilities'].get('supported_operations', MOCK_OPERATIONS)
+        supported_operations = s['capabilities'].get('supported_operations', ACTION_OPERATIONS)
         primitives = {name: schema for name, schema in PRIMITIVE_SCHEMAS.items()
-                      if name not in MOCK_OPERATIONS or name in supported_operations}
+                      if name not in ACTION_OPERATIONS or name in supported_operations}
         context = {
             'task_id': task['task_id'], 'session_id': s['session_id'], 'request': task['request'],
             'conversation': [{k: m[k] for k in ('role', 'text')} for m in s['messages'][-20:] if m.get('final')],
@@ -488,7 +502,7 @@ class TaskLoop:
 
     @staticmethod
     def _action(plan):
-        return next((step for step in plan['steps'] if step['operation'] in MOCK_OPERATIONS), None)
+        return next((step for step in plan['steps'] if step['operation'] in ACTION_OPERATIONS), None)
 
     def _requires_fixture_perception(self, task):
         backend = self.backends.get(task['session_id'])
@@ -583,12 +597,17 @@ class TaskLoop:
             if backend is None:
                 raise ValueError('Prepare a fresh simulation before proposing an action.')
             capabilities = backend.capabilities()
-            if action['operation'] not in capabilities.get('supported_operations', MOCK_OPERATIONS):
+            if action['operation'] not in capabilities.get('supported_operations', ACTION_OPERATIONS):
                 raise ValueError('The current setup does not support this operation.')
-            if capabilities.get('experiment_id') == 'two_vessel_water':
+            if capabilities.get('experiment_id') in ('two_vessel_water', 'demo_bench_pour'):
                 for text in dict.fromkeys((intent, task['request'])):
-                    self._check_water_request(text)
+                    self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour')
             backend.check_step(action['operation'], action['arguments'])
+            # Success must rest on the observer's reading of the pour, not on features that never change.
+            planned = {(c['feature'], compute_skill_hash(c['expected'])) for c in plan['outcome_checks']}
+            for rule in (capabilities.get('skill_admission') or {}).get('required_outcome_checks', []):
+                if (rule['feature'], compute_skill_hash(rule['expected'])) not in planned:
+                    raise ValueError('The plan must check '+rule['feature']+' = '+str(rule['expected'])+'.')
             self._fixture_state(task, scene['frame_id'], action)
         if any(step['operation'] == 'localize_objects' and step['arguments']['evidence_id'] not in task['evidence']
                for step in plan['steps']):
@@ -605,14 +624,21 @@ class TaskLoop:
             raise ValueError(self._perception_error(exc)) from exc
 
     @staticmethod
-    def _check_water_request(text):
-        if OTHER_LIQUID.search(text):
+    def _check_water_request(text, liquids=False):
+        # The demo bench holds the kit liquids, so only the water scene rejects them by name.
+        if not liquids and OTHER_LIQUID.search(text):
             raise ValueError('This two-vessel setup supports water only. No pour was approved.')
+        if liquids and DEMO_OTHER_LIQUID.search(text):
+            raise ValueError('This setup pours only the prepared beaker at A. No pour was approved.')
+        if UNBOUND_AMOUNT_OR_ROUTE.search(text):
+            raise ValueError('This setup supports one premeasured portion from A into C only. No pour was approved.')
         if WATER_VOLUME.search(text) or any(match[1].lower() not in ('one', '1', '1.0')
                                             for match in WATER_PORTION.finditer(text)):
             raise ValueError('This setup supports one premeasured portion with no specified volume.')
         if any(match['label'].upper() != 'A' for match in WATER_DONOR_RETURN.finditer(text)):
             raise ValueError('This setup can only return the donor to A. No pour was approved.')
+        if any(match['label'].upper() != 'A' for match in POUR_SOURCE.finditer(text)):
+            raise ValueError('This setup can only pour from A. No pour was approved.')
         for match in WATER_ROUTE.finditer(WATER_DONOR_RETURN.sub('', text)):
             label = (match['label'] or match['short']).upper()
             source = match['direction'].lower() == 'from'
@@ -642,8 +668,8 @@ class TaskLoop:
             raise ValueError('Improvement must preserve the baseline parameter domain.')
         if baseline.intent != revised.intent:
             raise ValueError('Improvement must preserve the baseline intent.')
-        original_actions = [step for step in pinned['steps'] if step['operation'] in MOCK_OPERATIONS]
-        revised_actions = [step for step in plan['steps'] if step['operation'] in MOCK_OPERATIONS]
+        original_actions = [step for step in pinned['steps'] if step['operation'] in ACTION_OPERATIONS]
+        revised_actions = [step for step in plan['steps'] if step['operation'] in ACTION_OPERATIONS]
         if (compute_skill_hash(pinned['bindings']) != compute_skill_hash(plan['bindings']) or
                 original_actions != revised_actions):
             raise ValueError('Improvement must preserve the bound action for the original request.')
@@ -826,7 +852,7 @@ class TaskLoop:
                 progress_data = {'step': index, 'operation': operation, 'request_id': request['request_id']}
                 task['feedback'].append({'type': 'execution_progress', **progress_data})
                 await self._emit_task(s, task, 'execution_progress', step=index, operation=operation)
-                if operation in MOCK_OPERATIONS:
+                if operation in ACTION_OPERATIONS:
                     try:
                         await self._verify_dispatch(s, task, request, step)
                     except (ValueError, OSError, RuntimeError, TimeoutError) as exc:

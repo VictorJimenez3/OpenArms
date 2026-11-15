@@ -31,6 +31,9 @@ class TwoVesselSceneService(MujocoSceneService):
     feature_schema = {'readable': {'type': 'boolean'},
                       'receiver_appearance': {'enum': ['dark_base_visible', 'water_appearance']},
                       'sample_cup_station': {'enum': ['A']}, 'sample_cup_held': {'type': 'boolean'}}
+    def worker(self, *args, **kwargs):
+        # Looked up at call time so tests can patch run_worker; subclasses bind another setup's renderer.
+        return run_worker(*args, **kwargs)
 
     def __init__(self, artifact_dir):
         super().__init__(artifact_dir)
@@ -56,7 +59,7 @@ class TwoVesselSceneService(MujocoSceneService):
         if sid in self._invalid:
             raise RuntimeError('Prepare a fresh trial after a stopped or failed execution.')
         revision = self.generation(sid)
-        capture = asyncio.create_task(run_worker(self.folder(sid), {
+        capture = asyncio.create_task(self.worker(self.folder(sid), {
             'kind': 'capture', 'state': self._saved_states.get(sid), 'variant': self.variant,
             'generation': revision, 'reference': sid not in self._references}))
         captures = self._captures.setdefault(sid, set())

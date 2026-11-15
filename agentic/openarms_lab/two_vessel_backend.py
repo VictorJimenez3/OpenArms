@@ -17,6 +17,9 @@ OPERATION = 'mock_prepared_sample'
 
 class TwoVesselBackend(MujocoBackend):
     mode = 'mujoco'
+    def worker(self, *args, **kwargs):
+        # Looked up at call time so tests can patch run_worker; subclasses bind another setup's renderer.
+        return run_worker(*args, **kwargs)
 
     def _reset_state(self):
         self._state = {
@@ -58,6 +61,10 @@ class TwoVesselBackend(MujocoBackend):
             raise ValueError('Prepare a fresh MuJoCo trial before executing.')
         return request
 
+    @staticmethod
+    def _command(request):
+        return {'condition': request.condition_id}
+
     async def execute_step(self, request_id, arguments, progress, *, operation=OPERATION):
         request = self.check_step(operation, arguments)
         if request_id in self._consumed:
@@ -83,9 +90,9 @@ class TwoVesselBackend(MujocoBackend):
             self._state['phase'] = message['phase']
             await progress(message['phase'])
 
-        command = {'kind': 'execute', 'condition': request.condition_id,
+        command = {'kind': 'execute', **self._command(request),
                    'video_name': staging.name, 'generation': self.scene_service.generation(sid)}
-        worker = self._worker = asyncio.create_task(run_worker(folder, command, report))
+        worker = self._worker = asyncio.create_task(self.worker(folder, command, report))
         final_state = None
         reason = None
         try:

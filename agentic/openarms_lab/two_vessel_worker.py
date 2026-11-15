@@ -13,10 +13,10 @@ import time
 import uuid
 
 
-async def run_worker(folder, command, on_progress=None):
+async def run_worker(folder, command, on_progress=None, *, module='agentic.openarms_lab.two_vessel_worker'):
     """Own the renderer and FFmpeg process group, including launch cancellation."""
     launch = asyncio.create_task(asyncio.create_subprocess_exec(
-        sys.executable, '-m', 'agentic.openarms_lab.two_vessel_worker', str(folder), json.dumps(command),
+        sys.executable, '-m', module, str(folder), json.dumps(command),
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, start_new_session=True))
     process, result = None, None
     try:

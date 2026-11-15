@@ -46,8 +46,8 @@ def _bindings(definition):
     return combinations
 
 
-class _FaultScene(TwoVesselSceneService):
-    """Frozen negative evidence cases; outputs still pass the actual Lab checks."""
+class _FaultScene:
+    """Frozen negative evidence cases; outputs still pass the actual Lab checks. Mixed into a scene class."""
     def __init__(self, folder, case):
         super().__init__(folder)
         self.case = case
@@ -70,15 +70,21 @@ class _FaultScene(TwoVesselSceneService):
 
 
 class TwoVesselSkillEvaluator:
+    # Setup bindings; another simulator setup subclasses these instead of copying the suite.
+    scene_class, backend_class = TwoVesselSceneService, TwoVesselBackend
+    experiment, conditions, suite = EXPERIMENT, CONDITIONS, SUITE
+    scope = staticmethod(execution_scope)
+    recovered_features = {'receiver_appearance': 'water_appearance', 'sample_cup_station': 'A', 'sample_cup_held': False}
+
     def __init__(self, artifact_dir):
         self.artifact_dir = Path(artifact_dir)
         self._lock = asyncio.Lock()
 
     async def _case(self, folder, definition, bindings, case):
-        scene = _FaultScene(folder/'images', case)
+        scene = type('FaultScene', (_FaultScene, self.scene_class), {})(folder/'images', case)
         motion_started = asyncio.Event()
 
-        class ControlledBackend(TwoVesselBackend):
+        class ControlledBackend(self.backend_class):
             async def execute_step(self, request_id, arguments, progress, **kwargs):
                 async def report(phase):
                     await progress(phase)
@@ -92,12 +98,12 @@ class TwoVesselSkillEvaluator:
         lab = Lab(folder, perception=scene,
                   expert=_PinnedPlanner(definition.model_dump(mode='json'), bindings),
                   backend_factory=lambda: ControlledBackend(scene), execution_timeout=90,
-                  experiment=EXPERIMENT, conditions=CONDITIONS)
+                  experiment=self.experiment, conditions=self.conditions)
         started = time.perf_counter()
         sid = (await lab.create())['session_id']
         control_passed = False
         try:
-            handle = await lab.start_task(sid, 'Replay the frozen two-vessel water skill for admission.')
+            handle = await lab.start_task(sid, 'Replay the frozen skill for admission.')
             async def settled():
                 await asyncio.wait_for(asyncio.shield(lab.workers[handle['task_id']]), 120)
             await settled()
@@ -130,8 +136,7 @@ class TwoVesselSkillEvaluator:
             recovered = bool(task['status'] == 'completed' and observed and
                 observed['status'] == 'observed' and observed['provenance'] == 'SIMULATED' and
                 observed.get('checks') and all(observed['checks'].values()) and
-                features.get('receiver_appearance') == 'water_appearance' and
-                features.get('sample_cup_station') == 'A' and features.get('sample_cup_held') is False and
+                all(features.get(k) == v and type(features.get(k)) is type(v) for k, v in self.recovered_features.items()) and
                 simulation['status'] == 'completed' and simulation['dose_count'] == 1 and
                 simulation['returned_to_dock'] and simulation['home_reached'])
             if case == 'stop':
@@ -148,19 +153,21 @@ class TwoVesselSkillEvaluator:
             await lab.shutdown()
 
     @staticmethod
-    def _validate(folder, definitions):
+    def _check_definition(definition, plan):
+        if definition.expected_state.get('at') != 'HOME' or not any(
+                c.feature == 'receiver_appearance' and c.expected == 'water_appearance'
+                for c in definition.outcome_checks):
+            raise ValueError('Water admission requires declared water appearance and final HOME checks.')
+        actions = [s for s in plan['steps'] if s['operation'].startswith('mock_')]
+        if (len(actions) != 1 or actions[0]['operation'] != 'mock_prepared_sample' or
+                actions[0]['arguments']['condition_id'] != 'water'):
+            raise ValueError('Only one complete water A-to-C operation can be admitted.')
+
+    def _validate(self, folder, definitions):
         registry = SkillRegistry(folder/'compile-only.json')
         for definition in definitions.values():
-            if definition.expected_state.get('at') != 'HOME' or not any(
-                    c.feature == 'receiver_appearance' and c.expected == 'water_appearance'
-                    for c in definition.outcome_checks):
-                raise ValueError('Water admission requires declared water appearance and final HOME checks.')
             for binding in _bindings(definition):
-                plan = registry.compile(PlanDraft(skill_definition=definition, bindings=binding))
-                actions = [s for s in plan['steps'] if s['operation'].startswith('mock_')]
-                if (len(actions) != 1 or actions[0]['operation'] != 'mock_prepared_sample' or
-                        actions[0]['arguments']['condition_id'] != 'water'):
-                    raise ValueError('Only one complete water A-to-C operation can be admitted.')
+                self._check_definition(definition, registry.compile(PlanDraft(skill_definition=definition, bindings=binding)))
         if 'baseline' in definitions:
             previous, revised = definitions['baseline'], definitions['candidate']
             if (previous.skill_id != revised.skill_id or previous.parameter_schema != revised.parameter_schema or
@@ -193,8 +200,8 @@ class TwoVesselSkillEvaluator:
         async with self._lock:
             folder = self.artifact_dir/uuid.uuid4().hex
             folder.mkdir(parents=True)
-            scope = execution_scope()
-            suite = {**SUITE, 'source_scope': scope,
+            scope = self.scope()
+            suite = {**self.suite, 'source_scope': scope,
                      'evaluator_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
             frozen = {'suite': suite, 'candidate': copy.deepcopy(candidate),
                       'unchanged_baseline': copy.deepcopy(baseline), 'requesting_session': sid}
@@ -211,20 +218,20 @@ class TwoVesselSkillEvaluator:
                 for label, definition in definitions.items():
                     comparisons[label] = []
                     for bi, binding in enumerate(combinations):
-                        for case in SUITE['positive'] + SUITE['negative']:
+                        for case in self.suite['positive'] + self.suite['negative']:
                             comparisons[label].append(await self._case(folder/label/f'{bi}-{case}', definition, binding, case))
-                for control in SUITE['controls']:
+                for control in self.suite['controls']:
                     controls[control] = await self._case(folder/control, definitions['candidate'], combinations[0], control)
                 rows = comparisons['candidate']
                 previous = {(r['case'], compute_skill_hash(r['bindings'])) for r in comparisons.get('baseline',[]) if r['recovered']}
                 current = {(r['case'], compute_skill_hash(r['bindings'])) for r in rows if r['recovered']}
                 gates.update(outcome=previous.issubset(current) and all(r['recovered'] for r in rows if r['case']=='nominal'),
                              unknown=all(not r['recovered'] and r['executions']==0 and not r['observed']
-                                         for r in rows if r['case'] in SUITE['negative']),
+                                         for r in rows if r['case'] in self.suite['negative']),
                              consent=controls['consent']['control_passed'], stop=controls['stop']['control_passed'])
             except (ValueError, KeyError) as exc:
                 reasons.append(str(exc))
-            gates['source_unchanged'] = (scope == execution_scope() and
+            gates['source_unchanged'] = (scope == self.scope() and
                 suite['evaluator_sha256'] == hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
             score = lambda label: sum(r['recovered'] for r in comparisons.get(label,[]) if r['case']=='nominal')
             gain = score('candidate') - score('baseline')

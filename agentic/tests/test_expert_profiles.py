@@ -185,11 +185,19 @@ async def test_missing_claude_executable_and_credentials(tmp_path, monkeypatch):
     with pytest.raises(ExpertUnavailable) as error:
         await expert.run({}, tool_handler=handler)
     assert error.value.code == 'unavailable'
+    # Without an API key the person's logged-in CLI is used: no --bare, same isolation flags.
     monkeypatch.delenv('ANTHROPIC_API_KEY', raising=False)
-    expert = ClaudeExpert(tmp_path/'calls', artifact_roots=[], executable=sys.executable)
+    executable = fake_cli(tmp_path, '''import json,sys
+args=sys.argv[1:]
+assert '--bare' not in args and '--strict-mcp-config' in args and args[args.index('--tools')+1] == ''
+print(json.dumps({'type':'result','subtype':'error','is_error':True,'result':'not logged in'}))
+sys.exit(1)
+''')
+    expert = ClaudeExpert(tmp_path/'calls2', artifact_roots=[], executable=executable)
     with pytest.raises(ExpertUnavailable) as error:
         await expert.run({}, tool_handler=handler)
     assert error.value.code == 'authentication'
+    assert expert.describe()['authentication_method'] == 'local_claude_cli_login'
 
 
 @pytest.mark.parametrize('mode', ['timeout', 'cancel', 'overflow'])

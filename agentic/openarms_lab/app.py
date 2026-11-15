@@ -139,8 +139,16 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
             registry_scope = execution
             experiment = conditions = None
             app.state.execution_mode = execution
-            scene_name = os.getenv('OPENARMS_SCENE', 'metered_dropper').strip().lower()
-            if execution == 'mujoco' and scene_name == 'two_vessel':
+            scene_name = os.getenv('OPENARMS_SCENE', 'demo_bench').strip().lower()
+            if execution == 'mujoco' and scene_name == 'demo_bench':
+                from .demo_bench import (CONDITIONS, EXPERIMENT, DemoBenchBackend, DemoBenchSceneService,
+                                         DemoBenchSkillEvaluator, execution_scope)
+                registry_scope = execution_scope()
+                experiment, conditions = EXPERIMENT, CONDITIONS
+                scene = DemoBenchSceneService(data / 'scene-evidence')
+                backend_factory = lambda: DemoBenchBackend(scene)
+                evaluator = DemoBenchSkillEvaluator(data / 'evaluations')
+            elif execution == 'mujoco' and scene_name == 'two_vessel':
                 from .two_vessel_scene import TwoVesselSceneService
                 from .two_vessel_backend import TwoVesselBackend
                 from .two_vessel_evaluation import TwoVesselSkillEvaluator
@@ -152,7 +160,7 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
                 evaluator = TwoVesselSkillEvaluator(data / 'evaluations')
             elif execution == 'mujoco':
                 if scene_name != 'metered_dropper':
-                    raise ValueError('OPENARMS_SCENE must be two_vessel or metered_dropper.')
+                    raise ValueError('OPENARMS_SCENE must be demo_bench, two_vessel or metered_dropper.')
                 from .mujoco_scene import MujocoSceneService
                 from .mujoco_backend import MujocoBackend
                 from .simulation_evaluation import SimulationSkillEvaluator

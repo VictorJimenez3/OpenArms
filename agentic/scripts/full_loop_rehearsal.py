@@ -63,17 +63,48 @@ def timing(state, started_at, acknowledged_at):
         'proposal_to_confirmation_ms': (confirmed-proposed)*1000,
         'confirmation_to_controller_progress_ms': (first_progress-confirmed)*1000,
         'controller_elapsed_ms': controller['elapsed_ms'],
+        'simulated_motion_seconds': (controller.get('simulation') or {}).get('motion_seconds'),
         'controller_receipt_to_observation_ms': (observed-finished)*1000,
         'request_to_observation_ms': (observed-started_at)*1000,
         'planning_metrics': approved['metrics'],
     }
 
 
+async def demo_bench_negatives(lab, sid, admitted_request):
+    """STOP revokes a presented proposal; an unsupported route never becomes the A-to-C pour."""
+    backend = lab.backends[sid]
+    before = backend.executions
+    await lab.converse(sid, 'Prepare a new trial', 'prepare-stop-check')
+    await lab.converse(sid, admitted_request, 'stop-check-request')
+    pending = (await settle(lab, sid))['pending']
+    await lab.present(sid, pending['request_id'], pending['proposal_version'])
+    await lab.stop(sid)
+    try:
+        await lab.confirm(sid, pending['request_id'], pending['proposal_version'])
+        confirm_after_stop = 'accepted'
+    except Exception as exc:
+        confirm_after_stop = f'rejected: {exc}'
+    stop = {'pending_after_stop': lab.snapshot(sid)['pending'], 'confirm_after_stop': confirm_after_stop,
+            'dispatches': backend.executions - before}
+    await lab.converse(sid, 'Prepare a new trial', 'prepare-unsupported-check')
+    started = time.time()
+    await lab.converse(sid, 'Pour the beaker from C into A.', 'unsupported-request')
+    state = await settle(lab, sid)
+    task = state['tasks'][-1]
+    unsupported = {'request': 'Pour the beaker from C into A.', 'status': task['status'], 'summary': task.get('summary'),
+                   'pending': state['pending'], 'dispatches': backend.executions - before,
+                   'model_calls': sum(run['calls'] for run in task['expert_runs']), 'wall_ms': (time.time()-started)*1000}
+    assert stop['pending_after_stop'] is None and stop['confirm_after_stop'].startswith('rejected') and stop['dispatches'] == 0
+    assert unsupported['pending'] is None and unsupported['dispatches'] == 0
+    print(json.dumps({'stop_check': stop, 'unsupported_check': unsupported}), flush=True)
+    return {'stop': stop, 'unsupported': unsupported}
+
+
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--execution', choices=['mock', 'mujoco'], default='mock')
-    parser.add_argument('--scene', choices=['metered_dropper', 'two_vessel'], default='metered_dropper')
+    parser.add_argument('--scene', choices=['metered_dropper', 'two_vessel', 'demo_bench'], default='metered_dropper')
     add_expert_arguments(parser)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
@@ -83,7 +114,18 @@ async def main():
     factory = lambda: SceneBackend(scene, delay=.02)
     options = {'execution_scope': 'mock'}
     request_text = 'Please test the prepared vinegar sample and check the indicator color.'
-    if args.scene == 'two_vessel':
+    if args.scene == 'demo_bench':
+        if args.execution != 'mujoco':
+            parser.error('--scene demo_bench requires --execution mujoco')
+        from openarms_lab.demo_bench import (CONDITIONS, EXPERIMENT, DemoBenchBackend, DemoBenchSceneService,
+                                             DemoBenchSkillEvaluator, execution_scope)
+        scene = DemoBenchSceneService(args.out/'scene')
+        expert = expert_from_arguments(args, args.out/'expert', artifact_roots=[scene.artifact_dir])
+        evaluator = DemoBenchSkillEvaluator(args.out/'evaluations')
+        factory = lambda: DemoBenchBackend(scene)
+        options = {'experiment': EXPERIMENT, 'conditions': CONDITIONS, 'execution_scope': execution_scope()}
+        request_text = 'Please pour the beaker from A into C, return the beaker to A and go HOME, then check the result.'
+    elif args.scene == 'two_vessel':
         if args.execution != 'mujoco':
             parser.error('--scene two_vessel requires --execution mujoco')
         from openarms_lab.two_vessel_scene import TwoVesselSceneService
@@ -149,6 +191,7 @@ async def main():
         assert not task2['expert_runs'], 'Warm successful skill invoked the expert'
         assert task2['plan']['bindings'] == plan['bindings']
         assert warm['pending'] is None and task2['observations'][-1]['status'] == 'observed'
+        negatives = await demo_bench_negatives(lab, sid, request) if args.scene == 'demo_bench' else None
         if args.scene == 'two_vessel':
             observed = task2['observations'][-1]
             assert observed['status'] == 'observed' and observed['provenance'] == 'SIMULATED'
@@ -166,7 +209,7 @@ async def main():
                    'cold_model_calls': sum(run['calls'] for run in task['expert_runs']),
                    'warm_model_calls': 0, 'warm_request': request, 'promotion': decision,
                    'cold_timing': timing(cold, cold_started, cold_ack),
-                   'warm_timing': timing(warm, warm_started, warm_ack),
+                   'warm_timing': timing(warm, warm_started, warm_ack), 'negative_checks': negatives,
                    'elapsed_seconds': time.perf_counter()-began}
         (args.out/'summary.json').write_text(json.dumps(summary, indent=2))
         print(json.dumps(summary, indent=2), flush=True)

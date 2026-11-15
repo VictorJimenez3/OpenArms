@@ -1,6 +1,7 @@
 """Claude Code print transport; inherits the exact Codex host/image/validator loop.
 
-Bare mode deliberately requires independent ANTHROPIC_API_KEY authentication.
+With ANTHROPIC_API_KEY it runs isolated bare mode; without one it uses the person's own
+logged-in Claude CLI, still with no tools, MCP servers, settings or hooks.
 No Codex environment or credentials are passed to Claude. See EXPERT_MODELS.md.
 """
 from __future__ import annotations
@@ -23,14 +24,13 @@ class ClaudeExpert(CodexExpert):
         super().__init__(*args, model=model, executable=executable, **kwargs)
 
     def describe(self):
-        return super().describe() | {'authentication_method': 'independent_anthropic_api_key',
-                                    'credential_configured': bool(os.environ.get('ANTHROPIC_API_KEY'))}
+        key = bool(os.environ.get('ANTHROPIC_API_KEY'))
+        return super().describe() | {'authentication_method': 'independent_anthropic_api_key' if key else 'local_claude_cli_login',
+                                    'credential_configured': key}
 
     async def _complete(self, prompt: str, images: list[Path], cancel_event):
         if not shutil.which(self.executable):
             raise ExpertUnavailable('unavailable', 'The configured expert CLI could not start.')
-        if not os.environ.get('ANTHROPIC_API_KEY'):
-            raise ExpertUnavailable('authentication', 'The expert needs independent Anthropic API authentication for isolated bare mode.')
         content = [{'type': 'text', 'text': prompt}]
         for image in images:
             data = image.read_bytes()
@@ -41,10 +41,13 @@ class ClaudeExpert(CodexExpert):
         message = {'type': 'user', 'message': {'role': 'user', 'content': content},
                    'parent_tool_use_id': None}
         env = {key: value for key, value in os.environ.items() if key in {
-            'HOME', 'PATH', 'TMPDIR', 'LANG', 'LC_ALL', 'ANTHROPIC_API_KEY',
+            'HOME', 'USER', 'PATH', 'TMPDIR', 'LANG', 'LC_ALL', 'ANTHROPIC_API_KEY',
             'SSL_CERT_FILE', 'SSL_CERT_DIR', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY'}}
         with tempfile.TemporaryDirectory(prefix='claude-', dir=self.work_dir) as folder:
-            command = [self.executable, '--bare', '--print', '--verbose',
+            # --bare skips the keychain login, so use it only with an API key; otherwise the
+            # person's own logged-in Claude CLI is used, with the same isolation flags below.
+            bare = ['--bare'] if env.get('ANTHROPIC_API_KEY') else []
+            command = [self.executable, *bare, '--print', '--verbose',
                        '--input-format', 'stream-json', '--output-format', 'stream-json',
                        # `--tools ''` leaves only the CLI's own StructuredOutput formatter. A blanket
                        # `--disallowedTools '*'` also denies that formatter, so no reply can ever be returned.
