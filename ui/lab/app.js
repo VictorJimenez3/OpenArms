@@ -101,7 +101,8 @@ async function boot(pairingCode) {
     connection = 'connecting';
     pendingKey = acknowledgedKey = '';
     proposalGeneration++;
-    client = new SessionClient(api, { onState: showState, onTranscript: transcript, onStatus: audioStatus, onError: notify, onResync: resync });
+    client = new SessionClient(api, { onState: showState, onTranscript: transcript,
+      onInterrupted: discardVoiceDrafts, onStatus: audioStatus, onError: notify, onResync: resync });
     client.acceptState(state);
     client.connect();
   } catch (error) {
@@ -253,6 +254,16 @@ function transcript(frame) {
   liveTurns.set(key, { ...frame, text: previous ? joinTurn(previous.text, frame.text, frame.final) : frame.text });
   if (liveTurns.size > 200) liveTurns.delete(liveTurns.keys().next().value);
   renderMessages();
+}
+function discardVoiceDrafts(replyId) {
+  let removed = false;
+  for (const [key, turn] of liveTurns) {
+    if (turn.role === 'assistant' && !turn.final && (!replyId || turn.turn_id === replyId)) {
+      liveTurns.delete(key);
+      removed = true;
+    }
+  }
+  if (removed) renderMessages();
 }
 function renderProposal() {
   const proposal = snapshot.pending;

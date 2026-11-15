@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from agentic.openarms_lab.runtime import Lab, LabError
-from agentic.openarms_lab.demo_bench import (DemoBenchBackend, DemoBenchSceneService, anchors, read_pixels)
+from agentic.openarms_lab.demo_bench import (ACTION_CHECKS, DemoBenchBackend, DemoBenchSceneService, anchors, read_pixels)
 from agentic.openarms_lab.demo_bench_worker import run_worker
 from agentic.openarms_lab import two_vessel_scene
 
@@ -117,6 +117,129 @@ async def test_demo_bench_stop_revokes_pending_confirmation(tmp_path):
         await lab.shutdown()
 
 
+class DirectActionExpert(PourExpert):
+    async def run(self, context, **kwargs):
+        if context['phase'] != 'planning':
+            return await super().run(context, **kwargs)
+        self.contexts.append(copy.deepcopy(context))
+        operation, arguments = {
+            'Pick up the beaker.': ('pick', {'station': 'A'}),
+            'Pick up the receiver.': ('pick', {'station': 'A'}),
+            'Pour it into the receiver.': ('pour', {'into': 'C', 'portions': 1}),
+            'Put the beaker back.': ('return_cup', {'station': 'A'}),
+        }[context['request']]
+        return {'kind': 'plan', 'summary': operation, 'payload': {
+            'steps': [{'operation': 'inspect_scene'}, {'operation': operation, 'arguments': arguments},
+                      {'operation': 'observe'}],
+            'outcome_checks': ACTION_CHECKS[operation],
+        }, 'provider': 'TEST_FAKE', 'model': 'deterministic-action-planner', 'calls': 1,
+            'usage': {}, 'elapsed_ms': 1, 'tool_receipts': []}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('experiment', ['volcano', 'potions', 'lava_lamp'])
+async def test_distinct_beaker_actions_preserve_the_simulated_pose_until_the_next_confirmed_command(tmp_path, monkeypatch, experiment):
+    monkeypatch.setenv('OPENARMS_DEMO_EXPERIMENT', experiment)
+    _scene, lab = make_lab(tmp_path, DirectActionExpert())
+    try:
+        sid = (await lab.create())['session_id']
+        backend = lab.backends[sid]
+        trial_id = lab.snapshot(sid)['trial']['trial_id']
+        observations = set()
+
+        async def request_action(text):
+            handle = await lab.start_task(sid, text)
+            await settled(lab, handle)
+            return handle, lab.snapshot(sid)
+
+        rejected, state = await request_action('Pick up the receiver.')
+        assert state['pending'] is None
+        assert state['tasks'][-1]['task_id'] == rejected['task_id']
+        assert state['tasks'][-1]['status'] in ('failed', 'needs_clarification')
+        assert backend.executions == 0
+
+        for count, (request, operation, position, holding) in enumerate([
+            ('Pick up the beaker.', 'pick', 'LIFT_A', 'sample_cup'),
+            ('Pour it into the receiver.', 'pour', 'ABOVE_C', 'sample_cup'),
+            ('Put the beaker back.', 'return_cup', 'HOME', None),
+        ], start=1):
+            handle, state = await request_action(request)
+            proposal = state['pending']
+            assert proposal, state['tasks'][-1]['summary']
+            assert [step['operation'] for step in proposal['plan']['steps']] == ['inspect_scene', operation, 'observe']
+            assert backend.executions == count - 1
+            key = (sid, proposal['request_id'], proposal['proposal_version'])
+            await lab.present(*key)
+            await lab.confirm(*key)
+            await settled(lab, handle)
+
+            state = lab.snapshot(sid)
+            task = state['tasks'][-1]
+            assert task['status'] == 'completed', task['summary']
+            assert backend.executions == count
+            assert state['trial']['trial_id'] == trial_id
+            assert (state['state']['at'], state['state']['holding']) == (position, holding)
+            outcome = task['observations'][-1]
+            assert outcome['provenance'] == 'SIMULATED'
+            assert all(outcome['checks'].values())
+            assert outcome['features']['sample_cup_held'] is (holding is not None)
+            assert outcome['features']['donor_appearance'] == ('liquid_visible' if operation == 'pick' else 'empty')
+            assert outcome['evidence'][-1] not in observations
+            observations.add(outcome['evidence'][-1])
+        assert state['state']['cup_portions'] == 0 and state['state']['receiver_portions'] == 1
+    finally:
+        await lab.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_stop_during_a_resumed_pour_cancels_the_worker(tmp_path):
+    scene, lab = make_lab(tmp_path, DirectActionExpert())
+    try:
+        sid = (await lab.create())['session_id']
+        backend = lab.backends[sid]
+
+        async def plan_and_confirm(text):
+            task = await lab.start_task(sid, text)
+            await settled(lab, task)
+            state = lab.snapshot(sid)
+            proposal = state['pending']
+            assert proposal, state['tasks'][-1]['summary']
+            key = (sid, proposal['request_id'], proposal['proposal_version'])
+            await lab.present(*key)
+            await lab.confirm(*key)
+            return task, key
+
+        task, _ = await plan_and_confirm('Pick up the beaker.')
+        await settled(lab, task)
+        assert backend.state()['holding'] == 'sample_cup'
+
+        started = asyncio.Event()
+        worker = backend.worker
+
+        async def paused_worker(folder, command, progress):
+            async def mark_started(message):
+                started.set()
+                await asyncio.Future()
+
+            return await worker(folder, command, mark_started)
+
+        backend.worker = paused_worker
+        _, key = await plan_and_confirm('Pour it into the receiver.')
+        await asyncio.wait_for(started.wait(), 30)
+        stopped = await lab.stop(sid)
+        assert stopped['pending'] is None
+        assert stopped['tasks'][-1]['status'] == 'cancelled'
+        assert backend.state()['simulation']['status'] == 'stopped'
+        assert backend.executions == 2
+        with pytest.raises(LabError):
+            await lab.confirm(*key)
+        with pytest.raises(RuntimeError, match='fresh trial'):
+            await scene.inspect_scene(sid)
+        assert backend.executions == 2
+    finally:
+        await lab.shutdown()
+
+
 @pytest.mark.parametrize(('text', 'reason'), [
     ('Pour the beaker from station B into C.', 'from A'),
     ('Pour the beaker from A into receiver B.', 'into C'),
@@ -177,6 +300,10 @@ async def test_demo_bench_pixel_observer_fails_closed_on_fault_views(tmp_path):
     assert read_pixels(frames['nominal'], anchor)['donor'] == 'liquid_visible'
     for variant in ('camera_shift', 'missing', 'swapped', 'occluded'):
         assert read_pixels(frames[variant], anchor)['ready'] is False, variant
+    marker_only = frames['missing'].copy()
+    x, y = np.rint(anchor['A'] + (-13, -90)).astype(int)
+    marker_only[y-3:y+3, x-3:x+3] = (255, 0, 255)
+    assert not read_pixels(marker_only, anchor)['ready']
     backend = DemoBenchBackend(DemoBenchSceneService(tmp_path/'s'))
     backend.bind_session('s'); backend.prepare()
     for operation, arguments in (('mock_prepared_sample', {'condition_id': 'water'}),

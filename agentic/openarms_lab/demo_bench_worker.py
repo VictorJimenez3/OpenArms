@@ -4,6 +4,7 @@ from __future__ import annotations
 import functools
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -14,10 +15,30 @@ from .two_vessel_worker import _emit, run_worker as _run_worker
 
 SETUP = 'demo'
 CAMERA_ID = 'demo_bench_overview'
-CONFIGURATION_ID = 'demo_bench_overview.v1'
+CONFIGURATION_ID = 'demo_bench_overview.v3'
 VARIANTS = ('nominal', 'camera_shift', 'missing', 'swapped', 'occluded')
 
 run_worker = functools.partial(_run_worker, module='agentic.openarms_lab.demo_bench_worker')
+EXPERIMENTS_FILE = Path(__file__).resolve().parents[2] / 'simulation/config/setups/demo/experiments.yaml'
+
+
+def experiment_name():
+    name = os.environ.get('OPENARMS_DEMO_EXPERIMENT', 'volcano').strip().lower() or 'volcano'
+    if name not in experiments():
+        raise ValueError(f'Unknown demo bench experiment {name!r}; known: {sorted(experiments())}.')
+    return name
+
+
+@functools.cache
+def experiments():
+    import yaml
+    return yaml.safe_load(EXPERIMENTS_FILE.read_text())
+
+
+def experiment_contents(name=None):
+    """Station contents for the selected experiment, or None to keep setups/demo/bench.yaml as is."""
+    contents = experiments()[name or experiment_name()].get('contents')
+    return None if contents is None else {station: dict(values) for station, values in contents.items()}
 
 
 def frame_record(path, generation, captured_at=None):
@@ -29,15 +50,31 @@ def frame_record(path, generation, captured_at=None):
             'coordinate_frame': 'overview_image', 'units': 'px', 'generation': generation, 'provenance': 'SIMULATED'}
 
 
+def _action_steps(operation, command, held_source):
+    if operation == 'add_sample':
+        if held_source is not None or (command.get('source'), command.get('into'), command.get('portions')) != ('A', 'C', 1):
+            raise ValueError('The complete pour requires the beaker at A, an empty gripper, and one portion into C.')
+        return [{'action': 'add_sample', 'args': {'source': 'A', 'into': 'C', 'portions': 1}}], 'HOME'
+    if operation == 'pick' and held_source is None and command.get('station', 'A') == 'A':
+        return [{'action': 'pick', 'args': {'station': 'A'}}], 'LIFT_A'
+    if operation == 'pour' and held_source == 'A' and command.get('into') == 'C' and command.get('portions') == 1:
+        return [{'action': 'pour', 'args': {'into': 'C'}}], 'ABOVE_C'
+    if operation == 'return_cup' and held_source == 'A' and command.get('station', 'A') == 'A':
+        return [{'action': 'return_cup'}, {'action': 'home'}], 'HOME'
+    raise ValueError('Pick only from A, pour the held beaker into C once, or return the held beaker to A.')
+
+
 def _run(folder, command):
     import mujoco
     import numpy as np
+    from PIL import Image
+
     from simulation.openarms_sim.chemistry import load_model
     from simulation.openarms_sim.config import load_bench, load_chemistry_config, load_joint_map, load_pose_file
     from simulation.openarms_sim.joints import JointMap
     from simulation.openarms_sim.motion import build_segments, expand_plan
     from simulation.openarms_sim.player import Player
-    from simulation.openarms_sim.render import VideoRecorder, overview_image
+    from simulation.openarms_sim.render import OVERVIEW_HEIGHT, OVERVIEW_WIDTH, VideoRecorder, camera
     from simulation.openarms_sim.scene import build_scene
 
     bench = load_bench(SETUP)
@@ -49,21 +86,28 @@ def _run(folder, command):
     def player_for(scene):
         trusted = [np.array(jm.pose_to_model(pose_file['poses'][n])) for n in pose_file.get('taught', [])]
         return Player(scene, jm, config, load_model(config), strict_limits=pose_file.get('source') != 'taught',
-                      trusted_poses=trusted)
+                      trusted_poses=trusted, contents=experiment_contents(),
+                      allow_simulation_only=experiments()[experiment_name()].get('simulation_only', False))
 
     def frame(scene, *, shifted=False):
         path = folder / (uuid.uuid4().hex + '.png')
+        view = camera(scene.bench)
         if shifted:
             # The demo bench has no camera block, so render's own shift is a no-op; turn the default view here.
-            from PIL import Image
-            from simulation.openarms_sim.render import OVERVIEW_HEIGHT, OVERVIEW_WIDTH, camera
-            view = camera(scene.bench)
             view.azimuth += 10  # Clearly outside the 6 px marker tolerance.
-            with mujoco.Renderer(scene.model, OVERVIEW_HEIGHT, OVERVIEW_WIDTH) as renderer:
-                renderer.update_scene(scene.data, view)
-                Image.fromarray(renderer.render()).save(path, format='PNG')
-        else:
-            overview_image(scene, path)
+        with mujoco.Renderer(scene.model, OVERVIEW_HEIGHT, OVERVIEW_WIDTH) as renderer:
+            renderer.update_scene(scene.data, view)
+            # Render a magenta fiducial fixed to the donor wall. It is visual only and
+            # is occluded normally, so the independent observer can track it in pixels.
+            donor = scene.body['A']
+            rotation = scene.data.xmat[donor].reshape(3, 3)
+            position = scene.data.xpos[donor] + rotation @ np.array([.018, -.012, .014])
+            marker = renderer.scene.geoms[renderer.scene.ngeom]
+            mujoco.mjv_initGeom(marker, mujoco.mjtGeom.mjGEOM_SPHERE, np.full(3, .0035), position,
+                                np.eye(3).ravel(), np.array([1., 0., 1., 1.], dtype=np.float32))
+            marker.emission = .25
+            renderer.scene.ngeom += 1
+            Image.fromarray(renderer.render()).save(path, format='PNG')
         raw = frame_record(path, command['generation'])
         return {'frame_name': path.name, 'captured_at': raw['captured_at'], 'raw_frame': raw}
 
@@ -93,18 +137,42 @@ def _run(folder, command):
             for field, value in state['data'].items():
                 getattr(scene.data, field)[:] = value
             mujoco.mj_forward(scene.model, scene.data)
-            result = frame(scene)
+            result = frame(scene, shifted=variant == 'camera_shift')
         _emit(kind='capture', reference=reference, motion_seconds=state['motion_seconds'] if state else 0, **result)
         return
 
-    if command['kind'] != 'execute' or (command.get('source'), command.get('into'), command.get('portions')) != ('A', 'C', 1):
-        raise ValueError('Only add_sample(source=A, into=C, portions=1) is supported on the demo bench.')
+    if command['kind'] != 'execute':
+        raise ValueError('Unknown demo bench worker command.')
     if not re.fullmatch(r'\.[0-9a-f]{32}\.mp4', command['video_name']):
         raise ValueError('Invalid staging video name.')
-    plan = {'plan_id': 'demo-bench', 'steps': [{'action': 'add_sample', 'args': {'source': 'A', 'into': 'C', 'portions': 1}}]}
-    segments = build_segments(expand_plan(plan), pose_file['poses'], jm, bench.stations)
+
+    previous = command.get('state')
+    prior_player = previous['player'] if previous is not None else None
+    held_source = prior_player['holding'] if prior_player is not None else None
+    operation = command.get('operation', 'add_sample')
+    steps, end_pose = _action_steps(operation, command, held_source)
     scene = build_scene(bench)
     player = player_for(scene)
+    start = {}
+    receiver_portions = 0
+    if prior_player is not None:
+        player.contents = prior_player['contents']
+        player.location = prior_player['location']
+        player.holding = held_source
+        # The gripper must be allowed to touch the vessel as its jaws open on the return.
+        player._touch_ok = held_source
+        player._rel = tuple(np.array(array) for array in prior_player['grasp']) if held_source else None
+        for name, mocap in scene.mocap.items():
+            player.pos[name] = np.array(previous['data']['mocap_pos'][mocap])
+            rotation = np.empty(9)
+            mujoco.mju_quat2Mat(rotation, np.array(previous['data']['mocap_quat'][mocap]))
+            player.rot[name] = rotation.reshape(3, 3)
+        player._refresh_liquids()
+        start = {'start_q': np.array(previous['data']['qpos'])[scene.arm_qadr],
+                 'start_grip': prior_player['grip'], 'held_source': held_source}
+        receiver_portions = prior_player['receiver_portions']
+    segments = build_segments(expand_plan({'steps': steps}), pose_file['poses'], jm, bench.stations, **start)
+    player._apply(segments[0].q0, segments[0].grip0)
     recorder = VideoRecorder(scene, folder / command['video_name'], fps=30, speed=1)
     last_phase = None
     trace = []
@@ -119,20 +187,32 @@ def _run(folder, command):
             last_phase = phase
 
     try:
-        player.run(segments, fps=30, on_frame=progress)
+        player.run(segments, fps=30, on_frame=progress, allow_held=end_pose != 'HOME')
     finally:
         recorder.close()
+    dose_count = len(player.poured)
+    receiver_portions += dose_count
     state = {'model': {f: getattr(scene.model, f).tolist() for f in ('geom_size', 'geom_pos', 'geom_rgba')},
              'data': {f: getattr(scene.data, f).tolist() for f in ('qpos', 'mocap_pos', 'mocap_quat')},
-             'motion_seconds': player.t}
+             'motion_seconds': player.t,
+             'player': {'contents': player.contents, 'location': player.location, 'holding': player.holding,
+                        'grasp': [array.tolist() for array in player._rel] if player._rel is not None else None,
+                        'grip': segments[-1].grip1, 'receiver_portions': receiver_portions}}
     # The demo bench has no docks, so "returned" is the cup back on its mark with the gripper empty.
     returned = player.location.get('A') == 'A' and player.holding is None
-    home = bool(segments and segments[-1].step == 'home()')
+    at_end_pose = np.allclose(scene.data.qpos[scene.arm_qadr], jm.pose_to_model(pose_file['poses'][end_pose]))
+    home = bool(at_end_pose and end_pose == 'HOME')
+    held = player.holding == 'A'
+    holding_matches = returned if end_pose == 'HOME' else held
+    dose_matches = dose_count == int(operation in {'add_sample', 'pour'})
     successful = not any(issue.severity == 'block' for issue in player.issues)
-    _emit(kind='result', ok=successful and returned and home and len(player.poured) == 1,
-          frame_count=recorder.frames, motion_seconds=player.t, dose_count=len(player.poured),
+    _emit(kind='result', ok=bool(successful and at_end_pose and holding_matches and dose_matches),
+          frame_count=recorder.frames, motion_seconds=player.t, dose_count=dose_count,
           warnings=[issue.message for issue in player.issues], state=state, trace=trace,
-          returned_to_dock=returned, home_reached=home, video_name=command['video_name'], **frame(scene))
+          returned_to_dock=returned, home_reached=home, video_name=command['video_name'],
+          controller_state={'at': end_pose if at_end_pose else 'UNKNOWN', 'holding': 'sample_cup' if held else None,
+                            'cup_station': 'A' if returned else None, 'cup_portions': int(any(player.contents['A'].values())),
+                            'receiver_portions': receiver_portions}, **frame(scene))
 
 
 if __name__ == '__main__':

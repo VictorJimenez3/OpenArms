@@ -48,7 +48,7 @@ async def test_clean_demo_pour_skips_only_the_guarded_calls(tmp_path, checkpoint
 @pytest.mark.asyncio
 @pytest.mark.parametrize('pixels', [{'ready': False, 'camera_registration': 'unknown', 'reason': 'Occluded.'},
                                     {'ready': True, 'camera_registration': 'registered', 'donor': 'liquid_visible',
-                                     'receiver': 'red_liquid'}])
+                                     'receiver': 'red_liquid', 'held': False}])
 async def test_unclear_or_failed_outcome_still_reaches_the_expert(tmp_path, pixels):
     expert = PourExpert()
     scene, lab = make_lab(tmp_path, expert)

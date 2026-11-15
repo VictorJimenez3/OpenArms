@@ -71,8 +71,12 @@ class Player:
         objects: dict | None = None,
         strict_limits: bool = True,
         trusted_poses: list[np.ndarray] | None = None,
+        allow_simulation_only: bool = False,
     ):
         self.scene, self.jm, self.chem_cfg, self.chem = scene, jm, chem_cfg, chem
+        # A simulation-only experiment may mix substances that are not on the real_bench list; that is
+        # reported as a note, never cleared. Listed hazard combinations still block.
+        self.allow_simulation_only = allow_simulation_only
         # Planned poses must stay inside the model's joint range. A recording of the
         # real arm may go past it, because the real joints turn a little further.
         self.strict_limits = strict_limits
@@ -314,7 +318,7 @@ class Player:
             mixture = dict(self.contents[target])
             for key, amount in liquid.items():
                 mixture[key] = mixture.get(key, 0) + amount
-            reasons = safety_issues(self.chem_cfg, mixture)
+            reasons = self._unsafe_reasons(mixture)
             for reason in reasons:
                 self._add("block", "unsafe_mix", reason)
             if sum(mixture.values()) > b.receiver_capacity:
@@ -342,8 +346,17 @@ class Player:
                 "block", "overflow", f"Receiver {target} would overflow: it holds {b.receiver_capacity} portions in total."
             )
         if not b.docks:
-            for reason in safety_issues(self.chem_cfg, self.contents[target]):
+            for reason in self._unsafe_reasons(self.contents[target]):
                 self._add("block", "unsafe_mix", f"Adding {names} to {target}: {reason}.")
+
+    def _unsafe_reasons(self, mixture: dict) -> list[str]:
+        """Blocking safety reasons; a simulation-only experiment turns not-on-real_bench into a note."""
+        reasons = safety_issues(self.chem_cfg, mixture)
+        if self.allow_simulation_only:
+            for reason in [r for r in reasons if r.endswith("is simulation-only and not allowed on the real bench")]:
+                self._add("note", "simulation_only", reason + " (simulation-only experiment)")
+                reasons.remove(reason)
+        return reasons
 
     # ---- collisions --------------------------------------------------------
 
@@ -421,8 +434,9 @@ class Player:
         self._write_mocap()
         mujoco.mj_forward(m, d)
 
-    def run(self, segments: list[Segment], fps: int = 30, on_frame: Callable[["Player"], None] | None = None):
-        """Plays the moves in order. Calls `on_frame(self)` after every frame."""
+    def run(self, segments: list[Segment], fps: int = 30,
+            on_frame: Callable[["Player"], None] | None = None, *, allow_held: bool = False):
+        """Play the moves and report every frame. Only interactive simulation may end holding."""
         last_index = None
         for seg in segments:
             if seg.step_index != last_index:
@@ -456,6 +470,6 @@ class Player:
         self._pour = None
         self._refresh_liquids()
         self.step = ""
-        if self.holding:
+        if self.holding and not allow_held:
             self._add("block", "still_holding", f"The plan ends with the {self._name(self.holding)} still in the gripper.")
         return self.issues

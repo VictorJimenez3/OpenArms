@@ -35,7 +35,7 @@ ACTION_REPEAT = re.compile(
     r'(?:pour|transfer|action|pickup|pick up|put down|move)\b'
     r'(?!\s+(?:plan|proposal|instructions|explanation|description)\b)')
 REQUEST = re.compile(r'^(?:(?:can|could|would|will) you |please )'
-                     r'(?:please )?(?:test|run|pour|pick up|put down|set down|inspect|use|try|'
+                     r'(?:please )?(?:test|run|pour|pick|lift|grab|put(?: (?:the )?(?:beaker|cup|it))? (?:down|back)|set down|place|return|inspect|use|try|'
                      r'prepare|start|move|heat|mix|measure|perform|transfer|tip|empty|decant|repeat|redo|do (?:the|a))\b')
 QUESTION = re.compile(
     r"^(?:(?:what|which|why|where|when|who|how)\b|"
@@ -116,7 +116,7 @@ def explicit_action(text):
     if reset_input(norm) or read_only_turn(norm):
         return False
     return bool(REQUEST.match(norm) or re.match(
-        r'^(?:test|run|pour|pick up|put down|set down|inspect|move|mix|measure|transfer|tip|empty|decant|repeat|redo)\b', norm))
+        r'^(?:test|run|pour|pick|lift|grab|put(?: (?:the )?(?:beaker|cup|it))? (?:down|back)|set down|place|return|inspect|move|mix|measure|transfer|tip|empty|decant|repeat|redo)\b', norm))
 
 
 def repeat_speech(text):

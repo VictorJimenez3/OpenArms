@@ -1,0 +1,27 @@
+source:
+  publisher: Smartivity
+  booklet: My First Science Kit
+  experiment: Lava Lamp
+  pages: [38, 39]
+preparation:
+  beaker:
+    water_ml: 0
+    modelled_acid_fraction: 1
+  flask:
+    water_ml: 5
+    baking_soda_kit_spoons: 2
+    red_colour_drops: 2
+    oil_ml: 40
+    stir_count: 32
+  sequence: Slowly add citric acid to the prepared flask. The booklet does not specify a dose.
+model:
+  source_internal_profile_mm: [[2, 16], [39, 21]]
+  source_wall_mm: 1.6
+  beaker_xy_m: [0.265, 0.133]
+  beaker_grasp_height_m: 0.026
+  flask_xy_m: [0.270, -0.086]
+  flask_internal_profile_mm: [[2, 22], [7, 22], [34, 16], [54, 12], [71, 12]]
+  variation:
+    position_m: 0
+    water_fill_fraction: 0
+    camera_deg: 0

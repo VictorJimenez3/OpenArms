@@ -91,9 +91,10 @@ def blend(u: float) -> float:
 
 
 def build_segments(
-    steps: list[dict], poses: dict[str, dict[str, float]], jm: JointMap, stations: dict
+    steps: list[dict], poses: dict[str, dict[str, float]], jm: JointMap, stations: dict,
+    *, start_q: np.ndarray | None = None, start_grip: float | None = None, held_source: str | None = None,
 ) -> list[Segment]:
-    """Arm steps -> the list of moves, starting from HOME with the gripper open."""
+    """Arm steps -> moves, from HOME/open unless resuming a simulated action."""
     mcfg = jm.cfg["motion"]
     open_v, closed_v = jm.gripper_open_value, jm.gripper_closed_value
 
@@ -103,9 +104,9 @@ def build_segments(
         return np.array(jm.pose_to_model(poses[name]))
 
     segments: list[Segment] = []
-    q = pose("HOME")
-    grip = open_v
-    holding: str | None = None  # station the held cup came from, as the plan intends
+    q = pose("HOME") if start_q is None else np.asarray(start_q, dtype=float)
+    grip = open_v if start_grip is None else start_grip
+    holding = held_source  # station the held cup came from, as the plan intends
 
     def move(i, step, name):
         nonlocal q

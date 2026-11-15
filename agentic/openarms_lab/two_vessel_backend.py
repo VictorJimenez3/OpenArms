@@ -65,12 +65,21 @@ class TwoVesselBackend(MujocoBackend):
     def _command(request):
         return {'condition': request.condition_id}
 
+    def _worker_arguments(self, operation, request):
+        return self._command(request)
+
+    def _completed_state(self, operation, result):
+        if result['ok'] and result['dose_count'] == 1:
+            return {'at': 'HOME', 'cup_station': 'A', 'cup_portions': 0, 'receiver_portions': 1}
+        return None
+
     async def execute_step(self, request_id, arguments, progress, *, operation=OPERATION):
         request = self.check_step(operation, arguments)
         if request_id in self._consumed:
             raise ValueError('MuJoCo request already consumed.')
         sid = self.session_id
         folder = self.scene_service.folder(sid)
+        worker_arguments = self._worker_arguments(operation, request)
         video_name = uuid.uuid4().hex + '.mp4'
         staging = folder / ('.' + video_name)
         started = time.perf_counter()
@@ -90,7 +99,7 @@ class TwoVesselBackend(MujocoBackend):
             self._state['phase'] = message['phase']
             await progress(message['phase'])
 
-        command = {'kind': 'execute', **self._command(request),
+        command = {'kind': 'execute', **worker_arguments,
                    'video_name': staging.name, 'generation': self.scene_service.generation(sid)}
         worker = self._worker = asyncio.create_task(self.worker(folder, command, report))
         final_state = None
@@ -105,16 +114,17 @@ class TwoVesselBackend(MujocoBackend):
                 raise RuntimeError('MuJoCo worker returned unexpected scene or video metadata.')
             simulation.update(trace=result['trace'], dose_count=result['dose_count'],
                               returned_to_dock=result['returned_to_dock'], home_reached=result['home_reached'])
-            if result['ok'] and result['dose_count'] == 1:
+            completed = self._completed_state(operation, result)
+            if completed is not None:
                 if not staging.is_file() or not staging.stat().st_size or result['frame_count'] <= 0:
                     raise RuntimeError('MuJoCo video is missing or empty.')
                 staging.replace(folder / video_name)
                 final_state = result['state']
                 simulation.update(status='completed', video_name=video_name,
                                   video_sha256=hashlib.sha256((folder / video_name).read_bytes()).hexdigest())
-                self._state.update(at='HOME', cup_station='A', cup_portions=0, receiver_portions=1)
+                self._state.update(completed)
             else:
-                reason = result['warnings'][0] if result['warnings'] else 'MuJoCo did not complete the water pour.'
+                reason = result['warnings'][0] if result['warnings'] else 'MuJoCo did not complete the requested motion.'
                 simulation['status'] = 'failed'
         except asyncio.CancelledError:
             simulation['status'] = 'stopped'

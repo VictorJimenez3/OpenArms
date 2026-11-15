@@ -1,0 +1,32 @@
+source:
+  publisher: Smartivity
+  booklet: My First Science Kit
+  experiment: Magic Snow
+  pages: [10, 11]
+preparation:
+  beaker:
+    water_ml: 0
+    snow_powder_kit_spoons: 3
+  flask:
+    water_ml: 50
+  soak_seconds: 120
+  sequence: Add the kit powder to the prefilled cup, then wait two minutes.
+model:
+  source_internal_profile_mm: [[2, 16], [39, 21]]
+  source_wall_mm: 1.6
+  flask_internal_profile_mm: [[2, 33], [33, 47]]
+  flask_wall_mm: 1.8
+  beaker_xy_m: [0.265, 0.133]
+  flask_xy_m: [0.270, -0.086]
+  flask_base_m: 0.004
+  beaker_grasp_height_m: 0.026
+  lip_clearance_m: 0.056
+  reaction_camera:
+    offset_m: [-0.014, 0.006, 0.041]
+    distance_m: 0.207
+    azimuth_deg: 141
+    elevation_deg: -30
+  variation:
+    position_m: 0
+    water_fill_fraction: 0
+    camera_deg: 0

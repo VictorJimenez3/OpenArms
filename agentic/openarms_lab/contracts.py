@@ -75,9 +75,9 @@ class LabExecutor(Protocol):
 PreparedCondition = Literal['vinegar', 'baking_soda', 'water']
 MockOperation = Literal['mock_prepared_sample', 'mock_pick_up', 'mock_put_down', 'mock_pour']
 MOCK_OPERATIONS = ('mock_prepared_sample', 'mock_pick_up', 'mock_put_down', 'mock_pour')
-# Simulator-typed actions, named as the simulator's own plan action (openarms_sim add_sample).
-SimOperation = Literal['add_sample']
-ACTION_OPERATIONS = (*MOCK_OPERATIONS, 'add_sample')
+# The simulation uses the same operation names as openarms_sim.
+SimOperation = Literal['add_sample', 'pick', 'pour', 'return_cup']
+ACTION_OPERATIONS = (*MOCK_OPERATIONS, 'add_sample', 'pick', 'pour', 'return_cup')
 PLAN_PRIMITIVES = ('inspect_scene', 'localize_objects', *ACTION_OPERATIONS, 'observe')
 SceneView = Literal['primary', 'secondary']
 
@@ -166,6 +166,16 @@ class AddSampleArguments(FrozenModel):
     portions: int = Field(default=1, ge=1, le=1)
 
 
+
+class DemoBeakerArguments(FrozenModel):
+    station: Literal['A'] = 'A'
+
+
+class DemoPourArguments(FrozenModel):
+    into: Literal['C'] = 'C'
+    portions: int = Field(default=1, ge=1, le=1)
+
+
 PRIMITIVE_SCHEMAS = {
     'inspect_scene': InspectArguments,
     'localize_objects': LocalizeArguments,
@@ -175,6 +185,9 @@ PRIMITIVE_SCHEMAS = {
     'mock_put_down': MockCupArguments,
     'mock_pour': MockPourArguments,
     'add_sample': AddSampleArguments,
+    'pick': DemoBeakerArguments,
+    'pour': DemoPourArguments,
+    'return_cup': DemoBeakerArguments,
 }
 
 

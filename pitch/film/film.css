@@ -1,0 +1,59 @@
+@font-face { font-family: "Bagel"; src: url("assets/fonts/bagel.woff2") format("woff2"); }
+@font-face { font-family: "Atkinson"; src: url("assets/fonts/atkinson.woff2") format("woff2"); font-weight: 200 800; }
+:root { --ink:#1a1538; --cream:#fff6e3; --tea:#3b34c4; --pink:#ff4f9a; --green:#9be05a; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:1920px; height:1080px; overflow:hidden; background:var(--cream); }
+#root { width:100%; height:100%; position:relative; font-family:"Atkinson", sans-serif; color:var(--ink); }
+.clip { position:absolute; inset:0; }
+.field-cream { background:var(--cream); } .field-tea { background:var(--tea); color:var(--cream); }
+.field-ink { background:var(--ink); color:var(--cream); } .field-pink { background:var(--pink); color:var(--ink); }
+.ph { position:absolute; inset:96px; border:6px dashed rgba(255,246,227,.55); border-radius:48px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; text-align:center; padding:60px; }
+.ph-id { font-family:"Bagel"; font-size:110px; color:var(--pink); } .ph-desc { font-size:44px; font-weight:700; max-width:1300px; } .ph-note { font-size:26px; opacity:.7; text-transform:uppercase; letter-spacing:.12em; }
+.logo-wrap, .end, .tag { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:60px; }
+.logo-ollie .ollie, .tag-ollie .ollie { width:380px; height:320px; }
+.ollie .o-body { fill:var(--cream); } .ollie .o-joint { fill:var(--pink); } .ollie .o-eyes { fill:var(--ink); } .ollie .o-floor { fill:rgba(26,21,56,.18); }
+.field-cream .ollie .o-body { fill:var(--tea); } .field-cream .ollie .o-eyes { fill:var(--cream); }
+.wordmark { display:flex; flex-direction:column; } .wm { font-family:"Bagel"; font-size:230px; line-height:.9; color:var(--ink); } .by { font-size:52px; font-weight:800; margin-left:12px; }
+.wordmark.light .wm, .wordmark.light .by { color:var(--cream); }
+.stat { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; padding:0 180px; gap:28px; }
+.num { font-family:"Bagel"; font-size:260px; line-height:.95; } .arrow { color:var(--pink); }
+.lbl { font-size:64px; font-weight:700; max-width:1450px; line-height:1.15; } .src { font-size:30px; opacity:.75; }
+.tag h1 { font-family:"Bagel"; font-weight:400; font-size:150px; line-height:1.0; }
+.frame { position:absolute; overflow:hidden; border-radius:44px; box-shadow:0 0 0 10px rgba(26,21,56,.08); background:var(--ink); }
+.frame video, .frame img { width:100%; height:100%; object-fit:cover; display:block; }
+.frame.big { left:150px; top:90px; width:1620px; height:911px; }
+.half { position:absolute; top:150px; width:860px; height:760px; } .half.left { left:80px; } .half.right { right:80px; }
+.half .ph { inset:0; } .frame.half video { object-fit:cover; object-position:30% 50%; }
+.chip { position:absolute; left:150px; top:36px; font-size:28px; font-weight:800; background:var(--cream); color:var(--ink); padding:10px 26px; border-radius:999px; }
+.right-chip { left:auto; right:80px; } .field-cream .chip { background:var(--ink); color:var(--cream); }
+.pair { position:absolute; inset:0; display:flex; gap:70px; align-items:center; justify-content:center; }
+.card { width:820px; display:flex; flex-direction:column; gap:22px; }
+.card-h { font-family:"Bagel"; font-size:72px; } .card-frame { position:relative; width:820px; height:461px; }
+.card-k { font-size:40px; font-weight:800; background:var(--ink); color:var(--cream); padding:14px 30px; border-radius:999px; align-self:flex-start; } .card-k.pink { background:var(--pink); color:var(--ink); }
+.grid { position:absolute; inset:110px 150px 124px; display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+.g { position:relative; overflow:hidden; border-radius:32px; } .g video { width:100%; height:100%; object-fit:cover; }
+.g-shelf { background:var(--tea); display:flex; align-items:center; justify-content:center; gap:20px; font-family:"Bagel"; font-size:64px; color:var(--cream); } .g-shelf .ollie { width:200px; height:170px; }
+.end { flex-wrap:wrap; align-content:center; } .end-tag { width:100%; text-align:center; font-family:"Bagel"; font-size:64px; } .end-url { width:100%; text-align:center; font-size:30px; opacity:.85; margin-top:-30px; }
+.cap { display:flex; align-items:flex-end; justify-content:center; padding-bottom:40px; pointer-events:none; }
+.cap span { max-width:1500px; text-align:center; font-size:38px; font-weight:800; line-height:1.25; color:var(--cream); background:rgba(26,21,56,.86); padding:12px 28px; border-radius:22px; }
+.twin { display:flex; align-items:center; justify-content:center; } .twin .ollie { width:620px; height:520px; }
+.peek { position:absolute; right:-10px; bottom:-40px; } .peek .ollie { width:360px; height:300px; }
+.field-pink .peek .ollie .o-joint { fill:var(--tea); }
+.overlay { background:transparent; pointer-events:none; }
+.buddy { position:absolute; right:40px; bottom:34px; width:230px; height:230px; border-radius:50%; background:var(--tea); box-shadow:0 0 0 8px var(--cream); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.buddy .ollie { width:190px; height:160px; margin:30px 0 0 -10px; overflow:visible; }
+.bubble { position:absolute; right:60px; bottom:290px; max-width:520px; background:var(--cream); color:var(--ink); font-size:32px; font-weight:800; line-height:1.2; padding:18px 26px; border-radius:26px; }
+.cap span { max-width:1260px; }
+.circ { position:absolute; right:40px; bottom:34px; width:300px; height:300px; border-radius:50%; background:var(--ink); box-shadow:0 0 0 8px var(--cream); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--cream); }
+.circ span { font-family:"Bagel"; font-size:48px; color:var(--pink); } .circ small { font-size:24px; font-weight:800; opacity:.8; }
+.name { position:absolute; right:40px; bottom:360px; background:var(--pink); color:var(--ink); font-size:30px; font-weight:800; padding:10px 24px; border-radius:999px; }
+.learn { position:absolute; left:150px; top:150px; width:800px; color:var(--cream); }
+.learn h2 { font-family:"Bagel"; font-weight:400; font-size:56px; line-height:1.05; margin-bottom:28px; }
+.learn ul { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:14px 30px; } .learn li { font-size:34px; font-weight:800; } .learn b { color:var(--green); margin-right:12px; }
+.hw-copy { position:absolute; left:760px; top:300px; color:var(--cream); } .hw-copy h2 { font-family:"Bagel"; font-weight:400; font-size:200px; line-height:1; } .hw-copy p { font-size:48px; font-weight:800; max-width:900px; }
+.cap span { max-width:1180px; }
+.cap span { font-size:44px; padding:30px 30px 14px; max-width:1240px; }
+.cap .w { display:inline-block; position:relative; margin:0 .14em; font-weight:800; }
+.cap .dot { position:absolute; left:50%; top:-22px; width:22px; height:22px; margin-left:-11px; border-radius:50%; background:var(--pink); }
+.cap span { line-height:1.8; padding:22px 30px 6px; }
+.cap .dot { top:-6px; width:16px; height:16px; margin-left:-8px; }

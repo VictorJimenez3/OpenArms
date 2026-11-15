@@ -20,6 +20,7 @@ from agentic.tests.test_demo_bench_runtime import DEFINITION
     'Pour the liquid in A into C.',
 ])
 def test_supported_correction_and_single_repeat_keep_the_positive_intent(text):
+    TaskLoop._check_demo_request([text], 'add_sample')
     TaskLoop._check_water_request(text, liquids=True)
 
 

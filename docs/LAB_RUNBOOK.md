@@ -18,7 +18,9 @@ Authenticate the chosen expert independently; see [model profiles and switching]
 
 Open `http://127.0.0.1:8010/` for the student view and `/developer` for the same session with the simulator, actual expert/tool trace, observations and skill evaluations. Both views use the same bearer grant and voice connection. A phone needs a reachable configured HTTPS endpoint; localhost refers to the phone itself. Browser microphone access requires localhost or HTTPS.
 
-`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression; it does not implement the selected physical kit activity. `mujoco` runs the openarms_sim `demo` bench by default (`OPENARMS_SCENE=demo_bench`): one typed `add_sample` pour from the beaker at A into the container at C, beaker return and HOME, with the outcome read from fresh rendered pixels ([integration evidence](../research/duc/demo-bench-integration.md)). `OPENARMS_SCENE=two_vessel` keeps the earlier carried-donor water scene and `OPENARMS_SCENE=metered_dropper` the older indicator-pH apparatus, both for regression. Failure never falls back to mock. The app reuses `openarms_sim` components; the standalone preview/gallery is not a separate student runtime. The four source lab demonstrations remain reproducible research examples under `simulation/lab_demos`; they are not additional student experiment choices.
+`OPENARMS_EXECUTION=mock` runs the explicitly labeled synthetic camera fixture for software regression. `mujoco` runs the openarms_sim `demo` bench by default (`OPENARMS_SCENE=demo_bench`). Ask for a complete pour from A into C with return and HOME, or say “pick up the beaker,” “pour it into the container,” and “put the beaker back” as separate requests. Each action requires its exact proposal and fresh confirmation. The view reads the outcome from fresh rendered pixels. [Demo bench integration evidence](../research/duc/demo-bench-integration.md)
+
+`OPENARMS_SCENE=two_vessel` keeps the carried-donor water scene and `OPENARMS_SCENE=metered_dropper` the indicator-pH regression. The app reuses `openarms_sim`. The [standalone Smartivity runner](../simulation/smartivity/README.md) reproduces four activities offline. After simulator or command changes, re-run `agentic/scripts/seed_demo_skill.py` for the selected experiment to admit its base pour in the new scope.
 
 ## Real bench lane (optional): camera, simulated preview, then the real arm
 
@@ -105,6 +107,7 @@ For the retained indicator regression, skill admission combines the frozen synth
 | --- | --- |
 | `OPENARMS_EXECUTION` | `mock` default; `mujoco` selects the actual simulator |
 | `OPENARMS_SCENE` | With MuJoCo: `demo_bench` (default) for the openarms_sim demo bench; `two_vessel` and `metered_dropper` for retained regression scenes |
+| `OPENARMS_DEMO_EXPERIMENT` | With `demo_bench`, select `volcano` (default), `potions`, or `lava_lamp`. Start a fresh session after changing the experiment. Each selection has its own simulated skill admission scope. |
 | `OPENARMS_DATA_DIR` | Persistent notebook, scene artifacts, evaluations and scoped registry |
 | `OPENARMS_ENV_FILE` | Optional explicit local environment file |
 | `GEMINI_LIVE_MODEL` | Speech model; default `gemini-3.8-live` |

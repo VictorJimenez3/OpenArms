@@ -12,7 +12,8 @@ from pathlib import Path
 
 from .contracts import ACTION_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
 from .skills import _normalize, compute_skill_hash
-from .request_intent import RETURN_CLAUSE as WATER_DONOR_RETURN, positive_pour_request
+from .request_intent import (BACK_CLAUSE, CONTENTS_SOURCE, NEGATIVE_ROUTE, RETURN_CLAUSE as WATER_DONOR_RETURN,
+                             UNRESOLVED_NEGATION, positive_pour_request)
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
 TASK_BUSY = {'queued', 'running', 'executing', 'observing'}
@@ -46,6 +47,36 @@ UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|all\s+of|everything|hal
 REPEAT_REQUEST = re.compile(r'(?:(?:can|could|would|will) you |please )?(?:do (?:it|that|this) (?:again|one more time)|'
                             r'again|one more time|same again|repeat (?:it|that|the last (?:one|pour|action))|redo (?:it|that))'
                             r'(?: please)?')
+DEMO_ACTION = re.compile(
+    r'\b(?:(?P<pick>pick|lift|grab|raise)|(?P<pour>pour|tip|empty|add|decant|transfer)|'
+    r'(?P<return_cup>return|put|place|set))\b', re.I)
+DEMO_RECEIVER = re.compile(r'\b(?:receiv(?:er|ing)|dish|flask|(?:wide|large|big)\s+(?:cup|container|vessel))\b', re.I)
+DEMO_BEAKER_REF = re.compile(r'\b(?:beaker|cup|donor|vessel|source|it|this|that|one)\b', re.I)
+DEMO_CONTINUATION = re.compile(
+    r'\b(?:and(?: then)?|then|after that|followed by)\s+(?:please\s+)?'
+    r'(?:pick|lift|grab|raise|pour|tip|empty|add|decant|transfer|return|put|place|set|park|go home)\b', re.I)
+DEMO_PLACE = r'(?:station|dock|mark|position)'
+DEMO_VESSEL = r'(?:cup|beaker|container|vessel|receiver|donor|flask|dish)'
+DEMO_PLACE_LABEL = rf'{DEMO_PLACE}\s+[a-z]'
+# Exclude bare 'a' and 'I' after a vessel noun, where they can be ordinary words.
+DEMO_VESSEL_LABEL = rf'{DEMO_VESSEL}\s+(?:(?:at|on)\s+(?:(?:the\s+)?{DEMO_PLACE}\s+)?[a-z]|[b-hj-z]|(?-i:A))'
+DEMO_STATION = re.compile(rf'\b(?:{DEMO_PLACE_LABEL}|{DEMO_VESSEL_LABEL})\b', re.I)
+DEMO_STATION_LABEL = rf'(?:(?:the\s+)?(?:{DEMO_PLACE_LABEL}|{DEMO_VESSEL_LABEL})|[b-z]|(?-i:A))\b'
+DEMO_ROUTE = re.compile(rf'\b(?P<direction>from|into|to|onto|in|on|at)\s+(?P<target>{DEMO_STATION_LABEL})', re.I)
+DEMO_DIRECT_PICK_STATION = re.compile(
+    r'\b(?:pick(?: up)?|lift|grab|raise)\s+([b-z]|(?-i:A))\b', re.I)
+DEMO_KEEP_HOLDING = re.compile(
+    r'\b(?:keep(?: on)? holding|(?:and|then) hold (?:it|the (?:beaker|cup))|'
+    r'(?:keep|leave) (?:it|the (?:beaker|cup)) (?:held|in the gripper))\b', re.I)
+DEMO_RECEIVER_MARK = re.compile(r'\b(?:orange|receiver)\s+mark\b', re.I)
+DEMO_OTHER_DESTINATION = re.compile(
+    r'\b(?:into|onto|to|on|in)\s+(?:(?:the|a|my|your)\s+)?'
+    r'(?:floor|ground|sink|trash|counter(?:top)?|worktop|table|tray)\b', re.I)
+# The opt-in fast checkpoint is restricted to these exact demo capabilities.
+DEMO_CHECKPOINT_VARIANTS = {
+    (1, 'mujoco_kinematic_add_sample'): ('add_sample',),
+    (3, 'mujoco_kinematic_beaker_actions'): ('pick', 'pour', 'return_cup', 'add_sample'),
+}
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -77,6 +108,12 @@ def describe_step(step, action_description=None):
         return 'put the sample cup down at station '+args['station']
     if operation == 'mock_pour':
         return 'pour one prepared portion into the receiver at station C'
+    if operation == 'pick':
+        return 'pick up the small beaker and hold it'
+    if operation == 'pour':
+        return 'pour the held beaker into the wide container once and keep holding it'
+    if operation == 'return_cup':
+        return 'put the held beaker back on its mark and park the arm'
     if operation == 'add_sample':
         if action_description:
             return action_description
@@ -436,6 +473,7 @@ class TaskLoop:
         supported_operations = s['capabilities'].get('supported_operations', ACTION_OPERATIONS)
         primitives = {name: schema for name, schema in PRIMITIVE_SCHEMAS.items()
                       if name not in ACTION_OPERATIONS or name in supported_operations}
+        demo = s['capabilities'].get('experiment_id') == 'demo_bench_pour'
         context = {
             'task_id': task['task_id'], 'session_id': s['session_id'], 'request': task['request'],
             'conversation': [{k: m[k] for k in ('role', 'text')} for m in s['messages'][-20:] if m.get('final')],
@@ -468,6 +506,11 @@ class TaskLoop:
                              'Do not require a separate sample selection for this operation. '
                              'If the student requests different contents, clarify rather than relabeling the scene. ')
                              +
+                             ('Map the requested single action to supported_actions. Use the listed operation_outcome_checks. '
+                              'Pick leaves the beaker held. Use standalone pour only while holding it. '
+                              'Use add_sample for a complete pour from the mark, then return the beaker and park. '
+                              'Plan separate pick, held pour, and return_cup as inline steps, without a skill_definition. '
+                              if demo and phase == 'planning' else '') +
                              'If correction is present, use its sample selection while retaining the rest of the request. '
                              'If the request requires multiple actions or an unsupported result, clarify before proposing any action. '
                              'Prediction is optional notebook context. '
@@ -572,7 +615,7 @@ class TaskLoop:
         if receiver['dock_id'] != 'C' or receiver['held'] is not False:
             raise ValueError('The receiver vessel is out of dock C.')
         operation = action['operation']
-        if operation in ('mock_put_down', 'mock_pour'):
+        if operation in ('mock_put_down', 'mock_pour', 'pour', 'return_cup'):
             if source['held'] is not True or source['dock_id'] is not None:
                 raise ValueError('The current frame does not show the sample cup held by the arm.')
         else:
@@ -634,17 +677,25 @@ class TaskLoop:
             capabilities = backend.capabilities()
             if action['operation'] not in capabilities.get('supported_operations', ACTION_OPERATIONS):
                 raise ValueError('The current setup does not support this operation.')
-            if capabilities.get('experiment_id') in ('two_vessel_water', 'demo_bench_pour'):
+            experiment = capabilities.get('experiment_id')
+            operation = action['operation']
+            texts = tuple(dict.fromkeys((intent, task['request'])))
+            if experiment in ('two_vessel_water', 'demo_bench_pour') and operation not in ('pick', 'return_cup'):
                 source, into = capabilities['routes'][0]
                 source = action['arguments'].get('source', source)
                 into = action['arguments'].get('into', into)
-                for text in dict.fromkeys((intent, task['request'])):
-                    self._check_water_request(text, liquids=capabilities['experiment_id'] == 'demo_bench_pour',
+                for text in texts:
+                    self._check_water_request(text, liquids=experiment == 'demo_bench_pour',
                                               source=source, into=into)
+            if experiment == 'demo_bench_pour':
+                self._check_demo_request(texts, operation)
             backend.check_step(action['operation'], action['arguments'])
-            # Success must rest on the observer's reading of the pour, not on features that never change.
+            # Required checks must independently observe the effect of this operation.
             planned = {(c['feature'], compute_skill_hash(c['expected'])) for c in plan['outcome_checks']}
-            for rule in (capabilities.get('skill_admission') or {}).get('required_outcome_checks', []):
+            admission = capabilities.get('skill_admission') or {}
+            required = capabilities.get('operation_outcome_checks', {}).get(
+                action['operation'], admission.get('required_outcome_checks', []))
+            for rule in required:
                 if (rule['feature'], compute_skill_hash(rule['expected'])) not in planned:
                     raise ValueError('The plan must check '+rule['feature']+' = '+str(rule['expected'])+'.')
             self._fixture_state(task, scene['frame_id'], action)
@@ -661,6 +712,50 @@ class TaskLoop:
                 self._check_image(task['session_id'], image)
         except OSError as exc:
             raise ValueError(self._perception_error(exc)) from exc
+
+    @staticmethod
+    def _check_demo_request(texts, operation):
+        expected = 'pour' if operation == 'add_sample' else operation
+        actions = [(text, DEMO_ACTION.search(text)) for text in texts]
+        if operation != 'add_sample' and not any(match for _, match in actions):
+            raise ValueError('Ask for a supported lab action, such as picking up or returning the beaker.')
+        for text, match in actions:
+            if operation in ('pick', 'return_cup') and UNRESOLVED_NEGATION.search(text.replace('’', "'")):
+                raise ValueError('Clarify the positive action; no action was approved.')
+            if match and match.lastgroup != expected:
+                raise ValueError('The proposed action differs from the requested action. No action was approved.')
+            if match and operation != 'add_sample' and DEMO_CONTINUATION.search(text[match.end():]):
+                raise ValueError('This request includes multiple actions. Ask for each action separately.')
+            if operation != 'pick' and DEMO_OTHER_DESTINATION.search(text):
+                raise ValueError('The requested destination is outside the supported receiver or original mark.')
+            if operation in ('pour', 'add_sample'):
+                if operation == 'add_sample' and DEMO_KEEP_HOLDING.search(text):
+                    raise ValueError('The full pour returns the beaker. It cannot leave the beaker held.')
+                # The shared pour validator checks these separately as exclusions,
+                # source qualifiers and return instructions, not destinations.
+                route = NEGATIVE_ROUTE.sub(' ', text)
+                route = CONTENTS_SOURCE.sub(' ', route)
+                route = BACK_CLAUSE.sub('', WATER_DONOR_RETURN.sub('', route))
+                for station in DEMO_ROUTE.finditer(route):
+                    direction = station['direction']
+                    if direction in ('from', 'into', 'to', 'onto', 'in'):
+                        expected = 'A' if direction == 'from' else 'C'
+                        if station['target'][-1].upper() != expected:
+                            raise ValueError(f'This setup can only pour {"from" if direction == "from" else "into"} {expected}.')
+                destination = re.search(r'\b(?:into|to|onto|in)\b', route, re.I)
+                if destination and any(label[-1].upper() != 'A'
+                                       for label in DEMO_STATION.findall(route[:destination.start()])):
+                    raise ValueError('This setup can only pour from A.')
+                if any(label[-1].upper() not in ('A', 'C') for label in DEMO_STATION.findall(route)):
+                    raise ValueError('This setup can only pour from A into C.')
+                continue
+            labels = ([label[-1] for label in DEMO_STATION.findall(text)] + DEMO_DIRECT_PICK_STATION.findall(text) +
+                      [station['target'][-1] for station in DEMO_ROUTE.finditer(text)])
+            if (any(label.upper() != 'A' for label in labels) or DEMO_RECEIVER.search(text)
+                    or DEMO_RECEIVER_MARK.search(text) or re.search(r'\b(?:left|right)\b', text, re.I)):
+                raise ValueError('Only the small beaker and its original mark are supported for this action.')
+            if match and not (labels or DEMO_BEAKER_REF.search(text[match.end():])):
+                raise ValueError('Ask for the small beaker by name or say which vessel you mean.')
 
     @staticmethod
     def _check_water_request(text, liquids=False, *, source='A', into='C'):
@@ -1026,16 +1121,19 @@ class TaskLoop:
                     s['execution_scope'] != self.execution_scope):
                 return False
             capabilities = self.backends[task['session_id']].capabilities()
+            version = capabilities.get('scene_version')
+            control_mode = capabilities.get('control_mode')
+            allowed_operations = DEMO_CHECKPOINT_VARIANTS.get((version, control_mode))
             if (capabilities.get('experiment_id') != 'demo_bench_pour' or
                     capabilities.get('physical_execution') is not False or
                     capabilities.get('simulation_execution') is not True or
-                    capabilities.get('supported_operations') != ['add_sample'] or
+                    allowed_operations is None or list(allowed_operations) != capabilities.get('supported_operations') or
                     capabilities.get('routes') != [['A', 'C']]):
                 return False
             scene = observed['scene']
             presented = task['evidence'][plan['scene_frame_id']]['scene']
-            identity = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': 'demo',
-                        'control_mode': 'mujoco_kinematic_add_sample'}
+            identity = {'scene_id': 'openarms_sim_demo', 'scene_version': version, 'setup': 'demo',
+                        'control_mode': control_mode}
             if (any(record.get(key) != value for record in (scene, presented, capabilities)
                     for key, value in identity.items()) or
                     not self._fresh(scene) or not self._fresh(presented) or
@@ -1223,6 +1321,10 @@ class TaskLoop:
                 'value': features if known else None, 'checks': checks if known else {},
                 'reason': observed.get('reason'), 'receipt': observed,
             }
+            if s['capabilities'].get('experiment_id') == 'demo_bench_pour' and task['dispatched_action']:
+                action = (self._action(plan) or {}).get('operation')
+                observation['operation'] = next((r['operation'] for r in reversed(task['execution'])
+                                                 if r.get('operation') in ACTION_OPERATIONS), action)
             s['observations'].append(observation)
             task['observations'].append(observation)
             task['feedback'].append({'type': 'observation', 'receipt': copy.deepcopy(observation)})
