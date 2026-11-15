@@ -13,6 +13,7 @@ def placeholder(shot, desc):
 OLLIE = '''<svg class="ollie" viewBox="-50 -20 300 250"><ellipse class="o-floor" cx="100" cy="220" rx="76" ry="8"/><rect class="o-body" x="44" y="188" width="112" height="32" rx="16"/><g class="o-shoulder"><rect class="o-body" x="82" y="112" width="36" height="92" rx="18"/><g class="o-elbow"><rect class="o-body" x="84" y="50" width="32" height="86" rx="16"/><g class="o-head"><rect class="o-body o-ear-l" x="74" y="-10" width="14" height="38" rx="7"/><rect class="o-body o-ear-r" x="112" y="-10" width="14" height="38" rx="7"/><rect class="o-body" x="58" y="12" width="84" height="62" rx="27"/><g class="o-eyes"><circle cx="83" cy="42" r="8"/><circle cx="117" cy="42" r="8"/></g></g><circle class="o-joint" cx="100" cy="66" r="9"/></g><circle class="o-joint" cx="100" cy="124" r="11"/></g><circle class="o-joint" cx="100" cy="194" r="12"/></svg>'''
 
 import os
+SAFE = os.environ.get('SAFE') == '1'
 # Speaker talking-head videos: drop assets/media/talk-<name>.mp4 (landscape selfie, one take of the whole section).
 SPEAKERS = {  # name: (section start, section end, takeover seconds, label)
  'victor': (14, 51, 2.5, 'Victor · agent and student flow'),
@@ -33,16 +34,19 @@ def speaker(name):
         video(f'v-take-{name}', src, st, take, 0, box='left:0;top:0;width:1920px;height:1080px;object-fit:cover;')
         video(f'v-circ-{name}', src, st + take, en - st - take, take, box='right:40px;bottom:34px;width:300px;height:300px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 8px #fff6e3;', z=45)
         W.append(f'<audio id="a-{name}" class="clip" src="assets/media/{src}" data-start="{st}" data-duration="{en-st}"></audio>')
+    elif SAFE:
+        clip(f's-take-{name}', st, take, f'<div class="stat"><div class="num">{label.split(" · ")[1].capitalize()}</div><div class="lbl">{label.split(" · ")[0]}</div></div>', 'field-tea')
     else:
         clip(f's-take-{name}', st, take, placeholder(name.upper(), f'{label}: on camera, lab coat, centre frame'), 'field-ink')
         clip(f's-circ-{name}', st + take, en - st - take, f'<div class="circ"><span>{name.upper()}</span><small>talking head</small></div>', 'overlay', z=45, extra='data-layout-allow-overlap data-layout-allow-occlusion')
+    if SAFE and not have: return
     clip(f's-name-{name}', st + .3, 3.2, f'<div class="name">{label}</div>', 'overlay', z=46, extra='data-layout-allow-overlap data-layout-allow-occlusion')
 
 # 0:00-0:05 the real arm wakes up; Ollie copies it
 clip('s-open', 0, 5.1, f'<div class="half right twin" id="o-twin">{OLLIE}</div><div class="chip">Real arm</div>', 'field-ink')
 video('v-rise', 'arm-rise.mp4', 0, 5.1, 0, box=TALL_L.replace('150px', '260px'))
 # 0:05-0:11 skit (filmed once, before anything else)
-clip('s-skit', 5.1, 5.9, placeholder('SKIT', 'Student in a lab coat, hands in lap. Partner grabs the beaker and pours without asking. Student: "Wait, I wanted to—"'), 'field-ink')
+clip('s-skit', 5.1, 5.9, '<div class="stat"><div class="num">“Wait, I wanted to—”</div><div class="lbl">When someone else has the hands, they make the calls.</div></div>' if SAFE and not os.path.exists('assets/media/skit.mp4') else placeholder('SKIT', 'Student in a lab coat, hands in lap. Partner grabs the beaker and pours without asking. Student: "Wait, I wanted to—"'), 'field-ink')
 # 0:11-0:14 brand
 clip('s-logo', 11, 3, f'<div class="logo-wrap"><div class="logo-ollie" id="o-logo">{OLLIE}</div><div class="wordmark"><span class="wm">ollie</span><span class="by">by OpenArms</span></div></div>', 'field-cream')
 
@@ -87,7 +91,8 @@ video('v-real2', 'arm-pour-2x.mp4', 104.2, 7.8, 5, box=TALL_L)
 video('v-sim2', 'sim-volcano.mp4', 104.2, 7.8, 8, box=WIDE_R)
 
 # CLOSE 1:52-2:00
-clip('s-team', 112, 3, placeholder('TEAM', 'All four in lab coats behind the bench; the arm waves'), 'field-ink')
+clip('s-team', 112, 3, f'<div class="half right twin">{OLLIE}</div><div class="chip">Real arm</div>', 'field-ink') if SAFE else clip('s-team', 112, 3, placeholder('TEAM', 'All four in lab coats behind the bench; the arm waves'), 'field-ink')
+if SAFE: video('v-wave', 'arm-rise.mp4', 112, 3, 2, box=TALL_L.replace('150px', '260px'))
 clip('s-end', 115, 5, f'<div class="end"><div class="logo-ollie" id="o-end">{OLLIE}</div><div class="wordmark light"><span class="wm">ollie</span><span class="by">by OpenArms</span></div><p class="end-tag">Personalizes to the student. Scales to the school.</p><p class="end-url">github.com/VictorJimenez3/OpenArms</p></div>', 'field-tea')
 
 CAPTIONS = [

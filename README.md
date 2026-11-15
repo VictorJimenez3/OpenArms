@@ -74,4 +74,4 @@ PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m pytest agentic/tests sim
 
 ## For the team
 
-Start with [the architecture](docs/ARCHITECTURE.md), the [project brief](docs/PROJECT.md), [interfaces](docs/INTERFACES.md), [current tasks](research/joseph/TODO.md) and the [integration ledger](docs/MAIN_INTEGRATION.md). Work in your own worktree and branch; check the [ownership table](AGENTS.md#ownership) first. Pitch and submission (everything is in [`pitch/`](pitch/)): [film plan](pitch/FILM.md), [team directives](pitch/TEAM.md), [facts and sources](pitch/FACTS.md), [Devpost copy](research/victor/hackprinceton-devpost-draft.md).
+Start with [the architecture](docs/ARCHITECTURE.md), the [project brief](docs/PROJECT.md), [interfaces](docs/INTERFACES.md), [current tasks](research/joseph/TODO.md) and the [integration ledger](docs/MAIN_INTEGRATION.md). Work in your own worktree and branch; check the [ownership table](AGENTS.md#ownership) first. Pitch and submission (everything is in [`pitch/`](pitch/)): [film plan](pitch/FILM.md), [team directives](pitch/TEAM.md), [facts and sources](pitch/FACTS.md), [Devpost copy](pitch/DEVPOST.md).

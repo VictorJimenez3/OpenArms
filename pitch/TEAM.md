@@ -2,7 +2,7 @@
 
 Sunday, November 15 · Devpost hard cutoff **8:00 a.m. ET** (rules; the header says 8:30, ignore it) · in-person judging 9:30 a.m.–2:00 p.m.
 
-**Your lines and how to record them: [SCRIPTS.md](SCRIPTS.md).** Film plan: [FILM.md](FILM.md). Facts and sources you can say out loud: [FACTS.md](FACTS.md). Devpost copy: [research/victor/hackprinceton-devpost-draft.md](../research/victor/hackprinceton-devpost-draft.md).
+**Your lines and how to record them: [SCRIPTS.md](SCRIPTS.md).** Film plan: [FILM.md](FILM.md). Facts and sources you can say out loud: [FACTS.md](FACTS.md). Devpost copy: [DEVPOST.md](DEVPOST.md).
 
 ## Schedule
 
