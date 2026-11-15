@@ -328,18 +328,41 @@ class Lab(TaskLoop):
         finally:
             running.pop(evaluation, None)
 
+    def _learn_route(self, s, task):
+        """After a consented, independently observed success, route the student's own words to that skill."""
+        plan = task.get('plan') or {}
+        version = plan.get('skill_version')
+        succeeded = task['status'] == 'completed' and any(
+            o['skill_version'] == version and o['status'] == 'observed' and o['checks'] and all(o['checks'].values())
+            and any(r['request_id'] == o['request_id'] and r['plan_hash'] == o['plan_hash'] and r.get('student_confirmed')
+                    and r['status'] == 'completed' and (r.get('result') or {}).get('controller_completed') is True
+                    for r in s['requests'])
+            for o in task['observations'])
+        if not succeeded or task.get('route') != 'expert' or not isinstance(task.get('request'), str):
+            return
+        route = self.registry.learn_route(task['request'], plan['skill_id'], version, plan.get('bindings') or {})
+        if route:
+            self._event(s, 'skill_route_learned', task_id=task['task_id'], skill_id=plan['skill_id'],
+                        skill_version=version, template=route['template'], provenance='HOST')
+
     async def _evaluate_completed(self, s, task):
         plan = task.get('plan') or {}
-        if not self.auto_evaluate or not self.evaluator or not plan.get('skill_id'):
+        if not plan.get('skill_id'):
             return
         skill = self.registry.get(plan['skill_id'], plan['skill_version'])
-        if skill['status'] != 'task_validated':
+        if skill['status'] == 'active':
+            self._learn_route(s, task)
+            await self.publish(s)
+            return
+        if not self.auto_evaluate or not self.evaluator or skill['status'] != 'task_validated':
             return
         self._event(s, 'skill_evaluation_started', task_id=task['task_id'],
                     skill_id=plan['skill_id'], skill_version=plan['skill_version'])
         await self.publish(s)
         try:
             decision = await self.evaluate_candidate(s['session_id'], plan['skill_id'], plan['skill_version'])
+            if decision['status'] == 'promoted':
+                self._learn_route(s, task)
             self._message(s, 'assistant', 'Skill evaluation '+decision['status']+'. '+
                           ('Equivalent supported requests can now reuse it.' if decision['status'] == 'promoted'
                            else 'The existing active skill remains unchanged.'))

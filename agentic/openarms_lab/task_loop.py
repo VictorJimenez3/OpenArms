@@ -11,7 +11,7 @@ import uuid
 from pathlib import Path
 
 from .contracts import ACTION_OPERATIONS, PRIMITIVE_SCHEMAS, ImageReference, PlanDraft, SkillDefinition
-from .skills import compute_skill_hash
+from .skills import _normalize, compute_skill_hash
 from .request_intent import RETURN_CLAUSE as WATER_DONOR_RETURN, positive_pour_request
 
 TASK_TERMINAL = {'completed', 'failed', 'cancelled', 'needs_clarification'}
@@ -43,6 +43,9 @@ UNBOUND_AMOUNT_OR_ROUTE = re.compile(r'\b(?:twice|thrice|all\s+of|everything|hal
                                      r'\b(?:two|three|four|five|several|many|multiple|\d+)\s+times\b|'
                                      r'\b\d+(?:\.\d+)?\s*(?:g|grams?|oz|ounces?|cups?|drops?)\b|'
                                      r'\b(?:left|right)\s+(?:one|side|cup|beaker|container|vessel)\b', re.I)
+REPEAT_REQUEST = re.compile(r'(?:(?:can|could|would|will) you |please )?(?:do (?:it|that|this) (?:again|one more time)|'
+                            r'again|one more time|same again|repeat (?:it|that|the last (?:one|pour|action))|redo (?:it|that))'
+                            r'(?: please)?')
 TOOLS = {
     'inspect_scene': ('Acquire a timestamped primary or secondary view.', {'view': {'enum': ['primary', 'secondary']}}, []),
     'localize_objects': ('Localize exact label IDs from scene.recognition_labels in a frame already received by this task. Do not pass object descriptions.', {'evidence_id': {'type': 'string'}, 'labels': {'type': 'array', 'items': {'type': 'string'}}}, ['evidence_id', 'labels']),
@@ -88,6 +91,21 @@ def describe_step(step, action_description=None):
 
 class TaskLoop:
     guarded_demo_bench_checkpoint = False
+
+    def _repeat_route(self, s, task):
+        """'Do it again': the last consented, observed success in this session, if its skill is still active."""
+        if not REPEAT_REQUEST.fullmatch(_normalize(task["request"])):
+            return None
+        for previous in reversed(s['tasks']):
+            plan = previous.get('plan') or {}
+            if previous is task or previous['status'] != 'completed' or not plan.get('skill_id'):
+                continue
+            observed = previous['observations'][-1] if previous['observations'] else {}
+            if (observed.get('status') != 'observed' or not observed.get('checks') or not all(observed['checks'].values())
+                    or self.registry.data['active'].get(plan['skill_id']) != plan['skill_version']):
+                return None
+            return PlanDraft(skill_id=plan['skill_id'], skill_version=plan['skill_version'], bindings=plan['bindings'])
+        return None
 
     def _task_event(self, s, task, kind, **data):
         plan = task.get('plan') or {}
@@ -747,7 +765,8 @@ class TaskLoop:
                     task['feedback'].append({'type': 'scene_unavailable', 'reason': self._perception_error(exc)})
                     await self._emit_task(s, task, 'scene_unavailable', code=type(exc).__name__)
             phase = 'improvement' if task['improvement'] else 'planning'
-            route = None if task['improvement'] or task.get('correction') else self.registry.match(task['request'])
+            route = None if task['improvement'] or task.get('correction') else (
+                self.registry.match(task['request']) or self._repeat_route(s, task))
             if route:
                 try:
                     await self._prepare_proposal(s, task, route, phase)
