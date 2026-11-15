@@ -53,3 +53,14 @@ The student may not be able to use a mouse, trackpad or standard keyboard. They 
 The Access page (`#/access`, in the top bar) states this to students and judges: the tools Ollie works with, the only keys needed, and four saved settings (bigger text and buttons, Ollie reads out loud, extra-bold focus highlight, calm screen).
 
 Checked by keyboard-only runs in a browser and by an axe-core 4.10 audit (WCAG 2.0–2.2 A/AA rules plus best practices) of 27 screen states: home, Access, reports, every step of the bench lab, a recorded lab and the live lab, the Ask Ollie panel, 320 px reflow and the bigger-text setting. Result: 0 violations, every control named, no target under 24 px, no horizontal scroll at 320 px. Automated rules cover only part of WCAG. Not yet tested with real switch, eye-gaze or screen-reader users.
+
+## The bench site (`ui/lab`)
+
+The physical demo runs on the bench site: the student's Mac, with an iPhone as its camera. It is still changing, so its HTML and scripts are left alone. `ui/student/bench-skin.css` is the Ollie look for it, kept as one stylesheet that changes no markup or behaviour:
+
+- It remaps the bench site's own colour variables to Ollie's palette and restyles plain elements (buttons, inputs, sections, drawers), so controls added or removed later inherit the look without edits.
+- Voice is the emphasised way in: the Talk block is the largest, most colourful thing on the page; typing stays in a drawer as the fallback.
+- The proposal is Ollie's dark plan card with a pink "yes", matching the student app; Stop is the one red capsule in the top bar.
+- Preview it at `/bench`, which serves the current bench page plus the stylesheet. To adopt it, add `<link rel="stylesheet" href="/student/bench-skin.css">` to `ui/lab/index.html` after its own stylesheets.
+
+When the bench site settles, re-check the skin against any new panels; a new component with its own hard-coded colours is the one thing it cannot pick up automatically.

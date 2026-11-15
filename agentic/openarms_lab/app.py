@@ -695,6 +695,13 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     async def index():
         return FileResponse(static / 'index.html')
 
+    # Preview of the bench site in Ollie's look: the same page and scripts, plus one stylesheet.
+    @app.get('/bench')
+    async def bench_skin():
+        page = (static / 'index.html').read_text(encoding='utf-8')
+        return Response(page.replace('</head>', '  <link rel="stylesheet" href="/student/bench-skin.css">\n</head>', 1),
+                        media_type='text/html')
+
     app.mount('/student', StaticFiles(directory=ROOT / 'ui/student', html=True), name='student-lab')
     app.mount('/', StaticFiles(directory=static), name='student')
     return app
