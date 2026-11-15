@@ -15,9 +15,24 @@ final class AudioPipeline {
     var onPlaybackChanged: ((Bool) -> Void)?
     var isCapturing: Bool { hasTap }
     var activeReply: String? { ledger.replyID }
+    var needsRestart: Bool { engine?.isRunning == false }
+
+    func ownsEngine(_ configurationSource: ObjectIdentifier) -> Bool {
+        engine.map(ObjectIdentifier.init) == configurationSource
+    }
 
     func activate() throws {
-        if engine != nil { return }
+        if let engine {
+            guard !engine.isRunning else { return }
+            // A stopped graph cannot certify queued playback or reuse the old input tap.
+            guard bufferedFrames == 0, !hasTap else {
+                throw VoiceError.message("The audio route changed while voice was active.")
+            }
+            player?.stop()
+            engine.prepare()
+            try engine.start()
+            return
+        }
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
         try session.setActive(true)
@@ -33,9 +48,8 @@ final class AudioPipeline {
     }
 
     func startCapture(into fifo: OutboundFIFO, generation: Int) throws {
-        guard !hasTap else { return }
         try activate()
-        guard let engine else { return }
+        guard !hasTap, let engine else { return }
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0,
@@ -79,6 +93,7 @@ final class AudioPipeline {
 
     func append(_ bytes: Data, replyID: String) throws {
         guard ledger.replyID == replyID, let player else { return } // Stale reply audio is never scheduled.
+        try activate()
         let samples = try PCMBytes.floats(bytes)
         guard bufferedFrames + samples.count <= 24_000 * 12 else {
             throw VoiceError.message("Voice playback fell behind. The reply was interrupted; use text or try voice again.")
@@ -93,7 +108,7 @@ final class AudioPipeline {
         let count = samples.count
         player.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self, self.playbackEpoch == epoch else { return }
+                guard let self, self.playbackEpoch == epoch, self.engine?.isRunning == true else { return }
                 self.bufferedFrames = max(0, self.bufferedFrames - count)
                 if let done = self.ledger.played(token, reply: replyID) { self.completed(done) }
             }
@@ -103,6 +118,7 @@ final class AudioPipeline {
     }
 
     func endReply(_ id: String) {
+        guard engine?.isRunning == true else { return }
         if let done = ledger.finish(id) { completed(done) }
     }
 
