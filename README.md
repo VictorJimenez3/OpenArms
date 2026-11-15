@@ -1,6 +1,8 @@
 # OpenArms · Ollie
 
-**You're the scientist. Ollie's the hands.**
+**Every student should be welcomed into the lab with open arms.**
+
+You're the scientist. Ollie's the hands.
 
 Ollie is a robot lab partner for students who can't hold the beaker. The student talks; Ollie looks at the bench, plans from moves tested on a real arm, says its plan and waits for a yes. A camera then checks what actually happened, and the student decides what to test next. Every task Ollie gets right becomes a saved skill, so the next time is a single tool call.
 

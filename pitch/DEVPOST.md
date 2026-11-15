@@ -8,9 +8,13 @@ Copy each block into the matching Devpost field. Everything below is accurate to
 
 OpenArms
 
+## Tagline
+
+Every student should be welcomed into the lab with open arms.
+
 ## Elevator pitch (under 200 characters)
 
-You're the scientist. Ollie's the hands. A voice-directed robot lab partner for students who can't hold the beaker: it plans, asks before it moves, checks the result and remembers every skill.
+Every student should be welcomed into the lab with open arms. Ollie is a voice-directed robot lab partner: you're the scientist, Ollie's the hands.
 
 ## Main track
 
@@ -22,7 +26,7 @@ Best Physical AI Hack (Justin Bojarski) · Best Practical AI Innovation (Amazon)
 
 ## Video
 
-[YouTube unlisted link] · if the talking heads aren't recorded in time, upload `pitch/renders/submit-safe-v4.mp4`
+[YouTube unlisted link] · if the talking heads aren't recorded in time, upload `pitch/renders/submit-safe-v5.mp4`
 
 ## GitHub
 
@@ -36,7 +40,7 @@ Every one of us is in STEM because a lab once made something click. Now imagine 
 
 One in five US undergraduates reports a disability, and only 8% ever register one with their college. In a national survey of students with physical disabilities, about half had been given passive roles in science labs and three in four relied on classmates to finish lab tasks. A lab partner can do the pouring. But when someone else has the hands, they usually end up making the calls too, and the student ends up watching the experiment they were supposed to run.
 
-We wanted the student to stay the scientist. So we built a lab partner that only does the hands.
+We believe every student should be welcomed into the lab with open arms. So we built a lab partner that only does the hands, and leaves the science to the student.
 
 ## What it does
 
@@ -53,7 +57,7 @@ Every lab is a short inquiry: **Question → Predict → Direct Ollie → Observ
 
 Not every school can buy a robot, so every experiment also runs in a physics simulation of the same arm, with the same conversation, the same plan-and-consent step and the same camera checks.
 
-**It personalizes to the student and scales to the school.**
+**It personalizes to the student and scales to the school.** Every student should be welcomed into the lab with open arms.
 
 ## How we built it
 
