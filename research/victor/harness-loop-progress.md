@@ -66,3 +66,27 @@ That worker owns read-only review, not simulator execution. Initial full-session
 ## Checkpoint 1 Verification Update
 
 The candidate full suite completed with **747 passing tests**. The real saved reviewer completed both its initial review and follow-up; no blocker to the isolated opt-in was found. The coordinator still makes no default-enablement or physical-acceptance claim. The next latency experiment remains unmeasured.
+
+## Checkpoint 2: Where The Remaining 66 s Goes (Measured Trace)
+
+Unseen-wording live run with Sol medium + guard (`outputs/heldout-live-checkpoint/H01-end-to-end-cold-0`), monotonic event times from the request:
+
+| Segment | Time | What happens |
+| --- | ---: | --- |
+| Planning call 1 | 1.1 to 7.5 s | Expert asks the host to localize vessels (one tool round trip) |
+| Planning call 2 | 7.6 to 25.8 s | `validate_plan` **rejected**: expert repeated `preconditions/expected_state/outcome_checks` beside `skill_definition` ("A skill proposal cannot override its definition") |
+| Planning calls 3 to 4 | 25.8 to 55.2 s | Corrected plan validated and returned |
+| Consent to first motion | 55.2 to 56.9 s | Guarded checkpoint (was about 13 s before) |
+| Simulated motion + controller | 56.9 to 63.8 s | One `add_sample(A,C,1)`, return, HOME |
+| Independent observation | 63.8 to 64.4 s | Fresh pixel observation, all checks pass |
+| Completion expert call | 64.4 to 74.3 s | One more model call before the student answer |
+
+Across all 16 live cold traces, the duplicate-field rejection cost one extra model turn in 7. Every host tool round trip costs one full model call (about 6 to 18 s).
+
+Parallel candidates now in flight (each opt-in, separate worktree, coordinator measures):
+
+1. **Codex fast service tier** (`service_tier="priority"`, advertised by the CLI for gpt-6.1-sol as "2x speed, increased usage"; unsupported tiers produce an explicit omission warning, and none appeared). Interleaved standard/fast live runs on D01 and H01 are running now.
+2. **Planning turns** (`TaskLoop.fast_planning_context`): host pre-localizes the fresh planning frame and accepts only exactly identical duplicated fields; conflicting fields still rejected. Local Devin worker, 6.1 Sol Medium Fast.
+3. **Guarded completion** (`TaskLoop.guarded_demo_bench_completion`): skip only the final post-observation expert call when the independent observation and controller facts are clean; anything else escalates. Local Devin worker, 6.1 Sol Medium Fast.
+
+**Projection, not a measurement:** removing the failed validation turn and the localization turn would leave roughly one planning call (about 15 to 20 s); skipping the clean completion call saves about 10 s; a working fast tier could roughly halve the remaining model time. Combined, that could plausibly land near 25 to 35 s request-to-answer. Only measured matched runs will be reported as results.
