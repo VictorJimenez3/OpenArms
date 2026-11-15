@@ -29,6 +29,16 @@ Invariants any UI must keep: show the exact proposal, then send `present` and a 
 
 `ui/lab/{api.js, app.js, index.html, live-client.js, bench.js, bench-voice.js, style.css, tests/browser.spec.mjs}` plus Joseph's `ui/lab/smartivity.js` and `smartivity.css`. Main has since removed the Smartivity panel (`smartivity.js/.css` and its `index.html` block); a UI overhaul can drop it too without affecting the backend. Experiment selection is currently a startup setting, not an API; a UI picker needs a small backend endpoint.
 
-## Not covered yet
+## Verified before the UI merge
 
-No live spoken end-to-end check on this exact head; no physical run of the merged code; firmware tests need running individually (one is an argparse script); independent review of the latest backend changes is still pending.
+- Full suite: 900 passed, 1 skipped (`agentic/tests simulation/tests`). Firmware: `test_arm.py` 29 passed; camera `test_bench.py` 9 passed, 3 skipped (need a camera) and `test_stations.py` 14 passed. `test_action.py` is a hardware dry-run script, not a test; `test_transfer_runner.py` has no tests.
+- Live Gemini voice through the real `/api/sessions/{sid}/live` socket with synthesized student speech (`.devin/harness-loop/voice_check.py`): request heard, plan proposed, preview read aloud and marked presented, spoken "Yes, I confirm. Go ahead." executed exactly once, independent result spoken. Spoken "Cancel" cancelled with no motion; spoken "Stop!" during motion stopped it about 0.4 s after the word.
+- Fix found by that check: compound confirmations such as "Yes, I confirm. Go ahead." were refused (nothing ran). Confirmation is now any short phrase made only of confirmation words with an anchor (yes, confirm, go ahead, run it, do it); questions, negations, extra content and "okay"/"sure" alone still are not consent.
+- Real-arm lane on the stand-in arm (`OPENARMS_BENCH=1`, no follower port): look, "move the mandarin from A to B" simulated then executed (MOCK); "pour the beaker into the dish" simulates; replaying a real pour needs `OPENARMS_POUR_POSES` plus its layout file.
+
+## Still open
+
+- No physical run: no arm or camera is connected to this laptop yet. Do the first hand run supervised, with Stop in reach.
+- The real-arm lane's free-form planner uses the Claude API (`ANTHROPIC_API_KEY`); without it the lane uses fixed patterns only (the standard move and pour commands work).
+- Voice timing: about 14 s of each turn is Gemini reading the exact preview aloud. Gemini occasionally read the preview twice or repeated "The active execution was interrupted."; harmless but slow (prompting in `live.py`).
+- Independent review of the latest backend changes is still pending.
