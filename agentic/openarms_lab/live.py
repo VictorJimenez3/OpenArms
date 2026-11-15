@@ -802,7 +802,7 @@ class GeminiBridge:
                                 # outstanding tool on the resumed transport.
                                 cid = self.watcher_id = self.resume_watcher_id
                                 self.pending_tools[cid] = asyncio.create_task(self._watch(session, cid, resumed=True))
-                            else:
+                            elif not handle:
                                 # A fresh provider session must handle the Start Voice gesture,
                                 # even when an earlier connection attempt failed.
                                 await session.send_client_content(turns=types.Content(role='user', parts=[types.Part(text='Start voice.')]), turn_complete=True)
