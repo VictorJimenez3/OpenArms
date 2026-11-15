@@ -198,6 +198,19 @@ final class ProtocolCoreTests: XCTestCase {
         XCTAssertEqual(transcript.turns.map(\.text), ["Which color?"])
     }
 
+    func testDiscardPartialOutputPreservesCompletedSpeechAndStudentInput() {
+        var transcript = TranscriptStore()
+        transcript.update(role: "assistant", text: "Saved answer", turnID: "complete", final: true)
+        transcript.update(role: "assistant", text: "Interrupted answer", turnID: "first", final: false)
+        transcript.update(role: "assistant", text: "Another draft", turnID: "second", final: false)
+        transcript.update(role: "user", text: "Question", turnID: "student", final: false)
+
+        transcript.discardPartialOutput(replyID: "first")
+        XCTAssertEqual(transcript.turns.map(\.text), ["Saved answer", "Another draft", "Question"])
+        transcript.discardPartialOutput()
+        XCTAssertEqual(transcript.turns.map(\.text), ["Saved answer", "Question"])
+    }
+
     func testPlayedRequiresEndAndEveryPlaybackCallback() throws {
         var ledger = PlaybackLedger()
         ledger.begin("r1")

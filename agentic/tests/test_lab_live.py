@@ -15,7 +15,7 @@ def response(**fields):
 
 def content(**fields):
     return NS(**dict(dict(interrupted=False, input_transcription=None, output_transcription=None,
-                         model_turn=None, turn_complete=False), **fields))
+                         model_turn=None, generation_complete=False, turn_complete=False), **fields))
 
 
 class Session:
@@ -423,7 +423,8 @@ async def test_paraphrased_confirmation_prompt_requests_exact_readout_after_play
         await finish(bridge,runner)
 
 
-async def test_long_exact_preview_can_finish_playback_before_ack_expires(monkeypatch):
+@pytest.mark.parametrize('end_marker', ['generation_complete', 'turn_complete'])
+async def test_long_exact_preview_can_finish_playback_before_ack_expires(monkeypatch, end_marker):
     state={**context(),'pending':{'request_id':'proposal','proposal_version':1,'summary':'Inspect the prepared sample.'}}
     clock=[100.0]
     monkeypatch.setattr(live,'time',NS(monotonic=lambda:clock[0]))
@@ -437,13 +438,94 @@ async def test_long_exact_preview_can_finish_playback_before_ack_expires(monkeyp
         await until(lambda:bridge.ready)
         packet=output_reply(state['pending']['summary'])
         packet.server_content.model_turn.parts[0].inline_data.data=bytes(20*48000)
+        packet.server_content.turn_complete = end_marker == 'turn_complete'
+        if end_marker == 'generation_complete':
+            packet.server_content.output_transcription = None
         client.sessions[0].incoming.put_nowait(packet)
+        if end_marker == 'generation_complete':
+            client.sessions[0].incoming.put_nowait(response(server_content=content(
+                output_transcription=NS(text=state['pending']['summary'], finished=True), generation_complete=True)))
         await until(lambda:any(e['type']=='reply_end'for e in sent))
         rid=next(e['reply_id']for e in sent if e['type']=='reply_end')
         clock[0]+=20
         await bridge.played(rid)
         assert len(presented)==1
     finally:await finish(bridge,runner)
+
+
+@pytest.mark.parametrize(('early_ack', 'disposition'), [
+    pytest.param(True, 'presented', id='early-ack'),
+    pytest.param(False, 'presented', id='late-ack'),
+    pytest.param(True, 'interrupted', id='interrupted'),
+    pytest.param(True, 'expired', id='expired'),
+    pytest.param(True, 'rejected', id='early-ack-rejected'),
+    pytest.param(False, 'rejected', id='late-ack-rejected'),
+])
+async def test_generation_complete_keeps_late_exact_transcript_on_the_audio_reply(monkeypatch, early_ack, disposition):
+    clock = [100.]
+    monkeypatch.setattr(live, 'time', NS(monotonic=lambda: clock[0]))
+    pending = {'request_id': 'proposal', 'proposal_version': 1,
+               'summary': 'Inspect the prepared sample.'}
+    state = {**context(), 'pending': pending}
+    client, sent, actions = Client(), [], []
+
+    async def emit(frame):
+        sent.append(frame)
+
+    async def tool(name, args):
+        if name != 'get_lab_state':
+            actions.append((name, args))
+        if name == '_present_audio' and disposition == 'rejected':
+            raise ValueError('Proposal expired. Request a fresh proposal.')
+
+    bridge = live.GeminiBridge(lambda: state, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(response(server_content=content(
+            model_turn=NS(parts=[NS(inline_data=NS(data=b'\0\0'))]))))
+        session.incoming.put_nowait(response(server_content=content(generation_complete=True)))
+        await until(lambda: sent[-1]['type'] == 'reply_end')
+        reply_id = sent[-1]['reply_id']
+        if early_ack:
+            await bridge.played(reply_id)
+        assert actions == []
+        if disposition == 'interrupted':
+            await bridge.interrupt(reply_id)
+        elif disposition == 'expired':
+            clock[0] += live.PLAYBACK_ACK_TIMEOUT + 1
+
+        session.incoming.put_nowait(response(server_content=content(
+            output_transcription=NS(text=pending['summary']))))
+        session.incoming.put_nowait(response(server_content=content(turn_complete=True)))
+        session.incoming.put_nowait(function_calls(tool_call('checkpoint', 'get_lab_state')))
+        await until(lambda: any(reply.id == 'checkpoint' for reply in session.tools))
+        if not early_ack:
+            assert actions == []
+            await bridge.played(reply_id)
+        await bridge.played(reply_id)
+        revoked = disposition in ('interrupted', 'expired')
+        if revoked:
+            assert actions == []
+            assert {'type': 'interrupted', 'reply_id': reply_id} in sent
+            assert not any(frame['type'] == 'transcript' for frame in sent)
+
+        assert [frame['reply_id'] for frame in sent if frame['type'] == 'reply_start'] == [reply_id]
+        assert [frame['reply_id'] for frame in sent if frame['type'] == 'reply_end'] == [reply_id]
+        if not revoked:
+            assert bridge.ready and len(client.sessions) == 1
+            assert actions == [
+                ('_present_audio', {'request_id': 'proposal', 'proposal_version': 1, 'reply_id': reply_id}),
+                ('_record_transcript', {'role': 'assistant', 'text': pending['summary'], 'turn_id': reply_id,
+                                        'final': True}),
+            ]
+        if disposition == 'rejected':
+            assert sent[-2] == {'type': 'status', 'status': 'listening'}
+            assert {'type': 'error', 'code': 'invalid_action', 'message': 'Proposal expired. Request a fresh proposal.',
+                    'recoverable': True} in sent
+    finally:
+        await finish(bridge, runner)
 
 
 @pytest.mark.parametrize('resumed', [True, False])
@@ -641,6 +723,35 @@ async def test_missing_play_ack_expires_without_presenting(monkeypatch):
     assert bridge._playback_idle()
     await bridge.played('old')
     assert not actions
+
+
+async def test_spoken_stop_precedes_expired_reply_cleanup(monkeypatch):
+    clock = [100.]
+    monkeypatch.setattr(live, 'time', NS(monotonic=lambda: clock[0]))
+    client, sent, controls = Client(), [], []
+
+    async def emit(message):
+        if message['type'] == 'interrupted':
+            controls.append('interrupted')
+        sent.append(message)
+
+    async def tool(name, args):
+        if name == 'stop_lab':
+            controls.append('stop_lab')
+
+    bridge = live.GeminiBridge(context, tool, emit, client_factory=lambda: client)
+    runner = asyncio.create_task(bridge.run())
+    try:
+        await until(lambda: bridge.ready)
+        session = client.sessions[0]
+        session.incoming.put_nowait(output_reply('The first step is ready.'))
+        await until(lambda: any(message['type'] == 'reply_end' for message in sent))
+        clock[0] += live.PLAYBACK_ACK_TIMEOUT + 1
+        session.incoming.put_nowait(transcript('Emergency stop.'))
+        await until(lambda: len(controls) >= 2)
+        assert controls == ['stop_lab', 'interrupted']
+    finally:
+        await finish(bridge, runner)
 
 
 async def test_stop_revokes_buffered_playback_and_discards_superseded_stream_tail():
