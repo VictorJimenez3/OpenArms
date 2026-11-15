@@ -18,6 +18,23 @@ CANCELLATIONS = {'cancel', 'cancel it', 'cancel the trial', 'cancel the request'
 STOPS = STOP_PHRASES
 
 
+# Words a spoken confirmation may contain. Anything else (a route, a question, a condition, a
+# negation, "wait") makes the turn not consent. At least one anchor must be present.
+CONFIRMATION_WORDS = {'yes', 'yeah', 'yep', 'please', 'confirm', 'confirmed', 'i', 'go', 'ahead', 'run', 'do',
+                      'it', 'that', 'this', 'the', 'request', 'proposal', 'okay', 'ok', 'sure'}
+CONFIRMATION_ANCHORS = ({'yes'}, {'yeah'}, {'yep'}, {'confirm'}, {'confirmed'}, {'go', 'ahead'}, {'run', 'it'},
+                        {'do', 'it'})
+
+
+def is_confirmation(text):
+    """An unambiguous spoken or typed confirmation: only confirmation words, at most eight, with an anchor."""
+    if not isinstance(text, str) or not re.fullmatch(r'[a-zA-Z ,.!]+', text.strip()):
+        return False
+    words = normalized(text).split()
+    return (0 < len(words) <= 8 and set(words) <= CONFIRMATION_WORDS and
+            any(anchor <= set(words) for anchor in CONFIRMATION_ANCHORS))
+
+
 def normalized(text):
     return re.sub(r'\s+', ' ', re.sub(r'[^a-z0-9 ]', '', text.lower())).strip()
 
@@ -82,7 +99,7 @@ class VoiceControls:
             return 'stop_lab'
         if norm in CANCELLATIONS:
             return 'cancel_request'
-        if norm in CONFIRMATIONS:
+        if norm in CONFIRMATIONS or is_confirmation(self.text):
             return 'student_confirm'
         return None
 
@@ -125,7 +142,7 @@ class VoiceControls:
                 return self.context()
             if self.generation != self.context().get('generation', 0) or time.monotonic() - self.started > 30:
                 raise ValueError('This input was revoked. Please give a new instruction.')
-            if normalized(self.text) in CONFIRMATIONS | CANCELLATIONS | STOPS:
+            if normalized(self.text) in CANCELLATIONS | STOPS or is_confirmation(self.text):
                 # Model interpretation cannot turn control speech into another operation.
                 raise ValueError('That control cannot create or change a trial.')
             if self.consumed:
@@ -172,7 +189,7 @@ class VoiceControls:
         if (self.consumed or time.monotonic() - self.started > 30 or
                 isinstance(version, bool) or
                 not re.fullmatch(r'[a-zA-Z ,.!]+', self.text.strip()) or
-                normalized(self.text) not in CONFIRMATIONS or not self.presented or
+                not is_confirmation(self.text) or not self.presented or
                 not rid or rid != self.request_id or rid != pending.get('request_id') or
                 version != self.proposal_version or version != pending.get('proposal_version') or
                 self.generation != snap.get('generation', 0)):

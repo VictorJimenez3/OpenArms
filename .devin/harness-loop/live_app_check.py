@@ -1,5 +1,6 @@
 """Drive the running app as a scripted test student: request, exact present+confirm, wait for the observed result."""
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -27,7 +28,7 @@ session = call('/api/sessions', {})
 sid, token = session['session_id'], session['access_token']
 TEXTS = sys.argv[2:] or [TEXT]
 for number, text in enumerate(TEXTS):
-    if number:
+    if number and not os.environ.get('KEEP_BENCH'):
         call(f'/api/sessions/{sid}/prepare', {}, token)
     before = len(call(f'/api/sessions/{sid}', token=token)['tasks'])
     started = time.time()
@@ -36,7 +37,8 @@ for number, text in enumerate(TEXTS):
                                                                      ('failed', 'needs_clarification', 'completed')))
     task, pending = state['tasks'][-1], state.get('pending')
     result = {'text': text, 'route': task.get('route'), 'request_to_proposal_s': round(time.time() - started, 2),
-              'proposal': (pending or {}).get('summary'), 'status_before_consent': task['status']}
+              'proposal': (pending or {}).get('summary'), 'student_summary': (pending or {}).get('student_summary'),
+              'status_before_consent': task['status']}
     if pending:
         exact = {'request_id': pending['request_id'], 'proposal_version': pending['proposal_version']}
         call(f'/api/sessions/{sid}/present', exact, token)

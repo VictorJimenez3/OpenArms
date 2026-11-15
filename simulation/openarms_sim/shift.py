@@ -14,7 +14,11 @@ model only supplies how the joints must change to move that grip a few centimetr
 config/joint_map.yaml is unmeasured the model's arm is not exactly the real one, so the change is
 good to a few millimetres per centimetre of shift; small shifts come out closest.
 
-Prints {"poses": {...corrected...}, "error_mm": {...}, "turn_deg": {...}, "joint_change_deg": {...}}.
+A shift can also be three numbers, [dx, dy, dz]: dz raises (+) or lowers (-) the grip, in centimetres.
+
+Prints {"poses": {...corrected...}, "error_mm": {...}, "turn_deg": {...}, "joint_change_deg": {...},
+"grasp_cm": {name: [x, y, height]}}: grasp_cm is where the model puts the gripper's grasp point for every
+pose given (shifted or not), in ruler centimetres, with its height above the arm's base plane.
 """
 
 from __future__ import annotations
@@ -74,6 +78,15 @@ def shift_pose(scene, q0, move_m, limits=None) -> tuple[np.ndarray, float, float
     return res.x, float(np.linalg.norm(p - target)), turn
 
 
+def arm_to_ruler(xy_m, frame: dict) -> tuple[float, float]:
+    """The inverse of config.ruler_to_arm: a point in the arm's frame (metres) as ruler centimetres."""
+    ax, ay = (float(v) for v in frame["arm_cm"])
+    h = np.radians(float(frame["arm_heading_deg"]))
+    fx, fy = np.cos(h), np.sin(h)
+    x, y = float(xy_m[0]), float(xy_m[1])
+    return round(float(ax + 100 * (x * fx + y * fy)), 1), round(float(ay + 100 * (x * fy - y * fx)), 1)
+
+
 def shift_poses(poses: dict, shift_cm: dict, setup: str = "demo", limits_deg: dict | None = None) -> dict:
     """`limits_deg`: {"shoulder_pan.pos": [low, high], ...} in the real arm's degrees (its calibrated range)."""
     frame = _read_yaml(setup_dir(setup) / "bench.yaml").get("ruler_frame")
@@ -85,22 +98,30 @@ def shift_poses(poses: dict, shift_cm: dict, setup: str = "demo", limits_deg: di
     if limits_deg:
         ends = [sorted((jm.to_model(j, limits_deg[f"{j}.pos"][0]), jm.to_model(j, limits_deg[f"{j}.pos"][1]))) for j in ARM_JOINTS]
         limits = ([e[0] for e in ends], [e[1] for e in ends])
-    out, errors, turns, changes = {}, {}, {}, {}
+    out, errors, turns, changes, grasp = {}, {}, {}, {}, {}
+
+    def where(q):
+        p, _ = _frame(scene, q)
+        return [*arm_to_ruler(p[:2], frame), round(float(p[2]) * 100, 1)]
+
     for name, pose in poses.items():
-        dx, dy = shift_cm.get(name, (0.0, 0.0))
-        if abs(dx) < 1e-9 and abs(dy) < 1e-9:
-            out[name] = dict(pose)
-            continue
-        move = np.array([*(np.array(ruler_to_arm([dx, dy], frame)) - origin), 0.0])
+        d = [float(v) for v in shift_cm.get(name, (0.0, 0.0))]
+        dx, dy, dz = (d + [0.0])[:3]
         q0 = jm.pose_to_model({j: float(pose[f"{j}.pos"]) for j in ARM_JOINTS})
+        if max(abs(dx), abs(dy), abs(dz)) < 1e-9:
+            out[name] = dict(pose)
+            grasp[name] = where(q0)
+            continue
+        move = np.array([*(np.array(ruler_to_arm([dx, dy], frame)) - origin), dz / 100.0])
         q1, err, turn = shift_pose(scene, q0, move, limits)
+        grasp[name] = where(q1)
         before, after = jm.pose_from_model(q0), jm.pose_from_model([float(v) for v in q1])
         delta = {j: after[j] - before[j] for j in ARM_JOINTS}
         out[name] = {**pose, **{f"{j}.pos": round(float(pose[f"{j}.pos"]) + delta[j], 2) for j in ARM_JOINTS}}
         errors[name], turns[name] = round(err * 1000, 1), round(turn, 1)
         changes[name] = {j: round(v, 1) for j, v in delta.items()}
     return {"poses": out, "error_mm": errors, "turn_deg": turns, "joint_change_deg": changes,
-            "joint_map_measured": jm.measured}
+            "grasp_cm": grasp, "joint_map_measured": jm.measured}
 
 
 def main() -> None:

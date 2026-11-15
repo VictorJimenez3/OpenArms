@@ -36,6 +36,19 @@ final class ProtocolCoreTests: XCTestCase {
         XCTAssertEqual(event.proposal?.proposalVersion, 3)
     }
 
+    func testGeminiRetryStatusAcceptsBothWireCodeFormats() throws {
+        for code in ["1011", #""1011""#] {
+            let frame = Data("""
+            {"type":"status","status":"reconnecting","code":\(code)}
+            """.utf8)
+            let event = try LabWire.event(frame)
+            XCTAssertEqual(event.status, "reconnecting")
+            XCTAssertEqual(event.code, "1011")
+        }
+        let revoked = try LabWire.event(Data(#"{"type":"error","code":"connection_revoked"}"#.utf8))
+        XCTAssertEqual(revoked.code, "connection_revoked")
+    }
+
     func testProposalVersionsNormalizeToAnExactJSONInteger() throws {
         let exact = 9_007_199_254_740_993
         for token in [String(exact), "\"\(exact)\""] {
@@ -183,6 +196,19 @@ final class ProtocolCoreTests: XCTestCase {
         transcript.update(role: "user", text: "Which", turnID: "u", final: false)
         transcript.discardPartialInput()
         XCTAssertEqual(transcript.turns.map(\.text), ["Which color?"])
+    }
+
+    func testDiscardPartialOutputPreservesCompletedSpeechAndStudentInput() {
+        var transcript = TranscriptStore()
+        transcript.update(role: "assistant", text: "Saved answer", turnID: "complete", final: true)
+        transcript.update(role: "assistant", text: "Interrupted answer", turnID: "first", final: false)
+        transcript.update(role: "assistant", text: "Another draft", turnID: "second", final: false)
+        transcript.update(role: "user", text: "Question", turnID: "student", final: false)
+
+        transcript.discardPartialOutput(replyID: "first")
+        XCTAssertEqual(transcript.turns.map(\.text), ["Saved answer", "Another draft", "Question"])
+        transcript.discardPartialOutput()
+        XCTAssertEqual(transcript.turns.map(\.text), ["Saved answer", "Question"])
     }
 
     func testPlayedRequiresEndAndEveryPlaybackCallback() throws {

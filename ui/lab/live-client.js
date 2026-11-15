@@ -98,6 +98,7 @@ export class SessionClient {
     this.#api = api;
     this.onState = options.onState || noop;
     this.onTranscript = options.onTranscript || noop;
+    this.onInterrupted = options.onInterrupted || noop;
     this.onStatus = options.onStatus || noop;
     this.onError = options.onError || noop;
     this.onResync = options.onResync || noop;
@@ -214,7 +215,8 @@ export class SessionClient {
       case 'reply_start': if (this.status.voiceOn && !this.status.muted) this.player?.start(frame.reply_id); break;
       case 'audio': if (this.status.voiceOn && !this.status.muted) this.player?.chunk(frame.reply_id, frame.data); break;
       case 'reply_end': this.player?.end(frame.reply_id); break;
-      case 'interrupted': this.player?.clear(frame.reply_id); this.resetCapture(); break;
+      case 'interrupted':
+        this.player?.clear(frame.reply_id); this.onInterrupted(frame.reply_id); this.resetCapture(); break;
       case 'error':
         if (['owner_replaced','connection_replaced','session_replaced','unauthorized'].includes(frame.code)) { this.closed = true; this.ws?.close(); }
         this.onError(frame.message || 'Voice hit a problem. Your text notebook is still available.');
@@ -274,7 +276,10 @@ export class SessionClient {
       this.worklet.port.onmessage = ({ data }) => {
         if (data.type === 'pcm' && data.epoch === this.audioEpoch && this.captureEnabled) this.send({ type: 'audio', data: encode(data.buffer), epoch: this.generation });
       };
-      this.player = new PcmPlayer(this.context, frame => this.send(frame), (playback, detail) => this.update({ playback, ...(detail ? { detail } : {}) }));
+      this.player = new PcmPlayer(this.context, frame => {
+        if (frame.type === 'interrupt') this.onInterrupted(frame.reply_id);
+        this.send(frame);
+      }, (playback, detail) => this.update({ playback, ...(detail ? { detail } : {}) }));
       stream.getAudioTracks().forEach(track => { track.onended = () => this.pauseAudio('Microphone disconnected. Check your input and tap Start voice.'); });
       this.context.onstatechange = () => {
         if (this.context?.state !== 'running' && this.status.voiceOn) this.pauseAudio('Audio paused by your device. Tap Start voice to resume.');
@@ -292,6 +297,7 @@ export class SessionClient {
     ++this.startEpoch;
     this.captureEnabled = false; this.resetCapture();
     this.player?.clear(undefined, false); this.player = null;
+    this.onInterrupted();
     this.stream?.getTracks().forEach(track => { track.onended = null; track.stop(); }); this.stream = null;
     this.source?.disconnect(); this.worklet?.disconnect(); this.silent?.disconnect();
     if (this.worklet) this.worklet.port.onmessage = null;

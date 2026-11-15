@@ -79,6 +79,11 @@ class BenchExecute(Body):
     request_id: str = Field(min_length=1, max_length=128)
 
 
+class BenchAnswer(Body):
+    question_id: str = Field(min_length=1, max_length=64)
+    yes: bool
+
+
 def proposal_version(value):
     if type(value) is int and value > 0:
         return value
@@ -508,6 +513,13 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     async def bench_execute(body: BenchExecute, request: Request):
         return await bench_call(bench_lane(request).execute(body.request_id))
 
+    @app.post('/api/bench/answer')
+    async def bench_answer(body: BenchAnswer, request: Request):
+        return await bench_call(_answer(bench_lane(request), body))
+
+    async def _answer(lane, body):
+        return lane.answer(body.question_id, body.yes)
+
     @app.post('/api/bench/cancel')
     async def bench_cancel(request: Request):
         return await bench_call(bench_lane(request).cancel())
@@ -515,6 +527,46 @@ def create_app(lab=None, *, access_path=None, voice_factory=None, heartbeat_time
     @app.post('/api/bench/stop')
     async def bench_stop(request: Request):
         return await bench_lane(request).stop()
+
+    @app.websocket('/api/bench/voice')
+    async def bench_voice_socket(ws: WebSocket):
+        """Gemini Live voice for the bench panel. Same computer only, like the other bench routes."""
+        lane = getattr(app.state, 'bench', None)
+        host = ws.client.host if ws.client else None
+        if lane is None or host not in ('127.0.0.1', '::1', 'testclient') or not trusted_origin(ws.headers.get('origin'), ws.headers.get('host')):
+            await ws.close(code=1008)
+            return
+        await ws.accept()
+        from .bench_voice import BenchVoice
+        send_lock = asyncio.Lock()
+
+        async def emit(frame):
+            async with send_lock:
+                with contextlib.suppress(Exception):
+                    await ws.send_json(frame)
+
+        voice = BenchVoice(lane, emit, client_factory=getattr(app.state, 'bench_voice_client', None))
+        runner = asyncio.create_task(voice.run())
+        try:
+            while True:
+                msg = await ws.receive_json()
+                if msg.get('type') == 'audio':
+                    try:
+                        await voice.audio(msg.get('data', ''))
+                    except ValueError as exc:
+                        await emit({'type': 'error', 'message': str(exc)})
+                elif msg.get('type') == 'stop':
+                    await lane.stop()
+                elif msg.get('type') == 'close':
+                    break
+        except (WebSocketDisconnect, RuntimeError):
+            pass
+        finally:
+            await voice.close()
+            runner.cancel()
+            await asyncio.gather(runner, return_exceptions=True)
+            with contextlib.suppress(Exception):
+                await ws.close()
 
     @app.get('/api/bench/{kind}/{name}')
     async def bench_file(kind: str, name: str, request: Request):

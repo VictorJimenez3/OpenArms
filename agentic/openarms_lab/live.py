@@ -156,8 +156,18 @@ def compact_snapshot(snap):
 
 def system_prompt(context):
     state = compact(context)
-    water_only = (state.get('experiment') or {}).get('id') == 'two_vessel_water'
-    if water_only:
+    experiment = state.get('experiment') or {}
+    if experiment.get('id') == 'demo_bench_pour':
+        activity = (
+            'The current lab is the two-vessel MuJoCo demo bench. Name the selected experiment from experiment.title. '
+            'A is the donor beaker and C is the receiver. Use the actions listed in capabilities.supported_operations. '
+            'Present the exact proposal and wait for student confirmation. '
+        )
+        science = (
+            'Report the appearance of the vessels only from the current independent simulated observation. '
+            'The simulation displays modeled liquid colors. Do not report a physical reaction, measured pH or quantity. '
+        )
+    elif experiment.get('id') == 'two_vessel_water':
         activity = (
             'The current lab is the water-only, two-vessel MuJoCo simulation. Donor A holds one premeasured water portion. '
             'Receiver C stays fixed; the donor returns to A before the arm returns HOME. '
@@ -241,6 +251,8 @@ class GeminiBridge:
         self.reply_text = ''
         self.reply_proposal = None
         self.reply_seconds = 0.
+        self.reply_audio_ended = False
+        self.reply_text_finished = False
         self.replies = {}
         self.playback_changed = asyncio.Event()
         self.seen_tools = {}
@@ -370,32 +382,80 @@ class GeminiBridge:
         self.reply_text = ''
         self.reply_proposal = None
         self.reply_seconds = 0.
+        self.reply_audio_ended = False
+        self.reply_text_finished = False
 
-    def _expire_replies(self):
+    async def _expire_replies(self):
         now = time.monotonic()
         for rid, record in tuple(self.replies.items()):
-            if record.get('expires', float('inf')) <= now:
-                del self.replies[rid]
+            if record['expires'] <= now:
+                await self.interrupt(rid)
 
     def _playback_idle(self):
-        self._expire_replies()
-        return not self.reply_id and not self.replies
+        now = time.monotonic()
+        generating_audio = self.reply_id and not self.reply_audio_ended
+        return not generating_audio and not any(record['expires'] > now for record in self.replies.values())
 
     async def played(self, reply_id):
-        self._expire_replies()
-        record = self.replies.pop(reply_id, None)
-        if not record or not record['complete']:
+        await self._expire_replies()
+        record = self.replies.get(reply_id)
+        if not record:
             return
+        if not record['complete']:
+            # Playback can finish before Gemini sends the last transcription.
+            record['played'] = True
+            return
+        del self.replies[reply_id]
         try:
+            presentation_error = None
             proposal = record.get('proposal')
             if proposal:
                 pending = self.context().get('pending') or {}
                 if (pending.get('request_id') == proposal['request_id'] and
                         pending.get('proposal_version') == proposal['proposal_version']):
-                    await self.tool_call('_present_audio', {**proposal, 'reply_id': reply_id})
+                    try:
+                        await self.tool_call('_present_audio', {**proposal, 'reply_id': reply_id})
+                    except ValueError as exc:
+                        presentation_error = str(exc)
+            await self._record('assistant', record.get('text', ''), reply_id, True)
             await self.emit({'type': 'status', 'status': 'muted' if self.muted else 'listening'})
+            if presentation_error is not None:
+                await self.emit({'type': 'error', 'code': 'invalid_action', 'message': presentation_error,
+                                 'recoverable': True})
         finally:
             self.playback_changed.set()
+
+    async def _finish_reply(self):
+        rid, text, proposal = self.reply_id, self.reply_text, self.reply_proposal
+        self._clear_reply()
+        record = self.replies.get(rid)
+        if not record:
+            return
+
+        def words(s):
+            return ' '.join(''.join(c.lower() if c.isalnum() else ' ' for c in s).split())
+
+        pending = self.context().get('pending') or {}
+        same_proposal = proposal and all(pending.get(k) == v for k, v in proposal.items())
+        normalized_text = words(text)
+        exact = same_proposal and pending.get('summary') and words(pending['summary']) in normalized_text
+        record.update(complete=True, proposal=proposal if exact else None, text=text)
+        if same_proposal and not exact and not pending.get('presented'):
+            repair_key = (pending['request_id'], pending['proposal_version'])
+            previous, count = self.preview_attempts
+            if 'say confirm' in normalized_text or previous == repair_key:
+                count = count if previous == repair_key else 0
+                self.preview_attempts = (repair_key, count + 1)
+                if count < 2 and self.watcher_id:
+                    self.preview_repair = repair_key
+                    if self.state_updates.full():
+                        self.state_updates.get_nowait()
+                    self.state_updates.put_nowait(compact(self.context))
+                else:
+                    await self.emit({'type': 'error', 'recoverable': True,
+                        'message': 'The spoken plan could not be verified. Review the on-screen plan or ask me to repeat it.'})
+        if record.get('played'):
+            await self.played(rid)
 
     async def close(self):
         self.closed = True
@@ -491,15 +551,17 @@ class GeminiBridge:
         await self.emit({'type': 'error', 'message': str(error), 'recoverable': True})
 
     async def _wait_for_playback(self):
-        self.playback_changed.clear()
-        while not self._playback_idle():
-            deadline = min((r['expires'] for r in self.replies.values() if 'expires' in r), default=None)
+        while True:
+            self.playback_changed.clear()
+            await self._expire_replies()
+            if self._playback_idle():
+                return
+            deadline = min((r['expires'] for r in self.replies.values()), default=None)
             try:
                 await asyncio.wait_for(self.playback_changed.wait(), timeout=(
                     max(0, deadline - time.monotonic()) if deadline is not None else None))
             except TimeoutError:
                 pass
-            self.playback_changed.clear()
 
     async def _watch(self, session, cid, *, resumed=False):
         first = True
@@ -510,7 +572,9 @@ class GeminiBridge:
             while not self.closed and cid not in self.cancelled_tools:
                 if not first:
                     await self.state_updates.get()
-                await self._wait_for_playback()
+                    # Only unsolicited updates wait for playback. Gemini can
+                    # call this tool after starting audio in the same turn.
+                    await self._wait_for_playback()
                 # Consume at most one wakeup just before the fresh snapshot.
                 if not self.state_updates.empty():
                     self.state_updates.get_nowait()
@@ -679,10 +743,12 @@ class GeminiBridge:
                             await self._finish_transcript()
                         else:
                             await self._record('user', self.controls.text, self.controls.turn_id, False)
+                    await self._expire_replies()
                     audio_parts = [p.inline_data.data for p in (content.model_turn.parts if content.model_turn else []) if p.inline_data and p.inline_data.data]
-                    output = content.output_transcription
+                    output = None if content.interrupted else content.output_transcription
+                    if content.interrupted or self.reply_audio_ended:
+                        audio_parts = []
                     if not self.reply_id and (audio_parts or (output and output.text)):
-                        self._expire_replies()
                         if any(r.get('proposal') for r in self.replies.values()):
                             # WHEN_IDLE covers Gemini generation, not playback.
                             # A reply already scheduled upstream must not start
@@ -696,58 +762,42 @@ class GeminiBridge:
                             self.reply_proposal = (brief(pending, ('request_id', 'proposal_version'))
                                                    if pending and not pending.get('presented') else None)
                             await self.emit({'type': 'reply_start', 'reply_id': self.reply_id, 'proposal': self.reply_proposal})
-                            await self.emit({'type': 'status', 'status': 'speaking'})
                         rid = self.reply_id
-                        if rid and output and output.text:
+                        text_changed = bool(rid and output and output.text)
+                        if text_changed:
                             self.reply_text += output.text
-                            await self._record('assistant', self.reply_text, rid, False)
+                        first_audio = bool(rid and audio_parts and not self.reply_seconds)
+                        if first_audio:
+                            await self.emit({'type': 'status', 'status': 'speaking'})
                         for raw in audio_parts:
                             if rid is None or self.reply_id != rid:
                                 break
                             self.reply_seconds += len(raw) / 48000  # 24 kHz PCM16
                             await self.emit({'type': 'audio', 'data': base64.b64encode(raw).decode(), 'reply_id': rid})
+                        if rid and self.reply_id == rid and self.reply_seconds and (text_changed or first_audio):
+                            await self._record('assistant', self.reply_text, rid, False)
+                    if self.reply_id and getattr(output, 'finished', False):
+                        self.reply_text_finished = True
+                    # Close playback promptly. The transcription can arrive
+                    # independently, so retain the reply identity until it settles.
+                    ended = None
+                    if self.reply_id and not self.reply_audio_ended and (content.generation_complete or content.turn_complete):
+                        ended = self.reply_id
+                        self.reply_audio_ended = True
+                        if self.reply_seconds:
+                            self.replies[ended] = {
+                                'complete': False, 'proposal': self.reply_proposal,
+                                'expires': time.monotonic() + self.reply_seconds + PLAYBACK_ACK_TIMEOUT,
+                            }
+                        self.playback_changed.set()
+                    if self.reply_audio_ended and (not self.reply_seconds or self.reply_text_finished or content.turn_complete):
+                        self.suppress_output = not content.turn_complete
+                        await self._finish_reply()
+                    if ended:
+                        await self.emit({'type': 'reply_end', 'reply_id': ended})
                     if content.turn_complete:
                         self.suppress_output = False
                         self.discard_transcript = False
-                    if content.turn_complete and self.reply_id:
-                        rid = self.reply_id
-                        text = self.reply_text
-                        await self._record('assistant', text, rid, True)
-                        # A readout acknowledgment is valid only if its transcript contains
-                        # the exact canonical preview. Generation completion alone is not presentation.
-                        def words(s):
-                            return ' '.join(''.join(c.lower() if c.isalnum() else ' ' for c in s).split())
-                        pending = self.context().get('pending') or {}
-                        proposal = self.reply_proposal
-                        if (not pending.get('summary') or not proposal or
-                                any(pending.get(k) != v for k, v in proposal.items()) or
-                                words(pending['summary']) not in words(text)):
-                            proposal = None
-                        if (proposal is None and self.reply_proposal and not pending.get('presented')
-                                and all(pending.get(k) == v for k,v in self.reply_proposal.items())
-                                and ('say confirm' in words(text) or
-                                     self.preview_attempts[0] == (pending.get('request_id'), pending.get('proposal_version')))):
-                            repair_key = (pending['request_id'], pending['proposal_version'])
-                            previous, count = self.preview_attempts
-                            count = count if previous == repair_key else 0
-                            self.preview_attempts = (repair_key, count + 1)
-                            if count < 2 and self.watcher_id:
-                                self.preview_repair = repair_key
-                                if self.state_updates.full():
-                                    self.state_updates.get_nowait()
-                                self.state_updates.put_nowait(compact(self.context))
-                            else:
-                                await self.emit({'type':'error', 'recoverable':True,
-                                    'message':'The spoken plan could not be verified. Review the on-screen plan or ask me to repeat it.'})
-                        if self.reply_id == rid and self.reply_seconds:
-                            # Reply UUIDs are one-use playback tokens. A delayed ACK
-                            # for a dropped/expired reply cannot present a new one.
-                            self.replies[rid] = {'complete': True, 'proposal': proposal,
-                                                 'expires': time.monotonic() + self.reply_seconds + PLAYBACK_ACK_TIMEOUT}
-                        if self.reply_id == rid:
-                            self._clear_reply()
-                        self.playback_changed.set()
-                        await self.emit({'type': 'reply_end', 'reply_id': rid})
                 if response.tool_call:
                     for call in response.tool_call.function_calls:
                         cid = call.id or str(uuid.uuid4())
@@ -791,14 +841,15 @@ class GeminiBridge:
                             self.ready = True
                             self.suppress_output = self.discard_transcript = False
                             await self.emit({'type': 'status', 'status': 'muted' if self.muted else 'listening'})
-                            if attempt == 0:
-                                # The student's actual Start Voice gesture.
-                                await session.send_client_content(turns=types.Content(role='user', parts=[types.Part(text='Start voice.')]), turn_complete=True)
                             if handle and self.resume_watcher_id:
                                 # The model already subscribed. Reattach the same
                                 # outstanding tool on the resumed transport.
                                 cid = self.watcher_id = self.resume_watcher_id
                                 self.pending_tools[cid] = asyncio.create_task(self._watch(session, cid, resumed=True))
+                            elif not handle:
+                                # A fresh provider session must handle the Start Voice gesture,
+                                # even when an earlier connection attempt failed.
+                                await session.send_client_content(turns=types.Content(role='user', parts=[types.Part(text='Start voice.')]), turn_complete=True)
                             tasks = [asyncio.create_task(self._upstream(session)), asyncio.create_task(self._downstream(session))]
                             done, _ = await asyncio.wait([*tasks, self.watch_failure], return_when=asyncio.FIRST_COMPLETED)
                             for task in tasks:

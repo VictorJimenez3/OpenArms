@@ -16,7 +16,7 @@ from bench_vision.perception import observation
 from simulation.openarms_sim.render import OVERVIEW_HEIGHT, OVERVIEW_WIDTH
 
 from .contracts import AddSampleArguments
-from .demo_bench_worker import (CONFIGURATION_ID, CAMERA_ID, EXPERIMENTS_FILE, SETUP, experiment_contents,
+from .demo_bench_worker import (CONFIGURATION_ID, CAMERA_ID, EXPERIMENTS_FILE, FRACTIONS, SETUP, experiment_contents,
                                 experiment_name, experiments, run_worker)
 from .scene import camera_metadata
 from .skills import compute_skill_hash
@@ -27,14 +27,14 @@ from . import two_vessel_scene
 
 OPERATION = 'add_sample'
 PROVENANCE = 'SIMULATED'
-METHOD = 'demo-bench-markers-donor-fill-v1'
+METHOD = 'demo-bench-markers-vessel-appearance-v2'
 SCENE = {'scene_id': 'openarms_sim_demo', 'scene_version': 1, 'setup': SETUP,
          'control_mode': 'mujoco_kinematic_add_sample'}
 CAMERA = {**camera_metadata(CAMERA_ID, CONFIGURATION_ID), 'calibration_id': CONFIGURATION_ID}
 LIMITATIONS = [
     'Poses are solved by the simulation from bench.yaml, matched to one recorded real pour; joint_map.yaml is unmeasured.',
     'Liquid is drawn, not simulated: colours come from chemistry.yaml, so receiver colour is not a chemistry result.',
-    'Pixel observation of the rendered overview: donor fill and station markers only; no measured volume.',
+    'Pixel observation of the rendered overview: vessel appearance and station markers; no measured volume.',
     'No physical grasp, liquid delivery or spill safety is established. Physical dispatch is disabled.',
 ]
 
@@ -81,6 +81,8 @@ def execution_scope():
 
 # The empty clear beaker as the overview camera renders it (identical in every experiment).
 EMPTY_GLASS = np.array([127, 186, 237])
+RECEIVER_COLOUR_TOLERANCE = 45
+RECEIVER_COLOUR_MARGIN = 15
 
 
 def _masks(pixels):
@@ -97,7 +99,7 @@ def _centre(mask, minimum=60):
 
 
 def receiver_palette():
-    """Receiver colour vocabulary: every indicator-scale and food-colour label the chemistry table can draw."""
+    """Indicator-scale and individual dye appearances used by the demo experiments."""
     from simulation.openarms_sim.config import load_chemistry_config
     chemistry = load_chemistry_config()
     palette = {row['label'] + '_liquid': tuple(row['color']) for row in chemistry['indicator_scale']}
@@ -133,10 +135,15 @@ def anchors(reference):
     (ax, ay), (cx, cy) = np.rint(a).astype(int), np.rint(c).astype(int)
     region = reference[cy-30:cy+20, cx-45:cx+45].astype(int)
     receiver = _coloured(region) & ~masks['marker_c'][cy-30:cy+20, cx-45:cx+45]
+    if receiver.sum() < 60:
+        raise ValueError('The reference frame does not show a readable receiver.')
     rendered = region[receiver].mean(0)
     prepared = _prepared_receiver_colour()
     gap = 255 - prepared
     blend = float(np.clip(((255 - rendered) * gap).sum() / max((gap * gap).sum(), 1e-6), 0.05, 1.0))
+    if (not np.isfinite(blend) or
+            np.linalg.norm(rendered - (255 - blend * gap)) > RECEIVER_COLOUR_TOLERANCE):
+        raise ValueError('The reference frame cannot calibrate the receiver appearance.')
     return {'A': a, 'C': c, 'red_c': int(masks['red'][cy-30:cy+20, cx-45:cx+45].sum()),
             'receiver_count': int(receiver.sum()), 'receiver_rgb': rendered, 'blend': blend,
             'donor_rgb': reference[ay-10:ay, ax-6:ax+6].reshape(-1, 3).astype(int).mean(0)}
@@ -166,7 +173,14 @@ def read_pixels(pixels, anchor, tolerance_px=6):
         return result
     seen = at_c[receiver].mean(0)
     rendered = {label: 255 - anchor['blend'] * (255 - np.array(colour) * 255) for label, colour in receiver_palette().items()}
-    result['receiver'] = min(rendered, key=lambda label: float(np.linalg.norm(rendered[label] - seen)))
+    fits = sorted((float(np.linalg.norm(colour - seen)), label) for label, colour in rendered.items())
+    (distance, receiver_label), (alternate, _) = fits[:2]
+    # Nominal before/after renders are within 32 RGB units and at least 30 units from the next match.
+    if (not np.isfinite(distance) or distance > RECEIVER_COLOUR_TOLERANCE or
+            alternate - distance < RECEIVER_COLOUR_MARGIN):
+        result['reason'] = 'The receiver appearance does not match a known simulated colour.'
+        return result
+    result['receiver'] = receiver_label
     wall = (slice(ay-24, ay-17), slice(ax-6, ax+6))
     r, b = frame[..., 0], frame[..., 2]
     # The beaker's upper wall reads near-white over a pale fill, or glass-blue over a coloured one.
@@ -174,10 +188,11 @@ def read_pixels(pixels, anchor, tolerance_px=6):
                 float(np.linalg.norm(frame[wall].reshape(-1, 3).mean(0) - EMPTY_GLASS)) < 40)
     fill = frame[ay-10:ay, ax-6:ax+6].reshape(-1, 3).mean(0)
     to_full, to_glass = float(np.linalg.norm(fill - anchor['donor_rgb'])), float(np.linalg.norm(fill - EMPTY_GLASS))
-    if has_wall and to_full < to_glass and to_full < 30:
-        result['donor'] = 'liquid_visible'
-    elif has_wall and to_glass < to_full and to_glass < 30:
+    # Any fill that is not the clear empty glass is liquid: a partly poured beaker reads paler than at reset.
+    if has_wall and to_glass < 30 and to_glass < to_full:
         result['donor'] = 'empty'
+    elif has_wall and to_glass >= 30:
+        result['donor'] = 'liquid_visible'
     else:
         result['reason'] = 'The beaker at A is missing, hidden or unreadable.'
         return result
@@ -214,13 +229,19 @@ class DemoBenchSceneService(TwoVesselSceneService):
         if not 0 <= time.time() - raw['captured_at'] <= 180:
             return {'ready': False, 'camera_registration': 'unknown', 'reason': 'Frame is stale or future-dated.'}
         reference = self._references[sid]
-        return read_pixels(two_vessel_scene.fixture._pixels(raw), anchors(two_vessel_scene.fixture._pixels(reference)))
+        try:
+            anchor = anchors(two_vessel_scene.fixture._pixels(reference))
+        except ValueError as exc:
+            return {'ready': False, 'camera_registration': 'unknown', 'reason': str(exc)}
+        return read_pixels(two_vessel_scene.fixture._pixels(raw), anchor)
 
     async def localize_objects(self, sid, evidence_id, labels):
         result = self._observe_pixels(sid, evidence_id)
         reference, _view = self.frames[sid, evidence_id]
-        anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
-        boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
+        boxes = {}
+        if result['ready']:
+            anchor = anchors(two_vessel_scene.fixture._pixels(self._references[sid]))
+            boxes = {'source': (anchor['A'], 14, 34, 8), 'receiver': (anchor['C'], 45, 30, 20)}
         detections, verified = [], []
         for label in labels:
             name = two_vessel_scene.ALIASES.get(label.lower(), label.lower())
@@ -268,6 +289,20 @@ class DemoBenchBackend(TwoVesselBackend):
         for key in two_vessel_scene.SCENE:
             simulation.pop(key, None)
         simulation.update(**SCENE, warnings=list(LIMITATIONS))
+        # Completed pours of this trial, replayed by the worker so the next command starts where they left off.
+        self._history = []
+        self._state.update(pours_done=0, cup_portions=1.0)
+
+    async def execute_step(self, request_id, arguments, progress, *, operation=OPERATION):
+        request = self.check_step(operation, arguments)
+        receipt = await super().execute_step(request_id, arguments, progress, operation=operation)
+        if receipt['status'] == 'completed':
+            self._history.append(request.amount)
+            remaining = 1.0
+            for amount in self._history:
+                remaining *= 1 - FRACTIONS[amount]
+            self._state.update(cup_portions=round(remaining, 6), receiver_portions=None, pours_done=len(self._history))
+        return receipt
 
     @staticmethod
     def capabilities():
@@ -280,25 +315,36 @@ class DemoBenchBackend(TwoVesselBackend):
                     'expected_state_contract': 'SkillDefinition.expected_state describes the final controller state. '
                         'Declare at=HOME; it is not a camera-observed feature or physical success.',
                     'required_outcome_checks': [{'feature': 'donor_appearance', 'expected': 'empty'}],
+                    # Half a pour leaves liquid in the beaker; its outcome is the beaker still showing liquid.
+                    'required_outcome_checks_by_amount': {
+                        'half': [{'feature': 'donor_appearance', 'expected': 'liquid_visible'}]},
                     'outcome_checks_contract': 'outcome_checks are checked independently against fresh SIMULATED '
                         'image features in scene.observable_features. The transfer is evidenced by the beaker at A '
                         'reading empty; the receiver colour is reported from the image and may or may not change.',
                     'qualification': 'Simulated capability on the openarms_sim demo setup only; not chemistry or physical readiness.',
                 },
                 'action_description': 'pour the beaker at A into the container at C once, return the beaker to A and go HOME',
+                'operation_notes': 'add_sample amount=all pours everything still in the beaker; amount=half pours half of '
+                    'what is left. The bench keeps its state between commands until the student asks to reset, so a '
+                    'second pour acts on what the first left. An empty beaker cannot be poured.',
                 'limitations': [*LIMITATIONS, 'One pour from the beaker at A into the container at C; no other route or amount.']}
 
     def check_step(self, operation, arguments):
         if operation != OPERATION:
             raise ValueError('The demo bench supports only add_sample from A into C.')
         request = AddSampleArguments.model_validate(arguments)
-        if self.session_id is None or self._state['simulation']['status'] != 'ready' or not self._idle.is_set():
+        if (self.session_id is None or self._state['simulation']['status'] not in ('ready', 'completed')
+                or not self._idle.is_set()):
             raise ValueError('Prepare a fresh MuJoCo trial before executing.')
+        if self._state.get('cup_portions', 1) <= 0.01:
+            raise ValueError('The beaker at A is already empty. Reset the bench to refill it.')
+        if len(self._history) >= 7:
+            raise ValueError('This trial has had many pours; reset the bench to start again.')
         return request
 
-    @staticmethod
-    def _command(request):
-        return {'source': request.source, 'into': request.into, 'portions': request.portions}
+    def _command(self, request):
+        return {'source': request.source, 'into': request.into, 'portions': request.portions,
+                'amount': request.amount, 'history': list(self._history)}
 
 
 class DemoBenchSkillEvaluator(TwoVesselSkillEvaluator):
@@ -313,9 +359,11 @@ class DemoBenchSkillEvaluator(TwoVesselSkillEvaluator):
 
     @staticmethod
     def _check_definition(definition, plan):
+        amounts = {s['arguments'].get('amount', 'all') for s in plan['steps'] if s['operation'] == OPERATION}
+        donor = 'liquid_visible' if amounts == {'half'} else 'empty'
         if definition.expected_state.get('at') != 'HOME' or not any(
-                c.feature == 'donor_appearance' and c.expected == 'empty' for c in definition.outcome_checks):
-            raise ValueError('Demo bench admission requires an empty-donor outcome check and final HOME.')
+                c.feature == 'donor_appearance' and c.expected == donor for c in definition.outcome_checks):
+            raise ValueError(f'Demo bench admission requires a donor_appearance={donor} outcome check and final HOME.')
         actions = [s for s in plan['steps'] if s['operation'] in (OPERATION,) or s['operation'].startswith('mock_')]
         if len(actions) != 1 or actions[0]['operation'] != OPERATION:
             raise ValueError('Only one add_sample A-to-C operation can be admitted on the demo bench.')

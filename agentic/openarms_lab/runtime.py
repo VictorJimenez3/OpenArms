@@ -9,6 +9,7 @@ import uuid
 from pathlib import Path
 from .backends import MockBackend
 from .contracts import LabExecutor
+from .voice_controls import is_confirmation
 from .conversation import condition_input, controller_state, conversation_reply, explicit_action, prediction_input, read_only_turn, reset_input, stop_input, words
 from .learning import CONDITIONS, EXPERIMENT, reflection_feedback, unknown_observation
 from .skills import SkillRegistry, compute_skill_hash
@@ -45,7 +46,7 @@ def _affirmative(value):
     if not isinstance(value, str) or not re.fullmatch(r'[a-zA-Z ,.!]+', value.strip()):
         return False
     value = re.sub(r',\s*', ' ', value.lower().strip().rstrip('.!')).strip()
-    return value in AFFIRMATIONS
+    return value in AFFIRMATIONS or is_confirmation(value)
 
 class Lab(TaskLoop):
     def __init__(self, data_dir: Path, *, backend_factory=None, registry=None,

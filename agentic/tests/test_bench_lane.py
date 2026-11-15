@@ -248,6 +248,27 @@ async def test_pour_looks_from_above_lets_claude_decide_and_rebuilds_the_simulat
 
 
 @pytest.mark.asyncio
+async def test_claude_reads_the_latest_harness_loop_results_on_every_pour(tmp_path, monkeypatch):
+    notes = tmp_path / 'harness-loop-progress.md'
+    notes.write_text('# Loop\nRound 7: pours tipped 95 degrees landed in the dish.')
+    reply = ('simulate_pour', {'source': 'A', 'into': 'C', 'why': ''})
+    bench = pour_lane(tmp_path, monkeypatch, reply, reply, reply)
+    bench.harness_notes = notes
+    s = await bench.request('pour the beaker into the dish')
+    sent = bench.pour_client.calls[0]['system']
+    assert '<harness_loop_results>' in sent and 'Round 7: pours tipped 95 degrees' in sent and 'the camera wins' in sent
+    assert s['pending']['harness_notes']['sha256'] and any('read the harness loop results' in m['text'] for m in s['log'])
+    notes.write_text('Round 8: lower the grasp by 1 cm.' + 'x' * 20000)  # the loop writes on; the next decision sees it, trimmed
+    await bench.request('pour the beaker into the dish')
+    sent = bench.pour_client.calls[1]['system']
+    assert 'Round 8' in sent and 'Round 7' not in sent and 'middle of the file left out' in sent and len(sent) < 20000
+    notes.unlink()
+    s = await bench.request('pour the beaker into the dish')
+    assert '<harness_loop_results>' not in bench.pour_client.calls[2]['system']
+    assert any('were not read' in m['text'] for m in s['log'])
+
+
+@pytest.mark.asyncio
 async def test_pour_reports_a_blocked_layout_and_missing_camera_readings(tmp_path, monkeypatch):
     seen = {'positions': {'beaker': (4.8, 4.1), 'dish': (5.6, 12.8)}, 'arm_cm': (17.0, 35.5), 'frame': None, 'from_camera': ['dish'],
             'notes': ['The camera did not find the beaker; its last known position is used.']}
@@ -392,6 +413,19 @@ async def test_a_recorded_pour_is_replayed_when_the_camera_sees_the_containers_w
 
 
 @pytest.mark.asyncio
+async def test_a_blocked_simulation_only_warns_when_the_recording_is_replayed(tmp_path, monkeypatch):
+    bench = replay_lane(tmp_path, monkeypatch)
+    monkeypatch.setattr(bench, '_simulate_pour_blocking', lambda *a: {'status': 'blocked', 'provenance': 'SIMULATED', 'video': None,
+                                                                       'blocks': ['The gripper would hit the table.'], 'warnings': []})
+    await bench.look_all()
+    s = await bench.request('pour the beaker into the dish')
+    assert s['pending']['preview']['status'] == 'blocked' and s['pending']['sim_block_overridden'] is True
+    assert 'WARNING (not blocking)' in s['log'][-1]['text'] and 'hit the table' in s['log'][-1]['text']
+    s = await bench.request('execute')
+    assert s['last_result']['status'] == 'completed' and s['pending'] is None
+
+
+@pytest.mark.asyncio
 async def test_a_recorded_pour_is_not_started_when_a_container_moves_after_the_look(tmp_path, monkeypatch):
     bench = replay_lane(tmp_path, monkeypatch)
     bench._shift = fake_shift([])
@@ -409,9 +443,10 @@ def fake_shift(calls, *, error_mm=1.0, pan_per_cm=2.0):
     """Stands in for openarms_sim.shift: turns the pan by pan_per_cm for each cm of x."""
     def shift(poses, shift_cm, limits=None):
         calls.append(shift_cm)
-        out = {n: {**p, 'shoulder_pan.pos': p['shoulder_pan.pos'] + pan_per_cm * shift_cm[n][0]} for n, p in poses.items()}
+        out = {n: {**p, 'shoulder_pan.pos': p['shoulder_pan.pos'] + pan_per_cm * shift_cm.get(n, (0,))[0]} for n, p in poses.items()}
         return {'poses': out, 'error_mm': {n: error_mm for n in poses}, 'turn_deg': {n: 0.5 for n in poses},
-                'joint_change_deg': {n: {'shoulder_pan': pan_per_cm * shift_cm[n][0]} for n in poses}}
+                'joint_change_deg': {n: {'shoulder_pan': pan_per_cm * shift_cm.get(n, (0,))[0]} for n in poses},
+                'grasp_cm': {n: [20.0, 8.0, 3.0] for n in poses}}
     return shift
 
 
@@ -462,10 +497,27 @@ async def test_the_real_arm_pours_only_after_the_operator_agrees_and_from_the_re
     s = await bench.request('execute')
     assert 'did NOT find the beaker' in bench.asked[0] and 'operator declined' in s['log'][-1]['text']
     assert s['last_result'] is None and bench._robot._inner.sent == []
-    bench._robot._inner.pos['shoulder_lift.pos'] = -70.0                # not at the recording's HOME
+    bench._robot._inner.pos['shoulder_lift.pos'] = -70.0                # not at the recording's HOME, and the operator says no
     await bench.request('pour it in')
     s = await bench.request('execute')
-    assert "not at the recording's HOME (off: shoulder_lift)" in s['log'][-1]['text'] and len(bench.asked) == 1 and bench._robot._inner.sent == []
+    assert "not at the recording's HOME (off: shoulder_lift +19°) and the operator did not move it back" in s['log'][-1]['text']
+    assert 'Move it slowly back to HOME' in bench.asked[1] and bench._robot._inner.sent == []
+
+
+@pytest.mark.asyncio
+async def test_the_arm_is_brought_back_to_home_first_when_the_operator_agrees(tmp_path, monkeypatch):
+    monkeypatch.setattr('agentic.openarms_lab.bench_lane.HOMING_MIN_S', .05)
+    monkeypatch.setattr('agentic.openarms_lab.bench_lane.HOMING_DEG_PER_S', 1e4)
+    bench = replay_lane(tmp_path, monkeypatch, real=True, answers=['y', 'n'])  # yes to going home, no to the pour itself
+    bench._robot._inner.pos['shoulder_lift.pos'] = -70.0
+    await bench.look_all()
+    await bench.request('pour it in')
+    s = await bench.request('execute')
+    sent = bench._robot._inner.sent
+    assert sent and sent[-1]['shoulder_lift.pos'] == TAKE['poses']['HOME']['shoulder_lift.pos'] and 'gripper.pos' not in sent[-1]
+    assert bench._robot._inner.pos['shoulder_lift.pos'] == TAKE['poses']['HOME']['shoulder_lift.pos']
+    assert any('Moving the arm back to the recording' in m['text'] for m in s['log'])
+    assert 'Arm at HOME, path clear' in bench.asked[1] and 'operator declined this pour' in s['log'][-1]['text']
 
 
 @pytest.mark.asyncio
@@ -621,3 +673,127 @@ def test_a_picture_whose_rulers_are_hidden_uses_the_last_grid_lined_up_with_it(t
     (tmp_path/'bench/overhead_reference.json').unlink()               # nothing to carry over: not calibrated, as before
     third = lane._overhead_blocking()
     assert any(n.startswith('NOT CALIBRATED') and 'no earlier grid' in n for n in third['notes'])
+
+
+# ---- Claude writes the pour file: replay the recording, or improve it --------------------------------
+
+def claude_replay_lane(tmp_path, monkeypatch, motion, *, beaker=(22.3, 7.6)):
+    import json
+    bench = replay_lane(tmp_path, monkeypatch, beaker=beaker)
+    calls = []
+    bench._shift = fake_shift(calls)
+    bench.pour_client = PourClaude(('simulate_pour', {'source': 'A', 'into': 'C', 'why': 'Beaker into dish.', 'motion': motion}))
+    bench.shift_calls = calls
+    return bench, json
+
+
+@pytest.mark.asyncio
+async def test_claude_can_keep_the_recording_and_the_pour_file_it_runs_is_saved(tmp_path, monkeypatch):
+    bench, json = claude_replay_lane(tmp_path, monkeypatch, {'choice': 'replay', 'why': 'The grip lands on the beaker.'})
+    await bench.look_all()
+    s = await bench.request('pour the beaker into the dish')
+    p = s['pending']
+    assert p['executable'] is True and p['made_by'] == 'recording'
+    system = bench.pour_client.calls[0]['system']
+    assert 'take.json' in system and 'prefer it' in system and 'motion' in bench.pour_client.calls[0]['tools'][0]['input_schema']['properties']
+    assert 'Carry height' in system and 'at least 8 cm above the table' in system and 'Never lower ABOVE_A or ABOVE_C' in system
+    saved = json.loads((tmp_path/'bench/pours'/f"pour-{p['request_id'][:8]}.json").read_text())
+    assert saved['poses'] == TAKE['poses'] and saved['made_by'] == 'recording' and saved['recorded_on_real_arm'] is True
+    layout = json.loads((tmp_path/'bench/pours'/f"pour-{p['request_id'][:8]}.layout.json").read_text())
+    assert layout['beaker'] == [22.3, 7.6] and layout['dish'] == [5.8, 7.6]
+    assert any('Claude kept the recorded motion: The grip lands on the beaker.' in m['text'] for m in s['log'])
+
+
+@pytest.mark.asyncio
+async def test_what_the_real_arm_met_is_kept_and_shown_to_claude_at_a_nearby_spot(tmp_path, monkeypatch):
+    bench, json = claude_replay_lane(tmp_path, monkeypatch, {'choice': 'replay', 'why': ''})
+    bench.real_arm = True
+    r = {'request_id': 'abcd1234-0000', 'positions': {'beaker': [22.0, 7.9], 'dish': [5.8, 7.6]}, 'pour_file': 'p.json',
+         'made_by': 'recording', 'motion': {'choice': 'replay'}}
+    said = bench._record_lesson(r, {'status': 'executed'}, [
+        {'pose': 'GRASP_A', 'off': {'shoulder_lift.pos': -3.7}, 'raised': {'shoulder_lift.pos': -3.7}}])
+    assert 'GRASP_A' in said and 'stopped high' in said and 'raised' in said
+    bench._record_lesson({**r, 'positions': {'beaker': [5.0, 6.0], 'dish': [25.0, 10.0]}},
+                         {'status': 'failed', 'failed_step': 'pick', 'reason': 'did not reach target'}, [])
+    assert bench._record_lesson(r, {'status': 'executed'}, []) == ''  # a clean run teaches nothing
+    await bench.look_all()
+    await bench.request('pour the beaker into the dish')
+    system = bench.pour_client.calls[0]['system']
+    assert 'What the real arm met on earlier pours' in system and 'it likely met the table' in system
+    assert 'raise GRASP_A' in system and 'beaker at (5.0, 6.0)' not in system  # the far-away failure is not this spot
+
+
+@pytest.mark.asyncio
+async def test_claude_can_improve_the_recording_and_execute_runs_claudes_file(tmp_path, monkeypatch):
+    motion = {'choice': 'improve', 'moves_cm': {'GRASP_A': [1.0, 0.0, -0.5]}, 'tip_deg': 100, 'why': 'Grip lower and tip further.'}
+    bench, json = claude_replay_lane(tmp_path, monkeypatch, motion)
+    await bench.look_all()
+    s = await bench.request('pour the beaker into the dish')
+    p = s['pending']
+    assert p['executable'] is True and p['made_by'] == 'claude'
+    assert bench.shift_calls[-1] == {'GRASP_A': (1.0, 0.0, -0.5)}
+    assert p['pour_poses']['poses']['GRASP_A']['shoulder_pan.pos'] == pytest.approx(5 + 2.0)
+    assert p['pour_poses']['poses']['TIP_C']['wrist_roll.pos'] == pytest.approx(-90 + 100)   # recorded tip turns the roll up by 89
+    saved = json.loads((tmp_path/'bench/pours'/f"pour-{p['request_id'][:8]}.json").read_text())
+    assert saved['poses'] == p['pour_poses']['poses'] and saved['made_by'] == 'claude' and saved['recorded_on_real_arm'] is False
+    assert saved['motion']['why'] == 'Grip lower and tip further.'
+    assert "Claude's changes to take.json" in s['log'][-1]['text'] and 'never been run on the real arm' in s['log'][-1]['text']
+    s = await bench.request('execute')
+    assert s['last_result']['status'] == 'completed'
+    receipt = next((tmp_path/'bench/pour-receipts').iterdir()).read_text()
+    assert '"made_by": "claude"' in receipt and f"pour-{p['request_id'][:8]}.json" in receipt
+
+
+@pytest.mark.asyncio
+async def test_a_claude_change_out_of_bounds_is_not_used_and_the_recording_runs(tmp_path, monkeypatch):
+    motion = {'choice': 'improve', 'moves_cm': {'TIP_C': [0, 0, 8]}, 'why': 'Much higher.'}
+    bench, json = claude_replay_lane(tmp_path, monkeypatch, motion)
+    await bench.look_all()
+    s = await bench.request('pour the beaker into the dish')
+    assert s['pending']['executable'] is True and s['pending']['made_by'] == 'recording' and s['pending']['pour_poses'] is None
+    assert any("Claude's change was not used (Claude asked to move TIP_C by more than 3 cm.)" in m['text'] for m in s['log'])
+    bench.pour_client = PourClaude(('simulate_pour', {'source': 'A', 'into': 'C', 'why': '', 'motion': {'choice': 'improve', 'tip_deg': 170, 'why': 'x'}}))
+    s = await bench.request('pour the beaker into the dish')
+    assert s['pending']['made_by'] == 'recording' and any('170 degrees' in m['text'] for m in s['log'])
+
+
+# ---- the operator's questions in the panel ---------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_the_real_arm_asks_the_operator_in_the_panel_and_only_yes_starts_it(tmp_path, monkeypatch):
+    import asyncio
+    from agentic.openarms_lab.bench_lane import PanelAsk
+    bench = replay_lane(tmp_path, monkeypatch, real=True)
+    ask = PanelAsk(timeout=5)
+    bench.ask = bench.panel_ask = ask
+    bench.answer_where = 'in the panel (Yes / No)'
+    await bench.look_all()
+    await bench.request('pour it in')
+    run = asyncio.ensure_future(bench.request('execute'))
+    for _ in range(200):
+        await asyncio.sleep(.01)
+        if bench.state()['question']:
+            break
+    q = bench.state()['question']
+    assert q and 'Arm at HOME, path clear, room in the dish?' in q['text'] and 'y/n' not in q['text']
+    assert any('answer in the panel (Yes / No)' in m['text'] for m in bench.state()['log'])
+    with pytest.raises(BenchError, match='no longer open'):
+        bench.answer('stale', True)
+    bench.answer(q['id'], False)
+    s = await run
+    assert 'operator declined' in s['log'][-1]['text'] and bench._robot._inner.sent == [] and s['question'] is None
+    # Stop answers an open question No.
+    await bench.request('pour it in')
+    run = asyncio.ensure_future(bench.request('execute'))
+    for _ in range(200):
+        await asyncio.sleep(.01)
+        if bench.state()['question']:
+            break
+    await bench.stop()
+    s = await run
+    assert 'operator declined' in ' '.join(m['text'] for m in s['log'][-3:]) and bench._robot._inner.sent == []
+
+
+def test_panel_ask_times_out_as_no():
+    from agentic.openarms_lab.bench_lane import PanelAsk
+    assert PanelAsk(timeout=.05)('Go? y/n> ') == 'n'

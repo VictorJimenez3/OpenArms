@@ -77,6 +77,8 @@ class Player:
         # A simulation-only experiment may mix substances that are not on the real_bench list; that is
         # reported as a note, never cleared. Listed hazard combinations still block.
         self.allow_simulation_only = allow_simulation_only
+        # Share of the tipped cup's contents one pour moves (1 = all of it; 0.5 leaves half behind).
+        self.pour_fraction = 1.0
         # Planned poses must stay inside the model's joint range. A recording of the
         # real arm may go past it, because the real joints turn a little further.
         self.strict_limits = strict_limits
@@ -292,7 +294,7 @@ class Player:
             return
         if math.radians(self._tilt_deg(s)) < POUR_ANGLE:
             return
-        liquid = {k: v for k, v in self.contents[s].items() if v > 0}
+        liquid = {k: v * self.pour_fraction for k, v in self.contents[s].items() if v > 0}
         if not liquid:
             self._add("note", "empty_cup", f"The cup from {s} is already empty, so this pour adds nothing.")
             self._poured_this_step = True
@@ -328,7 +330,8 @@ class Player:
                 return
         self._poured_this_step = True
         color = self._color(s)
-        self.contents[s] = {}
+        kept = 1.0 - self.pour_fraction
+        self.contents[s] = {k: v * kept for k, v in self.contents[s].items() if v * kept > 1e-9}
         if target is None:
             self._add("block", "spill", f"The cup from {s} would pour onto the table, not into a receiver.")
             self._pour = _Pour(s, None, self.t, color, None, 0.0)

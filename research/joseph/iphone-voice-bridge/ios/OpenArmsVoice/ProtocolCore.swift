@@ -314,6 +314,19 @@ enum RecordPresentation {
 }
 
 struct ServerEvent: Decodable {
+    private struct EventCode: Decodable {
+        let value: String
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let number = try? container.decode(Int.self) {
+                value = String(number)
+            } else {
+                value = try container.decode(String.self)
+            }
+        }
+    }
+
     let type: String
     var protocolVersion: Int?
     var connectionID: String?
@@ -322,7 +335,8 @@ struct ServerEvent: Decodable {
     var state: LabSnapshot?
     var status: String?
     var message: String?
-    var code: String?
+    private let eventCode: EventCode?
+    var code: String? { eventCode?.value }
     var recoverable: Bool?
     var role: String?
     var text: String?
@@ -332,7 +346,8 @@ struct ServerEvent: Decodable {
     var proposal: ReplyProposal?
     var data: String?
     enum CodingKeys: String, CodingKey {
-        case type, generation, seq, state, status, message, code, recoverable, role, text, final, proposal, data
+        case type, generation, seq, state, status, message, recoverable, role, text, final, proposal, data
+        case eventCode = "code"
         case protocolVersion = "protocol_version", connectionID = "connection_id", turnID = "turn_id", replyID = "reply_id"
     }
 }
@@ -472,6 +487,9 @@ struct TranscriptStore {
     }
     mutating func discardPartialInput() {
         turns.removeAll { $0.role == "user" && $0.final == false }
+    }
+    mutating func discardPartialOutput(replyID: String? = nil) {
+        turns.removeAll { $0.role == "assistant" && $0.final == false && (replyID == nil || $0.turnID == replyID) }
     }
     // State broadcasts may lag a live turn; preserve only live turns absent from canonical history.
     mutating func reconcile(_ messages: [LabMessage]) {

@@ -126,7 +126,8 @@ async def test_demo_bench_stop_revokes_pending_confirmation(tmp_path):
     ('Pour the vinegar from A into C.', 'only the prepared beaker'),
     ('Add baking soda into C.', 'only the prepared beaker'),
     ('Pour from A into C twice.', 'one premeasured portion from A into C only'),
-    ('Pour all of the beaker at A into C.', 'one premeasured portion from A into C only'),
+    # "Pour all of the beaker" is now the supported amount=all pour (test_demo_bench_interactive.py).
+    ('Pour half of the beaker at A into C twice.', 'one premeasured portion from A into C only'),
     ('Pour the right container into the left one.', 'one premeasured portion from A into C only'),
     ('Pour the beaker at C onto A.', 'from A'),
     ('Pour B into C.', 'from A'),

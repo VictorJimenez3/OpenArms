@@ -62,6 +62,10 @@ function render(next) {
     blocked: 'The simulation stopped this plan. It will not be executed.',
     error: `The simulation did not run: ${preview.reason || 'unknown error'}`,
   }[preview.status] || '');
+  const overridden = pending && pending.sim_block_overridden && preview.status === 'blocked';
+  if (overridden) {
+    $('bench-preview-status').textContent = `Warning: the simulation's own pour had a problem, but Execute replays the recorded pour on ${target}, which the simulation did not check. Watch it and keep Stop at hand.`;
+  }
 
   const summary = $('bench-summary');
   summary.hidden = !pending;
@@ -72,13 +76,13 @@ function render(next) {
     for (const text of items) {
       const li = document.createElement('li');
       if (kind === 'blocked') li.className = 'blocked';
-      li.textContent = (kind === 'blocked' ? 'Blocked: ' : 'Note: ') + text;
+      li.textContent = (kind === 'blocked' ? (overridden ? 'Warning (simulation): ' : 'Blocked: ') : 'Note: ') + text;
       notes.appendChild(li);
     }
   }
   const idle = !next.busy;
   const simulationOnly = pending && pending.executable === false;
-  $('bench-execute').disabled = !(pending && preview.status === 'ready' && idle && next.armed) || simulationOnly;
+  $('bench-execute').disabled = !(pending && (preview.status === 'ready' || overridden) && idle && next.armed) || simulationOnly;
   $('bench-execute').textContent = simulationOnly ? 'Simulation only' : `Execute on ${target}`;
   if (simulationOnly && preview.status === 'ready') {
     $('bench-preview-status').textContent = `Simulation finished. ${pending.why_not_executable}`;
@@ -90,6 +94,14 @@ function render(next) {
     notes.prepend(li);
   }
   $('bench-cancel').disabled = !(pending && idle);
+
+  // The bench operator's question (real arm): answered here instead of in the server terminal.
+  const question = next.question;
+  $('bench-question').hidden = !question;
+  if (question) {
+    $('bench-question-text').textContent = question.text;
+    $('bench-question').dataset.id = question.id;
+  }
 
   const result = $('bench-result');
   result.hidden = !next.last_result;
@@ -128,6 +140,9 @@ window.addEventListener('DOMContentLoaded', () => {
   $('bench-execute').addEventListener('click', () => state?.pending && act('/api/bench/execute', { request_id: state.pending.request_id }));
   $('bench-cancel').addEventListener('click', () => act('/api/bench/cancel', {}));
   $('bench-stop').addEventListener('click', () => act('/api/bench/stop', {}));
+  const answer = (yes) => { const id = $('bench-question').dataset.id; if (id) { $('bench-question').hidden = true; act('/api/bench/answer', { question_id: id, yes }); } };
+  $('bench-yes').addEventListener('click', () => answer(true));
+  $('bench-no').addEventListener('click', () => answer(false));
   $('bench-look').addEventListener('click', () => act('/api/bench/look', {}));
   poll();
 });
