@@ -43,7 +43,23 @@ export class LabApiClient {
     const pathPattern = kind === 'video' ? /^media\/[0-9a-f]{32}\.mp4$/ : /^evidence\/[0-9a-f]{32}$/;
     return this.#media(artifactUrl, kind, signal, path => pathPattern.test(path));
   }
+  async smartivityFrame(view, signal) {
+    if (view !== 'overview' && view !== 'side') throw new Error('Unknown simulation camera');
+    const path = `smartivity/frame/${view}`;
+    const response = await this.#mediaResponse(
+      `/api/sessions/${encodeURIComponent(this.sessionId)}/${path}`, 'image', signal, suffix => suffix === path
+    );
+    return {
+      blob: await response.blob(),
+      id: response.headers.get('X-Frame-Id'),
+      capturedAt: response.headers.get('X-Captured-At'),
+      generation: response.headers.get('X-Generation'),
+    };
+  }
   async #media(artifactUrl, kind, signal, acceptsPath) {
+    return (await this.#mediaResponse(artifactUrl, kind, signal, acceptsPath)).blob();
+  }
+  async #mediaResponse(artifactUrl, kind, signal, acceptsPath) {
     const { session_id: sessionId, access_token: token } = this.#credentials || {};
     if (!sessionId || !token || typeof artifactUrl !== 'string') throw new Error('Media unavailable');
     const url = new URL(artifactUrl, location.href);
@@ -63,6 +79,6 @@ export class LabApiClient {
     if (!response.ok || !(video ? type === 'video/mp4' : /^image\/(png|jpeg|webp|gif|avif|bmp)$/.test(type))) {
       throw new Error('Media unavailable');
     }
-    return response.blob();
+    return response;
   }
 }
