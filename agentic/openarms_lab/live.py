@@ -337,6 +337,9 @@ class GeminiBridge:
                 self.input_boundary = None
 
     async def mute(self, muted):
+        # The iPhone sends its initial unmuted state immediately after Start Voice.
+        if not muted and not self.muted and self.voice_epoch == 0:
+            return
         self.muted = muted
         self.voice_epoch += 1
         self._discard_input()
@@ -821,7 +824,7 @@ class GeminiBridge:
                         # the remaining attempts from opening a fresh session.
                         self.resume_handle = None
                     provider_code = getattr(exc, 'code', None)
-                    failure = {'code': provider_code} if isinstance(provider_code, int) else {}
+                    failure = {'code': str(provider_code)} if isinstance(provider_code, int) else {}
                     logging.getLogger(__name__).warning('Voice reconnect: %s at %s', self.last_error,
                         [(frame.name, frame.lineno) for frame in traceback.extract_tb(exc.__traceback__)[-4:]])
                     self.ready = False
