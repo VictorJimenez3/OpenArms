@@ -1,0 +1,271 @@
+{
+  "run": "supervised-aerial-run-02",
+  "frame": "ruler plane in cm; X along upper ruler to the right, Y along left ruler down",
+  "provenance": "fresh supervised aerial scan, reciprocal image registration, manual tick and base-center readings",
+  "quality_scope": "Ruler-relative estimates. Check ticks assess the ruler fit only. Cross-view spread is not independent vessel-position accuracy.",
+  "limitations": "Visual base cues can have refraction, seam, parallax, and reading bias. Robot-base transform, measured camera/cup geometry, certified localization error and clearance are unavailable.",
+  "ruler_check_errors_cm": [
+    0.02325389336361189,
+    0.041087640936871714,
+    0.04046806504470964,
+    0.047779377136876626
+  ],
+  "mosaic_preview_to_ruler_cm": [
+    [
+      0.05256060347516884,
+      -0.00021304358222442156,
+      -20.183667155232882
+    ],
+    [
+      0.01384695781873653,
+      0.05818606553098707,
+      -25.66521044803368
+    ],
+    [
+      6.411607155172954e-05,
+      0.0006279112212786052,
+      1.0
+    ]
+  ],
+  "all_ticks": [
+    {
+      "mosaic_px": [
+        385.42857142857144,
+        348.42857142857144
+      ],
+      "ruler_cm": [
+        0.0,
+        0.0
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        480.2857142857143,
+        326.1428571428571
+      ],
+      "ruler_cm": [
+        4.0,
+        0.0
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        572.2857142857142,
+        304.42857142857144
+      ],
+      "ruler_cm": [
+        8.0,
+        0.0
+      ],
+      "role": "check"
+    },
+    {
+      "mosaic_px": [
+        663.1428571428571,
+        283.2857142857143
+      ],
+      "ruler_cm": [
+        12.0,
+        0.0
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        753.4285714285714,
+        262.1428571428571
+      ],
+      "ruler_cm": [
+        16.0,
+        0.0
+      ],
+      "role": "check"
+    },
+    {
+      "mosaic_px": [
+        843.7142857142858,
+        240.42857142857144
+      ],
+      "ruler_cm": [
+        20.0,
+        0.0
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        384.7142857142857,
+        351.14285714285717
+      ],
+      "ruler_cm": [
+        0.0,
+        0.0
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        385.2857142857143,
+        404.8571428571429
+      ],
+      "ruler_cm": [
+        0.0,
+        2.54
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        386.42857142857144,
+        464.8571428571429
+      ],
+      "ruler_cm": [
+        0.0,
+        5.08
+      ],
+      "role": "check"
+    },
+    {
+      "mosaic_px": [
+        387.0,
+        527.1428571428571
+      ],
+      "ruler_cm": [
+        0.0,
+        7.62
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        387.57142857142856,
+        592.2857142857142
+      ],
+      "ruler_cm": [
+        0.0,
+        10.16
+      ],
+      "role": "check"
+    },
+    {
+      "mosaic_px": [
+        387.57142857142856,
+        662.5714285714286
+      ],
+      "ruler_cm": [
+        0.0,
+        12.7
+      ],
+      "role": "fit"
+    },
+    {
+      "mosaic_px": [
+        385.8571428571429,
+        739.7142857142858
+      ],
+      "ruler_cm": [
+        0.0,
+        15.24
+      ],
+      "role": "fit"
+    }
+  ],
+  "vessels": {
+    "A": {
+      "name": "donor beaker",
+      "estimated_center_ruler_cm": [
+        23.681997617575945,
+        7.745115795339482
+      ],
+      "cross_view_spread_cm": 0.10531951209105814,
+      "observations": [
+        {
+          "view_id": 716,
+          "frame_sha256": "07a9df2d5f4d7fadcaa49a2e6e0c0c7519fda77443598729c88c91bb2743a212",
+          "base_center_cue_frame_px": [
+            1363.2,
+            347.52
+          ],
+          "base_center_cue_mosaic_px": [
+            973.1326239294056,
+            384.1981373905025
+          ],
+          "ruler_cm": [
+            23.68983788127889,
+            7.797188630597828
+          ]
+        },
+        {
+          "view_id": 725,
+          "frame_sha256": "47b05d250bc4626a5cb2ea6426d304e0a41ae133f3d562c254f350ee0205cf8a",
+          "base_center_cue_frame_px": [
+            1138.56,
+            341.76
+          ],
+          "base_center_cue_mosaic_px": [
+            972.0597741120009,
+            381.9220561011316
+          ],
+          "ruler_cm": [
+            23.674157353872996,
+            7.693042960081136
+          ]
+        }
+      ]
+    },
+    "C": {
+      "name": "receiver bowl",
+      "estimated_center_ruler_cm": [
+        6.222888765951479,
+        6.979906157768333
+      ],
+      "cross_view_spread_cm": 0.08377838091883603,
+      "observations": [
+        {
+          "view_id": 617,
+          "frame_sha256": "270a96decaf375cde46c075071b01a30e3cdc032c01b596df814febe53b403a5",
+          "base_center_cue_frame_px": [
+            860.16,
+            802.56
+          ],
+          "base_center_cue_mosaic_px": [
+            544.272608862318,
+            471.94255584092286
+          ],
+          "ruler_cm": [
+            6.252154945390773,
+            7.009876059642922
+          ]
+        },
+        {
+          "view_id": 698,
+          "frame_sha256": "94055a5e52b7afa4408569e5c5aef2e1160276cd106ea7a3f915cded3b443fca",
+          "base_center_cue_frame_px": [
+            599.04,
+            385.91999999999996
+          ],
+          "base_center_cue_mosaic_px": [
+            542.6931779579656,
+            470.8532745904006
+          ],
+          "ruler_cm": [
+            6.193622586512186,
+            6.9499362558937445
+          ]
+        }
+      ]
+    }
+  },
+  "input_frame_sha256": {
+    "frame-006-view-617-fresh.jpg": "270a96decaf375cde46c075071b01a30e3cdc032c01b596df814febe53b403a5",
+    "frame-005-view-698-fresh.jpg": "94055a5e52b7afa4408569e5c5aef2e1160276cd106ea7a3f915cded3b443fca",
+    "frame-004-view-708-fresh.jpg": "b623554218fab0eed9719ea24bd7b59a60afc7b8a302a2b1580f9c90b8560c7b",
+    "frame-003-view-716-fresh.jpg": "07a9df2d5f4d7fadcaa49a2e6e0c0c7519fda77443598729c88c91bb2743a212",
+    "frame-002-view-725-fresh.jpg": "47b05d250bc4626a5cb2ea6426d304e0a41ae133f3d562c254f350ee0205cf8a",
+    "frame-001-view-735-fresh.jpg": "3477643ec960eb2fc3614bb87cd016ecf1beac5925b8b6833cbd2260efa80e6e"
+  },
+  "robot_base_target": null,
+  "motion_status": "blocked"
+}

@@ -1,0 +1,867 @@
+{
+  "scope": "Saved-image overlap gate only; no measured speed or motion/geometry qualification",
+  "gate": {
+    "minimum_inliers": 25,
+    "minimum_inlier_ratio": 0.45,
+    "minimum_area_fraction": 0.07
+  },
+  "scenes": [
+    {
+      "scene_id": "fresh-sweep-01",
+      "routes": [
+        {
+          "views": [
+            735,
+            725,
+            716,
+            708,
+            698,
+            617
+          ],
+          "dropped": [],
+          "status": "unavailable",
+          "missing": [
+            708
+          ],
+          "links": []
+        },
+        {
+          "views": [
+            735,
+            716,
+            708,
+            698,
+            617
+          ],
+          "dropped": [
+            725
+          ],
+          "status": "unavailable",
+          "missing": [
+            708
+          ],
+          "links": []
+        },
+        {
+          "views": [
+            735,
+            725,
+            708,
+            698,
+            617
+          ],
+          "dropped": [
+            716
+          ],
+          "status": "unavailable",
+          "missing": [
+            708
+          ],
+          "links": []
+        },
+        {
+          "views": [
+            735,
+            725,
+            716,
+            698,
+            617
+          ],
+          "dropped": [
+            708
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 201,
+            "inliers": 181,
+            "matched_area_fraction": 0.2117939534165958,
+            "median_error_px": 0.8416491150856018,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 201,
+            "inliers": 181,
+            "matched_area_fraction": 0.2117939534165958,
+            "median_error_px": 0.8416491150856018,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 328,
+              "inliers": 305,
+              "matched_area_fraction": 0.5482490209165636,
+              "median_error_px": 0.6998658180236816,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 407,
+              "inliers": 388,
+              "matched_area_fraction": 0.3911730202274602,
+              "median_error_px": 0.4955858290195465,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 698,
+              "matches": 306,
+              "inliers": 303,
+              "matched_area_fraction": 0.36694269968664456,
+              "median_error_px": 0.6036085486412048,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 201,
+              "inliers": 181,
+              "matched_area_fraction": 0.2117939534165958,
+              "median_error_px": 0.8416491150856018,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            716,
+            708,
+            617
+          ],
+          "dropped": [
+            698
+          ],
+          "status": "unavailable",
+          "missing": [
+            708
+          ],
+          "links": []
+        }
+      ]
+    },
+    {
+      "scene_id": "review-gated-run-01",
+      "routes": [
+        {
+          "views": [
+            735,
+            725,
+            716,
+            708,
+            698,
+            617
+          ],
+          "dropped": [],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 344,
+              "inliers": 321,
+              "matched_area_fraction": 0.517342906357958,
+              "median_error_px": 0.7530472874641418,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 360,
+              "inliers": 338,
+              "matched_area_fraction": 0.5361196537234496,
+              "median_error_px": 0.5379272699356079,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 708,
+              "matches": 555,
+              "inliers": 532,
+              "matched_area_fraction": 0.572317373461358,
+              "median_error_px": 0.5353693962097168,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 698,
+              "matches": 402,
+              "inliers": 388,
+              "matched_area_fraction": 0.4459674053089785,
+              "median_error_px": 0.6000968813896179,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 124,
+              "inliers": 104,
+              "matched_area_fraction": 0.22090860375404583,
+              "median_error_px": 0.7930792570114136,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            716,
+            708,
+            698,
+            617
+          ],
+          "dropped": [
+            725
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 716,
+              "matches": 129,
+              "inliers": 118,
+              "matched_area_fraction": 0.286336266262062,
+              "median_error_px": 0.5779340863227844,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 708,
+              "matches": 555,
+              "inliers": 532,
+              "matched_area_fraction": 0.572317373461358,
+              "median_error_px": 0.5353693962097168,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 698,
+              "matches": 402,
+              "inliers": 388,
+              "matched_area_fraction": 0.4459674053089785,
+              "median_error_px": 0.6000968813896179,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 124,
+              "inliers": 104,
+              "matched_area_fraction": 0.22090860375404583,
+              "median_error_px": 0.7930792570114136,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            708,
+            698,
+            617
+          ],
+          "dropped": [
+            716
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 344,
+              "inliers": 321,
+              "matched_area_fraction": 0.517342906357958,
+              "median_error_px": 0.7530472874641418,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 708,
+              "matches": 203,
+              "inliers": 197,
+              "matched_area_fraction": 0.43002578276578124,
+              "median_error_px": 0.6156900525093079,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 698,
+              "matches": 402,
+              "inliers": 388,
+              "matched_area_fraction": 0.4459674053089785,
+              "median_error_px": 0.6000968813896179,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 124,
+              "inliers": 104,
+              "matched_area_fraction": 0.22090860375404583,
+              "median_error_px": 0.7930792570114136,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            716,
+            698,
+            617
+          ],
+          "dropped": [
+            708
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 124,
+            "inliers": 104,
+            "matched_area_fraction": 0.22090860375404583,
+            "median_error_px": 0.7930792570114136,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 344,
+              "inliers": 321,
+              "matched_area_fraction": 0.517342906357958,
+              "median_error_px": 0.7530472874641418,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 360,
+              "inliers": 338,
+              "matched_area_fraction": 0.5361196537234496,
+              "median_error_px": 0.5379272699356079,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 698,
+              "matches": 280,
+              "inliers": 275,
+              "matched_area_fraction": 0.3655413320777593,
+              "median_error_px": 0.5789352059364319,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 124,
+              "inliers": 104,
+              "matched_area_fraction": 0.22090860375404583,
+              "median_error_px": 0.7930792570114136,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            716,
+            708,
+            617
+          ],
+          "dropped": [
+            698
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 708,
+            "to_view": 617,
+            "matches": 116,
+            "inliers": 101,
+            "matched_area_fraction": 0.1527858737296606,
+            "median_error_px": 0.6980470418930054,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 708,
+            "to_view": 617,
+            "matches": 116,
+            "inliers": 101,
+            "matched_area_fraction": 0.1527858737296606,
+            "median_error_px": 0.6980470418930054,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 344,
+              "inliers": 321,
+              "matched_area_fraction": 0.517342906357958,
+              "median_error_px": 0.7530472874641418,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 360,
+              "inliers": 338,
+              "matched_area_fraction": 0.5361196537234496,
+              "median_error_px": 0.5379272699356079,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 708,
+              "matches": 555,
+              "inliers": 532,
+              "matched_area_fraction": 0.572317373461358,
+              "median_error_px": 0.5353693962097168,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 617,
+              "matches": 116,
+              "inliers": 101,
+              "matched_area_fraction": 0.1527858737296606,
+              "median_error_px": 0.6980470418930054,
+              "passed": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scene_id": "return-review-run-01",
+      "routes": [
+        {
+          "views": [
+            735,
+            725,
+            716,
+            708,
+            698,
+            617
+          ],
+          "dropped": [],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 316,
+              "inliers": 291,
+              "matched_area_fraction": 0.5504217512128982,
+              "median_error_px": 0.6218551993370056,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 359,
+              "inliers": 334,
+              "matched_area_fraction": 0.4195751992472367,
+              "median_error_px": 0.5090329051017761,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 708,
+              "matches": 516,
+              "inliers": 502,
+              "matched_area_fraction": 0.6035633020759987,
+              "median_error_px": 0.45665037631988525,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 698,
+              "matches": 383,
+              "inliers": 372,
+              "matched_area_fraction": 0.4426140082236284,
+              "median_error_px": 0.49756529927253723,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 122,
+              "inliers": 97,
+              "matched_area_fraction": 0.15707124850474227,
+              "median_error_px": 1.0187158584594727,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            716,
+            708,
+            698,
+            617
+          ],
+          "dropped": [
+            725
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 716,
+              "matches": 182,
+              "inliers": 170,
+              "matched_area_fraction": 0.3960219995854989,
+              "median_error_px": 0.7591087222099304,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 708,
+              "matches": 516,
+              "inliers": 502,
+              "matched_area_fraction": 0.6035633020759987,
+              "median_error_px": 0.45665037631988525,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 698,
+              "matches": 383,
+              "inliers": 372,
+              "matched_area_fraction": 0.4426140082236284,
+              "median_error_px": 0.49756529927253723,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 122,
+              "inliers": 97,
+              "matched_area_fraction": 0.15707124850474227,
+              "median_error_px": 1.0187158584594727,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            708,
+            698,
+            617
+          ],
+          "dropped": [
+            716
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 316,
+              "inliers": 291,
+              "matched_area_fraction": 0.5504217512128982,
+              "median_error_px": 0.6218551993370056,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 708,
+              "matches": 296,
+              "inliers": 281,
+              "matched_area_fraction": 0.3154066588432841,
+              "median_error_px": 0.487810343503952,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 698,
+              "matches": 383,
+              "inliers": 372,
+              "matched_area_fraction": 0.4426140082236284,
+              "median_error_px": 0.49756529927253723,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 122,
+              "inliers": 97,
+              "matched_area_fraction": 0.15707124850474227,
+              "median_error_px": 1.0187158584594727,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            716,
+            698,
+            617
+          ],
+          "dropped": [
+            708
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 698,
+            "to_view": 617,
+            "matches": 122,
+            "inliers": 97,
+            "matched_area_fraction": 0.15707124850474227,
+            "median_error_px": 1.0187158584594727,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 316,
+              "inliers": 291,
+              "matched_area_fraction": 0.5504217512128982,
+              "median_error_px": 0.6218551993370056,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 359,
+              "inliers": 334,
+              "matched_area_fraction": 0.4195751992472367,
+              "median_error_px": 0.5090329051017761,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 698,
+              "matches": 317,
+              "inliers": 303,
+              "matched_area_fraction": 0.3259910668996789,
+              "median_error_px": 0.5010627508163452,
+              "passed": true
+            },
+            {
+              "from_view": 698,
+              "to_view": 617,
+              "matches": 122,
+              "inliers": 97,
+              "matched_area_fraction": 0.15707124850474227,
+              "median_error_px": 1.0187158584594727,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "views": [
+            735,
+            725,
+            716,
+            708,
+            617
+          ],
+          "dropped": [
+            698
+          ],
+          "status": "pass",
+          "weakest_inlier_link": {
+            "from_view": 708,
+            "to_view": 617,
+            "matches": 81,
+            "inliers": 75,
+            "matched_area_fraction": 0.08249761934644252,
+            "median_error_px": 0.5491868853569031,
+            "passed": true
+          },
+          "smallest_support_link": {
+            "from_view": 708,
+            "to_view": 617,
+            "matches": 81,
+            "inliers": 75,
+            "matched_area_fraction": 0.08249761934644252,
+            "median_error_px": 0.5491868853569031,
+            "passed": true
+          },
+          "links": [
+            {
+              "from_view": 735,
+              "to_view": 725,
+              "matches": 316,
+              "inliers": 291,
+              "matched_area_fraction": 0.5504217512128982,
+              "median_error_px": 0.6218551993370056,
+              "passed": true
+            },
+            {
+              "from_view": 725,
+              "to_view": 716,
+              "matches": 359,
+              "inliers": 334,
+              "matched_area_fraction": 0.4195751992472367,
+              "median_error_px": 0.5090329051017761,
+              "passed": true
+            },
+            {
+              "from_view": 716,
+              "to_view": 708,
+              "matches": 516,
+              "inliers": 502,
+              "matched_area_fraction": 0.6035633020759987,
+              "median_error_px": 0.45665037631988525,
+              "passed": true
+            },
+            {
+              "from_view": 708,
+              "to_view": 617,
+              "matches": 81,
+              "inliers": 75,
+              "matched_area_fraction": 0.08249761934644252,
+              "median_error_px": 0.5491868853569031,
+              "passed": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
