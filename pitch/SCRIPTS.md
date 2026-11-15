@@ -1,6 +1,8 @@
 # Recording scripts
 
-Four speakers, one take each, plus one opening skit. Read these straight to camera. The edit already exists (`pitch/renders/animatic-v3.mp4`); your video drops into it.
+> **Easiest way to record: follow [RECORD.md](RECORD.md).** Each speaker has a read-along video with these lines as subtitles and a pink dot that sets the pace. The opening skit is dropped; the film opens on the real arm and a "Meet Ollie" card.
+
+Four speakers, one take each, plus one opening skit. Read these straight to camera. The edit already exists (`pitch/renders/submit-safe-v4.mp4`); your video drops into it.
 
 ## How the film uses you
 
@@ -32,7 +34,7 @@ Hold on the student's face for one second after the line. Shoot landscape from t
 > Imagine you're a student who knows exactly what to test, but can't hold the beaker.
 
 **Circle:**
-> One in five undergrads reports a disability. In one national survey, half of students with physical disabilities were given passive roles in the lab. Someone else had the hands, so someone else made the calls.
+> One in five undergrads reports a disability. In one survey, half of students with physical disabilities were given passive roles in the lab. Someone else had the hands, so someone else made the calls.
 >
 > So we built Ollie. You're the scientist. Ollie's the hands.
 >
@@ -46,7 +48,7 @@ What plays behind you: the two statistic cards, the tagline, the Ollie app plann
 > The first time Ollie does something new, the AI reasons it out step by step.
 
 **Circle:**
-> Before it's saved, we replay it in simulation: missing, swapped and moved beakers, a blocked camera, and Stop. Only then does it become a skill. Next time, in any words, it's one tool call. Fifty-nine seconds, down to under half a second.
+> Before it's saved, we replay it in simulation: missing and moved beakers, a blocked camera, and Stop. Only then does it become a skill. Next time, in any words, it's one tool call. Fifty-nine seconds, down to under half a second.
 
 What plays behind you: the checklist of simulated checks, the "New plan · 1 AI expert call" card next to "Saved skill · 0 AI expert calls", then 58.8 s → 0.41 s.
 

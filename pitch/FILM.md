@@ -1,8 +1,8 @@
 # OpenArms launch film: plan, scripts and shot list
 
-HackPrinceton Fall 2026 · drafted November 15, 05:15 ET · owner Victor · edit source in [`pitch/film/`](film/) (HyperFrames) · latest cut [`pitch/renders/animatic-v3.mp4`](renders/animatic-v3.mp4)
+HackPrinceton Fall 2026 · drafted November 15, 05:15 ET · owner Victor · edit source in [`pitch/film/`](film/) (HyperFrames) · latest cut [`pitch/renders/submit-safe-v4.mp4`](renders/submit-safe-v4.mp4)
 
-> **Update 05:40 · format changed (Victor).** One opening skit, then each speaker takes over the centre of the frame for their first line and shrinks into a talking-head circle in the bottom-right corner for the rest of their section. No mid-film skits. Order: Victor (problem, student flow, agent) → Duc (skills and learning in simulation) → Joseph (simulation) → Stefanie (hardware) → close. The real arm footage (`v1`–`v4`) is in; the pour runs at 2× and the app at 1.6× so they keep pace. **The current lines and recording instructions are in [SCRIPTS.md](SCRIPTS.md); they replace the timeline below where they differ.** Latest cut: [`renders/animatic-v3.mp4`](renders/animatic-v3.mp4).
+> **Update 05:40 · format changed (Victor).** One opening skit, then each speaker takes over the centre of the frame for their first line and shrinks into a talking-head circle in the bottom-right corner for the rest of their section. No mid-film skits. Order: Victor (problem, student flow, agent) → Duc (skills and learning in simulation) → Joseph (simulation) → Stefanie (hardware) → close. The real arm footage (`v1`–`v4`) is in; the pour runs at 2× and the app at 1.6× so they keep pace. **The current lines and recording instructions are in [SCRIPTS.md](SCRIPTS.md); they replace the timeline below where they differ.** Latest cut: [`renders/submit-safe-v4.mp4`](renders/submit-safe-v4.mp4).
 
 **One film, 2:00, 1920×1080 at 30 fps.** It works as the Devpost video, the table opener and the thing judges remember. It is an ad first and a pitch second: the OpenNote *Introducing Feynman-3* structure (logo, the product doing the thing, end card), with our four voices carrying the argument.
 

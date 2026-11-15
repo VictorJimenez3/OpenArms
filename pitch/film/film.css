@@ -52,3 +52,8 @@ html, body { width:1920px; height:1080px; overflow:hidden; background:var(--crea
 .learn ul { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:14px 30px; } .learn li { font-size:34px; font-weight:800; } .learn b { color:var(--green); margin-right:12px; }
 .hw-copy { position:absolute; left:760px; top:300px; color:var(--cream); } .hw-copy h2 { font-family:"Bagel"; font-weight:400; font-size:200px; line-height:1; } .hw-copy p { font-size:48px; font-weight:800; max-width:900px; }
 .cap span { max-width:1180px; }
+.cap span { font-size:44px; padding:30px 30px 14px; max-width:1240px; }
+.cap .w { display:inline-block; position:relative; margin:0 .14em; font-weight:800; }
+.cap .dot { position:absolute; left:50%; top:-22px; width:22px; height:22px; margin-left:-11px; border-radius:50%; background:var(--pink); }
+.cap span { line-height:1.8; padding:22px 30px 6px; }
+.cap .dot { top:-6px; width:16px; height:16px; margin-left:-8px; }

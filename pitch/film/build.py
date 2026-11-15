@@ -46,7 +46,7 @@ def speaker(name):
 clip('s-open', 0, 5.1, f'<div class="half right twin" id="o-twin">{OLLIE}</div><div class="chip">Real arm</div>', 'field-ink')
 video('v-rise', 'arm-rise.mp4', 0, 5.1, 0, box=TALL_L.replace('150px', '260px'))
 # 0:05-0:11 skit (filmed once, before anything else)
-clip('s-skit', 5.1, 5.9, '<div class="stat"><div class="num">“Wait, I wanted to—”</div><div class="lbl">When someone else has the hands, they make the calls.</div></div>' if SAFE and not os.path.exists('assets/media/skit.mp4') else placeholder('SKIT', 'Student in a lab coat, hands in lap. Partner grabs the beaker and pours without asking. Student: "Wait, I wanted to—"'), 'field-ink')
+clip('s-intro', 5.1, 5.9, '<div class="stat"><div class="num">Meet Ollie.</div><div class="lbl">A robot lab partner for students who can’t hold the beaker.</div></div>', 'field-tea')
 # 0:11-0:14 brand
 clip('s-logo', 11, 3, f'<div class="logo-wrap"><div class="logo-ollie" id="o-logo">{OLLIE}</div><div class="wordmark"><span class="wm">ollie</span><span class="by">by OpenArms</span></div></div>', 'field-cream')
 
@@ -96,16 +96,15 @@ if SAFE: video('v-wave', 'arm-rise.mp4', 112, 3, 2, box=TALL_L.replace('150px', 
 clip('s-end', 115, 5, f'<div class="end"><div class="logo-ollie" id="o-end">{OLLIE}</div><div class="wordmark light"><span class="wm">ollie</span><span class="by">by OpenArms</span></div><p class="end-tag">Personalizes to the student. Scales to the school.</p><p class="end-url">github.com/VictorJimenez3/OpenArms</p></div>', 'field-tea')
 
 CAPTIONS = [
- (5.1, 5.9, '“Wait, I wanted to—”'),
  (14, 2.5, "Imagine you're a student who knows exactly what to test, but can't hold the beaker."),
  (16.5, 5, "One in five undergrads reports a disability."),
- (21.5, 5, "In one national survey, half of students with physical disabilities were given passive roles in the lab."),
+ (21.5, 5, "In one survey, half of students with physical disabilities were given passive roles in the lab."),
  (26.5, 3, "Someone else had the hands, so someone else made the calls. So we built Ollie."),
  (29.5, 5.5, "You just talk. Ollie looks at the bench and plans from moves we've tested on the arm."),
  (35, 6, "It tells you the plan, and nothing moves until you say yes."),
  (41, 10, "Then a camera checks what actually happened, and you decide what to test next."),
  (51, 2.5, "The first time Ollie does something new, the AI reasons it out step by step."),
- (53.5, 6.5, "Before it's saved, we replay it in simulation: missing, swapped and moved beakers, a blocked camera, and Stop."),
+ (53.5, 6.5, "Before it's saved, we replay it in simulation: missing and moved beakers, a blocked camera, and Stop."),
  (60, 6.5, "Only then does it become a skill. Next time, in any words, it's one tool call."),
  (66.5, 6.5, "Fifty-nine seconds down to under half a second."),
  (73, 2.5, "Not every school can afford a robot."),
@@ -116,8 +115,14 @@ CAPTIONS = [
  (104.2, 7.8, "Then we lined our simulator up with that recording, so what Ollie rehearses is what the real arm does."),
  (112, 8, "OpenArms. It personalizes to the student and scales to the school."),
 ]
+def words(t, st, d):
+    ws = t.split(); wt = [len(w) + 2 + (5 if w[-1] in ',.:;?' else 0) for w in ws]; tot = sum(wt); t0 = st + .15; span = d * .92 - .15; out = []
+    for w, x in zip(ws, wt):
+        dur = span * x / tot
+        out.append(f'<b class="w" data-t="{t0:.2f}" data-d="{dur:.2f}"><i class="dot"></i>{w}</b>'); t0 += dur
+    return ''.join(out)
 for i, (s, d, t) in enumerate(CAPTIONS):
-    W.append(f'<div id="cap-{i}" class="clip cap" data-start="{s}" data-duration="{d}" data-track-kind="captions" style="z-index:50"><span>{t}</span></div>')
+    W.append(f'<div id="cap-{i}" class="clip cap" data-start="{s}" data-duration="{d}" data-track-kind="captions" data-layout-allow-occlusion data-layout-allow-overlap style="z-index:50"><span>{words(t, s, d)}</span></div>')
 
 ANIM = '''
 const tl = gsap.timeline({ paused: true });
@@ -161,7 +166,9 @@ pop("#s-skill .card", 60.05);
 tl.fromTo("#cnt-b", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: .5, ease: "power3.out" }, 67.4);
 pop("#s-grid .g-shelf", 75.55);
 document.querySelectorAll(".stat, .ph").forEach((el) => { const c = el.closest(".clip"); tl.fromTo(el, { scale: 1 }, { scale: 1.035, duration: +c.dataset.duration, ease: "none" }, +c.dataset.start); }); wave("#s-end", 115.2); pop("#s-end .end-tag", 116);
-document.querySelectorAll(".cap span").forEach((el) => {
+document.querySelectorAll(".cap .w").forEach((w) => { const t = +w.dataset.t, d = +w.dataset.d, dot = w.querySelector(".dot");
+  tl.fromTo(w, { opacity: .45, color: '#fff6e3' }, { opacity: 1, color: '#ff8fbf', duration: .1 }, t); tl.to(w, { color: '#fff6e3', duration: .1 }, t + d); tl.fromTo(dot, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: .08 }, t); tl.to(dot, { opacity: 0, duration: .06 }, t + d - .02); });
+document.querySelectorAll(".cap > span").forEach((el) => {
   const c = el.parentElement; tl.fromTo(el, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: .25, ease: "power2.out" }, +c.dataset.start + .02);
 });
 window.__timelines = window.__timelines || {}; window.__timelines["main"] = tl; tl.seek(0);

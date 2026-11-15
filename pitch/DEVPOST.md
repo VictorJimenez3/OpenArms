@@ -22,7 +22,7 @@ Best Physical AI Hack (Justin Bojarski) · Best Practical AI Innovation (Amazon)
 
 ## Video
 
-[YouTube unlisted link] · if the talking heads aren't recorded in time, upload `pitch/renders/submit-safe-v3.mp4`
+[YouTube unlisted link] · if the talking heads aren't recorded in time, upload `pitch/renders/submit-safe-v4.mp4`
 
 ## GitHub
 
