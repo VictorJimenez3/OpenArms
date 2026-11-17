@@ -1,5 +1,7 @@
 # OpenArms handoff for Devin or a teammate
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../../HANDOFF.md) is current. Where they differ, trust the code.
+
 For Duc’s current simulator integration, start with the [Duc handoff and Claude prompt](duc-simulator-handoff.md). The water run below is the earlier baseline.
 
 Work in `OpenArms-student-loop` on `victor/agentic-student-loop`. Victor owns the shared AI harness and student loop in `agentic/`. On November 14 he asked to implement the agentic system first using text, keep speech lower priority, then integrate and rapidly evaluate the teammate's runnable simulator when available. His project direction is one supervised live SO-101 activity and several simulation examples. Use Victor's handoff, current branch code and verified runs to resolve stale information. Joseph's issue comments and mentions are outside this assignment. The old standalone 20 mL dilution video is historical and supplies no requirement for the next setup.

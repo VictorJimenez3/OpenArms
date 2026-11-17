@@ -1,5 +1,7 @@
 # Wet-lab bring-up and training
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 > **Application boundary:** the app uses mock or MuJoCo execution with physical actuation disabled. The selected two-vessel Smartivity direction is defined in [PROJECT](PROJECT.md); [the architecture checklist](ARCHITECTURE.md#kit-scope-and-bench-handoff) records the outstanding physical handoff. This runbook retains supervised hardware procedures and historical baseline evidence; none of these commands is dispatched by the student app. Normal successful return to the taught HOME may be automatic. Replenishing materials and recovery after faults are separate readiness checks.
 
 Start with one fixed-fixture water pour. Reuse the same robot calibration, leader/follower link, and saved-pose executor that moved the mandarin. The only geometry to teach is the cup, receiver, and clear travel path on the actual bench. Use the planned fixed webcam views for evidence: one wide view of the arm and fixtures, one close view of the stream and receiver. Camera calibration can follow after the first pour.

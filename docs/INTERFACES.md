@@ -1,5 +1,7 @@
 # Shared conversational lab session contract
 
+> **Partly out of date (2026-11-16).** The session transport described here still holds. The scene defaults do not: the server now defaults to the `demo_bench` scene, and the R1–R6 and D1–D4 references are hackathon process. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 [Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
 
 > **Architecture correction:** [FULL_SYSTEM_DELIVERY.md](FULL_SYSTEM_DELIVERY.md) is the authoritative R1–R6 responsibility map, domain contract and acceptance checklist. The transport details below are the compatible implementation seam, not the complete product. The physical contract is the selected two-vessel A→C pour; MuJoCo is active development and Isaac is parked. Regardless of activity, background expert planning, image/perception tools, two-agent feedback, reusable candidates and evaluated improvement are required. Physical actuation alone is excluded.

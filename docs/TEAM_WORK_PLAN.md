@@ -1,5 +1,7 @@
 # OpenArms team work plan
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 Joseph's current focus is MuJoCo simulation, camera-aware agent updates, integration, documentation and coordination. Victor and Duc continue physical bring-up and their existing subsystem responsibilities. Stefanie's existing simulation work remains coordinated with her; this reconciliation does not reassign her files. [AGENTS](../AGENTS.md#ownership) owns edit boundaries and [current TODO](../research/joseph/TODO.md) owns task status.
 
 The physical target is exactly two vessels: A donor → C receiver → donor A → HOME, using water for calibration and the selected Smartivity chemistry only after verification. The student directs individual actions, with optional prediction/reflection. First-minute physical action remains an acceptance target.

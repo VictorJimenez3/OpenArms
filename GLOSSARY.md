@@ -1,5 +1,7 @@
 # OpenArms
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](HANDOFF.md) is current. Where they differ, trust the code.
+
 ## Language
 
 **Student-directed action**: An individual physical action chosen by the student. The student decides the sequence.

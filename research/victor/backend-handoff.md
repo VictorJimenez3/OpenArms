@@ -1,5 +1,7 @@
 # Backend Handoff For The UI Merge
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../../HANDOFF.md) is current. Where they differ, trust the code.
+
 Branch: `victor/integration-device-expert` (pushed). Keep it; build any merged branch as a new branch from it.
 
 ## What this branch is

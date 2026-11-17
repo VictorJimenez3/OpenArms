@@ -1,5 +1,7 @@
 # Client design notes
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 The original delivery plan is superseded by [the current architecture](ARCHITECTURE.md) and [R1–R6 contract](FULL_SYSTEM_DELIVERY.md). PR #22 and PR #25 are merged. The selected physical scope is the two-vessel Smartivity pour; Gemini Live provides speech and expert inference remains separate. MuJoCo is active development, with optional presentation experiments; Isaac is parked. The design decisions below remain useful; this document assigns no active lanes or extra merge gates.
 
 ## Visual direction

@@ -1,5 +1,7 @@
 # First speed task
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 Scope: D1/D2 first, then D3/D4 in [Architecture](ARCHITECTURE.md). Historical receipts inspected November 14, 2026; these are not fresh benchmarks or proof that active overhaul code still has the same defect.
 
 | Evidence | Retained result | What it establishes |

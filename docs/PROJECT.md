@@ -1,5 +1,7 @@
 # OpenArms: the judging goal
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 A student directs a real robot arm one supported action at a time through responsive conversation. The target is a visible physical action in the first minute, with honest progress, cancellation and an independently observed result. This timing and the physical demonstration are **targets, not achieved acceptance**. Prediction and reflection are optional.
 
 ## Decided experiment and remaining verification

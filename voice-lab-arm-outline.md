@@ -1,5 +1,7 @@
 # Voice-Controlled Robotic Arm for Accessible Lab Work: Project Outline
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](HANDOFF.md) is current. Where they differ, trust the code.
+
 > **Scope correction — demo-speed-v1:** [Architecture](docs/ARCHITECTURE.md) defines the target. The lesson/prediction/quiz sequence below describes existing or historical behavior, not a mandatory student workflow. Students choose individual physical actions. Preserve existing authorization and STOP while integrating the corrected flow; mock/simulation success is not physical demo completion.
 
 > Working title. Our team's draft for scoping what to build, buy, and set up.

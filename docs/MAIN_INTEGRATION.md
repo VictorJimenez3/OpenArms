@@ -1,5 +1,7 @@
 # Main and remaining work
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 The consolidation is **merged**: [PR #22](https://github.com/VictorJimenez3/OpenArms/pull/22), main commit `0ab58195781893594a8e8c2421f41facd713e962`. The earlier baseline `171a21a` remains in history. The old integration/worker branches are no longer the place to start work: branch from current main for a bounded task, review, integrate, then archive its worktree.
 
 ## Current direction and audited baseline

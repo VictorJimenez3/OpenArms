@@ -1,5 +1,7 @@
 # OpenArms runtime handoff
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 This follow-up is on `codex/runtime-full-loop` above `5b59f49`, which remains in its history. The lane covers the runtime, typed plans, mock executor, registry and focused tests. The parent owns the voice gateway, Codex adapter and scene producer. [Issue #19 acceptance and ownership](https://github.com/VictorJimenez3/OpenArms/issues/19)
 
 ## Demo requirements

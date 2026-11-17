@@ -1,5 +1,7 @@
 # Run the conversational lab
 
+> **Partly out of date (2026-11-16).** The real-bench section is the best reference for that lane. The opening sections describe older scenes and an iPhone client that is not part of the product. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 [Architecture](ARCHITECTURE.md) defines D1–D4 product targets; [FULL_SYSTEM_DELIVERY](FULL_SYSTEM_DELIVERY.md) defines the R1–R6 software scope. Prediction and reflection are optional. Software/simulation evidence does not complete the supervised physical milestone.
 
 The student app targets continuous voice on Mac and iPhone. The selected physical target is the two-vessel Smartivity pour in [PROJECT](PROJECT.md). MuJoCo is active for development; Isaac is parked. The retained indicator-pH apparatus is a regression implementation, not the carried-donor kit experiment. **Gemini Live provides speech** when configured. Joseph withdrew only Gemini thinking; expert inference remains independently selectable. Text, the shared session and direct STOP remain available if voice is unavailable. OpenAI `gpt-6.1-sol`, medium reasoning through the authenticated Codex CLI, inspects images and plans supported tasks. Physical execution is disabled in this application lane.

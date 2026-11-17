@@ -1,5 +1,7 @@
 # Historical consolidation ledger
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 These pinned heads were incorporated by merged [PR #22](https://github.com/VictorJimenez3/OpenArms/pull/22), main `0ab5819`. Branch names below are historical references, not active work assignments. Finished worktrees/merged branches may be removed; their commits remain reachable from main. See [current disposition](MAIN_INTEGRATION.md#branch-and-worktree-disposition) for the later `duc` and `stefanie/joint-map` heads.
 
 | Pinned head | Branch references | Included in integration history |

@@ -1,5 +1,7 @@
 # OpenArms handoff for Duc
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../../HANDOFF.md) is current. Where they differ, trust the code.
+
 Victor's agentic branch is `victor/agentic-student-loop`. The tested agent baseline is `7722e8d`. Duc has the context for the simulator he and Stefanie developed and should identify its exact branch, revision, and normal entry point with his Claude. The immediate assignment is to connect Victor's existing agent to Duc's simulator and make Duc's scene the active simulator for the integrated path.
 
 The old two-vessel water rehearsal on Victor's branch established an end-to-end software baseline for one fixed action. Its assumptions, including its operation name, A→C route, water-only setup, and camera features, come from that scene. Duc's simulator should advertise its own supported operations and observable outcomes. Use the old adapter as an interface example where helpful. Remove the old water scene from the active integration path. Keep any historical fixtures that still serve tests or other callers.

@@ -1,5 +1,7 @@
 # OpenArms gateway and legacy test migration
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 Only the five assigned tests and this handoff changed. Base: runtime worktree `7b912ae`. Tested against the parent checkout (`293f171` plus the parent’s in-progress integration at verification time), using its Python and dependencies. No provider, microphone, camera, or physical hardware calls.
 
 | Legacy invariant | Coverage in the current system |

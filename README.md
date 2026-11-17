@@ -34,7 +34,7 @@ In Duc's logged bench run, reusing a saved skill cut request-to-plan from **58.8
 | Part | What it does | Where |
 | --- | --- | --- |
 | Agent runtime | One session and task loop: Gemini Live conversation, separate expert planner, exact proposals and consent, deterministic executor, independent observer, skill registry and evaluator | `agentic/` |
-| Student app | Ollie: guided labs, accessible by keyboard, switch, eye gaze and voice control; reports and Ask Ollie | `ui/student/` (served at `/student`; arriving from `victor/user-flow-ui`) |
+| Student app | Ollie: guided labs, accessible by keyboard, switch, eye gaze and voice control; reports and Ask Ollie | `ui/student/` (served at `/student`) |
 | Developer view | The same session with expert/tool traces, observations, skill evaluations and simulator frames | `ui/lab/` (served at `/developer`) |
 | Hardware | SO-101 arm on LeRobot, calibration, recorded pours, overhead camera localization, base plate with ArUco markers | `firmware/`, `firmware/fixtures/cup_dock/` |
 | Simulation | MuJoCo model of the same arm and bench, lined up with a real recorded pour; Smartivity kit experiments | `simulation/` |
@@ -74,6 +74,6 @@ PYTHONPATH=agentic:simulation:. .venv-lab/bin/python -m pytest agentic/tests sim
 
 [Hugging Face LeRobot](https://github.com/huggingface/lerobot) and [The Robot Studio SO-101](https://github.com/TheRobotStudio/SO-ARM100), [MuJoCo](https://mujoco.org), Google Gemini Live, OpenAI Codex, Anthropic Claude, Devin, FastAPI, OpenCV. Experiments adapted from Smartivity's *My First Science Kit*. Fonts: Bagel Fat One and Atkinson Hyperlegible Next (SIL Open Font License).
 
-## For the team
+## Developing
 
-Start with [the architecture](docs/ARCHITECTURE.md), the [project brief](docs/PROJECT.md), [interfaces](docs/INTERFACES.md), [current tasks](research/joseph/TODO.md) and the [integration ledger](docs/MAIN_INTEGRATION.md). Work in your own worktree and branch; check the [ownership table](AGENTS.md#ownership) first. Pitch and submission (everything is in [`pitch/`](pitch/)): [film plan](pitch/FILM.md), [team directives](pitch/TEAM.md), [facts and sources](pitch/FACTS.md), [Devpost copy](pitch/DEVPOST.md).
+Start with [HANDOFF.md](HANDOFF.md): current status, setup, run and test commands, which code is live and which documents are out of date. Agent rules are in [AGENTS.md](AGENTS.md). Pitch and submission material is in [`pitch/`](pitch/).

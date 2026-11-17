@@ -1,5 +1,7 @@
 # OpenArms project objective
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](HANDOFF.md) is current. Where they differ, trust the code.
+
 OpenArms is a HackPrinceton project to make science labs more accessible to students with limited hand or arm mobility or dexterity. The goal is for students to direct experiments with real materials and extend their investigations in simulated labs. Supervised undergraduate teaching labs are the starting point. Students are the primary users, and instructors, teaching assistants, and lab staff need to be able to run the activities within a course.
 
 ## Why this exists

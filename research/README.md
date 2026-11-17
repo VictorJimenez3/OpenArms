@@ -1,5 +1,7 @@
 # OpenArms research
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 **Current target:** Smartivity My First Science Kit, with activity selection deferred. Simulation is optional Devpost/presentation material, not the main architecture or a kit implementation. The app supports mock trials and the newer MuJoCo pH apparatus with independently observed, explicitly simulated images. Mandarin, dilution, buoyancy and virtual experiments below are historical research or separate hardware evidence; they are not alternative judged student flows. See the [current runbook](../docs/LAB_RUNBOOK.md).
 
 Check the questions below before starting new research or repeating a test. Use the source links to confirm what was tried and which setup the result applies to. Search from the repo root for other questions or alternate terms.

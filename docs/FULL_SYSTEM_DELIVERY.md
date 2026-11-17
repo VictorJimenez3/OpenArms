@@ -1,4 +1,7 @@
 # OpenArms full-system delivery contract
+
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 Reconciled November 14, 2026 · current two-vessel product and shared runtime
 
 ## Product and evidence boundary

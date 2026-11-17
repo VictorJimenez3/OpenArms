@@ -1,5 +1,7 @@
 # OpenArms demo architecture
 
+> **Historical (HackPrinceton, November 2026).** This document is no longer maintained and may describe plans, scenes, owners or rules that no longer apply. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 Vision revision: **demo-speed-v2**, reconciled to Joseph's November 14, 2026 two-vessel Smartivity direction. [PROJECT](PROJECT.md) owns the experiment definition.
 This is the required direction, not a claim that the implementation is complete.
 Provider correction, November 14: Joseph retained Gemini Live for speech and withdrew only Gemini thinking. Keep speech separate from expert inference: Sol, Astra, Opus or an explicitly configured Fable binding use the shared expert boundary. Live quota and actual-device evidence remain separate checks.

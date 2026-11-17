@@ -1,5 +1,7 @@
 # Choose the expert
 
+> **Partly out of date (2026-11-16).** The profile mechanism is current; the default and the evidence columns are not. The run script defaults to `devin-sol-fast`, and the Codex and Claude profiles have not completed a planning call since the hackathon. [HANDOFF.md](../HANDOFF.md) is current. Where they differ, trust the code.
+
 One host task loop supports Codex and Claude. The default remains **Sol, medium**. Models receive the same frozen images, context and host-tool catalog. They return decisions; the host retains validation, exact consent, STOP, execution and skill promotion. There is no automatic model fallback.
 
 | Profile | CLI / requested model | Current evidence |
