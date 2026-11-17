@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenArms — You're the scientist. Ollie's the hands.</title>
+<meta name="description" content="OpenArms is a student-directed robot lab partner. A student who cannot hold lab equipment directs Ollie, a robot arm, through voice, text, switch or eye gaze — with exact plans, explicit consent and honest results.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%231a1538'/%3E%3Ccircle cx='12' cy='13' r='4' fill='%23fff6e3'/%3E%3Ccircle cx='20' cy='13' r='4' fill='%23fff6e3'/%3E%3Crect x='9' y='19' width='14' height='8' rx='4' fill='%23ff4f9a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <a class="brand" href="#top" aria-label="OpenArms home">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect width="32" height="32" rx="10" fill="currentColor"/><circle cx="12" cy="13" r="4" fill="var(--field)"/><circle cx="20" cy="13" r="4" fill="var(--field)"/><rect x="9" y="19" width="14" height="8" rx="4" fill="var(--pink)"/></svg>
+    <span class="word">OpenArms</span>
+    <span class="by">by Victor Jimenez</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#flow">Userflow</a>
+    <a href="#app">The app</a>
+    <a href="#recordings">Recordings</a>
+    <a href="#run">Run it</a>
+    <a class="pill-link" href="https://github.com/VictorJimenez3/OpenArms" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="hero-copy">
+    <p class="kicker">A robot lab partner for students</p>
+    <h1>You&rsquo;re the scientist.<br>Ollie&rsquo;s the hands.</h1>
+    <p class="lede">Some students understand the experiment and know what to test &mdash; but can&rsquo;t reach, grip or pour the materials. OpenArms gives them a robot arm they direct with voice, text, a switch or eye gaze. Ollie proposes every action, shows the exact plan, and waits for a yes. Nothing moves without it.</p>
+    <div class="hero-actions">
+      <a class="btn primary big" href="#flow">See the userflow</a>
+      <a class="btn ghost big" href="https://github.com/VictorJimenez3/OpenArms" rel="noopener">Source on GitHub</a>
+    </div>
+    <ul class="hero-facts">
+      <li>Built for limited hand and arm mobility</li>
+      <li>WCAG 2.2 AA &middot; keyboard, switch, gaze and voice paths</li>
+      <li>Open source &middot; runs locally</li>
+    </ul>
+  </div>
+  <div class="hero-ollie" aria-hidden="true">
+    <svg class="ollie-bot" data-pose="hello" viewBox="-50 -20 300 250">
+      <ellipse class="o-floor" cx="100" cy="220" rx="76" ry="8"/>
+      <rect class="o-body" x="44" y="188" width="112" height="32" rx="16"/>
+      <g class="o-shoulder">
+        <rect class="o-body" x="82" y="112" width="36" height="92" rx="18"/>
+        <g class="o-elbow">
+          <rect class="o-body" x="84" y="50" width="32" height="86" rx="16"/>
+          <g class="o-head">
+            <rect class="o-body o-ear o-ear-l" x="74" y="-10" width="14" height="38" rx="7"/>
+            <rect class="o-body o-ear o-ear-r" x="112" y="-10" width="14" height="38" rx="7"/>
+            <rect class="o-body" x="58" y="12" width="84" height="62" rx="27"/>
+            <g class="o-eyes"><circle cx="83" cy="42" r="8"/><circle cx="117" cy="42" r="8"/></g>
+          </g>
+          <circle class="o-joint" cx="100" cy="66" r="9"/>
+        </g>
+        <circle class="o-joint" cx="100" cy="124" r="11"/>
+      </g>
+      <circle class="o-joint" cx="100" cy="194" r="12"/>
+    </svg>
+    <p class="bubble">Hi, scientist.<br>I&rsquo;ll do the hands. You make the calls.</p>
+  </div>
+</section>
+
+<!-- ============ USERFLOW ============ -->
+<section class="flow" id="flow">
+  <p class="kicker center">The userflow</p>
+  <h2>One loop. The student stays in charge.</h2>
+  <p class="lede center">Every lab follows the same five steps. The student chooses the experiment, directs each action, and owns the conclusion &mdash; Ollie only supplies the hands.</p>
+
+  <div class="flow-shell">
+    <ol class="flow-steps" id="flowSteps">
+      <li><button type="button" data-step="0" aria-current="step"><span class="step-num">1</span><span class="step-name">Question</span></button></li>
+      <li><button type="button" data-step="1"><span class="step-num">2</span><span class="step-name">Predict</span></button></li>
+      <li><button type="button" data-step="2"><span class="step-num">3</span><span class="step-name">Direct Ollie</span></button></li>
+      <li><button type="button" data-step="3"><span class="step-num">4</span><span class="step-name">Observe</span></button></li>
+      <li><button type="button" data-step="4"><span class="step-num">5</span><span class="step-name">Explain</span></button></li>
+      <li class="flow-out"><span class="step-num">&#9733;</span><span class="step-name">Report</span></li>
+    </ol>
+
+    <div class="flow-detail" id="flowDetail" aria-live="polite">
+      <div class="flow-detail-inner">
+        <h3 id="fdTitle">A question, in the student&rsquo;s words</h3>
+        <p id="fdBody">Each lab opens with a real question &mdash; &ldquo;What happens when a sour liquid meets baking soda?&rdquo; The student reads it, hears it read aloud, or has Ollie explain it. No prior knowledge is assumed.</p>
+        <p class="fd-who" id="fdWho">Student drives &middot; Ollie assists</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="consent-band">
+    <svg class="ollie-bot small" data-pose="think" viewBox="-50 -20 300 250" aria-hidden="true">
+      <ellipse class="o-floor" cx="100" cy="220" rx="76" ry="8"/>
+      <rect class="o-body" x="44" y="188" width="112" height="32" rx="16"/>
+      <g class="o-shoulder"><rect class="o-body" x="82" y="112" width="36" height="92" rx="18"/>
+        <g class="o-elbow"><rect class="o-body" x="84" y="50" width="32" height="86" rx="16"/>
+          <g class="o-head"><rect class="o-body o-ear o-ear-l" x="74" y="-10" width="14" height="38" rx="7"/><rect class="o-body o-ear o-ear-r" x="112" y="-10" width="14" height="38" rx="7"/><rect class="o-body" x="58" y="12" width="84" height="62" rx="27"/><g class="o-eyes"><circle cx="83" cy="42" r="8"/><circle cx="117" cy="42" r="8"/></g></g>
+          <circle class="o-joint" cx="100" cy="66" r="9"/></g>
+        <circle class="o-joint" cx="100" cy="124" r="11"/></g>
+      <circle class="o-joint" cx="100" cy="194" r="12"/>
+    </svg>
+    <div>
+      <h3>The consent rule</h3>
+      <p>Before anything moves, Ollie states its exact plan &mdash; which cup, which direction, where it goes back. The student confirms that exact version, by tap, key, voice or switch. One yes runs one bounded action. Stop cancels everything, instantly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE APP ============ -->
+<section class="app" id="app">
+  <p class="kicker center">The interface</p>
+  <h2>Built for hands that can&rsquo;t hold a beaker</h2>
+  <p class="lede center">Every answer is available three ways: tap, keyboard, or speak. Big targets, no dragging, no timers, and everything works with the assistive technology the student already uses.</p>
+
+  <div class="shots-tabs" role="tablist" aria-label="App screens">
+    <button type="button" role="tab" id="tab-q" aria-selected="true" aria-controls="shot-panel" data-shot="lab-question">Question</button>
+    <button type="button" role="tab" id="tab-p" aria-selected="false" aria-controls="shot-panel" data-shot="lab-predict">Predict</button>
+    <button type="button" role="tab" id="tab-d" aria-selected="false" aria-controls="shot-panel" data-shot="lab-plan">Consent</button>
+    <button type="button" role="tab" id="tab-o" aria-selected="false" aria-controls="shot-panel" data-shot="lab-observe-done">Observe</button>
+    <button type="button" role="tab" id="tab-e" aria-selected="false" aria-controls="shot-panel" data-shot="lab-explain">Explain</button>
+    <button type="button" role="tab" id="tab-r" aria-selected="false" aria-controls="shot-panel" data-shot="report">Report</button>
+  </div>
+
+  <figure class="shot-frame" id="shot-panel" role="tabpanel" aria-labelledby="tab-q">
+    <img id="shot-img" src="assets/shots/lab-question.png" alt="The Ollie student app showing the lab question step" width="1440" height="900">
+    <figcaption id="shot-cap">Step 1 &middot; The question, with Ollie beside it.</figcaption>
+  </figure>
+
+  <ul class="access-strip">
+    <li>48&nbsp;px minimum targets</li>
+    <li>Keyboard-only operation</li>
+    <li>Switch &amp; eye-gaze ready</li>
+    <li>Voice answers, read-aloud plans</li>
+    <li>Reduced-motion support</li>
+    <li>axe-core: 0 violations across 27 states</li>
+  </ul>
+</section>
+
+<!-- ============ RECORDINGS ============ -->
+<section class="recordings" id="recordings">
+  <p class="kicker center">Watch it work</p>
+  <h2>Recorded simulations</h2>
+  <p class="lede center">These clips are real MuJoCo physics simulations of the SO-101 arm on the lab bench &mdash; the same simulator the app runs. They are recordings, not live renders, and not physical hardware. The live version runs on your own machine; see <a href="#run">Run it</a>.</p>
+
+  <div class="vid-grid">
+    <figure class="vid">
+      <video src="assets/media/volcano.mp4" poster="assets/media/volcano.jpg" controls playsinline preload="metadata"></video>
+      <figcaption><strong>Erupting Volcano</strong><span>Acid + base makes gas &middot; recorded simulation</span></figcaption>
+    </figure>
+    <figure class="vid">
+      <video src="assets/media/potions.mp4" poster="assets/media/potions.jpg" controls playsinline preload="metadata"></video>
+      <figcaption><strong>Magic Potions</strong><span>Indicators change colour &middot; recorded simulation</span></figcaption>
+    </figure>
+    <figure class="vid">
+      <video src="assets/media/lava.mp4" poster="assets/media/lava.jpg" controls playsinline preload="metadata"></video>
+      <figcaption><strong>Density Column</strong><span>Oil, water and gas bubbles &middot; recorded simulation</span></figcaption>
+    </figure>
+    <figure class="vid">
+      <video src="assets/media/snow.mp4" poster="assets/media/snow.jpg" controls playsinline preload="metadata"></video>
+      <figcaption><strong>Instant Snow</strong><span>A polymer drinks the water &middot; recorded simulation</span></figcaption>
+    </figure>
+  </div>
+
+  <figure class="bench-vid">
+    <video src="assets/media/bench-pour.mp4" controls playsinline preload="metadata"></video>
+    <figcaption>
+      <strong>Raw bench recording</strong>
+      <span>A 24-second MuJoCo capture of the two-vessel pour &mdash; pick up beaker A, pour into flask C, return, home. This is the trajectory the real-arm replay is built from. Simulation only.</span>
+    </figcaption>
+  </figure>
+</section>
+
+<!-- ============ RUN IT ============ -->
+<section class="run" id="run">
+  <p class="kicker center">Run it yourself</p>
+  <h2>The real simulation runs locally</h2>
+  <p class="lede center">This site is a showcase &mdash; nothing here is streamed live. The full app, simulator and lab protocol are open source and run on your machine.</p>
+
+  <div class="run-grid">
+    <div class="run-card">
+      <h3>1 &middot; Clone</h3>
+      <pre><code>git clone https://github.com/VictorJimenez3/OpenArms.git
+cd OpenArms</code></pre>
+    </div>
+    <div class="run-card">
+      <h3>2 &middot; Environment</h3>
+      <pre><code>uv venv --python 3.12 .venv-lab
+uv pip install --python .venv-lab/bin/python \
+  -r agentic/requirements-lab.txt \
+  mujoco==4.0.1 scipy pyyaml pillow \
+  imageio imageio-ffmpeg pandas pyarrow \
+  anthropic==2.8.0 pytest pytest-asyncio</code></pre>
+      <p class="run-note">For the physical SO-101 arm add <code>LeRobot/lerobot[feetech]</code> at the pinned commit &mdash; see <a href="https://github.com/VictorJimenez3/OpenArms/blob/main/HANDOFF.md" rel="noopener">HANDOFF.md</a>.</p>
+    </div>
+    <div class="run-card">
+      <h3>3 &middot; Launch</h3>
+      <pre><code>OPENARMS_EXECUTION=mujoco \
+OPENARMS_SCENE=demo_bench \
+OPENARMS_DEMO_EXPERIMENT=volcano \
+PYTHONPATH=agentic:simulation:. \
+.venv-lab/bin/python -m agentic.openarms_lab</code></pre>
+      <p class="run-note">Then open <code>http://127.0.0.1:8000/student/</code>. Voice needs a <code>GEMINI_API_KEY</code> in <code>.env</code>; typed play works without one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HONESTY ============ -->
+<section class="honest" id="honest">
+  <div class="honest-card">
+    <h2>What&rsquo;s real, and what&rsquo;s simulated</h2>
+    <ul>
+      <li><strong>Simulated (shown above):</strong> the arm, the liquids and the camera view are MuJoCo physics. Results are labelled &ldquo;recorded simulation&rdquo; in the app and on this page.</li>
+      <li><strong>Real software:</strong> the consent loop, the planner, the skill registry, the independent observer and Stop are the same code paths used on the bench.</li>
+      <li><strong>Physical arm:</strong> a supervised real-bench lane exists (<code>/bench</code>) with camera checks, bounded replayed pours and operator confirmation. It has not completed a qualified physical pour &mdash; treat it as experimental, keep the power switch in reach.</li>
+      <li><strong>No live AI on this page:</strong> this site is static. There is no chat, no API key and nothing to rate-limit &mdash; the AI planner and Gemini voice only run inside the local app.</li>
+    </ul>
+    <p class="honest-links"><a href="https://github.com/VictorJimenez3/OpenArms" rel="noopener">GitHub repository</a> &middot; <a href="https://github.com/VictorJimenez3/OpenArms/blob/main/HANDOFF.md" rel="noopener">Handoff &amp; status doc</a> &middot; <a href="https://github.com/VictorJimenez3/OpenArms/blob/main/docs/LAB_RUNBOOK.md" rel="noopener">Bench runbook</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p>OpenArms &middot; Ollie by OpenArms &middot; <a href="https://github.com/VictorJimenez3/OpenArms" rel="noopener">github.com/VictorJimenez3/OpenArms</a></p>
+  <p class="foot-small">Experiments adapted from Smartivity&rsquo;s <em>My First Science Kit</em>. Built at HackPrinceton, November 2026.</p>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

@@ -14,3 +14,6 @@ simulation/config/setups/demo_live/
 
 # Application environment, separate from the physical bench environment
 .venv-lab/
+
+# playwright-cli session data
+.playwright-cli/
