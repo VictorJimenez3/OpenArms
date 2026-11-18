@@ -1,4 +1,4 @@
-name: Deploy showcase site to GitHub Pages
+name: Deploy student app to GitHub Pages
 
 on:
   push:
@@ -28,6 +28,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: ui/student
       - uses: actions/deploy-pages@v4
         id: deployment
